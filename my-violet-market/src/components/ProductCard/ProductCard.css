@@ -267,18 +267,18 @@
   }
 
   .product-title {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .price {
   color: #1707fb;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .original-price {
   color: #95a5a6;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-decoration: line-through;
 }
 }
@@ -289,18 +289,18 @@
   }
 
   .product-title {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .price {
   color: #1707fb;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .original-price {
   color: #95a5a6;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-decoration: line-through;
 }
 }
@@ -311,18 +311,18 @@
   }
 
   .product-title {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .price {
   color: #1707fb;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .original-price {
   color: #95a5a6;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-decoration: line-through;
 }
 }
@@ -337,12 +337,14 @@
 }
 
 .price {
-  font-size: 1.1rem;
+  color: #1707fb;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .original-price {
   color: #95a5a6;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-decoration: line-through;
 }
 }
