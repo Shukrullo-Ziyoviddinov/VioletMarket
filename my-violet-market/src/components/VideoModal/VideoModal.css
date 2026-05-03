@@ -1,0 +1,77 @@
+.video-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.video-content {
+  width: 80vw;
+  height: 60vh;
+  border-radius: 20px;
+  background: #f5f5f5;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.product-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  background-color: #000;
+}
+
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  line-height: 39px;
+  width: 35px;
+  height: 35px;
+  font-size: 26px;
+  background: #bd02bd;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: #e101e1;
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .video-content {
+    width: 95vw;
+    height: 60vh;
+  }
+}

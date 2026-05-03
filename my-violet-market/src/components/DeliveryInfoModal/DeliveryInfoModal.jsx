@@ -1,0 +1,202 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { getPortalContainer } from '../../utils/utils';
+import { useTranslation } from 'react-i18next';
+import { deliveryPrices } from '../../data/cargo';
+import { formatPrice, getLocalizedText } from '../../utils/utils';
+import './DeliveryInfoModal.css';
+
+const CLOSE_THRESHOLD_PERCENT = 0.2; // 20% pastga surilsa yopiladi
+
+const DeliveryInfoModal = ({ isOpen, onClose }) => {
+  const { i18n } = useTranslation();
+  const lang = i18n.language || 'uz';
+  const contentRef = useRef(null);
+  const [dragY, setDragY] = useState(0);
+  const startYRef = useRef(0);
+  const startDragYRef = useRef(0);
+  const dragYRef = useRef(0);
+  const isDraggingRef = useRef(false);
+
+  const handleDragStart = useCallback((clientY) => {
+    startYRef.current = clientY;
+    startDragYRef.current = dragYRef.current;
+    isDraggingRef.current = false;
+  }, []);
+
+  const handleDragMove = useCallback((clientY, preventScroll) => {
+    const content = contentRef.current;
+    if (!content) return;
+    const deltaY = clientY - startYRef.current;
+    const scrollTop = content.scrollTop;
+    const canDragToClose = scrollTop === 0 && deltaY > 0;
+    if (canDragToClose || isDraggingRef.current) {
+      if (canDragToClose && !isDraggingRef.current) {
+        isDraggingRef.current = true;
+      }
+      if (preventScroll) preventScroll();
+      const newY = Math.max(0, startDragYRef.current + deltaY);
+      dragYRef.current = newY;
+      setDragY(newY);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDraggingRef.current = false;
+    const content = contentRef.current;
+    const currentDragY = dragYRef.current;
+    if (!content) return;
+    const modalHeight = content.offsetHeight;
+    const threshold = modalHeight * CLOSE_THRESHOLD_PERCENT;
+    if (currentDragY >= threshold) {
+      onClose();
+    }
+    dragYRef.current = 0;
+    setDragY(0);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) setDragY(0);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyPress = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const toshkentInfo = deliveryPrices.toshkent;
+  const viloyatInfo = deliveryPrices.viloyat;
+  const freeLabel = i18n.t('cart.free');
+
+  const dragHandleProps = {
+    onTouchStart: (e) => {
+      e.stopPropagation();
+      handleDragStart(e.touches[0].clientY);
+    },
+    onTouchMove: (e) => {
+      handleDragMove(e.touches[0].clientY, () => {
+        if (e.cancelable) e.preventDefault();
+      });
+    },
+    onTouchEnd: (e) => {
+      if (e.cancelable) e.preventDefault();
+      handleDragEnd();
+    },
+    onMouseDown: (e) => {
+      e.preventDefault();
+      handleDragStart(e.clientY);
+      const onMouseMove = (ev) => handleDragMove(ev.clientY, () => ev.preventDefault());
+      const onMouseUp = () => {
+        handleDragEnd();
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    },
+  };
+
+  const modalContent = (
+    <div className="delivery-modal-overlay" onClick={onClose}>
+      <div
+        ref={contentRef}
+        className="delivery-modal-content"
+        onClick={(e) => e.stopPropagation()}
+        style={{ transform: `translateY(${dragY}px)` }}
+        {...dragHandleProps}
+      >
+        <div className="delivery-modal-drag-handle">
+          <span className="delivery-modal-drag-indicator" />
+        </div>
+        <div className="delivery-modal-header">
+          <h3>{i18n.t('delivery.modalTitle')}</h3>
+          <button className="delivery-modal-close" onClick={onClose}>
+            &times;
+          </button>
+        </div>
+        <div className="delivery-modal-body">
+          <div className="delivery-info-section">
+            <h4>{getLocalizedText(toshkentInfo.name, lang)}</h4>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(toshkentInfo.namePricetsh1, lang)}</span>
+              <span className="price">
+                {toshkentInfo.pricetsh1 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh1)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(toshkentInfo.namePricetsh2, lang)}</span>
+              <span className="price">
+                {toshkentInfo.pricetsh2 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh2)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(toshkentInfo.namePricetsh3, lang)}</span>
+              <span className="price">
+                {toshkentInfo.pricetsh3 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh3)}
+              </span>
+            </div>
+          </div>
+          
+          <div className="delivery-info-section">
+            <h4>{getLocalizedText(viloyatInfo.name, lang)}</h4>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(viloyatInfo.namePricev1, lang)}</span>
+              <span className="price">
+                {viloyatInfo.pricev1 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev1)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(viloyatInfo.namePricev2, lang)}</span>
+              <span className="price">
+                {viloyatInfo.pricev2 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev2)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(viloyatInfo.namePricev3, lang)}</span>
+              <span className="price">
+                {viloyatInfo.pricev3 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev3)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(viloyatInfo.namePricev4, lang)}</span>
+              <span className="price">
+                {viloyatInfo.pricev4 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev4)}
+              </span>
+            </div>
+            <div className="delivery-price-item">
+              <span>{getLocalizedText(viloyatInfo.namePricev5, lang)}</span>
+              <span className="price">
+                {viloyatInfo.pricev5 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev5)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modalContent, getPortalContainer());
+};
+
+export default DeliveryInfoModal;

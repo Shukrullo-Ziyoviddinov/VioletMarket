@@ -1,0 +1,240 @@
+.language-filter__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  animation: languageFilterFadeIn 0.2s ease;
+}
+
+@keyframes languageFilterFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.language-filter__modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 80vh;
+  padding: 24px;
+  overflow-y: auto;
+  animation: languageFilterSlideIn 0.25s ease;
+  scrollbar-width: none;
+}
+
+.language-filter__modal--bottom {
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh;
+  animation: languageFilterSlideUp 0.3s ease;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+  transition: transform 0.1s ease-out;
+}
+
+.language-filter__modal--bottom .language-filter__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.language-filter__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.language-filter__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 50%;
+  color: #333;
+  font-size: 1.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.language-filter__close:hover {
+  background: #e0e0e0;
+  color: #bd02bd;
+}
+
+@media (max-width: 767px) {
+  .language-filter__close {
+    display: none;
+  }
+}
+
+@keyframes languageFilterSlideIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes languageFilterSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.language-filter__drag-handle {
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: 8px 0;
+  background: transparent;
+  border-radius: 2px;
+  flex-shrink: 0;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.language-filter__drag-handle::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+}
+
+.language-filter__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.language-filter__modal:not(.language-filter__modal--bottom) .language-filter__body {
+  padding: 0;
+}
+
+.language-filter__title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #333;
+  flex: 1;
+}
+
+.language-filter__empty {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.language-filter__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.language-filter__item {
+  margin: 0;
+}
+
+.language-filter__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px 0;
+}
+
+.language-filter__check {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.language-filter__checkmark {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.language-filter__check:checked + .language-filter__checkmark {
+  background: #bd02bd;
+  border-color: #bd02bd;
+}
+
+.language-filter__check:checked + .language-filter__checkmark::after {
+  content: '';
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 3px;
+}
+
+.language-filter__name {
+  font-size: 1rem;
+  color: #333;
+}
+
+.language-filter__apply {
+  padding: 12px 24px;
+  background: #e0e0e0;
+  color: #666;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.language-filter__apply--active {
+  background: #bd02bd;
+  color: #fff;
+}
+
+.language-filter__apply--active:hover {
+  background: #9d029d;
+}
+
+.language-filter__apply:not(.language-filter__apply--active):hover {
+  background: #d0d0d0;
+}

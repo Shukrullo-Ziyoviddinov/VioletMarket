@@ -1,0 +1,26 @@
+.button-loader-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-loader-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: button-loader-spin 0.8s linear infinite;
+}
+
+.button-loader-text {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+@keyframes button-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,421 @@
+.address-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  transition: opacity 0.28s ease;
+}
+
+.address-modal-backdrop--closing {
+  opacity: 0;
+}
+
+.address-modal {
+  position: fixed;
+  inset: 20px;
+  z-index: 1001;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  max-width: 1100px;
+  max-height: 90vh;
+  margin: auto;
+  overflow: hidden;
+  transition: transform 0.28s ease;
+}
+
+/* Drag handle — faqat mobil uchun */
+.address-modal__handle {
+  display: none;
+}
+
+.address-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  color: #333;
+}
+
+.address-modal__close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.address-modal__inner {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 24px;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.address-modal__form-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.address-modal__title {
+  margin: 0 0 20px 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.address-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.address-modal__field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.address-modal__field--error input,
+.address-modal__field--error .address-suggest-wrap input {
+  border-color: #e53e3e !important;
+  box-shadow: 0 0 0 1px #e53e3e;
+}
+
+.address-modal__validation-msg {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.9rem;
+}
+
+.address-modal__search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.address-suggest-wrap {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.address-suggest-wrap input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* X tozalash tugmasi — inputdan tashqarida, search-row ichida */
+.address-suggest-clear {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.address-suggest-clear:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+  color: #333;
+}
+
+.address-suggest-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.address-suggest-list li {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #eee;
+}
+
+.address-suggest-list li:last-child {
+  border-bottom: none;
+}
+
+.address-suggest-list button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.address-suggest-list button:hover {
+  background: #f0f0f5;
+}
+
+.address-modal__search-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.address-modal__field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.address-modal__field input:focus,
+.address-modal__search-row input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.address-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.address-modal__field_full {
+  grid-column: 1 / -1;
+}
+
+.address-modal__save {
+  margin-top: 8px;
+  padding: 12px 24px;
+  background: #022ff9;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.address-modal__save:hover {
+  opacity: 0.95;
+}
+
+.address-modal__map-wrap {
+  height: 600px;
+  min-height: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.address-modal__map,
+.address-modal__map-wrap .yandex-map-wrapper {
+  height: 100% !important;
+  min-height: 600px;
+}
+
+@media (max-width: 768px) {
+  .address-modal-backdrop {
+    inset: 0;
+  }
+
+  .address-modal {
+    inset: auto auto 0 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    animation: address-modal-slide-up 0.3s ease-out;
+  }
+
+  .address-modal--closing {
+    animation: address-modal-slide-down 0.28s ease-in forwards;
+  }
+
+  .address-modal__handle {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+    cursor: grab;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+
+  .address-modal__handle:active {
+    cursor: grabbing;
+  }
+
+  .address-modal__handle-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  .address-modal__inner {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .address-modal__map-wrap {
+    height: 380px;
+    min-height: 380px;
+    order: -1;
+    overflow: visible;
+  }
+
+  .address-modal__map-wrap .yandex-map-wrapper {
+    overflow: visible;
+    height: 100% !important;
+    min-height: 380px;
+  }
+
+  .address-modal__map {
+    height: 100% !important;
+    min-height: 380px;
+  }
+
+  .address-modal__form-wrap {
+    order: 1;
+  }
+
+  .address-modal__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .address-modal__close {
+    display: none;
+  }
+}
+
+@keyframes address-modal-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes address-modal-slide-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+
+
+/* Search qatori — geo tugma uchun joy */
+.address-modal__search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Geolocation tugmasi */
+.address-modal__geo-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
+  padding: 0;
+  outline: none;
+}
+
+.address-modal__geo-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.address-modal__geo-btn:hover:not(:disabled) {
+  background: #f0f9ff;
+  border-color: #3b82f6;
+  color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.13);
+}
+
+.address-modal__geo-btn:active:not(:disabled) {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+
+.address-modal__geo-btn--loading {
+  cursor: not-allowed;
+  opacity: 0.7;
+  border-color: #93c5fd;
+  color: #3b82f6;
+}
+
+/* Spinner animatsiyasi */
+.address-modal__geo-spinner {
+  animation: geo-spin 0.9s linear infinite;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+@keyframes geo-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

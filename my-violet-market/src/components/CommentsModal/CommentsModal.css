@@ -1,0 +1,130 @@
+.comments-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.comments-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.comments-modal-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.comments-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ddd;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  color: #333;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.comments-modal-close:hover {
+  transform: scale(1.1);
+}
+
+.comments-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #333;
+  padding-right: 40px;
+}
+
+.comments-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comments-modal-list .comment-card {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+.no-comments {
+  text-align: center;
+  color: #999;
+  font-size: 1.1rem;
+  padding: 40px 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .comments-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .comments-modal-content {
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    max-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+    padding: 20px;
+    padding-top: 50px;
+  }
+
+  .comments-modal-title {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .comments-modal-list {
+    gap: 15px;
+  }
+}

@@ -1,0 +1,27 @@
+.drag-scroll {
+  overflow: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.drag-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.drag-scroll--horizontal {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.drag-scroll--vertical {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.drag-scroll:active {
+  cursor: grabbing;
+}

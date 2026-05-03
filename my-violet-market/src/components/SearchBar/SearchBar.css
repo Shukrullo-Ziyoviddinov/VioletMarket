@@ -1,0 +1,387 @@
+/* SearchBar — oldingi search stillari */
+.search-bar {
+  position: relative;
+  max-width: 600px;
+  width: 100%;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-bar__back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  background: #fff;
+  color: black;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+.search-bar__form {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border: 2px solid #ea0cdc;
+  border-radius: 20px;
+  padding: 8px;
+  background: #cccccc5e;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar__icon--lupa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.search-bar__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+  padding: 0 45px 0 8px;
+}
+
+.search-bar__input::placeholder {
+  color: #888;
+}
+
+.search-bar__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.search-bar__clear:hover {
+  background: #eee;
+  color: #333;
+}
+
+.search-bar__submit {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #ea0cdc;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-bar__submit:hover {
+  opacity: 0.9;
+}
+
+/* Panel */
+.search-bar__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: min(70vh, 420px);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-bar__panel-inner {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.search-bar__panel-inner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Qidirilgan tarix — bitta border ichida */
+.search-bar__history {
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.search-bar__history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.search-bar__history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 5px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 2px;
+}
+
+.search-bar__history-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-bar__history-item:hover {
+  background: #f8f8f8;
+}
+
+.search-bar__history-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.search-bar__history-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-bar__history-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 21px;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.search-bar__history-remove:hover {
+  background: #eee;
+  color: #333;
+}
+
+.search-bar__suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-bar__suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-bar__suggestion-item:hover {
+  background: #f5f5f5;
+}
+
+.search-bar__suggestion-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-bar__suggestions-empty {
+  padding: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+.search-bar__recommended-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.search-bar__recommended-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 350px) {
+  .search-bar__recommended-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .search-bar__recommended-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.search-bar__recommended-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #eee;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.search-bar__recommended-item:hover {
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.15);
+}
+
+.search-bar__recommended-image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.search-bar__recommended-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.search-bar__recommended-info {
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.search-bar__recommended-name {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.search-bar__recommended-prices {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.search-bar__recommended-price {
+  font-size: 13px;
+  color: #ea0cdc;
+  font-weight: 600;
+}
+
+.search-bar__recommended-original {
+  font-size: 11px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.search-bar__recommended-empty {
+  margin: 0;
+  padding: 12px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 1000px dan pastda: input oq, panel to'liq ekran (elementlar kam bo'lsa ham pastga bo'sh qolmasin) */
+@media (max-width: 1000px) {
+  .search-bar__form {
+    background: #fff;
+  }
+
+  .search-bar__panel {
+    position: fixed;
+    top: 5.5rem; /* navbar balandligi */
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-height: calc(100vh - 5.5rem);
+    max-height: calc(100vh - 5.5rem);
+    border-radius: 0;
+  }
+
+  .search-bar__panel-inner {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* Mobil: back tashqarida, lupa yo'q */
+@media (max-width: 991px) {
+  .search-bar {
+    max-width: 100%;
+  }
+
+  .search-bar__back {
+    display: flex;
+  }
+
+  .search-bar__panel {
+    border-left: none;
+    border-right: none;
+  }
+
+  /* .search-bar__panel-inner {
+    padding: 16px;
+  } */
+}
+
+@media (max-width: 500px) {
+.search-bar__form {
+  padding: 13px;
+}
+}

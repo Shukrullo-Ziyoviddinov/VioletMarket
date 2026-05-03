@@ -1,0 +1,265 @@
+{
+  "nav": {
+    "catalog": "Kategoriya",
+    "profile": "Profile",
+    "wishlist": "Wishlist",
+    "cart": "Savat"
+  },
+  "search": {
+    "placeholder": "Qidirish...",
+    "clear": "Tozalash",
+    "search": "Qidirish",
+    "back": "Ortga",
+    "noResults": "Natija topilmadi",
+    "historyTitle": "Qidirilgan tarix",
+    "remove": "O'chirish",
+    "recommendedTitle": "Tavsiya etamiz",
+    "recommendedEmpty": "Tavsiyalar yo'q"
+  },
+  "filters": {
+    "price": "Narx",
+    "brand": "Brend",
+    "country": "Davlat",
+    "color": "Rang",
+    "priceRangeTitle": "Narx oralig'i",
+    "apply": "Qo'llash",
+    "bookLanguage": "Kitob tili",
+    "bookGenre": "Janr",
+    "noLanguages": "Tillar topilmadi.",
+    "noGenres": "Janrlar topilmadi.",
+    "language": {
+      "uz": "O'zbek",
+      "arab": "Arab",
+      "ru": "Rus"
+    },
+    "genre": {
+      "diniy": "Diniy",
+      "adabiy": "Adabiy",
+      "sheriy": "She'riy",
+      "sarguzasht": "Sarguzasht"
+    }
+  },
+  "productCard": {
+    "addToCart": "Savatga qo'shish",
+    "commentsCount": "ta sharh"
+  },
+  "mobileNav": {
+    "home": "Asosiy",
+    "catalog": "Kategoriya",
+    "cart": "Savat",
+    "account": "Akaunt"
+  },
+  "footer": {
+    "aboutTitle": "Kompaniya haqida",
+    "aboutUs": "Biz haqimizda",
+    "career": "Karyera",
+    "news": "Yangiliklar",
+    "investors": "Investorlar",
+    "serviceTitle": "Mijozlarga xizmat",
+    "help": "Yordam markazi",
+    "delivery": "Yetkazib berish",
+    "returns": "Qaytarish",
+    "contacts": "Kontaktlar",
+    "legalTitle": "Qonuniy",
+    "privacy": "Maxfiylik siyosati",
+    "terms": "Foydalanish shartlari",
+    "cookies": "Cookie siyosati",
+    "advertising": "Reklama",
+    "connectTitle": "Biz bilan bog'lanish",
+    "phone": "Telefon: +998 90 123 45 67",
+    "email": "Email: info@violetmarket.uz",
+    "offersTitle": "Maxsus takliflar",
+    "newProducts": "Yangi mahsulotlar",
+    "discounts": "Chegirmalar",
+    "topProducts": "Top mahsulotlar",
+    "recommended": "Sizga tavsiya etamiz",
+    "copyright": "Barcha huquqlar himoyalangan."
+  },
+  "category": {
+    "section1Title": "Elektronika Texnika va Aksessuarlar",
+    "section2Title": "Erkaklar va ayollar uchun kiyimlar",
+    "section3Title": "Har xil turdagi mahsulotlar"
+  },
+  "language": {
+    "uz": "O'zbek",
+    "ru": "Русский"
+  },
+  "common": {
+    "addedToCart": "Mahsulot savatga qo'shildi!"
+  },
+  "productDetail": {
+    "descriptionHeader": "Maxsulot xususiyatlari",
+    "policyDeliveryTitle": "Yetkazib berish muddati",
+    "policyDeliveryText": "Maxsulotni 4 kundan 10 kungacha O'zbekiston bo'ylab yetkazib beriladi. Agar siz hamyonbop mahsulotlar bo'limidan zakas qilsangiz, u holda 10–18 kun ichida yetkaziladi.",
+    "policyServiceTitle": "Yetkazib berish xizmati",
+    "policyServiceText": "Yetkazib berish xizmati Toshkent shahri bo'ylab o'yingizgacha bepul. Viloyat bo'ylab yetqazib berish xizmati 1kg gacha 15 000 ming so'm, 3kg gacha 25 000 ming so'm",
+    "policyReturnTitle": "Qaytarish siyosati",
+    "policyReturnText": "Agar mahsulot ishlamasa yoki singan bo'lsa, aynan o'sha mahsulot bilan almashtiriladi. To'lov qaytarilmaydi, razmerlar uchun ham almashtirish mavjud emas.",
+    "policyContactTitle": "Har doim siz bilan aloqada",
+    "policyContactText": "Biz har kuni foydalanuvchilarning barcha savollariga tezkor va aniq javob beramiz.",
+    "policyPaymentTitle": "To'lov shartlari",
+    "policyPaymentText": "Biz to'lovlarni turli xil usullarda (naqd, karta, click, payme va h.k.) qabul qilamiz.",
+    "colorLabel": "Rang:",
+    "sizeLabel": "O'lcham:",
+    "storageLabel": "Xotira:",
+    "modelLabel": "Model:",
+    "sizeChartLabel": "O'lchamlar jadvali",
+    "deliveryInfoFallback": "Yetkazib berish ma'lumotlari",
+    "addToCart": "Savatga qo'shish",
+    "goToCart": "Savatga o'tish",
+    "adding": "Qo'shilyapti..."
+  },
+  "wishlist": {
+    "emptyTitle": "Sevimli mahsulotingizni qo'shing!",
+    "emptyButton": "Mahsulotlarga o'tish"
+  },
+  "testOrder": {
+    "title": "Buyurtma uchun baho bering",
+    "notice": "Sizning fikringiz biz uchun muhim",
+    "noProducts": "Mahsulotlar topilmadi"
+  },
+  "commentForm": {
+    "title": "Izoh qoldirish",
+    "userName": "Ismingiz",
+    "rating": "Reyting",
+    "comment": "Izohingiz",
+    "imageOptional": "Rasm (ixtiyoriy)",
+    "userNamePlaceholder": "Ismingizni kiriting",
+    "commentPlaceholder": "Izohingizni yozing",
+    "uploadImage": "Rasm yuklash",
+    "submit": "Yuborish",
+    "fillRequired": "Iltimos, barcha majburiy maydonlarni to'ldiring",
+    "errorUserName": "Ism majburiy",
+    "errorRating": "Reyting tanlanishi kerak",
+    "errorComment": "Izoh majburiy"
+  },
+  "comments": {
+    "title": "Izohlar",
+    "viewMore": "Ko'proq"
+  },
+  "recommended": {
+    "title": "O'xshash mahsulotlar"
+  },
+  "tavsiyaEtamiz": {
+    "title": "Tavsiya etamiz"
+  },
+  "loadMore": {
+    "button": "Ko'proq yuklash",
+    "loading": "Yuklanmoqda..."
+  },
+  "home": {
+    "sectionBest": "Eng sara mahsulotlar",
+    "sectionNewCollection": "Yangi kolleksiya",
+    "sectionWomensCollection": "Ayollar uchun kolleksiya",
+    "sectionMensCollection": "Erkaklar uchun kolleksiya",
+    "sectionEngArzonlare": "Eng arzonlari",
+    "sectionTrending": "Tranddagelar",
+    "sectionElectronics": "Elektronika",
+    "sectionBooks": "Kitoblar",
+    "sectionStationery": "Kanselyariya tovarlari",
+    "sectionBeautyCare": "Go'zallik va parvarish",
+    "sectionAccessories": "Aksessuarlar",
+    "sectionGiftsToys": "Sovg'a va o'yinchoqlar",
+    "sectionVitaminsHealth": "Vitaminlar va sog'liq",
+    "sectionActiveLifestyle": "Faol turmush",
+    "sectionTravelGear": "Sayoxat uchun asqotade",
+    "sectionHouseholdAppliances": "Maishiy texnika",
+    "sectionAllKindsProducts": "Barcha turdagi mahsulotlar",
+    "sectionBigDiscount": "Katta chegirma",
+    "more": "Ko'proq"
+  },
+  "common": {
+    "more": "Ko'proq"
+  },
+  "cart": {
+    "emptyTitle": "Savat bo'sh",
+    "goHome": "Bosh sahifa",
+    "statProductTypes": "Mahsulot turi:",
+    "statTotalItems": "Jami dona:",
+    "statProducts": "Mahsulotlar:",
+    "statDelivery": "Yetkazib berish:",
+    "statCargo": "Kargo:",
+    "totalSum": "Umumiy summa:",
+    "free": "Bepul",
+    "deliverySectionTitle": "O'zbekiston bo'ylab yetkazish",
+    "deliveryInfo": "Ma'lumot",
+    "deliveryToshkent": "Toshkent shahri",
+    "deliveryViloyat": "Viloyat",
+    "checkout": "Buyurtma berish",
+    "clearCart": "Savatni tozalash",
+    "toastCleared": "Savat tozalandi"
+  },
+  "cargo": {
+    "title": "Kargo ma'lumotlari",
+    "aboutInfo": "haqida ma'lumot",
+    "totalCargoPrice": "Umumiy kargo narxi:",
+    "totalWeight": "Umumiy vazn:",
+    "standard": "Standard",
+    "express": "Express",
+    "warehouseUzb": "Mahsulot o'zbekiston omborida"
+  },
+  "delivery": {
+    "modalTitle": "Yetkazib berish narxlari"
+  },
+  "clearCart": {
+    "title": "Chindan ham savatni tozalamoqchimi sez?",
+    "description": "Barcha mahsulotlar savatdan o'chiriladi",
+    "no": "Yo'q",
+    "yes": "Ha"
+  },
+  "checkout": {
+    "navbarTitle": "Buyurtmani rasmiylashtirish",
+    "buyer": "Oluvchi",
+    "addressNotShown": "Yetkazib berish manzeli ko'rsatilmagan",
+    "addAddress": "Manzil qo'shish",
+    "changeAddress": "Manzilni o'zgartirish",
+    "productsTitle": "Mahsulotlar",
+    "addressModalTitle": "Yetkazib berish manzili",
+    "addressLineLabel": "Shahar, tuman, ko'cha, uy",
+    "addressLinePlaceholder": "Shahar, tuman, ko'cha va uy raqami",
+    "searchOnMap": "Xaritada qidirish",
+    "searchPlaceholder": "Manzil yozing",
+    "search": "Qidirish",
+    "placeTypeLabel": "Uy / Ofis",
+    "placeTypePlaceholder": "Uy yoki ofis",
+    "entranceLabel": "Yo'lak",
+    "entrancePlaceholder": "Podyezd",
+    "floorLabel": "Qavat",
+    "floorPlaceholder": "Qavat",
+    "domofonLabel": "Domofon",
+    "domofonPlaceholder": "Domofon kodi",
+    "courierNoteLabel": "Kuryer uchun izoh",
+    "courierNotePlaceholder": "Qo'shimcha ko'rsatma",
+    "saveAddress": "Saqlash",
+    "close": "Yopish",
+    "clear": "Tozalash",
+    "fillAllFieldsRequired": "Barcha maydonlarni to'ldirish shart",
+    "payButton": "To'lov qilish",
+    "payComingSoon": "To'lov tizimi tez orada ishga tushadi"
+  },
+  "profile": {
+    "title": "Profil",
+    "editProfile": "Profilni tahrirlash",
+    "firstName": "Ism",
+    "lastName": "Familiya",
+    "phone": "Telefon",
+    "appLanguage": "Ilova tili",
+    "wishlist": "Saralanganlar",
+    "myOrders": "Mening buyurtmalarim",
+    "back": "Ortga",
+    "editModalTitle": "Profil ma'lumotlarini tahrirlash",
+    "username": "Username",
+    "save": "Saqlash",
+    "chooseLanguage": "Tilni tanlang",
+    "dragToClose": "Pastga suring yopish uchun",
+    "errorUsername": "Username majburiy",
+    "errorFirstName": "Ism majburiy",
+    "errorLastName": "Familiya majburiy",
+    "errorPhone": "Telefon majburiy",
+    "phonePlaceholder": "+998 90 123 45 67",
+    "imageSizeError": "Rasm hajmi 5MB dan katta bo'lmasligi kerak!",
+    "imageTypeError": "Faqat rasm fayllari yuklash mumkin!",
+    "imageUploadError": "Rasm yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang."
+  }
+}

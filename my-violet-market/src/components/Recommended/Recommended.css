@@ -1,0 +1,53 @@
+.recommended-section {
+  margin: 40px 0;
+  width: 100%;
+}
+
+.recommended-section__header {
+  margin-bottom: 30px;
+}
+
+.recommended-section__header .section-title-with-more__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Scrollable container uchun gap */
+.recommended-scrollable .scrollable-container {
+  gap: 10px;
+}
+
+.recommended-product-item {
+  flex-shrink: 0;
+  width: 204px;
+  min-width: 204px;
+  max-width: 204px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .recommended-product-item {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .recommended-section__header .section-title-with-more__title {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .recommended-product-item {
+    width: 175px;
+    min-width: 175px;
+    max-width: 175px;
+  }
+  
+  .recommended-section__header .section-title-with-more__title {
+    font-size: 1.2rem;
+  }
+}

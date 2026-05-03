@@ -1,0 +1,180 @@
+.cargo-summary {
+  background: #ddd;
+  border-radius: 15px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.cargo-summary h3 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.cargo-country-section {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.cargo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cargo-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.cargo-info-btn {
+  background: transparent;
+  border: none;
+  color: #f30cfb;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.2s;
+}
+
+.cargo-info-btn:hover {
+  transform: scale(1.2);
+}
+
+.cargo-country-section p {
+  color: #666;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.cargo-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cargo-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cargo-option:hover {
+  background: #e9ecef;
+}
+
+.cargo-option.selected {
+  background: #e7f3ff;
+  font-weight: 600;
+  color: #f30cfb;
+}
+
+.cargo-option input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.total-cargo-price {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.cargo-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.cargo-modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  padding: 20px;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.cargo-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ddd;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: #333;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cargo-modal-content h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.cargo-modal-content p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.cargo-rates {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.cargo-rates div {
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

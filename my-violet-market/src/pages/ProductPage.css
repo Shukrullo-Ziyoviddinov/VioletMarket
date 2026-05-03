@@ -1,0 +1,47 @@
+.product-page {
+  margin-top: 100px;
+  min-height: calc(100vh - 200px);
+}
+
+.product-page .container {
+  max-width: 1450px;
+  margin: 0 auto;
+}
+
+.product-page .products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(204px, 1fr));
+  gap: 13px;
+}
+
+/* Big discount sahifasida: flash sale countdown — track tepada, vaqt pastda */
+.product-page--big-discount .product-card .flash-sale-countdown {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.product-page__empty {
+  color: #666;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+@media (max-width: 991px) and (min-width: 551px) {
+  .product-page .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 550px) {
+  .product-page .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .product-page {
+    padding-bottom: 90px;
+  }
+}

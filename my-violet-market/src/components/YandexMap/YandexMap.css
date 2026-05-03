@@ -1,0 +1,46 @@
+.yandex-map-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e8e8e8;
+}
+
+.yandex-map {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+}
+
+.yandex-map [class*='ymaps'] {
+  border-radius: 12px;
+}
+
+/* Inglichka tayoqli pin — ingichka tayoq, yuqorida kichik doira */
+.yandex-map-pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -100%);
+  width: 24px;
+  height: 52px;
+  pointer-events: none;
+  z-index: 5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 52'%3E%3Ccircle cx='12' cy='10' r='8' fill='%23667eea' stroke='%23fff' stroke-width='2'/%3E%3Crect x='10.5' y='18' width='3' height='34' rx='1.5' fill='%23667eea'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  transition: transform 0.15s ease-out;
+}
+
+/* Karta surilganda: marker tepa-pastga qemerlanadi; tuxtaganda animatsiya to'xtaydi */
+.yandex-map-pin--bounce {
+  animation: yandex-map-pin-bounce 0.5s ease-in-out infinite;
+}
+
+@keyframes yandex-map-pin-bounce {
+  0%, 100% { transform: translate(-50%, -100%) translateY(0); }
+  50% { transform: translate(-50%, -100%) translateY(-8px); }
+}

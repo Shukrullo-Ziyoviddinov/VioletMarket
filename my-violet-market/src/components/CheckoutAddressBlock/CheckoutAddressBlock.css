@@ -1,0 +1,56 @@
+.checkout-address-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.checkout-address-block__icon {
+  color: #022ff9;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.checkout-address-block__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkout-address-block__value {
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.checkout-address-block__value--empty {
+  color: #dc3545;
+}
+
+.checkout-address-block__btn {
+  padding: 8px 16px;
+  background: #ccc;
+  color: #1d2834;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checkout-address-block__btn:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 600px) {
+  .checkout-address-block {
+    flex-wrap: wrap;
+  }
+
+  .checkout-address-block__btn {
+    width: 100%;
+  }
+}

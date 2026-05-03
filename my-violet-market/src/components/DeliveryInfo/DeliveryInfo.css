@@ -1,0 +1,105 @@
+.delivery-info {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  max-width: 1450px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.delivery-info-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delivery-info-icon {
+  color: #bd02bd;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.delivery-info-text {
+  font-size: 16px;
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+  .delivery-info-title {
+    font-size: 18px;
+  }
+  
+  .delivery-info-text {
+    font-size: 15px;
+  }
+  
+  .delivery-info-icon {
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-info {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+  }
+
+  .delivery-info-title {
+    font-size: 18px;
+    gap: 8px;
+  }
+
+  .delivery-info-icon {
+    font-size: 28px;
+  }
+
+  .delivery-info-text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .delivery-info-title {
+    font-size: 17px;
+  }
+  
+  .delivery-info-text {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 455px) {
+  .delivery-info-title {
+    font-size: 16px;
+  }
+  
+  .delivery-info-text {
+    font-size: 14px;
+  }
+  
+  .delivery-info-icon {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 361px) {
+  .delivery-info-title {
+    font-size: 14px;
+  }
+  
+  .delivery-info-text {
+    font-size: 12px;
+  }
+  
+  .delivery-info-icon {
+    font-size: 21px;
+  }
+}

@@ -1,0 +1,55 @@
+.flash-sale-countdown__time {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c2410c;
+  letter-spacing: 0.02em;
+}
+
+/* Orqa qismi (tulmagan) — boshqacha rang, olovdan ajralib turishi uchun */
+.flash-sale-countdown__track {
+  height: 12px;
+  padding: 3px;
+  background-color: #c5c8fb;
+  border-radius: 6px;
+  overflow: visible;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  margin-top: 7px;
+  margin-bottom: 5px;
+}
+
+/* To'ldirilgan qismi — boshidan yonayotgan olov tarzida taraladi */
+.flash-sale-countdown__bar {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #fef3c7 0%,
+    #fde68a 8%,
+    #fbbf24 25%,
+    #f59e0b 45%,
+    #ea580c 65%,
+    #dc2626 85%,
+    #b91c1c 100%
+  );
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 0 12px rgba(251, 191, 36, 0.4),
+    0 0 10px rgba(234, 88, 12, 0.5),
+    0 0 6px rgba(220, 38, 38, 0.3);
+  transition: width 1s linear;
+}
+
+/* Harakatlanayotgan qismining boshidagi olov ikonkasi — orqa fondan tepaga chiqadi */
+.flash-sale-countdown__bar-icon {
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translate(50%, -100%);
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(234, 88, 12, 0.8))
+          drop-shadow(0 0 2px rgba(251, 191, 36, 0.6));
+  z-index: 10;
+}

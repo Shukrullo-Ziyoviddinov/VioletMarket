@@ -1,0 +1,235 @@
+.test-order-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10003;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.test-order-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.test-order-modal-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.test-order-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #bd02bd;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.test-order-modal-close:hover {
+  transform: scale(1.1);
+}
+
+.test-order-modal-header {
+  margin-bottom: 25px;
+  padding-right: 40px;
+}
+
+.test-order-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.test-order-test-notice {
+  font-size: 0.95rem;
+  color: #666;
+  background: #fff3cd;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  margin: 0;
+}
+
+.test-order-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.test-order-product-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.test-order-product-item:hover {
+  border-color: #bd02bd;
+  box-shadow: 0 2px 8px rgba(189, 2, 189, 0.2);
+  transform: translateY(-2px);
+}
+
+.test-order-product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.test-order-product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.test-order-product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.test-order-product-price {
+  font-size: 0.9rem;
+  color: #f30cfb;
+  font-weight: 600;
+  margin: 0;
+}
+
+.test-order-product-arrow {
+  font-size: 24px;
+  color: #999;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.test-order-product-item:hover .test-order-product-arrow {
+  transform: translateX(5px);
+}
+
+.test-order-product-item.has-comment {
+  opacity: 0.7;
+}
+
+.test-order-comment-badge {
+  font-size: 0.85rem;
+  color: #667eea;
+  font-weight: 600;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.test-order-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.test-order-close-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.test-order-close-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.no-products {
+  text-align: center;
+  color: #999;
+  font-size: 1rem;
+  padding: 40px 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .test-order-modal-content {
+    padding: 20px;
+    max-height: 95vh;
+  }
+
+  .test-order-modal-title {
+    font-size: 1.3rem;
+  }
+
+  .test-order-product-item {
+    padding: 12px;
+  }
+
+  .test-order-product-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .test-order-product-title {
+    font-size: 0.9rem;
+  }
+
+  .test-order-product-price {
+    font-size: 0.85rem;
+  }
+}

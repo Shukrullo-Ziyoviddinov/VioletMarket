@@ -1,0 +1,263 @@
+.scrollable-section {
+  margin: 40px 0;
+}
+
+.scrollable-wrapper {
+  position: relative;
+}
+
+.scrollable-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+}
+
+.scrollable-container.is-dragging {
+  cursor: grabbing;
+}
+
+.scrollable-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Product type uchun maxsus stillar */
+.scrollable-container.product {
+  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scrollable-container.product > * {
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.scrollable-item {
+  flex-shrink: 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.scrollable-item.country {
+  width: 300px;
+  background: white;
+  border-bottom: 5px solid #bd02bd;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.item-image-wrapper {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+}
+
+.item-image-wrapper img:first-child {
+  width: 100%;
+  height: 100%;
+  /* object-fit: cover; */
+  transition: transform 0.3s;
+}
+
+.scrollable-item.country:hover .item-image-wrapper img:first-child {
+  transform: scale(1.1);
+}
+
+.flag-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 40px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 5px;
+  animation: flagFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes flagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.item-info {
+  background: #022ff9;
+  padding: 10px;
+  text-align: center;
+}
+
+.item-info h3 {
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.scrollable-item.brand {
+  width: 180px;
+  height: 150px;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  background-color: rgb(251, 183, 251);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.scrollable-item.brand:nth-child(4n+1) {
+  width: 180px;
+}
+
+.scrollable-item.brand:nth-child(4n+2) {
+  width: 220px;
+}
+
+.scrollable-item.brand:nth-child(4n+3) {
+  width: 160px;
+}
+
+.scrollable-item.brand:nth-child(4n+4) {
+  width: 200px;
+}
+
+.scrollable-item.brand img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.scroll-btn {
+  position: absolute;
+  top: 40%;
+  margin: 20px;
+  transform: translateY(-50%);
+  background: #bd02bd;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s;
+}
+
+.scroll-btn i{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+}
+
+.scroll-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.scroll-btn.prev {
+  left: -20px;
+}
+
+.scroll-btn.next {
+  right: -20px;
+}
+
+@media (max-width: 900px) {
+  .scrollable-item.country {
+    width: 220px;
+  }
+
+  .item-image-wrapper{
+    height: 130px;
+  }
+
+  .item-info {
+    padding: 4px;
+  }
+
+  .item-info h3{
+    font-weight: 500;
+    font-size: 17px;
+  }
+
+  .scroll-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .scrollable-item .brand {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .scrollable-item.country {
+    width: 190px;
+  }
+
+  .scrollable-item.brand {
+    height: 120px;
+  }
+
+  .scroll-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .scrollable-container {
+  padding: 0;
+}
+
+  .scrollable-item.country {
+    width: 160px;
+  }
+
+  .item-image-wrapper{
+    height: 100px;
+  }
+
+  .item-info {
+    padding: 2px;
+  }
+
+  .item-info h3{
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+
+  .scrollable-item.brand {
+    height: 90px;
+  }
+
+  .scrollable-item.brand:nth-child(4n+2){
+    width: 100px;
+  }
+
+  .scrollable-item.brand:nth-child(4n+1){
+    width: 125px;
+  }
+
+  .scrollable-item.brand:nth-child(4n+3){
+    width: 125px;
+  }
+  
+  .scrollable-item.brand:nth-child(4n+4){
+    width: 125px;
+  }
+}

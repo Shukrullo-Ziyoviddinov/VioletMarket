@@ -1,0 +1,265 @@
+{
+  "nav": {
+    "catalog": "Категории",
+    "profile": "Профиль",
+    "wishlist": "Избранное",
+    "cart": "Корзина"
+  },
+  "search": {
+    "placeholder": "Поиск...",
+    "clear": "Очистить",
+    "search": "Поиск",
+    "back": "Назад",
+    "noResults": "Ничего не найдено",
+    "historyTitle": "История поиска",
+    "remove": "Удалить",
+    "recommendedTitle": "Рекомендуем",
+    "recommendedEmpty": "Нет рекомендаций"
+  },
+  "filters": {
+    "price": "Цена",
+    "brand": "Бренд",
+    "country": "Страна",
+    "color": "Цвет",
+    "priceRangeTitle": "Диапазон цен",
+    "apply": "Применить",
+    "bookLanguage": "Язык книги",
+    "bookGenre": "Жанр",
+    "noLanguages": "Языки не найдены.",
+    "noGenres": "Жанры не найдены.",
+    "language": {
+      "uz": "Узбекский",
+      "arab": "Арабский",
+      "ru": "Русский"
+    },
+    "genre": {
+      "diniy": "Религиозная",
+      "adabiy": "Художественная",
+      "sheriy": "Поэзия",
+      "sarguzasht": "Приключения"
+    }
+  },
+  "productCard": {
+    "addToCart": "В корзину",
+    "commentsCount": "отзывов"
+  },
+  "mobileNav": {
+    "home": "Главная",
+    "catalog": "Категории",
+    "cart": "Корзина",
+    "account": "Аккаунт"
+  },
+  "footer": {
+    "aboutTitle": "О компании",
+    "aboutUs": "О нас",
+    "career": "Карьера",
+    "news": "Новости",
+    "investors": "Инвесторы",
+    "serviceTitle": "Клиентам",
+    "help": "Центр помощи",
+    "delivery": "Доставка",
+    "returns": "Возврат",
+    "contacts": "Контакты",
+    "legalTitle": "Правовая информация",
+    "privacy": "Политика конфиденциальности",
+    "terms": "Условия использования",
+    "cookies": "Cookie",
+    "advertising": "Реклама",
+    "connectTitle": "Связаться с нами",
+    "phone": "Телефон: +998 90 123 45 67",
+    "email": "Email: info@violetmarket.uz",
+    "offersTitle": "Специальные предложения",
+    "newProducts": "Новые товары",
+    "discounts": "Скидки",
+    "topProducts": "Топ товары",
+    "recommended": "Рекомендуем вам",
+    "copyright": "Все права защищены."
+  },
+  "category": {
+    "section1Title": "Электроника и аксессуары",
+    "section2Title": "Одежда для мужчин и женщин",
+    "section3Title": "Разные товары"
+  },
+  "language": {
+    "uz": "O'zbek",
+    "ru": "Русский"
+  },
+  "common": {
+    "addedToCart": "Товар добавлен в корзину!"
+  },
+  "productDetail": {
+    "descriptionHeader": "Характеристики товара",
+    "policyDeliveryTitle": "Срок доставки",
+    "policyDeliveryText": "Доставка по Узбекистану от 4 до 10 дней. При заказе из раздела выгодных товаров — от 10 до 18 дней.",
+    "policyServiceTitle": "Служба доставки",
+    "policyServiceText": "Бесплатная доставка по городу Ташкенту. По регионам: до 1 кг — 15 000 сум, до 3 кг — 25 000 сум.",
+    "policyReturnTitle": "Политика возврата",
+    "policyReturnText": "Если товар не работает или повреждён — замена на такой же товар. Денежный возврат не производится, обмен по размеру не предусмотрен.",
+    "policyContactTitle": "Всегда на связи",
+    "policyContactText": "Мы оперативно и точно отвечаем на все вопросы пользователей каждый день.",
+    "policyPaymentTitle": "Условия оплаты",
+    "policyPaymentText": "Мы принимаем оплату разными способами (наличные, карта, click, payme и т.д.).",
+    "colorLabel": "Цвет:",
+    "sizeLabel": "Размер:",
+    "storageLabel": "Память:",
+    "modelLabel": "Модель:",
+    "sizeChartLabel": "Таблица размеров",
+    "deliveryInfoFallback": "Информация о доставке",
+    "addToCart": "В корзину",
+    "goToCart": "Перейти в корзину",
+    "adding": "Добавляем..."
+  },
+  "wishlist": {
+    "emptyTitle": "Добавьте товар в избранное!",
+    "emptyButton": "Перейти к товарам"
+  },
+  "testOrder": {
+    "title": "Оцените заказ",
+    "notice": "Ваше мнение важно для нас",
+    "noProducts": "Товары не найдены"
+  },
+  "commentForm": {
+    "title": "Оставить отзыв",
+    "userName": "Ваше имя",
+    "rating": "Рейтинг",
+    "comment": "Ваш отзыв",
+    "imageOptional": "Фото (необязательно)",
+    "userNamePlaceholder": "Введите имя",
+    "commentPlaceholder": "Напишите отзыв",
+    "uploadImage": "Загрузить фото",
+    "submit": "Отправить",
+    "fillRequired": "Пожалуйста, заполните все обязательные поля",
+    "errorUserName": "Имя обязательно",
+    "errorRating": "Выберите рейтинг",
+    "errorComment": "Отзыв обязателен"
+  },
+  "comments": {
+    "title": "Отзывы",
+    "viewMore": "Ещё"
+  },
+  "recommended": {
+    "title": "Похожие товары"
+  },
+  "tavsiyaEtamiz": {
+    "title": "Рекомендуем"
+  },
+  "loadMore": {
+    "button": "Загрузить ещё",
+    "loading": "Загрузка..."
+  },
+  "home": {
+    "sectionBest": "Лучшие товары",
+    "sectionNewCollection": "Новая коллекция",
+    "sectionWomensCollection": "Коллекция для женщин",
+    "sectionMensCollection": "Коллекция для мужчин",
+    "sectionEngArzonlare": "Самые дешёвые",
+    "sectionTrending": "Трендовые товары",
+    "sectionElectronics": "Электроника",
+    "sectionBooks": "Книги",
+    "sectionStationery": "Канцелярия",
+    "sectionBeautyCare": "Красота и уход",
+    "sectionAccessories": "Аксессуары",
+    "sectionGiftsToys": "Подарки и игрушки",
+    "sectionVitaminsHealth": "Витамины и здоровье",
+    "sectionActiveLifestyle": "Активный образ жизни",
+    "sectionTravelGear": "Товары для путешествий",
+    "sectionHouseholdAppliances": "Бытовая техника",
+    "sectionAllKindsProducts": "Товары всех видов",
+    "sectionBigDiscount": "Большая скидка",
+    "more": "Больше"
+  },
+  "common": {
+    "more": "Больше"
+  },
+  "cart": {
+    "emptyTitle": "Корзина пуста",
+    "goHome": "На главную",
+    "statProductTypes": "Видов товаров:",
+    "statTotalItems": "Всего штук:",
+    "statProducts": "Товары:",
+    "statDelivery": "Доставка:",
+    "statCargo": "Карго:",
+    "totalSum": "Итого:",
+    "free": "Бесплатно",
+    "deliverySectionTitle": "Доставка по Узбекистану",
+    "deliveryInfo": "Подробнее",
+    "deliveryToshkent": "Город Ташкент",
+    "deliveryViloyat": "Регионы",
+    "checkout": "Оформить заказ",
+    "clearCart": "Очистить корзину",
+    "toastCleared": "Корзина очищена"
+  },
+  "cargo": {
+    "title": "Информация о Карго",
+    "aboutInfo": "подробнее",
+    "totalCargoPrice": "Общая стоимость карго:",
+    "totalWeight": "Общий вес:",
+    "standard": "Стандарт",
+    "express": "Экспресс",
+    "warehouseUzb": "Товар на складе в Узбекистане"
+  },
+  "delivery": {
+    "modalTitle": "Стоимость доставки"
+  },
+  "clearCart": {
+    "title": "Очистить корзину?",
+    "description": "Все товары будут удалены из корзины",
+    "no": "Нет",
+    "yes": "Да"
+  },
+  "checkout": {
+    "navbarTitle": "Оформление заказа",
+    "buyer": "Покупатель",
+    "addressNotShown": "Адрес доставки не указан",
+    "addAddress": "Добавить адрес",
+    "changeAddress": "Изменить адрес",
+    "productsTitle": "Товары",
+    "addressModalTitle": "Адрес доставки",
+    "addressLineLabel": "Город, район, улица, дом",
+    "addressLinePlaceholder": "Город, район, улица и номер дома",
+    "searchOnMap": "Поиск на карте",
+    "searchPlaceholder": "Введите адрес",
+    "search": "Найти",
+    "placeTypeLabel": "Квартира / Офис",
+    "placeTypePlaceholder": "Квартира или офис",
+    "entranceLabel": "Подъезд",
+    "entrancePlaceholder": "Подъезд",
+    "floorLabel": "Этаж",
+    "floorPlaceholder": "Этаж",
+    "domofonLabel": "Домофон",
+    "domofonPlaceholder": "Код домофона",
+    "courierNoteLabel": "Комментарий для курьера",
+    "courierNotePlaceholder": "Дополнительные указания",
+    "saveAddress": "Сохранить",
+    "close": "Закрыть",
+    "clear": "Очистить",
+    "fillAllFieldsRequired": "Все поля обязательны для заполнения",
+    "payButton": "Оплатить",
+    "payComingSoon": "Платёжная система скоро будет доступна"
+  },
+  "profile": {
+    "title": "Профиль",
+    "editProfile": "Редактировать профиль",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "phone": "Телефон",
+    "appLanguage": "Язык приложения",
+    "wishlist": "Избранное",
+    "myOrders": "Мои заказы",
+    "back": "Назад",
+    "editModalTitle": "Редактирование профиля",
+    "username": "Имя пользователя",
+    "save": "Сохранить",
+    "chooseLanguage": "Выберите язык",
+    "dragToClose": "Потяните вниз чтобы закрыть",
+    "errorUsername": "Имя пользователя обязательно",
+    "errorFirstName": "Имя обязательно",
+    "errorLastName": "Фамилия обязательна",
+    "errorPhone": "Телефон обязателен",
+    "phonePlaceholder": "+998 90 123 45 67",
+    "imageSizeError": "Размер изображения не должен превышать 5MB!",
+    "imageTypeError": "Загружать можно только изображения!",
+    "imageUploadError": "Ошибка загрузки изображения. Попробуйте ещё раз.",
+    "imageReadError": "Ошибка чтения изображения. Выберите другое фото."
+  }
+}

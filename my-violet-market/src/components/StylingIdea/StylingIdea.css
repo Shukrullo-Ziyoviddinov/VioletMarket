@@ -1,0 +1,384 @@
+/* ============================================
+   STYLING IDEA SECTION - ASOSIY BO'LIM
+   ============================================ */
+
+.styling-idea-section {
+  padding: 60px 0;
+  background: #764ba2;
+  border-radius: 20px;
+  margin: 40px 0;
+  /* margin-bottom: 300px; */
+  display: block;
+}
+
+/* Agar komponent bo'sh bo'lsa, yashirish */
+.styling-idea-section:empty {
+  display: none;
+}
+
+/* ============================================
+   SCROLL KONTEYNER
+   ============================================ */
+
+.styling-idea-container {
+  max-width: 100%;
+  padding: 0 20px;
+  display: flex;
+  gap: 25px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  user-select: none;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar yashirish */
+.styling-idea-container::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Drag holati */
+.styling-idea-container.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.styling-idea-container.is-dragging * {
+  user-select: none;
+}
+
+/* Mahsulot kartalarida pointer-events'ni saqlash */
+.styling-idea-container.is-dragging .styling-idea-product {
+  pointer-events: auto;
+}
+
+/* ============================================
+   GURUH BLOKLARI
+   ============================================ */
+
+.styling-idea-group {
+  flex-shrink: 0;
+  animation: fadeInUp 0.6s ease-out;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 20px;
+  border: 3px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.styling-idea-group:hover {
+  border-color: #ea0cdc;
+}
+
+/* ============================================
+   GURUH SARLAVHASI
+   ============================================ */
+
+.styling-idea-group-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 25px;
+  position: relative;
+  padding-left: 20px;
+  letter-spacing: -0.5px;
+}
+
+.styling-idea-group-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 35px;
+  background: #f30cfb;
+  border-radius: 3px;
+}
+
+/* ============================================
+   MAHSULOTLAR KONTEYNERI
+   ============================================ */
+
+.styling-idea-products {
+  display: flex;
+  gap: 20px;
+  height: 400px;
+}
+
+/* Birinchi mahsulot (chap tomonda - katta) */
+.styling-idea-products > .styling-idea-product:first-child {
+  width: 300px;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+/* O'ng ustun (2-chi va 3-chi mahsulotlar) */
+.styling-idea-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 230px;
+  flex-shrink: 0;
+}
+
+.styling-idea-right-column .styling-idea-product {
+  width: 100%;
+  height: calc(50% - 10px);
+}
+
+/* ============================================
+   MAHSULOT KARTASI
+   ============================================ */
+
+.styling-idea-product {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Hover overlay */
+.styling-idea-product::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.styling-idea-product:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   MAHSULOT RASMI
+   ============================================ */
+
+.styling-idea-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  pointer-events: none;
+}
+
+.styling-idea-product:hover .styling-idea-product-image {
+  transform: scale(1.08);
+}
+
+/* Drag paytida animatsiya o'chirilgan */
+.styling-idea-container.is-dragging .styling-idea-product-image {
+  transition: none;
+  transform: none;
+}
+
+/* ============================================
+   NARX KO'RSATKICHI
+   ============================================ */
+
+.styling-idea-product-price {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  padding: 6px 13px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  z-index: 2;
+  transition: all 0.4s ease;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.styling-idea-product:hover .styling-idea-product-price {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* O'ng ustundagi kichik kartalarda */
+.styling-idea-right-column .styling-idea-product-price {
+  font-size: 15px;
+  padding: 5px 12px;
+  bottom: 15px;
+  left: 15px;
+}
+
+/* ============================================
+   ANIMATSIYALAR
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   RESPONSIVE - TABLET (max-width: 1200px)
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .styling-idea-products {
+    height: 450px;
+  }
+  
+  .styling-idea-products > .styling-idea-product:first-child {
+    width: 350px;
+  }
+  
+  .styling-idea-right-column {
+    width: 280px;
+  }
+  
+  .styling-idea-group-title {
+    font-size: 28px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - KICHIK TABLET / KATTA TELEFON (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+  .styling-idea-section {
+    padding: 40px 0;
+    margin: 30px 0;
+  }
+  
+  .styling-idea-container {
+    padding: 0 15px;
+    gap: 25px;
+  }
+  
+  .styling-idea-group {
+    padding: 25px;
+    border-width: 2px;
+  }
+  
+  .styling-idea-products {
+    height: 300px;
+  }
+  
+  .styling-idea-products > .styling-idea-product:first-child {
+    width: 200px;
+  }
+  
+  .styling-idea-right-column {
+    width: 150px;
+  }
+  
+  .styling-idea-group-title {
+    font-size: 20px;
+    padding-left: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .styling-idea-group-title::before {
+    width: 4px;
+    height: 28px;
+  }
+  
+  .styling-idea-product-price {
+    font-size: 11px;
+    padding: 6px 10px;
+    bottom: 15px;
+    left: 15px;
+  }
+  
+  .styling-idea-right-column .styling-idea-product-price {
+    font-size: 10px;
+    padding: 5px 9px;
+    bottom: 12px;
+    left: 12px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - TELEFON (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+  .styling-idea-section {
+    padding: 30px 0;
+    margin: 20px 0;
+  }
+  
+  .styling-idea-container {
+    padding: 0 10px;
+    gap: 15px;
+  }
+  
+  .styling-idea-group {
+    padding: 20px;
+    border-width: 2px;
+  }
+  
+  .styling-idea-products {
+    height: 250px;
+  }
+  
+  .styling-idea-products > .styling-idea-product:first-child {
+    width: 180px;
+  }
+  
+  .styling-idea-right-column {
+    width: 130px;
+  }
+  
+  .styling-idea-group-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .styling-idea-product-price {
+    font-size: 11px;
+    padding: 6px 10px;
+    bottom: 15px;
+    left: 15px;
+  }
+  
+  .styling-idea-right-column .styling-idea-product-price {
+    font-size: 10px;
+    padding: 5px 9px;
+    bottom: 12px;
+    left: 12px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - KICHIK TELEFON (max-width: 397px)
+   ============================================ */
+
+@media (max-width: 397px) {
+  .styling-idea-products {
+    height: 200px;
+  }
+  
+  .styling-idea-products > .styling-idea-product:first-child {
+    width: 140px;
+  }
+  
+  .styling-idea-right-column {
+    width: 100px;
+  }
+}

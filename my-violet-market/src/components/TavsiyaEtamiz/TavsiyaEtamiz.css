@@ -1,0 +1,68 @@
+.tavsiya-etamiz-section {
+  margin: 10px 0;
+  width: 100%;
+}
+
+.tavsiya-etamiz-section__header {
+  margin-bottom: 30px;
+}
+
+.tavsiya-etamiz-section__header .section-title-with-more__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.tavsiya-etamiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(204px, 1fr));
+  gap: 13px;
+}
+
+.tavsiya-etamiz-scrollable .scrollable-container {
+  gap: 10px;
+}
+
+.tavsiya-etamiz-product-item {
+  flex-shrink: 0;
+  width: 204px;
+  min-width: 204px;
+  max-width: 204px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .tavsiya-etamiz-product-item {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tavsiya-etamiz-section__header .section-title-with-more__title {
+    font-size: 1.4rem;
+  }
+
+  .tavsiya-etamiz-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 500px) {
+  .tavsiya-etamiz-section__header .section-title-with-more__title {
+    font-size: 1.2rem;
+  }
+
+  .tavsiya-etamiz-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .tavsiya-etamiz-product-item {
+    width: 175px;
+    min-width: 175px;
+    max-width: 175px;
+  }
+}
