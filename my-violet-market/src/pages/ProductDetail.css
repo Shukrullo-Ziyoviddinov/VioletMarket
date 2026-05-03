@@ -971,6 +971,18 @@ body.no-scroll {
   .colors-container {
   gap: 2px;
 }
+
+  .price {
+  color: #1707fb;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.original-price {
+
+  font-size: 0.8rem;
+
+}
   
 }
 
@@ -998,6 +1010,18 @@ body.no-scroll {
 
  .colors-container {
   gap: 2px;
+}
+
+.price {
+  color: #1707fb;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.original-price {
+
+  font-size: 0.8rem;
+
 }
   
 }
