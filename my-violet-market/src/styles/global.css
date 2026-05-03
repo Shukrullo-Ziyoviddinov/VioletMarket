@@ -5,14 +5,14 @@
 }
 
 html {
-  background: #cfcfcf;
+  background: #f1f1f1;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #cfcfcf;
+  background: #f1f1f1;
 }
 
 code {
