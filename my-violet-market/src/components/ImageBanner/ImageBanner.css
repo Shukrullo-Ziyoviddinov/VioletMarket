@@ -195,7 +195,7 @@
 /* Responsive - Telefon (max-width: 576px) */
 @media (max-width: 576px) {
     .manga-carousel {
-        height: 170px;
+        height: 190px;
     }
     .manga-image {
         width: 83%; /* 85 */
@@ -205,7 +205,7 @@
 /* Responsive - Kichik Telefon (max-width: 400px) */
 @media (max-width: 400px) {
     .manga-carousel {
-        height: 140px;
+        height: 170px;
     }
     .manga-image {
         width: 80%;
@@ -224,7 +224,7 @@
 /* Responsive - Kichik Telefon (max-width: 400px) */
 @media (max-width: 350px) {
     .manga-carousel {
-        height: 140px;
+        height: 160px;
     }
     .manga-image {
         width: 82%;
