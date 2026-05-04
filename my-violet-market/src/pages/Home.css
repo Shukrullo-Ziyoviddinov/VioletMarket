@@ -40,6 +40,10 @@ padding: 5px 7px;
   background: linear-gradient(135deg, #e074fe 0%, #f581eb 50%, #b581f5 100% );
 }
 
+.womens-collection .section-title-with-more__title {
+  color: #333333;
+}
+
 .womens-collection-scrollable .scrollable-container {
   gap: 10px;
 }
@@ -134,7 +138,11 @@ padding: 5px 7px;
   padding-top: 10px;
   padding: 5px 7px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #eda1f9 0%, #caa4f8 100%);
+  background: linear-gradient(135deg, #9b4fe7 0%,#764ba2 100%);
+}
+
+.big-discount-section .section-title-with-more__title{
+  color: white;
 }
 
 /* Faqat Katta chegirma bo'limidagi kartochkalar — qisqaroq height, kichikroq matn va rasm */
