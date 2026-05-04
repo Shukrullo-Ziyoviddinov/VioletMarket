@@ -82,7 +82,7 @@
   border-radius: 15px;
   padding: 10px;
   margin-bottom: 20px;
-  border-left: 5px solid #ea0cdc;
+  border-left: 5px solid #9b4fe7;
   display: flex;
   gap: 15px;
   /* position: fixed; */
@@ -149,7 +149,7 @@
 .cart-item-price {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #f30cfb;
+  color: #9b4fe7;
 }
 
 .remove-btn {

@@ -90,7 +90,7 @@
 }
 
 .clear-cart-btn-no {
-  background: #667eea;
+  background: #022ff9;
   color: white;
 }
 
@@ -101,12 +101,12 @@
 }
 
 .clear-cart-btn-yes {
-  background: #ea0cdc;
+  background: #9b4fe7;
   color: white;
 }
 
 .clear-cart-btn-yes:hover {
-  background: #d10bc6;
+  background: #9b4fe7;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(234, 12, 220, 0.4);
 }

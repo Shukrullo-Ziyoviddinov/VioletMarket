@@ -44,20 +44,20 @@
 }
 
 .mb-nav__link.active {
-  color: #ea0cdc;
+  color: #9b4fe7;
   transform: scale(1.2);
 }
 
 .mb-nav__link.active i,
 .mb-nav__link.active .mb-nav__link__text {
-  color: #ea0cdc;
+  color: #9b4fe7;
 }
 
 .cart-badge {
   position: absolute;
   top: 0;
   right: 0;
-  background: #ea0cdc;
+  background: #9b4fe7;
   color: white;
   border-radius: 50%;
   width: 18px;

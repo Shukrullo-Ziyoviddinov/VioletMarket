@@ -34,7 +34,7 @@
 .cargo-info-btn {
   background: transparent;
   border: none;
-  color: #f30cfb;
+  color: #9b4fe7;
   font-size: 1.2rem;
   cursor: pointer;
   padding: 5px;
@@ -75,7 +75,7 @@
 .cargo-option.selected {
   background: #e7f3ff;
   font-weight: 600;
-  color: #f30cfb;
+  color: #9b4fe7;
 }
 
 .cargo-option input {

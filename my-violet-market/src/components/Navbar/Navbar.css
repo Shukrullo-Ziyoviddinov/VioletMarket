@@ -72,7 +72,7 @@
 .search-input {
   width: 100%;
   padding: 8px 45px 8px 15px;
-  border: 2px solid #ea0cdc;
+  border: 2px solid #9b4fe7;
   border-radius: 20px;
   background: #cccccc5e;
   font-size: 14px;
@@ -84,7 +84,7 @@
   right: 5px;
   top: 50%;
   transform: translateY(-50%);
-  background: #ea0cdc;
+  background: #9b4fe7;
   border: none;
   border-radius: 50%;
   width: 30px;
@@ -136,7 +136,7 @@
   top: 0;
   left: 50%;
   margin-left: 10px; /* Iconka markazidan o'ng tomonga */
-  background: #ea0cdc;
+  background: #9b4fe7;
   color: white;
   border-radius: 50%;
   width: 18px;
