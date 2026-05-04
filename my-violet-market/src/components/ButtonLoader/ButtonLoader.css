@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
 }
 
 .button-loader-spinner {
@@ -23,5 +23,11 @@
 @keyframes button-loader-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 450px) {
+  .button-loader-content {
+    font-size: 0.7rem;
   }
 }

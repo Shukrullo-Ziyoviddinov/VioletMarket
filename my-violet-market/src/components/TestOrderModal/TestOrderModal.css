@@ -37,7 +37,7 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: #bd02bd;
+  background: #9b4fe7;
   border: none;
   border-radius: 50%;
   width: 35px;
@@ -97,7 +97,7 @@
 }
 
 .test-order-product-item:hover {
-  border-color: #bd02bd;
+  border-color: #9b4fe7;
   box-shadow: 0 2px 8px rgba(189, 2, 189, 0.2);
   transform: translateY(-2px);
 }
@@ -127,7 +127,7 @@
 
 .test-order-product-price {
   font-size: 0.9rem;
-  color: #f30cfb;
+  color: #9b4fe7;
   font-weight: 600;
   margin: 0;
 }

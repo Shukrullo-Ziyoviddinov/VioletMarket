@@ -49,7 +49,7 @@
 .scrollable-item.country {
   width: 300px;
   background: white;
-  border-bottom: 5px solid #bd02bd;
+  border-bottom: 5px solid #9b4fe7;
   border-radius: 15px;
   overflow: hidden;
 }
@@ -148,7 +148,7 @@
   top: 40%;
   margin: 20px;
   transform: translateY(-50%);
-  background: #bd02bd;
+  background: #9b4fe7;
   border: none;
   border-radius: 50%;
   width: 40px;
