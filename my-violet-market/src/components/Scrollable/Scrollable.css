@@ -1,5 +1,5 @@
 .scrollable-section {
-  margin: 40px 0;
+  margin: 0;
 }
 
 .scrollable-wrapper {
@@ -52,6 +52,11 @@
   border-bottom: 5px solid #bd02bd;
   border-radius: 15px;
   overflow: hidden;
+}
+
+.scrollable-item.country {
+  margin-bottom: 20px;
+  margin-top: 10px;
 }
 
 .item-image-wrapper {

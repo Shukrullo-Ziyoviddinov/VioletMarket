@@ -118,7 +118,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 10px 0;
+  margin: 5px 0;
   color: #333;
   font-weight: 500;
   flex-shrink: 0;
@@ -129,7 +129,7 @@
   flex-direction: column;
   gap: 3px;
   align-items: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
   flex-shrink: 0;
 }
 
@@ -312,6 +312,7 @@
 
   .product-title {
     font-size: 12px;
+    margin: 2px 0;
 }
 
 .price {

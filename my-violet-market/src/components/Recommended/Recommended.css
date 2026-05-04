@@ -4,7 +4,7 @@
 }
 
 .recommended-section__header {
-  margin-bottom: 30px;
+  margin-bottom: 5px;
 }
 
 .recommended-section__header .section-title-with-more__title {
@@ -49,5 +49,13 @@
   
   .recommended-section__header .section-title-with-more__title {
     font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+    .recommended-product-item {
+    width: 162px;
+    min-width: 162px;
+    max-width: 162px;
   }
 }

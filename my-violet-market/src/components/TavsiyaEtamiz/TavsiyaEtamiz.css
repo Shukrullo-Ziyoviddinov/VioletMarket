@@ -4,7 +4,7 @@
 }
 
 .tavsiya-etamiz-section__header {
-  margin-bottom: 30px;
+  margin-bottom: 5px;
 }
 
 .tavsiya-etamiz-section__header .section-title-with-more__title {
@@ -65,4 +65,12 @@
     min-width: 175px;
     max-width: 175px;
   }
+}
+
+@media (max-width: 400px) {
+      .tavsiya-etamiz-product-item {
+        width: 162px;
+        min-width: 162px;
+        max-width: 162px;
+    }
 }

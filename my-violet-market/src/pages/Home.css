@@ -28,14 +28,14 @@
 
 .new-collection {
   margin: 40px 0;
-  padding: 5px 15px;
+padding: 5px 7px;
   border-radius: 20px;
   background: rgb(186, 162, 251);
 }
 
 .womens-collection {
   margin: 40px 0;
-  padding: 5px 15px;
+  padding: 5px 7px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e074fe 0%, #f581eb 50%, #b581f5 100% );
 }
@@ -46,7 +46,7 @@
 
 .mens-collection {
   margin: 40px 0;
-  padding: 5px 15px;
+  padding: 5px 7px;
   border-radius: 20px;
   background: linear-gradient(135deg, #b4b5f8 0%, #a499fa 50%, #9a8ff4 100%);
 }
@@ -76,7 +76,7 @@
 .beauty-care-section {
   margin: 40px 0;
   padding-top: 10px;
-  padding: 5px 15px;
+  padding: 5px 7px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e074fe 0%, #b581f5 100%);
 }
@@ -104,7 +104,7 @@
 .active-lifestyle-section {
   margin: 40px 0;
   padding-top: 10px;
-  padding: 5px 15px;
+  padding: 5px 7px;
   border-radius: 20px;
   background: #cad2fc;
 }
@@ -132,7 +132,7 @@
 .big-discount-section {
   margin: 40px 0;
   padding-top: 10px;
-  padding: 5px 15px;
+  padding: 5px 7px;
   border-radius: 20px;
   background: linear-gradient(135deg, #eda1f9 0%, #caa4f8 100%);
 }
@@ -225,3 +225,14 @@
   }
 }
 
+@media (max-width: 400px) {
+  .new-collection-product-item {
+    width: 162px;
+    min-width: 162px;
+    max-width: 162px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+}
