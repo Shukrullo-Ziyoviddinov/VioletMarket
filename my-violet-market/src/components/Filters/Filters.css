@@ -28,18 +28,18 @@
 }
 
 .filters-chip:hover {
-  border-color: #bd02bd;
-  color: #bd02bd;
+  border-color: #9b4fe7;;
+  color: #9b4fe7;;
 }
 
 .filters-chip--active {
-  background: #bd02bd;
-  border-color: #bd02bd;
+  background: #9b4fe7;;
+  border-color: #9b4fe7;;
   color: #fff;
 }
 
 .filters-chip--active:hover {
-  background: #9d029d;
-  border-color: #9d029d;
+  background: #8a4bd7;
+  border-color: #8a4bd7;
   color: #fff;
 }

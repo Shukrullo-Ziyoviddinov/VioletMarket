@@ -84,7 +84,7 @@
 
 .price-filter__close:hover {
   background: #e0e0e0;
-  color: #bd02bd;
+  color: #9b4fe7;;
 }
 
 @media (max-width: 767px) {
@@ -171,7 +171,7 @@
 
 .price-filter__input:focus {
   outline: none;
-  border-color: #bd02bd;
+  border-color: #9b4fe7;;
   box-shadow: 0 0 0 2px rgba(189, 2, 189, 0.2);
 }
 
@@ -188,7 +188,7 @@
 
 .price-filter__apply {
   padding: 12px 24px;
-  background: #bd02bd;
+  background: #9b4fe7;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -198,5 +198,5 @@
 }
 
 .price-filter__apply:hover {
-  background: #9d029d;
+  background: #8a4bd7;
 }

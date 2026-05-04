@@ -85,7 +85,7 @@
 
 .language-filter__close:hover {
   background: #e0e0e0;
-  color: #bd02bd;
+  color: #9b4fe7;;
 }
 
 @media (max-width: 767px) {
@@ -195,8 +195,8 @@
 }
 
 .language-filter__check:checked + .language-filter__checkmark {
-  background: #bd02bd;
-  border-color: #bd02bd;
+  background: #9b4fe7;
+  border-color: #9b4fe7;
 }
 
 .language-filter__check:checked + .language-filter__checkmark::after {
@@ -227,12 +227,12 @@
 }
 
 .language-filter__apply--active {
-  background: #bd02bd;
+  background: #9b4fe7;
   color: #fff;
 }
 
 .language-filter__apply--active:hover {
-  background: #9d029d;
+  background: #8a4bd7;
 }
 
 .language-filter__apply:not(.language-filter__apply--active):hover {

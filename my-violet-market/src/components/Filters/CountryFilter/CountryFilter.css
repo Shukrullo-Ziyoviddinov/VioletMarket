@@ -86,7 +86,7 @@
 
 .country-filter__close:hover {
   background: #e0e0e0;
-  color: #bd02bd;
+  color: #9b4fe7;;
 }
 
 @media (max-width: 767px) {
@@ -196,8 +196,8 @@
 }
 
 .country-filter__check:checked + .country-filter__checkmark {
-  background: #bd02bd;
-  border-color: #bd02bd;
+  background: #9b4fe7;
+  border-color: #9b4fe7;
 }
 
 .country-filter__check:checked + .country-filter__checkmark::after {
@@ -228,12 +228,12 @@
 }
 
 .country-filter__apply--active {
-  background: #bd02bd;
+  background: #9b4fe7;
   color: #fff;
 }
 
 .country-filter__apply--active:hover {
-  background: #9d029d;
+  background: #8a4bd7;
 }
 
 .country-filter__apply:not(.country-filter__apply--active):hover {
