@@ -39,6 +39,8 @@ const ProductDetail = () => {
   const [imageErrors, setImageErrors] = useState(new Set());
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const [shareSheetOffset, setShareSheetOffset] = useState(0);
+  const [isShareSheetDragging, setIsShareSheetDragging] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -54,6 +56,8 @@ const ProductDetail = () => {
   const dragStartTimeRef = useRef(0);
   const mainImageWrapperRef = useRef(null);
   const hasMovedDuringDragRef = useRef(false);
+  const shareSheetStartYRef = useRef(0);
+  const shareSheetCurrentYRef = useRef(0);
 
   // Mahsulot ma'lumotlarini yuklash va yangilash
   const loadProductData = useCallback(() => {
@@ -141,6 +145,23 @@ const ProductDetail = () => {
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
+  }, [isShareMenuOpen]);
+
+  useEffect(() => {
+    if (!isShareMenuOpen) {
+      setShareSheetOffset(0);
+      setIsShareSheetDragging(false);
+      document.body.classList.remove('share-menu-open');
+      return;
+    }
+
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      document.body.classList.add('share-menu-open');
+    }
+
+    return () => {
+      document.body.classList.remove('share-menu-open');
+    };
   }, [isShareMenuOpen]);
 
   // Sichqoncha wheel va drag orqali scroll qilish
@@ -536,6 +557,41 @@ const ProductDetail = () => {
     setIsShareMenuOpen(false);
   };
 
+  const handleShareSheetTouchStart = (e) => {
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+    shareSheetStartYRef.current = e.touches[0].clientY;
+    shareSheetCurrentYRef.current = e.touches[0].clientY;
+    setIsShareSheetDragging(true);
+  };
+
+  const handleShareSheetTouchMove = (e) => {
+    if (!isShareSheetDragging || !window.matchMedia('(max-width: 768px)').matches) return;
+    const currentY = e.touches[0].clientY;
+    shareSheetCurrentYRef.current = currentY;
+    const diff = currentY - shareSheetStartYRef.current;
+    const nextOffset = Math.max(0, diff);
+    setShareSheetOffset(nextOffset);
+
+    if (nextOffset > 0) {
+      e.preventDefault();
+    }
+  };
+
+  const handleShareSheetTouchEnd = () => {
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+
+    const draggedDistance = shareSheetCurrentYRef.current - shareSheetStartYRef.current;
+    const closeThreshold = 120;
+
+    if (draggedDistance > closeThreshold) {
+      setIsShareMenuOpen(false);
+    } else {
+      setShareSheetOffset(0);
+    }
+
+    setIsShareSheetDragging(false);
+  };
+
   const toggleDescription = () => {
     setIsDescriptionExpanded(!isDescriptionExpanded);
   };
@@ -581,7 +637,20 @@ const ProductDetail = () => {
 
               {/* Share Menu */}
               {isShareMenuOpen && (
-                <div className="share-menu active">
+                <>
+                  <div className="share-menu-overlay" onClick={() => setIsShareMenuOpen(false)}></div>
+                  <div
+                    className={`share-menu active ${isShareSheetDragging ? 'dragging' : ''}`}
+                    style={{ '--sheet-offset': `${shareSheetOffset}px` }}
+                  >
+                    <div
+                      className="share-menu-drag-handle"
+                      onTouchStart={handleShareSheetTouchStart}
+                      onTouchMove={handleShareSheetTouchMove}
+                      onTouchEnd={handleShareSheetTouchEnd}
+                    >
+                      <span className="share-menu-drag-bar"></span>
+                    </div>
                   <div className="share-menu-title">Ulashish</div>
                   <div className="share-options">
                     <a href="#" className="share-option telegram" onClick={(e) => { e.preventDefault(); handleShare('telegram'); }}>
@@ -601,7 +670,8 @@ const ProductDetail = () => {
                       <span>Linkni nusxalash</span>
                     </a>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
 
               <div 
