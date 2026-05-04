@@ -984,10 +984,18 @@ body.no-scroll {
   font-weight: 600;
 }
 
-.original-price {
-
+  .original-price {
   font-size: 0.8rem;
+}
 
+  .price-section .price {
+  color: #1707fb;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+  .price-section .original-price {
+  font-size: 1.1rem;
 }
   
 }

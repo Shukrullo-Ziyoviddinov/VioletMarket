@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-size: 0.7rem;
 }
 
 .button-loader-spinner {
