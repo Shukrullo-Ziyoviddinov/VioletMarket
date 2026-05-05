@@ -8,6 +8,7 @@ import './SearchBar.css';
 
 const MAX_SUGGESTIONS = 5;
 const DEFAULT_RECOMMENDED_COUNT = 15;
+const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
 /** Default recommendations when user has no history (by rating/sales or first N) */
 function getDefaultRecommended(allProducts) {
@@ -161,10 +162,17 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
     addProduct(product);
     try {
       sessionStorage.setItem('selectedProduct', JSON.stringify(product));
+      if (window.location.pathname !== '/product-detail') {
+        sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify([product]));
+      }
     } catch {}
     setIsPanelOpen(false);
     setQuery('');
-    navigate('/product-detail');
+    if (window.location.pathname === '/product-detail') {
+      window.dispatchEvent(new Event('productStorageChange'));
+    } else {
+      navigate('/product-detail');
+    }
   };
 
   return (

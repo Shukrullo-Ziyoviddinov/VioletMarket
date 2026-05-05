@@ -20,6 +20,8 @@ import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountd
 import DragScroll from '../components/DragScroll';
 import './ProductDetail.css';
 
+const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
+
 const ProductDetail = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
@@ -96,6 +98,47 @@ const ProductDetail = () => {
   useEffect(() => {
     loadProductData();
   }, [loadProductData]);
+
+  useEffect(() => {
+    if (!productData) return;
+
+    try {
+      const rawHistory = sessionStorage.getItem(PRODUCT_DETAIL_HISTORY_KEY);
+      const history = rawHistory ? JSON.parse(rawHistory) : [];
+      const safeHistory = Array.isArray(history) ? history : [];
+      const lastItem = safeHistory[safeHistory.length - 1];
+
+      if (!lastItem || String(lastItem.id) !== String(productData.id)) {
+        const nextHistory = [...safeHistory, productData];
+        sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify(nextHistory));
+      }
+    } catch (error) {
+      console.error('Failed to update product detail history:', error);
+    }
+  }, [productData]);
+
+  const handleBackFromProductDetail = useCallback(() => {
+    try {
+      const rawHistory = sessionStorage.getItem(PRODUCT_DETAIL_HISTORY_KEY);
+      const history = rawHistory ? JSON.parse(rawHistory) : [];
+      const safeHistory = Array.isArray(history) ? history : [];
+
+      if (safeHistory.length > 1) {
+        const nextHistory = safeHistory.slice(0, -1);
+        const previousProduct = nextHistory[nextHistory.length - 1];
+
+        sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify(nextHistory));
+        sessionStorage.setItem('selectedProduct', JSON.stringify(previousProduct));
+        window.dispatchEvent(new Event('productStorageChange'));
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to handle product detail back action:', error);
+    }
+
+    navigate(-1);
+  }, [navigate]);
 
   // sessionStorage o'zgarishlarini kuzatish (boshqa tab yoki component'dan o'zgarishlar uchun)
   useEffect(() => {
@@ -626,7 +669,7 @@ const ProductDetail = () => {
             >
               <button
                 className="product-detail-mobile-back-btn"
-                onClick={() => navigate(-1)}
+                onClick={handleBackFromProductDetail}
                 title="Ortga"
                 aria-label="Ortga"
               >

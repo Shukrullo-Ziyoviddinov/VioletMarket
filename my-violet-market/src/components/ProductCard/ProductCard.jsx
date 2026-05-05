@@ -12,6 +12,7 @@ import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './ProductCard.css';
 
 const LOADER_DURATION_MS = 2000;
+const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
 const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }) => {
   const navigate = useNavigate();
@@ -73,7 +74,8 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
     if (window.location.pathname === '/product-detail') {
       window.dispatchEvent(new Event('productStorageChange'));
     } else {
-    navigate('/product-detail');
+      sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify([product]));
+      navigate('/product-detail');
     }
   };
 

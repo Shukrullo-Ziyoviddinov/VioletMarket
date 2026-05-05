@@ -5,6 +5,8 @@ import { allProducts } from '../../data/products';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
 import './StylingIdea.css';
 
+const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
+
 const StylingIdea = ({ currentProduct }) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
@@ -123,9 +125,9 @@ const StylingIdea = ({ currentProduct }) => {
           
           // Navigate qilish - agar xuddi shu sahifada bo'lsak, reload qilish
           if (window.location.pathname === '/product-detail') {
-            // Force reload - yangi mahsulotni ko'rsatish uchun
-            window.location.reload();
+            window.dispatchEvent(new Event('productStorageChange'));
           } else {
+            sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify([touchedProduct]));
             navigate('/product-detail');
           }
         } catch (error) {
@@ -167,9 +169,9 @@ const StylingIdea = ({ currentProduct }) => {
       
       // Navigate qilish - agar xuddi shu sahifada bo'lsak, reload qilish
       if (window.location.pathname === '/product-detail') {
-        // Force reload - yangi mahsulotni ko'rsatish uchun
-        window.location.reload();
+        window.dispatchEvent(new Event('productStorageChange'));
       } else {
+        sessionStorage.setItem(PRODUCT_DETAIL_HISTORY_KEY, JSON.stringify([product]));
         navigate('/product-detail');
       }
     } catch (error) {
