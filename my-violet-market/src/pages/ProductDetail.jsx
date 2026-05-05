@@ -136,6 +136,13 @@ const ProductDetail = () => {
     };
   }, [isSizeChartOpen]);
 
+  useEffect(() => {
+    document.body.classList.add('product-detail-page-active');
+    return () => {
+      document.body.classList.remove('product-detail-page-active');
+    };
+  }, []);
+
   // Share menu tashqariga bosilganda yopish
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -617,6 +624,15 @@ const ProductDetail = () => {
               onTouchMove={handleImageTouchMove}
               onTouchEnd={handleImageTouchEnd}
             >
+              <button
+                className="product-detail-mobile-back-btn"
+                onClick={() => navigate(-1)}
+                title="Ortga"
+                aria-label="Ortga"
+              >
+                <i className="bx bx-arrow-back"></i>
+              </button>
+
               {/* Action Icons */}
               <div className="action-icons">
                 <button 
