@@ -36,7 +36,8 @@ img {
 
 /* Link va buttonlarda ham highlight chiqmasin */
 a,
-button {
+button,
+.mb-nav__link {
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
