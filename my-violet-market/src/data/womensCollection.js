@@ -2,6 +2,7 @@
 export const womensCollection = [
     {
         id: 70001,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun yozgi ko'ylak", ru: "Летнее платье для женщин" },
         price: "189 000UZS",
         originalPrice: "220 000",
@@ -25,6 +26,7 @@ export const womensCollection = [
     },
     {
         id: 70002,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun bluzka", ru: "Блузка для женщин" },
         price: "145 000UZS",
         originalPrice: "180 000",
@@ -41,6 +43,7 @@ export const womensCollection = [
     },
     {
         id: 70003,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun yupka", ru: "Юбка для женщин" },
         price: "165 000UZS",
         category: "Ayollar kiyimi",
@@ -65,6 +68,7 @@ export const womensCollection = [
     },
     {
         id: 70004,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun ko'ylak", ru: "Платье для женщин" },
         price: "210 000UZS",
         originalPrice: "260 000",
@@ -81,6 +85,7 @@ export const womensCollection = [
     },
     {
         id: 70005,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun sariq ko'ylak", ru: "Жёлтое платье для женщин" },
         price: "178 000UZS",
         category: "Ayollar kiyimi",
@@ -95,6 +100,7 @@ export const womensCollection = [
     },
     {
         id: 70006,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun to'n", ru: "Халат для женщин" },
         price: "195 000UZS",
         originalPrice: "240 000",
@@ -111,6 +117,7 @@ export const womensCollection = [
     },
     {
         id: 70007,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun shim", ru: "Брюки для женщин" },
         price: "132 000UZS",
         category: "Ayollar kiyimi",
@@ -125,6 +132,7 @@ export const womensCollection = [
     },
     {
         id: 70008,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun to'q qizil yupka", ru: "Тёмно-красная юбка для женщин" },
         price: "155 000UZS",
         category: "Ayollar kiyimi",
@@ -139,6 +147,7 @@ export const womensCollection = [
     },
     {
         id: 70009,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun futbolka", ru: "Футболка для женщин" },
         price: "98 000UZS",
         originalPrice: "120 000",
@@ -155,6 +164,7 @@ export const womensCollection = [
     },
     {
         id: 70010,
+        categoryName: "womensCollection",
         title: { uz: "Ayollar uchun sviter", ru: "Свитер для женщин" },
         price: "220 000UZS",
         category: "Ayollar kiyimi",

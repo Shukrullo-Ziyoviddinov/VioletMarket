@@ -2,6 +2,7 @@
 export const beautyCareCollection = [
   {
     id: 56001,
+    categoryName: "beautyCareCollection",
     title: { uz: "Korea kremi", ru: "Корейский крем" },
     price: "85 000UZS",
     originalPrice: "110 000",
@@ -16,6 +17,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56002,
+    categoryName: "beautyCareCollection",
     title: { uz: "Makyaj palitrasi", ru: "Палитра для макияжа" },
     price: "120 000UZS",
     originalPrice: "150 000",
@@ -29,6 +31,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56003,
+    categoryName: "beautyCareCollection",
     title: { uz: "Yuz niqobi", ru: "Маска для лица" },
     price: "35 000UZS",
     category: "Go'zallik va parvarish",
@@ -41,6 +44,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56004,
+    categoryName: "beautyCareCollection",
     title: { uz: "Serum", ru: "Сыворотка" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -55,6 +59,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56005,
+    categoryName: "beautyCareCollection",
     title: { uz: "Lab bo'yagi", ru: "Помада" },
     price: "45 000UZS",
     category: "Go'zallik va parvarish",
@@ -67,6 +72,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56006,
+    categoryName: "beautyCareCollection",
     title: { uz: "Kozmetik sumka", ru: "Косметичка" },
     price: "55 000UZS",
     originalPrice: "70 000",
@@ -80,6 +86,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56007,
+    categoryName: "beautyCareCollection",
     title: { uz: "Ton krem", ru: "Тональный крем" },
     price: "78 000UZS",
     category: "Go'zallik va parvarish",
@@ -92,6 +99,7 @@ export const beautyCareCollection = [
   },
   {
     id: 56008,
+    categoryName: "beautyCareCollection",
     title: { uz: "Soch parvarish moyi", ru: "Масло для волос" },
     price: "42 000UZS",
     category: "Go'zallik va parvarish",

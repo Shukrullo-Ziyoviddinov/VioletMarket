@@ -19,6 +19,7 @@ import { bigDiscountCollection } from './bigDiscountCollection';
 export const products = [
     {
         id: 153546,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "127 000UZS",
         originalPrice: "150 000", 
@@ -192,6 +193,7 @@ export const products = [
 
     {
         id: 2364,
+        categoryName: "products",
         discount: { uz: "60% chegirma", ru: "60% скидка" },
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "700 000UZS",
@@ -235,6 +237,7 @@ export const products = [
 
     {
         id: 3465,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         discount: { uz: "20% chegirma", ru: "20% скидка" },
         price: "140 000UZS",
@@ -273,6 +276,7 @@ export const products = [
 
     {
         id: 455,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         discount: { uz: "35% chegirma", ru: "35% скидка" },
         price: "120 000",
@@ -308,6 +312,7 @@ export const products = [
 
     {
         id: 5577,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         discount: { uz: "50% chegirma", ru: "50% скидка" },
         price: "20 00UZS",
@@ -345,6 +350,7 @@ export const products = [
 
     {
         id: 6578,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "170000",
         countries: ["turkiya"],
@@ -377,6 +383,7 @@ export const products = [
 
     {
         id: 757,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "12000UZS",
         discount: { uz: "70% chegirma", ru: "70% скидка" },
@@ -413,6 +420,7 @@ export const products = [
 
     {
         id: 85667,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "$140",
         video: "video/SaveVid.Net_184F7EA2857F4536CE03EA92B582BDAE_video_dashinit.mp4",
@@ -447,6 +455,7 @@ export const products = [
 
     {
         id: 9675,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "$10",
         video: "video/SaveVid.Net_184F7EA2857F4536CE03EA92B582BDAE_video_dashinit.mp4",
@@ -487,6 +496,7 @@ export const products = [
 
     {
         id: 10575,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "$10",
         video: "video/SaveVid.Net_184F7EA2857F4536CE03EA92B582BDAE_video_dashinit.mp4",
@@ -516,6 +526,7 @@ export const products = [
 
     {
         id: 15651,
+        categoryName: "products",
         discount: { uz: "30% chegirma", ru: "30% скидка" },
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "27000UZS",
@@ -598,6 +609,7 @@ export const products = [
 
     {
         id: 157672,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "120 000UZS",
         countries: ["uzb"],
@@ -640,6 +652,7 @@ export const products = [
 
     {
         id: 13577,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "150 000UZS",
         countries: ["uzb"],
@@ -678,6 +691,7 @@ export const products = [
 
     {
         id: 145768,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         countries: ["uzb"],
@@ -719,6 +733,7 @@ export const products = [
 
     {
         id: 15675,
+        categoryName: "products",
         discount: { uz: "90% chegirma", ru: "90% скидка" },
         title: { uz: "S 24 Ultra telifoni ", ru: "Летние юбки и блузки для женщин" },
         price: "127000UZS",
@@ -816,6 +831,7 @@ export const products = [
 
     {
         id: 1678,
+        categoryName: "products",
         discount: { uz: "10% chegirma", ru: "10% скидка" },
         title: { uz: "S 24 Ultra ", ru: "Летние юбки и блузки для женщин" },
         price: "70000UZS",
@@ -913,6 +929,7 @@ export const products = [
 
     {
         id: 15767,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "150 000UZS",
         countries: ["uzb"],
@@ -950,6 +967,7 @@ export const products = [
 
     {
         id: 18757,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         discount: { uz: "20% chegirma", ru: "20% скидка" },
         price: "140 000UZS",
@@ -984,6 +1002,7 @@ export const products = [
 
     {
         id: 19578,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         discount: { uz: "20% chegirma", ru: "20% скидка" },
         price: "140 000UZS",
@@ -1018,6 +1037,7 @@ export const products = [
 
     {
         id: 20875,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "150 000UZS",
         countries: ["uzb"],
@@ -1055,6 +1075,7 @@ export const products = [
 
     {
         id: 21676,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "150 000UZS",
         countries: ["uzb"],
@@ -1092,6 +1113,7 @@ export const products = [
 
     {
         id: 22678,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "xudi",
@@ -1128,6 +1150,7 @@ export const products = [
 
     {
         id: 23685,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -1166,6 +1189,7 @@ export const products = [
 
     {
         id: 23686,
+        categoryName: "products",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "60 000UZS",
         productType: "makasino",

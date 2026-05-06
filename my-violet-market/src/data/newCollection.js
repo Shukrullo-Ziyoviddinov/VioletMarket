@@ -2,6 +2,7 @@
 export const newCollection = [
     {
         id: 90001,
+        categoryName: "newCollection",
         title: { uz: "Yangi kolleksiya - yozgi ko'ylak", ru: "Новая коллекция - летнее платье" },
         price: "127 000UZS",
         originalPrice: "150 000",
@@ -33,6 +34,7 @@ export const newCollection = [
     },
     {
         id: 90002,
+        categoryName: "newCollection",
         discount: { uz: "60% chegirma", ru: "60% скидка" },
         title: { uz: "Yangi kolleksiya - bluzka", ru: "Новая коллекция - блузка" },
         price: "700 000UZS",
@@ -60,6 +62,7 @@ export const newCollection = [
     },
     {
         id: 90003,
+        categoryName: "newCollection",
         title: { uz: "Yangi kolleksiya - xudi", ru: "Новая коллекция - худи" },
         discount: { uz: "20% chegirma", ru: "20% скидка" },
         price: "140 000UZS",
@@ -89,6 +92,7 @@ export const newCollection = [
     },
     {
         id: 90004,
+        categoryName: "newCollection",
         title: { uz: "Yangi kolleksiya - ayollar yupkasi", ru: "Новая коллекция - юбка женская" },
         price: "150 000UZS",
         countries: ["uzb"],
@@ -122,6 +126,7 @@ export const newCollection = [
 
         {
         id: 2365,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -160,6 +165,7 @@ export const newCollection = [
 
         {
         id: 2365485,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -198,6 +204,7 @@ export const newCollection = [
 
         {
         id: 2354685,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -236,6 +243,7 @@ export const newCollection = [
 
         {
         id: 236385,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -274,6 +282,7 @@ export const newCollection = [
 
         {
         id: 223685,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -312,6 +321,7 @@ export const newCollection = [
 
         {
         id: 23687,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "7000 000UZS",
         productType: "makasino",
@@ -350,6 +360,7 @@ export const newCollection = [
 
         {
         id: 23688,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -388,6 +399,7 @@ export const newCollection = [
 
         {
         id: 23689,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -426,6 +438,7 @@ export const newCollection = [
 
         {
         id: 23690,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "700 000UZS",
         productType: "makasino",
@@ -464,6 +477,7 @@ export const newCollection = [
 
         {
         id: 236855,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -502,6 +516,7 @@ export const newCollection = [
 
         {
         id: 236815,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "900 000UZS",
         productType: "makasino",
@@ -544,6 +559,7 @@ export const newCollection = [
 
         {
         id: 236825,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -582,6 +598,7 @@ export const newCollection = [
 
         {
         id: 236865,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -620,6 +637,7 @@ export const newCollection = [
 
         {
         id: 236895,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -658,6 +676,7 @@ export const newCollection = [
 
         {
         id: 236485,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -696,6 +715,7 @@ export const newCollection = [
 
         {
         id: 236185,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -734,6 +754,7 @@ export const newCollection = [
 
         {
         id: 2368895,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "800 000UZS",
         productType: "makasino",
@@ -777,6 +798,7 @@ export const newCollection = [
 
         {
         id: 23685445,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "5000 000UZS",
         productType: "makasino",
@@ -820,6 +842,7 @@ export const newCollection = [
 
         {
         id: 23655,
+        categoryName: "newCollection",
         title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
         price: "600 000UZS",
         productType: "makasino",

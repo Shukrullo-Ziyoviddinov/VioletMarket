@@ -2,6 +2,7 @@
 export const vitaminsHealthCollection = [
   {
     id: 59001,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Multivitaminlar", ru: "Мультивитамины" },
     price: "85 000UZS",
     originalPrice: "110 000",
@@ -16,6 +17,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59002,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "D-vitamin", ru: "Витамин D" },
     price: "45 000UZS",
     category: "Vitaminlar va sog'liq",
@@ -28,6 +30,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59003,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Temir preparati", ru: "Препарат железа" },
     price: "65 000UZS",
     originalPrice: "80 000",
@@ -41,6 +44,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59004,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Omega-3", ru: "Омега-3" },
     price: "120 000UZS",
     category: "Vitaminlar va sog'liq",
@@ -53,6 +57,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59005,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Immunitet kompleksi", ru: "Комплекс для иммунитета" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -66,6 +71,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59006,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Kalsiy", ru: "Кальций" },
     price: "38 000UZS",
     category: "Vitaminlar va sog'liq",
@@ -78,6 +84,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59007,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "Propolis", ru: "Прополис" },
     price: "55 000UZS",
     category: "Vitaminlar va sog'liq",
@@ -90,6 +97,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59008,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "C-vitamin", ru: "Витамин C" },
     price: "42 000UZS",
     originalPrice: "55 000",
@@ -103,6 +111,7 @@ export const vitaminsHealthCollection = [
   },
   {
     id: 59009,
+    categoryName: "vitaminsHealthCollection",
     title: { uz: "C-vitamin", ru: "Витамин C" },
     price: "32 000UZS",
     originalPrice: "45 000",

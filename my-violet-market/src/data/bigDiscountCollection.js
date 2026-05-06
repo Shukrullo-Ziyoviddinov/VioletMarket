@@ -2,6 +2,7 @@
 export const bigDiscountCollection = [
   {
     id: 64001,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 3,
     title: { uz: "Smartfon 50% chegirma 4 tase berda", ru: "Смартфон скидка 50%" },
     price: "250 000UZS",
@@ -17,6 +18,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64002,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 2,
     title: { uz: "Kiyim to'plami 40% stilni edia", ru: "Одежда набор 40%" },
     price: "180 000UZS",
@@ -32,6 +34,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64003,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 4,
     title: { uz: "Televizor 35% chegirma 7 tase berda", ru: "Телевизор 35% скидка" },
     price: "195 000UZS",
@@ -46,6 +49,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64004,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 3,
     title: { uz: "Soat 45% chegirma va shim 2 tase berda", ru: "Часы 45% скидка" },
     price: "220 000UZS",
@@ -61,6 +65,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64005,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 5,
     title: { uz: "Fudbolka va shim kamplekt paxtadan", ru: "Ноутбук 30% скидка" },
     price: "200 000UZS",
@@ -75,6 +80,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64006,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 3,
     title: { uz: "Sumka 55% chegirma shim va rubashka qo'shemchasega", ru: "Сумка 55% скидка" },
     price: "90 000UZS",
@@ -90,6 +96,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64007,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 2,
     title: { uz: "Sumka, shim, rubashka komplekt 60% chegermada", ru: "Сумка 55% скидка" },
     price: "60 000UZS",
@@ -105,6 +112,7 @@ export const bigDiscountCollection = [
   },
   {
     id: 64008,
+    categoryName: "bigDiscountCollection",
     flashDurationHours: 4,
     title: { uz: "Sumka, shim, rubashka komplekt 60% chegermada ", ru: "Сумка 55% скидка" },
     price: "90 000UZS",

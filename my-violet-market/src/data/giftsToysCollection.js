@@ -2,6 +2,7 @@
 export const giftsToysCollection = [
   {
     id: 58001,
+    categoryName: "giftsToysCollection",
     title: { uz: "Plush o'yinchoq", ru: "Плюшевая игрушка" },
     price: "65 000UZS",
     originalPrice: "85 000",
@@ -16,6 +17,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58002,
+    categoryName: "giftsToysCollection",
     title: { uz: "Sovg'a qutisi", ru: "Подарочная коробка" },
     price: "35 000UZS",
     category: "Bolalar tovarlari",
@@ -28,6 +30,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58003,
+    categoryName: "giftsToysCollection",
     title: { uz: "Konstruktor", ru: "Конструктор" },
     price: "120 000UZS",
     originalPrice: "150 000",
@@ -41,6 +44,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58004,
+    categoryName: "giftsToysCollection",
     title: { uz: "Sovg'a kartochkasi", ru: "Подарочная открытка" },
     price: "15 000UZS",
     category: "Bolalar tovarlari",
@@ -53,6 +57,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58005,
+    categoryName: "giftsToysCollection",
     title: { uz: "Puzzle", ru: "Пазл" },
     price: "48 000UZS",
     category: "Bolalar tovarlari",
@@ -65,6 +70,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58006,
+    categoryName: "giftsToysCollection",
     title: { uz: "Bolalar xonasi dekor", ru: "Декор для детской" },
     price: "85 000UZS",
     originalPrice: "110 000",
@@ -78,6 +84,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58007,
+    categoryName: "giftsToysCollection",
     title: { uz: "Mashina o'yinchoq", ru: "Игрушечная машинка" },
     price: "55 000UZS",
     category: "Bolalar tovarlari",
@@ -90,6 +97,7 @@ export const giftsToysCollection = [
   },
   {
     id: 58008,
+    categoryName: "giftsToysCollection",
     title: { uz: "Sovg'a paketi", ru: "Подарочная упаковка" },
     price: "22 000UZS",
     category: "Bolalar tovarlari",

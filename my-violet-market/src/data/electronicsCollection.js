@@ -2,6 +2,7 @@
 export const electronicsCollection = [
   {
     id: 60001,
+    categoryName: "electronicsCollection",
     title: { uz: "Universal zaryadlagich", ru: "Универсальное зарядное устройство" },
     price: "85 000UZS",
     originalPrice: "120 000",
@@ -18,6 +19,7 @@ export const electronicsCollection = [
   },
   {
     id: 60002,
+    categoryName: "electronicsCollection",
     title: { uz: "Type-C kabel", ru: "Кабель Type-C" },
     price: "35 000UZS",
     originalPrice: "50 000",
@@ -34,6 +36,7 @@ export const electronicsCollection = [
   },
   {
     id: 60003,
+    categoryName: "electronicsCollection",
     title: { uz: "Powerbank 10000 mAh", ru: "Powerbank 10000 mАч" },
     price: "180 000UZS",
     originalPrice: "220 000",
@@ -50,6 +53,7 @@ export const electronicsCollection = [
   },
   {
     id: 60004,
+    categoryName: "electronicsCollection",
     title: { uz: "Simsiz zaryadlash stendi", ru: "Беспроводная зарядная станция" },
     price: "250 000UZS",
     originalPrice: "300 000",
@@ -66,6 +70,7 @@ export const electronicsCollection = [
   },
   {
     id: 60005,
+    categoryName: "electronicsCollection",
     title: { uz: "Avtomobil zaryadlagichi", ru: "Автомобильное зарядное устройство" },
     price: "45 000UZS",
     originalPrice: "65 000",
@@ -82,6 +87,7 @@ export const electronicsCollection = [
   },
   {
     id: 60006,
+    categoryName: "electronicsCollection",
     title: { uz: "Lightning kabel", ru: "Кабель Lightning" },
     price: "55 000UZS",
     originalPrice: "75 000",
@@ -98,6 +104,7 @@ export const electronicsCollection = [
   },
   {
     id: 60007,
+    categoryName: "electronicsCollection",
     title: { uz: "Batareya to'plami", ru: "Набор батареек" },
     price: "28 000UZS",
     originalPrice: "40 000",
@@ -114,6 +121,7 @@ export const electronicsCollection = [
   },
   {
     id: 60008,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "95 000UZS",
     originalPrice: "130 000",
@@ -131,6 +139,7 @@ export const electronicsCollection = [
 
   {
     id: 60009,
+    categoryName: "electronicsCollection",
     title: { uz: "Batareya to'plami", ru: "Набор батареек" },
     price: "20 000UZS",
     originalPrice: "40 000",
@@ -148,6 +157,7 @@ export const electronicsCollection = [
 
   {
     id: 60010,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "95 000UZS",
     originalPrice: "130 000",
@@ -165,6 +175,7 @@ export const electronicsCollection = [
 
   {
     id: 60011,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "15 000UZS",
     originalPrice: "130 000",
@@ -182,6 +193,7 @@ export const electronicsCollection = [
 
   {
     id: 60012,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "12 000UZS",
     originalPrice: "130 000",
@@ -199,6 +211,7 @@ export const electronicsCollection = [
 
   {
     id: 60013,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "42 000UZS",
     originalPrice: "140 000",
@@ -216,6 +229,7 @@ export const electronicsCollection = [
 
   {
     id: 60014,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "455 000UZS",
     originalPrice: "130 000",
@@ -233,6 +247,7 @@ export const electronicsCollection = [
 
   {
     id: 60015,
+    categoryName: "electronicsCollection",
     title: { uz: "USB-hub 4 port", ru: "USB-хаб 4 порта" },
     price: "95 000UZS",
     originalPrice: "130 000",

@@ -2,6 +2,7 @@
 export const travelGearCollection = [
   {
     id: 61001,
+    categoryName: "travelGearCollection",
     title: { uz: "Sayoxat chamadoni", ru: "Дорожная сумка" },
     price: "125 000UZS",
     originalPrice: "155 000",
@@ -16,6 +17,7 @@ export const travelGearCollection = [
   },
   {
     id: 61002,
+    categoryName: "travelGearCollection",
     title: { uz: "Passport quti", ru: "Чехол для документов" },
     price: "45 000UZS",
     category: "Sayoxat uchun asqotade",
@@ -28,6 +30,7 @@ export const travelGearCollection = [
   },
   {
     id: 61003,
+    categoryName: "travelGearCollection",
     title: { uz: "Sayoxat yostiqchasi", ru: "Дорожная подушка" },
     price: "65 000UZS",
     originalPrice: "80 000",
@@ -41,6 +44,7 @@ export const travelGearCollection = [
   },
   {
     id: 61004,
+    categoryName: "travelGearCollection",
     title: { uz: "Kichik chamadon", ru: "Небольшой чемодан" },
     price: "280 000UZS",
     category: "Sayoxat uchun asqotade",
@@ -53,6 +57,7 @@ export const travelGearCollection = [
   },
   {
     id: 61005,
+    categoryName: "travelGearCollection",
     title: { uz: "To'plam qutisi", ru: "Дорожный набор" },
     price: "55 000UZS",
     originalPrice: "70 000",
@@ -66,6 +71,7 @@ export const travelGearCollection = [
   },
   {
     id: 61006,
+    categoryName: "travelGearCollection",
     title: { uz: "Sayoxat adapteri", ru: "Дорожный адаптер" },
     price: "38 000UZS",
     category: "Sayoxat uchun asqotade",
@@ -78,6 +84,7 @@ export const travelGearCollection = [
   },
   {
     id: 61007,
+    categoryName: "travelGearCollection",
     title: { uz: "Bo'yin yostiqchasi", ru: "Подушка для шеи" },
     price: "42 000UZS",
     category: "Sayoxat uchun asqotade",
@@ -90,6 +97,7 @@ export const travelGearCollection = [
   },
   {
     id: 61008,
+    categoryName: "travelGearCollection",
     title: { uz: "Sayoxat xalta", ru: "Дорожная сумка" },
     price: "95 000UZS",
     originalPrice: "115 000",
@@ -103,6 +111,7 @@ export const travelGearCollection = [
   },
   {
     id: 61009,
+    categoryName: "travelGearCollection",
     title: { uz: "Sayoxat xalta", ru: "Дорожная сумка" },
     price: "85 000UZS",
     originalPrice: "115 000",

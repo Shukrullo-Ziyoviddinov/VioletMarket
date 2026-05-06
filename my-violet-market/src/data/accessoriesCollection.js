@@ -2,6 +2,7 @@
 export const accessoriesCollection = [
   {
     id: 57001,
+    categoryName: "accessoriesCollection",
     title: { uz: "Quloqchin", ru: "Наушники" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -16,6 +17,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57002,
+    categoryName: "accessoriesCollection",
     title: { uz: "Smart soat", ru: "Умные часы" },
     price: "350 000UZS",
     originalPrice: "420 000",
@@ -29,6 +31,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57003,
+    categoryName: "accessoriesCollection",
     title: { uz: "Bluetooth quloqchin", ru: "Беспроводные наушники" },
     price: "180 000UZS",
     category: "Aksessuarlar",
@@ -41,6 +44,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57004,
+    categoryName: "accessoriesCollection",
     title: { uz: "Klassik soat", ru: "Классические часы" },
     price: "220 000UZS",
     originalPrice: "280 000",
@@ -55,6 +59,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57005,
+    categoryName: "accessoriesCollection",
     title: { uz: "Mini kolonka", ru: "Портативная колонка" },
     price: "75 000UZS",
     category: "Aksessuarlar",
@@ -67,6 +72,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57006,
+    categoryName: "accessoriesCollection",
     title: { uz: "Simli quloqchin", ru: "Проводные наушники" },
     price: "45 000UZS",
     originalPrice: "60 000",
@@ -80,6 +86,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57007,
+    categoryName: "accessoriesCollection",
     title: { uz: "Soat tasmasi", ru: "Ремешок для часов" },
     price: "35 000UZS",
     category: "Aksessuarlar",
@@ -92,6 +99,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57008,
+    categoryName: "accessoriesCollection",
     title: { uz: "Kulaklik adapter", ru: "Адаптер для наушников" },
     price: "28 000UZS",
     category: "Aksessuarlar",
@@ -104,6 +112,7 @@ export const accessoriesCollection = [
   },
   {
     id: 57009,
+    categoryName: "accessoriesCollection",
     title: { uz: "Kulaklik adapter", ru: "Адаптер для наушников" },
     price: "238 000UZS",
     category: "Aksessuarlar",

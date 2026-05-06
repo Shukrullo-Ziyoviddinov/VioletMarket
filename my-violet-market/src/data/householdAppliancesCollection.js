@@ -2,6 +2,7 @@
 export const householdAppliancesCollection = [
   {
     id: 62001,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Kichik blender", ru: "Мини-блендер" },
     price: "185 000UZS",
     originalPrice: "220 000",
@@ -16,6 +17,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62002,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Mikroto'lqinli pech", ru: "Микроволновая печь" },
     price: "450 000UZS",
     category: "Maishiy texnika",
@@ -28,6 +30,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62003,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Konditsioner", ru: "Кондиционер" },
     price: "2 500 000UZS",
     originalPrice: "2 800 000",
@@ -41,6 +44,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62004,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Kirmoshina", ru: "Стиральная машина" },
     price: "3 200 000UZS",
     category: "Maishiy texnika",
@@ -53,6 +57,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62005,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Toaster", ru: "Тостер" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -66,6 +71,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62006,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Elektr choynak", ru: "Электрочайник" },
     price: "125 000UZS",
     category: "Maishiy texnika",
@@ -78,6 +84,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62007,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Ventilyator", ru: "Вентилятор" },
     price: "180 000UZS",
     category: "Maishiy texnika",
@@ -90,6 +97,7 @@ export const householdAppliancesCollection = [
   },
   {
     id: 62008,
+    categoryName: "householdAppliancesCollection",
     title: { uz: "Pylesos", ru: "Пылесос" },
     price: "320 000UZS",
     originalPrice: "380 000",

@@ -2,6 +2,7 @@
 export const allKindsProductsCollection = [
   {
     id: 63001,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Universal idish to'plami", ru: "Универсальный набор посуды" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -16,6 +17,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63002,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Zargarlik buyumlari", ru: "Ювелирные изделия" },
     price: "250 000UZS",
     category: "Barcha turdagi mahsulotlar",
@@ -28,6 +30,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63003,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Uy jihozlari", ru: "Декор для дома" },
     price: "65 000UZS",
     originalPrice: "85 000",
@@ -41,6 +44,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63004,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Sport inventari", ru: "Спортивный инвентарь" },
     price: "180 000UZS",
     category: "Barcha turdagi mahsulotlar",
@@ -53,6 +57,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63005,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "O'yin va hobi", ru: "Игры и хобби" },
     price: "45 000UZS",
     originalPrice: "60 000",
@@ -66,6 +71,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63006,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Ofis jihozlari", ru: "Офисные принадлежности" },
     price: "55 000UZS",
     category: "Barcha turdagi mahsulotlar",
@@ -78,6 +84,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63007,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Avtomobil aksessuarlari", ru: "Автоаксессуары" },
     price: "120 000UZS",
     category: "Barcha turdagi mahsulotlar",
@@ -90,6 +97,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63008,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Bog' va uy-ro'zg'or", ru: "Сад и хозяйство" },
     price: "85 000UZS",
     originalPrice: "100 000",
@@ -103,6 +111,7 @@ export const allKindsProductsCollection = [
   },
   {
     id: 63009,
+    categoryName: "allKindsProductsCollection",
     title: { uz: "Bog' va uy-ro'zg'or", ru: "Сад и хозяйство" },
     price: "65 000UZS",
     originalPrice: "100 000",

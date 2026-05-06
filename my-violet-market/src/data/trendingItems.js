@@ -2,6 +2,7 @@
 export const trendingItems = [
     {
         id: 60001,
+        categoryName: "trendingItems",
         title: { uz: "Trend - erkaklar xudi", ru: "Тренд - худи мужское" },
         price: "185 000UZS",
         originalPrice: "220 000",
@@ -18,6 +19,7 @@ export const trendingItems = [
     },
     {
         id: 60002,
+        categoryName: "trendingItems",
         title: { uz: "Trend - ayollar yupkasi", ru: "Тренд - юбка женская" },
         price: "165 000UZS",
         category: "Ayollar kiyimi",
@@ -32,6 +34,7 @@ export const trendingItems = [
     },
     {
         id: 60003,
+        categoryName: "trendingItems",
         title: { uz: "Trend - smart soat", ru: "Тренд - смарт-часы" },
         price: "450 000UZS",
         originalPrice: "520 000",
@@ -48,6 +51,7 @@ export const trendingItems = [
     },
     {
         id: 60004,
+        categoryName: "trendingItems",
         title: { uz: "Trend - sumka", ru: "Тренд - сумка" },
         price: "220 000UZS",
         category: "Aksessuarlar",
@@ -62,6 +66,7 @@ export const trendingItems = [
     },
     {
         id: 60005,
+        categoryName: "trendingItems",
         title: { uz: "Trend - futbolka", ru: "Тренд - футболка" },
         price: "95 000UZS",
         originalPrice: "115 000",
@@ -78,6 +83,7 @@ export const trendingItems = [
     },
     {
         id: 60006,
+        categoryName: "trendingItems",
         title: { uz: "Trend - telefon", ru: "Тренд - телефон" },
         price: "2 500 000UZS",
         category: "Smart gadjetlar",
@@ -92,6 +98,7 @@ export const trendingItems = [
     },
     {
         id: 60007,
+        categoryName: "trendingItems",
         title: { uz: "Trend - kepka", ru: "Тренд - кепка" },
         price: "65 000UZS",
         category: "Aksessuarlar",
@@ -106,6 +113,7 @@ export const trendingItems = [
     },
     {
         id: 60008,
+        categoryName: "trendingItems",
         title: { uz: "Trend - ko'ylak", ru: "Тренд - платье" },
         price: "198 000UZS",
         category: "Ayollar kiyimi",
@@ -120,6 +128,7 @@ export const trendingItems = [
     },
     {
         id: 60009,
+        categoryName: "trendingItems",
         title: { uz: "Trend - krossovka", ru: "Тренд - кроссовки" },
         price: "380 000UZS",
         originalPrice: "450 000",
@@ -136,6 +145,7 @@ export const trendingItems = [
     },
     {
         id: 60010,
+        categoryName: "trendingItems",
         title: { uz: "Trend - qo'lqop", ru: "Тренд - перчатки" },
         price: "42 000UZS",
         category: "Aksessuarlar",
@@ -150,6 +160,7 @@ export const trendingItems = [
     },
     {
         id: 60011,
+        categoryName: "trendingItems",
         title: { uz: "Trend - sviter", ru: "Тренд - свитер" },
         price: "175 000UZS",
         category: "Ayollar kiyimi",
@@ -164,6 +175,7 @@ export const trendingItems = [
     },
     {
         id: 60012,
+        categoryName: "trendingItems",
         title: { uz: "Trend - shim", ru: "Тренд - брюки" },
         price: "142 000UZS",
         category: "Erkaklar kiyimi",
@@ -178,6 +190,7 @@ export const trendingItems = [
     },
     {
         id: 60013,
+        categoryName: "trendingItems",
         title: { uz: "Trend - chexol", ru: "Тренд - чехол" },
         price: "35 000UZS",
         category: "Aksessuarlar",
@@ -192,6 +205,7 @@ export const trendingItems = [
     },
     {
         id: 60014,
+        categoryName: "trendingItems",
         title: { uz: "Trend - bluzka", ru: "Тренд - блузка" },
         price: "128 000UZS",
         category: "Ayollar kiyimi",
@@ -206,6 +220,7 @@ export const trendingItems = [
     },
     {
         id: 60015,
+        categoryName: "trendingItems",
         title: { uz: "Trend - rubashka", ru: "Тренд - рубашка" },
         price: "155 000UZS",
         category: "Erkaklar kiyimi",

@@ -2,6 +2,7 @@
 export const engArzonlare = [
     {
         id: 80001,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - futbolka", ru: "Самый дешёвый - футболка" },
         price: "45 000UZS",
         originalPrice: "65 000",
@@ -23,6 +24,7 @@ export const engArzonlare = [
     },
     {
         id: 80002,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - shortik", ru: "Самый дешёвый - шорты" },
         price: "55 000UZS",
         originalPrice: "80 000",
@@ -39,6 +41,7 @@ export const engArzonlare = [
     },
     {
         id: 80003,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - ko'ylak", ru: "Самый дешёвый - платье" },
         price: "62 000UZS",
         category: "Ayollar kiyimi",
@@ -53,6 +56,7 @@ export const engArzonlare = [
     },
     {
         id: 80004,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - qo'lqop", ru: "Самый дешёвый - перчатки" },
         price: "18 000UZS",
         originalPrice: "25 000",
@@ -69,6 +73,7 @@ export const engArzonlare = [
     },
     {
         id: 80005,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - kepka", ru: "Самый дешёвый - кепка" },
         price: "35 000UZS",
         category: "Aksessuarlar",
@@ -83,6 +88,7 @@ export const engArzonlare = [
     },
     {
         id: 80006,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - noski", ru: "Самый дешёвый - носки" },
         price: "12 000UZS",
         originalPrice: "18 000",
@@ -99,6 +105,7 @@ export const engArzonlare = [
     },
     {
         id: 80007,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - yengil xudi", ru: "Самый дешёвый - лёгкая худи" },
         price: "78 000UZS",
         originalPrice: "120 000",
@@ -115,6 +122,7 @@ export const engArzonlare = [
     },
     {
         id: 80008,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - bluzka", ru: "Самый дешёвый - блузка" },
         price: "48 000UZS",
         category: "Ayollar kiyimi",
@@ -129,6 +137,7 @@ export const engArzonlare = [
     },
     {
         id: 80009,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - shim", ru: "Самый дешёвый - брюки" },
         price: "65 000UZS",
         originalPrice: "95 000",
@@ -145,6 +154,7 @@ export const engArzonlare = [
     },
     {
         id: 80010,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - yupka", ru: "Самый дешёвый - юбка" },
         price: "52 000UZS",
         category: "Ayollar kiyimi",
@@ -159,6 +169,7 @@ export const engArzonlare = [
     },
     {
         id: 80011,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - chexol", ru: "Самый дешёвый - чехол" },
         price: "22 000UZS",
         category: "Aksessuarlar",
@@ -176,6 +187,7 @@ export const engArzonlare = [
     },
     {
         id: 80012,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - sport shim", ru: "Самый дешёвый - спортивные брюки" },
         price: "72 000UZS",
         originalPrice: "100 000",
@@ -197,6 +209,7 @@ export const engArzonlare = [
     },
     {
         id: 80013,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - rubashka", ru: "Самый дешёвый - рубашка" },
         price: "58 000UZS",
         category: "Erkaklar kiyimi",
@@ -211,6 +224,7 @@ export const engArzonlare = [
     },
     {
         id: 80014,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - sumka", ru: "Самый дешёвый - сумка" },
         price: "85 000UZS",
         originalPrice: "130 000",
@@ -227,6 +241,7 @@ export const engArzonlare = [
     },
     {
         id: 80015,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - belbog'", ru: "Самый дешёвый - ремень" },
         price: "28 000UZS",
         category: "Aksessuarlar",
@@ -244,6 +259,7 @@ export const engArzonlare = [
     },
     {
         id: 80016,
+        categoryName: "engArzonlare",
         title: { uz: "Eng arzon - shippak", ru: "Самый дешёвый - тапочки" },
         price: "95 000UZS",
         originalPrice: "140 000",

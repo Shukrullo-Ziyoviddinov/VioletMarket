@@ -2,6 +2,7 @@
 export const stationeryCollection = [
   {
     id: 55001,
+    categoryName: "stationeryCollection",
     title: { uz: "Qalamlar to'plami", ru: "Набор ручек" },
     price: "25 000UZS",
     originalPrice: "35 000",
@@ -16,6 +17,7 @@ export const stationeryCollection = [
   },
   {
     id: 55002,
+    categoryName: "stationeryCollection",
     title: { uz: "Bloknot", ru: "Блокнот" },
     price: "18 000UZS",
     category: "Kanselyariya tovarlari",
@@ -28,6 +30,7 @@ export const stationeryCollection = [
   },
   {
     id: 55003,
+    categoryName: "stationeryCollection",
     title: { uz: "Chizmachilik qurollari", ru: "Чертёжные инструменты" },
     price: "45 000UZS",
     originalPrice: "55 000",
@@ -41,6 +44,7 @@ export const stationeryCollection = [
   },
   {
     id: 55004,
+    categoryName: "stationeryCollection",
     title: { uz: "Stickerlar to'plami", ru: "Набор стикеров" },
     price: "12 000UZS",
     category: "Kanselyariya tovarlari",
@@ -53,6 +57,7 @@ export const stationeryCollection = [
   },
   {
     id: 55005,
+    categoryName: "stationeryCollection",
     title: { uz: "Qog'oz paket", ru: "Пачка бумаги" },
     price: "32 000UZS",
     originalPrice: "40 000",
@@ -66,6 +71,7 @@ export const stationeryCollection = [
   },
   {
     id: 55006,
+    categoryName: "stationeryCollection",
     title: { uz: "Markerlar", ru: "Маркеры" },
     price: "28 000UZS",
     category: "Kanselyariya tovarlari",
@@ -78,6 +84,7 @@ export const stationeryCollection = [
   },
   {
     id: 55007,
+    categoryName: "stationeryCollection",
     title: { uz: "Papka va fayllar", ru: "Папки и файлы" },
     price: "22 000UZS",
     category: "Kanselyariya tovarlari",
@@ -90,6 +97,7 @@ export const stationeryCollection = [
   },
   {
     id: 55008,
+    categoryName: "stationeryCollection",
     title: { uz: "Linichka va transportir", ru: "Линейка и транспортир" },
     price: "15 000UZS",
     category: "Kanselyariya tovarlari",
@@ -102,6 +110,7 @@ export const stationeryCollection = [
   },
   {
     id: 55009,
+    categoryName: "stationeryCollection",
     title: { uz: "Linichka va transportir", ru: "Линейка и транспортир" },
     price: "105 000UZS",
     category: "Kanselyariya tovarlari",
@@ -114,6 +123,7 @@ export const stationeryCollection = [
   },
   {
     id: 55010,
+    categoryName: "stationeryCollection",
     title: { uz: "ayollar uchun yozgen yupkalar va rubashkalar qeshge va ayollar", ru: "Летние юбки и блузки для женщин" },
     price: "500 000UZS",
     video: "video/SaveVid.Net_184F7EA2857F4536CE03EA92B582BDAE_video_dashinit.mp4",

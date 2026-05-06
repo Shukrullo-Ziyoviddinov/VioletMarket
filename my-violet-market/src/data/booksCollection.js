@@ -2,6 +2,7 @@
 export const booksCollection = [
   {
     id: 50001,
+    categoryName: "booksCollection",
     title: { uz: "Diniy kitob - Risola", ru: "Религиозная книга" },
     price: "45 000UZS",
     originalPrice: "60 000",
@@ -18,6 +19,7 @@ export const booksCollection = [
   },
   {
     id: 50002,
+    categoryName: "booksCollection",
     title: { uz: "Badiiy roman", ru: "Художественный роман" },
     price: "65 000UZS",
     originalPrice: "80 000",
@@ -33,6 +35,7 @@ export const booksCollection = [
   },
   {
     id: 50003,
+    categoryName: "booksCollection",
     title: { uz: "She'rlar to'plami", ru: "Сборник стихов" },
     price: "35 000UZS",
     category: "Kitoblar",
@@ -47,6 +50,7 @@ export const booksCollection = [
   },
   {
     id: 50004,
+    categoryName: "booksCollection",
     title: { uz: "Sarguzasht roman", ru: "Приключенческий роман" },
     price: "55 000UZS",
     originalPrice: "70 000",
@@ -63,6 +67,7 @@ export const booksCollection = [
   },
   {
     id: 50005,
+    categoryName: "booksCollection",
     title: { uz: "Arabcha diniy kitob", ru: "Религиозная книга на арабском" },
     price: "90 000UZS",
     originalPrice: "120 000",
@@ -79,6 +84,7 @@ export const booksCollection = [
   },
   {
     id: 50006,
+    categoryName: "booksCollection",
     title: { uz: "Sovg'a nashri", ru: "Подарочное издание" },
     price: "120 000UZS",
     category: "Kitoblar",
@@ -93,6 +99,7 @@ export const booksCollection = [
   },
   {
     id: 50007,
+    categoryName: "booksCollection",
     title: { uz: "Ruscha badiiy asar", ru: "Художественное произведение" },
     price: "48 000UZS",
     category: "Kitoblar",
@@ -107,6 +114,7 @@ export const booksCollection = [
   },
   {
     id: 50008,
+    categoryName: "booksCollection",
     title: { uz: "Diniy qo'llanma", ru: "Религиозное пособие" },
     price: "38 000UZS",
     originalPrice: "50 000",

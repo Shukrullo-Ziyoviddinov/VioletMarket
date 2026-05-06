@@ -2,6 +2,7 @@
 export const activeLifestyleCollection = [
   {
     id: 60001,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Sport sumkasi", ru: "Спортивная сумка" },
     price: "95 000UZS",
     originalPrice: "120 000",
@@ -16,6 +17,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60002,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Yugurish krossovkalari", ru: "Беговые кроссовки" },
     price: "350 000UZS",
     category: "Sport va Faol turmush",
@@ -28,6 +30,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60003,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Fitness qo'lqopi", ru: "Фитнес перчатки" },
     price: "45 000UZS",
     originalPrice: "60 000",
@@ -41,6 +44,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60004,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Shilqop mat", ru: "Йога коврик" },
     price: "75 000UZS",
     category: "Sport va Faol turmush",
@@ -53,6 +57,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60005,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Sport soati", ru: "Спортивные часы" },
     price: "280 000UZS",
     originalPrice: "320 000",
@@ -66,6 +71,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60006,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Suv shishasi", ru: "Бутылка для воды" },
     price: "35 000UZS",
     category: "Sport va Faol turmush",
@@ -78,6 +84,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60007,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Sport futbolkasi", ru: "Спортивная футболка" },
     price: "85 000UZS",
     category: "Sport va Faol turmush",
@@ -90,6 +97,7 @@ export const activeLifestyleCollection = [
   },
   {
     id: 60008,
+    categoryName: "activeLifestyleCollection",
     title: { uz: "Resistance lenta", ru: "Эспандер" },
     price: "55 000UZS",
     originalPrice: "70 000",
