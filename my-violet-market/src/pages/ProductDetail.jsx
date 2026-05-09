@@ -1094,12 +1094,6 @@ const ProductDetail = () => {
                       )}
                       <div className="technical-specs-table-wrap">
                         <table className="technical-specs-table">
-                          <thead>
-                            <tr>
-                              <th scope="col">{i18n.t('productDetail.specColLabel')}</th>
-                              <th scope="col">{i18n.t('productDetail.specColValue')}</th>
-                            </tr>
-                          </thead>
                           <tbody>
                             {structuredDescriptionBlock.technicalSpecs.map((row, idx) => (
                               <tr key={idx}>
@@ -1125,12 +1119,6 @@ const ProductDetail = () => {
                         )}
                         <div className="technical-specs-table-wrap">
                           <table className="technical-specs-table">
-                            <thead>
-                              <tr>
-                                <th scope="col">{i18n.t('productDetail.specColLabel')}</th>
-                                <th scope="col">{i18n.t('productDetail.specColValue')}</th>
-                              </tr>
-                            </thead>
                             <tbody>
                               {structuredDescriptionBlock.mainFeatures.map((item, idx) => (
                                 <tr key={idx}>
