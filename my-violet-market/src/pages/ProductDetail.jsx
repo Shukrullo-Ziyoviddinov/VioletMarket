@@ -541,9 +541,27 @@ const ProductDetail = () => {
     if (!block) return null;
     const hasMain = Array.isArray(block.mainFeatures) && block.mainFeatures.length > 0;
     const hasTech = Array.isArray(block.technicalSpecs) && block.technicalSpecs.length > 0;
-    if (!hasMain && !hasTech) return null;
+    const inf = block.info;
+    const hasInfo =
+      inf != null &&
+      (typeof inf === 'string'
+        ? inf.trim().length > 0
+        : typeof inf === 'object' &&
+          (String(inf.uz ?? '').trim().length > 0 || String(inf.ru ?? '').trim().length > 0));
+    if (!hasMain && !hasTech && !hasInfo) return null;
     return block;
   }, [productData?.description]);
+
+  /** Sarlavhadan keyin: description[0].info yoki mahsulotdagi info */
+  const descriptionIntroInfoText = useMemo(() => {
+    if (!productData) return '';
+    const d = productData.description;
+    const fromFirst =
+      Array.isArray(d) && d.length > 0 && d[0]?.info != null ? d[0].info : null;
+    const infoObj = fromFirst ?? productData.info ?? null;
+    if (infoObj == null) return '';
+    return getLocalizedText(infoObj, lang).trim();
+  }, [productData, lang]);
 
   if (!productData) return null;
 
@@ -674,7 +692,10 @@ const ProductDetail = () => {
     structuredDescriptionBlock.technicalSpecs.length > 0;
   /** Texnik jadval bor bo‘lsa, asosiy xususiyatlar «Ko‘proq» gacha yashirin */
   const shouldCollapseMainFeatures = hasStructuredTechnical && hasStructuredMainFeatures;
-  const hasDescription = (descriptionStr && descriptionStr.trim().length > 0) || hasStructuredDescription;
+  const hasDescription =
+    (descriptionStr && descriptionStr.trim().length > 0) ||
+    hasStructuredDescription ||
+    descriptionIntroInfoText.length > 0;
   const hasDescriptionImages = productData.descriptionImages && productData.descriptionImages.length > 0;
   const shouldShowDescription = hasDescription || hasDescriptionImages;
   const descriptionText = descriptionStr || '';
@@ -1066,21 +1087,26 @@ const ProductDetail = () => {
         {/* Product Description - Below grid on desktop */}
         {shouldShowDescription && (
           <div className="product-description auto-loader-bg" id="descriptionSection">
-            <div className="description-header">
-              <div className="header-icon auto-loader-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
+            <div className="description-intro">
+              <div className="description-header">
+                <div className="header-icon auto-loader-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
+                <h3>
+                  {structuredDescriptionBlock
+                    ? getLocalizedText(structuredDescriptionBlock.title, lang)
+                    : i18n.t('productDetail.descriptionHeader')}
+                </h3>
               </div>
-              <h3>
-                {structuredDescriptionBlock
-                  ? getLocalizedText(structuredDescriptionBlock.title, lang)
-                  : i18n.t('productDetail.descriptionHeader')}
-              </h3>
+              {descriptionIntroInfoText.length > 0 && (
+                <p className="description-info">{descriptionIntroInfoText}</p>
+              )}
             </div>
             {structuredDescriptionBlock && (
               <>

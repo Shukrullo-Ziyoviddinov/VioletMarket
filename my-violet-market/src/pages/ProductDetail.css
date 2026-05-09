@@ -739,6 +739,14 @@ body.share-menu-open {
   grid-column: 1 / -1;
 }
 
+.description-intro {
+  margin-bottom: 20px;
+}
+
+.description-intro .description-header {
+  margin-bottom: 0;
+}
+
 .description-header {
   display: flex;
   align-items: center;
@@ -771,6 +779,20 @@ body.share-menu-open {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
+}
+
+.description-info {
+  margin: 12px 0 0;
+  padding: 0 10px 0 62px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #4a5568;
+}
+
+@media (max-width: 576px) {
+  .description-info {
+    padding-left: 0;
+  }
 }
 
 .description {
@@ -1014,7 +1036,7 @@ body.no-scroll {
 @media (max-width: 600px) {
   .product-policy {
     gap: 18px;
-    padding: 24px;
+    padding: 15px;
   }
   
   .policy-block {
