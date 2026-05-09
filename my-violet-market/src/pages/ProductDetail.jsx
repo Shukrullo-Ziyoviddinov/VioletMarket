@@ -117,6 +117,10 @@ const ProductDetail = () => {
     }
   }, [productData]);
 
+  useEffect(() => {
+    setIsDescriptionExpanded(false);
+  }, [productData?.id]);
+
   const handleBackFromProductDetail = useCallback(() => {
     try {
       const rawHistory = sessionStorage.getItem(PRODUCT_DETAIL_HISTORY_KEY);
@@ -530,6 +534,17 @@ const ProductDetail = () => {
     setIsAddedToCart(isProductInCart);
   }, [isProductInCart]);
 
+  const structuredDescriptionBlock = useMemo(() => {
+    const d = productData?.description;
+    if (!Array.isArray(d) || d.length === 0) return null;
+    const block = d[0];
+    if (!block) return null;
+    const hasMain = Array.isArray(block.mainFeatures) && block.mainFeatures.length > 0;
+    const hasTech = Array.isArray(block.technicalSpecs) && block.technicalSpecs.length > 0;
+    if (!hasMain && !hasTech) return null;
+    return block;
+  }, [productData?.description]);
+
   if (!productData) return null;
 
   const currentPrice = getNumberPrice(selectedModel) ?? 
@@ -646,12 +661,28 @@ const ProductDetail = () => {
     setIsDescriptionExpanded(!isDescriptionExpanded);
   };
 
-  const descriptionStr = getLocalizedText(productData.description, lang);
-  const hasDescription = descriptionStr && descriptionStr.trim().length > 0;
+  const descriptionStr =
+    Array.isArray(productData.description) ? '' : getLocalizedText(productData.description, lang);
+  const hasStructuredDescription = !!structuredDescriptionBlock;
+  const hasStructuredMainFeatures =
+    !!structuredDescriptionBlock &&
+    Array.isArray(structuredDescriptionBlock.mainFeatures) &&
+    structuredDescriptionBlock.mainFeatures.length > 0;
+  const hasStructuredTechnical =
+    !!structuredDescriptionBlock &&
+    Array.isArray(structuredDescriptionBlock.technicalSpecs) &&
+    structuredDescriptionBlock.technicalSpecs.length > 0;
+  /** Texnik jadval bor bo‘lsa, asosiy xususiyatlar «Ko‘proq» gacha yashirin */
+  const shouldCollapseMainFeatures = hasStructuredTechnical && hasStructuredMainFeatures;
+  const hasDescription = (descriptionStr && descriptionStr.trim().length > 0) || hasStructuredDescription;
   const hasDescriptionImages = productData.descriptionImages && productData.descriptionImages.length > 0;
   const shouldShowDescription = hasDescription || hasDescriptionImages;
   const descriptionText = descriptionStr || '';
-  const isShortText = descriptionText.length <= 200;
+  const isShortText = !hasStructuredDescription && descriptionText.length <= 200;
+  const showReadMoreBtn =
+    shouldCollapseMainFeatures ||
+    hasDescriptionImages ||
+    (!hasStructuredDescription && descriptionText.length > 200);
 
 
   return (
@@ -1045,11 +1076,81 @@ const ProductDetail = () => {
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
               </div>
-              <h3>{i18n.t('productDetail.descriptionHeader')}</h3>
+              <h3>
+                {structuredDescriptionBlock
+                  ? getLocalizedText(structuredDescriptionBlock.title, lang)
+                  : i18n.t('productDetail.descriptionHeader')}
+              </h3>
             </div>
-            <p className={`description ${!isDescriptionExpanded && !isShortText ? 'collapsed' : ''}`}>
-              {descriptionText}
-            </p>
+            {structuredDescriptionBlock && (
+              <>
+                {Array.isArray(structuredDescriptionBlock.technicalSpecs) &&
+                  structuredDescriptionBlock.technicalSpecs.length > 0 && (
+                    <div className="description description--technical">
+                      {structuredDescriptionBlock.technicalHeading && (
+                        <h4 className="description-section-subtitle">
+                          {getLocalizedText(structuredDescriptionBlock.technicalHeading, lang)}
+                        </h4>
+                      )}
+                      <div className="technical-specs-table-wrap">
+                        <table className="technical-specs-table">
+                          <thead>
+                            <tr>
+                              <th scope="col">{i18n.t('productDetail.specColLabel')}</th>
+                              <th scope="col">{i18n.t('productDetail.specColValue')}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {structuredDescriptionBlock.technicalSpecs.map((row, idx) => (
+                              <tr key={idx}>
+                                <td>{getLocalizedText(row.label, lang)}</td>
+                                <td>{getLocalizedText(row.value, lang)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                {Array.isArray(structuredDescriptionBlock.mainFeatures) &&
+                  structuredDescriptionBlock.mainFeatures.length > 0 && (
+                    <div
+                      className={`description-collapsible${!shouldCollapseMainFeatures || isDescriptionExpanded ? ' show' : ''}`}
+                    >
+                      <div className="description description--technical">
+                        {structuredDescriptionBlock.mainFeaturesHeading && (
+                          <h4 className="description-section-subtitle">
+                            {getLocalizedText(structuredDescriptionBlock.mainFeaturesHeading, lang)}
+                          </h4>
+                        )}
+                        <div className="technical-specs-table-wrap">
+                          <table className="technical-specs-table">
+                            <thead>
+                              <tr>
+                                <th scope="col">{i18n.t('productDetail.specColLabel')}</th>
+                                <th scope="col">{i18n.t('productDetail.specColValue')}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {structuredDescriptionBlock.mainFeatures.map((item, idx) => (
+                                <tr key={idx}>
+                                  <td>{getLocalizedText(item.title, lang)}</td>
+                                  <td>{getLocalizedText(item.text, lang)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </>
+            )}
+            {!structuredDescriptionBlock && !!descriptionText && (
+              <p className={`description ${!isDescriptionExpanded && !isShortText ? 'collapsed' : ''}`}>
+                {descriptionText}
+              </p>
+            )}
             {hasDescriptionImages && (
               <div className={`description-images ${isDescriptionExpanded ? 'show' : ''}`}>
                 {productData.descriptionImages.map((imgSrc, index) => (
@@ -1064,7 +1165,7 @@ const ProductDetail = () => {
                 ))}
               </div>
             )}
-            {!isShortText && (
+            {showReadMoreBtn && (
               <div className="read-more">
                 <button className="read-more-btn" onClick={toggleDescription}>
                   {isDescriptionExpanded ? 'Kamroq xususiyatlar' : 'Ko\'proq xususiyatlar'}

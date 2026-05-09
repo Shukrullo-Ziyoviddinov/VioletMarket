@@ -89,6 +89,8 @@
   },
   "productDetail": {
     "descriptionHeader": "Характеристики товара",
+    "specColLabel": "Наименование",
+    "specColValue": "Значение",
     "policyDeliveryTitle": "Срок доставки",
     "policyDeliveryText": "Доставка по Узбекистану от 4 до 10 дней. При заказе из раздела выгодных товаров — от 10 до 18 дней.",
     "policyServiceTitle": "Служба доставки",

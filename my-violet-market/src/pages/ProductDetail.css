@@ -730,7 +730,7 @@ body.share-menu-open {
 
 /* Product Description */
 .product-description {
-  padding: 30px;
+  padding: 15px;
   margin-bottom: 30px;
   margin-top: 30px;
   border-radius: 20px;
@@ -795,6 +795,65 @@ body.share-menu-open {
   height: 20px;
   background: linear-gradient(transparent, white);
   transition: opacity 0.3s ease-out;
+}
+
+.product-description .description--technical + .description-collapsible.show {
+  margin-top: 24px;
+}
+
+.description-collapsible {
+  display: none;
+}
+
+.description-collapsible.show {
+  display: block;
+}
+
+.description--technical {
+  margin-bottom: 16px;
+}
+
+.description-section-subtitle {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.technical-specs-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.technical-specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.technical-specs-table th,
+.technical-specs-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: top;
+}
+
+.technical-specs-table th {
+  background: #f7fafc;
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+}
+
+.technical-specs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.technical-specs-table tbody tr:hover {
+  background: #faf5ff;
 }
 
 .description-images {

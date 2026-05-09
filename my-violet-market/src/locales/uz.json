@@ -89,6 +89,8 @@
   },
   "productDetail": {
     "descriptionHeader": "Maxsulot xususiyatlari",
+    "specColLabel": "O'zbekcha nomi",
+    "specColValue": "Qiymat",
     "policyDeliveryTitle": "Yetkazib berish muddati",
     "policyDeliveryText": "Maxsulotni 4 kundan 10 kungacha O'zbekiston bo'ylab yetkazib beriladi. Agar siz hamyonbop mahsulotlar bo'limidan zakas qilsangiz, u holda 10–18 kun ichida yetkaziladi.",
     "policyServiceTitle": "Yetkazib berish xizmati",
