@@ -823,7 +823,7 @@ body.share-menu-open {
 .technical-specs-table-wrap {
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid #a4a6a8;
+  border: 1px solid #ccc;
 }
 
 .technical-specs-table {
