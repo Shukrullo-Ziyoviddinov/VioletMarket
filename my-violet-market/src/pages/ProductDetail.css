@@ -130,8 +130,8 @@
 }
 
 .thumbnail {
-  width: 70px;
-  height: 100px;
+  width: 65px;
+  height: 80px;
   object-fit: cover;
   border-radius: 10px;
   cursor: pointer;
@@ -145,8 +145,8 @@
 }
 
 .product-info .product-title {
-  font-size: 1.4rem;
-  font-weight: bold;
+  font-size: 1.3rem;
+  font-weight: bol6;
   background: white;
   border-radius: 20px;
   padding: 7px 10px;
