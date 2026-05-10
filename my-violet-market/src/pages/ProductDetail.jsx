@@ -18,6 +18,12 @@ import CommentsModal from '../components/CommentsModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
+import { allProducts } from '../data/products';
+import {
+  isValidTypeSize,
+  resolveSizeChartGuideSrc,
+  typeSizeI18nKey,
+} from '../constants/sizeChartKind';
 import './ProductDetail.css';
 
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
@@ -67,22 +73,24 @@ const ProductDetail = () => {
     if (savedProduct) {
       try {
         const product = JSON.parse(savedProduct);
+        const latestProduct =
+          allProducts.find((p) => String(p.id) === String(product?.id)) || product;
         // Debug: product ma'lumotlarini tekshirish
         console.log('Product loaded:', {
-          id: product.id,
-          countries: product.countries,
-          deliveryInfo: product.deliveryInfo,
-          hasCountries: !!product.countries,
-          isArray: Array.isArray(product.countries),
-          hasUzb: product.countries?.some(c => c?.toLowerCase() === "uzb"),
-          hasDeliveryInfo: !!product.deliveryInfo
+          id: latestProduct.id,
+          countries: latestProduct.countries,
+          deliveryInfo: latestProduct.deliveryInfo,
+          hasCountries: !!latestProduct.countries,
+          isArray: Array.isArray(latestProduct.countries),
+          hasUzb: latestProduct.countries?.some(c => c?.toLowerCase() === "uzb"),
+          hasDeliveryInfo: !!latestProduct.deliveryInfo
         });
-        setProductData(product);
-        addToSearchHistory(product);
-        setSelectedColor(product.colors?.[0] || null);
-        setSelectedSize(product.colors?.[0]?.sizes?.[0] || null);
-        setSelectedStorage(product.colors?.[0]?.storage?.[0] || null);
-        setSelectedModel(product.colors?.[0]?.models?.[0] || null);
+        setProductData(latestProduct);
+        addToSearchHistory(latestProduct);
+        setSelectedColor(latestProduct.colors?.[0] || null);
+        setSelectedSize(latestProduct.colors?.[0]?.sizes?.[0] || null);
+        setSelectedStorage(latestProduct.colors?.[0]?.storage?.[0] || null);
+        setSelectedModel(latestProduct.colors?.[0]?.models?.[0] || null);
         setCurrentImageIndex(0);
         setImageErrors(new Set());
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -563,6 +571,84 @@ const ProductDetail = () => {
     return getLocalizedText(infoObj, lang).trim();
   }, [productData, lang]);
 
+  const normalizedSizeChart = useMemo(() => {
+    const raw = productData?.sizeChart;
+    if (!raw) return null;
+
+    if (Array.isArray(raw)) {
+      if (raw.length === 0) return null;
+      if (typeof raw[0] === 'string') {
+        return {
+          mode: 'legacyImages',
+          images: raw.map((src) => ({ src })),
+        };
+      }
+      return null;
+    }
+
+    if (typeof raw === 'object') {
+      const measureColumns = Array.isArray(raw.measureColumns) ? raw.measureColumns : [];
+      let columns = Array.isArray(raw.columns) ? raw.columns : [];
+      let rows = Array.isArray(raw.rows) ? raw.rows : [];
+
+      if (measureColumns.length > 0) {
+        const lengths = measureColumns.map((m) =>
+          Array.isArray(m?.values) ? m.values.length : 0
+        );
+        const rowCount =
+          lengths.length > 0 ? Math.min(...lengths) : 0;
+        if (rowCount > 0) {
+          columns = measureColumns.map((m) => m.label);
+          rows = [];
+          for (let i = 0; i < rowCount; i += 1) {
+            rows.push(measureColumns.map((m) => m.values[i]));
+          }
+        }
+      }
+
+      const guideImagesRaw = Array.isArray(raw.guideImages) ? raw.guideImages : [];
+      const typeSizeRaw = raw.typeSize ?? raw.chartKind;
+      const typeSize = isValidTypeSize(typeSizeRaw) ? typeSizeRaw : undefined;
+      const guideImages = guideImagesRaw
+        .map((img) => {
+          const itemRaw = img?.typeSize ?? img?.kind;
+          const itemTypeSize = isValidTypeSize(itemRaw) ? itemRaw : undefined;
+          const src = resolveSizeChartGuideSrc({
+            explicitSrc: img?.src,
+            itemTypeSize,
+            parentTypeSize: typeSize,
+          });
+          const { kind: _legacyKind, chartKind: _legacyImgChart, ...rest } = img;
+          return { ...rest, typeSize: itemTypeSize, src };
+        })
+        .filter((img) => Boolean(img.src));
+      const images = Array.isArray(raw.images) ? raw.images : [];
+      const notes = Array.isArray(raw.notes) ? raw.notes : [];
+
+      const hasTable = columns.length > 0 && rows.length > 0;
+      const hasStructuredContent =
+        hasTable || guideImages.length > 0 || images.length > 0;
+      if (!hasStructuredContent) return null;
+
+      const { chartKind: _legacyChartKind, ...rawRest } = raw;
+
+      return {
+        mode: 'structured',
+        ...rawRest,
+        typeSize,
+        columns,
+        rows,
+        guideImages,
+        images,
+        notes,
+      };
+    }
+
+    return null;
+  }, [productData?.sizeChart]);
+
+  const hasSizeChart = !!normalizedSizeChart;
+
   if (!productData) return null;
 
   const currentPrice = getNumberPrice(selectedModel) ?? 
@@ -933,7 +1019,7 @@ const ProductDetail = () => {
                   })}
                 </div>
                 {/* Size Chart */}
-                {productData.sizeChart && productData.sizeChart.length > 0 && (
+                {hasSizeChart && (
                   <div className="size-chart">
                     <button 
                       className="size-chart-trigger"
@@ -1193,7 +1279,7 @@ const ProductDetail = () => {
         <CommentsSection productId={productData.id} />
 
         {/* Size Chart Modal */}
-        {isSizeChartOpen && productData.sizeChart && productData.sizeChart.length > 0 && (
+        {isSizeChartOpen && hasSizeChart && (
           <div 
             className="size-chart-modal" 
             onClick={(e) => {
@@ -1204,7 +1290,15 @@ const ProductDetail = () => {
               }
             }}
           >
-            <div className="size-chart-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="size-chart-modal-content"
+              onClick={(e) => e.stopPropagation()}
+              data-type-size={
+                normalizedSizeChart.mode === 'structured' && normalizedSizeChart.typeSize
+                  ? String(normalizedSizeChart.typeSize)
+                  : undefined
+              }
+            >
               <button 
                 className="size-chart-close"
                 onClick={(e) => {
@@ -1216,19 +1310,128 @@ const ProductDetail = () => {
               >
                 &times;
               </button>
-              <h2>{i18n.t('productDetail.sizeChartLabel')}</h2>
-              <div className="size-chart-images">
-                {productData.sizeChart.map((imgSrc, index) => (
-                  <img 
-                    key={index}
-                    src={normalizeImagePath(imgSrc)} 
-                    alt={i18n.t('productDetail.sizeChartLabel')}
-                    onError={(e) => {
-                      e.target.src = normalizeImagePath('/img/no-image.png');
-                    }}
-                  />
-                ))}
-              </div>
+              <h2>
+                {normalizedSizeChart.mode === 'structured'
+                  ? (getLocalizedText(normalizedSizeChart.title, lang) || i18n.t('productDetail.sizeChartLabel'))
+                  : i18n.t('productDetail.sizeChartLabel')}
+              </h2>
+
+              {normalizedSizeChart.mode === 'structured' && (
+                <>
+                  {getLocalizedText(normalizedSizeChart.instruction, lang) && (
+                    <div className="size-chart-section">
+                      <p className="size-chart-instruction">
+                        {getLocalizedText(normalizedSizeChart.instruction, lang)}
+                      </p>
+                    </div>
+                  )}
+
+                  {normalizedSizeChart.columns.length > 0 && normalizedSizeChart.rows.length > 0 && (
+                    <div className="size-chart-section">
+                      <div className="size-chart-table-wrap">
+                        <table className="size-chart-table">
+                          <thead>
+                            <tr>
+                              {normalizedSizeChart.columns.map((col, index) => (
+                                <th
+                                  key={index}
+                                  className={index === 0 ? 'size-chart-col-size' : undefined}
+                                >
+                                  {getLocalizedText(col, lang) || String(col)}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {normalizedSizeChart.rows.map((row, rowIdx) => (
+                              <tr key={rowIdx}>
+                                {Array.isArray(row) && row.map((cell, cellIdx) => (
+                                  <td
+                                    key={cellIdx}
+                                    className={cellIdx === 0 ? 'size-chart-col-size' : undefined}
+                                  >
+                                    {getLocalizedText(cell, lang) || String(cell)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {normalizedSizeChart.guideImages.length > 0 && (
+                    <div className="size-chart-section">
+                      <p className="size-chart-diagram-heading">
+                        {i18n.t('productDetail.sizeChartDiagramHint')}
+                      </p>
+                      <div className="size-chart-images">
+                        {normalizedSizeChart.guideImages.map((img, index) => {
+                          const imgTypeSize = img.typeSize ?? normalizedSizeChart.typeSize;
+                          const typeAlt =
+                            imgTypeSize &&
+                            isValidTypeSize(imgTypeSize) &&
+                            i18n.exists(typeSizeI18nKey(imgTypeSize))
+                              ? i18n.t(typeSizeI18nKey(imgTypeSize))
+                              : '';
+                          const diagramAlt =
+                            getLocalizedText(img.title, lang) ||
+                            typeAlt ||
+                            i18n.t('productDetail.sizeChartLabel');
+                          return (
+                          <figure
+                            key={index}
+                            className="size-chart-guide"
+                            data-type-size={
+                              imgTypeSize && isValidTypeSize(imgTypeSize)
+                                ? imgTypeSize
+                                : undefined
+                            }
+                          >
+                            <img
+                              src={normalizeImagePath(img.src)}
+                              alt={diagramAlt}
+                              onError={(e) => {
+                                e.target.src = normalizeImagePath('/img/no-image.png');
+                              }}
+                            />
+                            {getLocalizedText(img.title, lang) && (
+                              <figcaption>{getLocalizedText(img.title, lang)}</figcaption>
+                            )}
+                          </figure>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {normalizedSizeChart.notes.length > 0 && (
+                    <div className="size-chart-section">
+                      <ul className="size-chart-notes">
+                        {normalizedSizeChart.notes.map((note, index) => (
+                          <li key={index}>{getLocalizedText(note, lang) || String(note)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {normalizedSizeChart.mode === 'legacyImages' && (
+                <div className="size-chart-images">
+                  {normalizedSizeChart.images.map((img, index) => (
+                    <img 
+                      key={index}
+                      src={normalizeImagePath(img.src)} 
+                      alt={i18n.t('productDetail.sizeChartLabel')}
+                      onError={(e) => {
+                        e.target.src = normalizeImagePath('/img/no-image.png');
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

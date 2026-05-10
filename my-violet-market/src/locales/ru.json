@@ -104,6 +104,12 @@
     "storageLabel": "Память:",
     "modelLabel": "Модель:",
     "sizeChartLabel": "Таблица размеров",
+    "sizeChartKind": {
+      "footwear": "Размерная сетка обуви",
+      "upper_body": "Размеры верхней одежды",
+      "pants": "Размеры брюк / низа"
+    },
+    "sizeChartDiagramHint": "Схема замеров",
     "deliveryInfoFallback": "Информация о доставке",
     "addToCart": "В корзину",
     "goToCart": "Перейти в корзину",

@@ -216,11 +216,68 @@
       "img/yashilkeyim-2.jfif",
       "img/yashilkeyim-3.jfif"
     ],
-    "sizeChart": [
-      "img/ayollaryupkasi-oq.jpg",
-      "img/ayollaryupkasi-oq.jpg",
-      "img/grey-keyim-2.jpg"
-    ],
+    "sizeChart": {
+      "typeSize": "footwear",
+      "title": {
+        "uz": "Oyoq kiyim o'lcham jadvali",
+        "ru": "Таблица размеров обуви"
+      },
+      "instruction": {
+        "uz": "Oyoq uzunligini o'lchab, jadvaldagi mos EU o'lchamni tanlang.",
+        "ru": "Измерьте длину стопы и выберите соответствующий размер EU в таблице."
+      },
+      "measureColumns": [
+        {
+          "label": {
+            "uz": "O'lcham",
+            "ru": "Размер"
+          },
+          "values": [
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Bo'yi",
+            "ru": "Длина"
+          },
+          "values": [
+            "22.5",
+            "23",
+            "24",
+            "24.5",
+            "25.5",
+            "26",
+            "26.5",
+            "27.5",
+            "28"
+          ]
+        }
+      ],
+      "guideImages": [
+        {
+          "typeSize": "footwear",
+          "title": {
+            "uz": "Oyoq o'lchovi",
+            "ru": "Измерение стопы"
+          }
+        }
+      ],
+      "notes": [
+        {
+          "uz": "Agar ikkita o'lcham orasida bo'lsangiz, kattaroq o'lchamni tanlang.",
+          "ru": "Если размер между двумя значениями, выбирайте больший."
+        }
+      ]
+    },
     "relatedGroups": [
       {
         "title": {
@@ -534,10 +591,86 @@
       "img/yashilkeyim-2.jfif",
       "img/yashilkeyim-3.jfif"
     ],
-    "sizeChart": [
-      "img/blue-keyim-3.webp",
-      "img/blue-keyim-2.webp"
-    ],
+    "sizeChart": {
+      "typeSize": "upper_body",
+      "title": {
+        "uz": "Tana kiyimlari o'lcham jadvali",
+        "ru": "Таблица размеров одежды"
+      },
+      "instruction": {
+        "uz": "Ko'krak eni, yelka eni va uzunlik bo'yicha o'lchamni tanlang.",
+        "ru": "Выберите размер по ширине груди, плеч и длине изделия."
+      },
+      "measureColumns": [
+        {
+          "label": {
+            "uz": "O'lcham",
+            "ru": "Размер"
+          },
+          "values": [
+            "S",
+            "M",
+            "L",
+            "XL",
+            "XXL"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Ko'krak eni",
+            "ru": "Грудь"
+          },
+          "values": [
+            "88-94",
+            "94-100",
+            "100-106",
+            "106-112",
+            "112-118"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Yelka eni",
+            "ru": "Плечо"
+          },
+          "values": [
+            "40-42",
+            "42-44",
+            "44-46",
+            "46-48",
+            "48-50"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Bo'yi",
+            "ru": "Длина"
+          },
+          "values": [
+            "62-66",
+            "64-68",
+            "66-70",
+            "68-72",
+            "70-74"
+          ]
+        }
+      ],
+      "guideImages": [
+        {
+          "typeSize": "upper_body",
+          "title": {
+            "uz": "Tana o'lchovi",
+            "ru": "Схема замеров одежды"
+          }
+        }
+      ],
+      "notes": [
+        {
+          "uz": "Erkinroq turishi uchun bir o'lcham katta tanlashingiz mumkin.",
+          "ru": "Для более свободной посадки можно выбрать на размер больше."
+        }
+      ]
+    },
     "colors": [
       {
         "name": "Blue",
@@ -672,13 +805,90 @@
     "countries": [
       "USA"
     ],
-    "sizeChart": [
-      "img/blue-keyim-3.webp",
-      "img/blue-keyim-2.webp",
-      "img/blue-keyim-2.webp",
-      "img/blue-keyim-3.webp",
-      "img/blue-keyim-2.webp"
-    ],
+    "sizeChart": {
+      "typeSize": "pants",
+      "title": {
+        "uz": "Shim o'lcham jadvali",
+        "ru": "Таблица размеров брюк"
+      },
+      "instruction": {
+        "uz": "Bel, son va ichki bo'y o'lchoviga mos variantni tanlang.",
+        "ru": "Подберите вариант по талии, бёдрам и внутренней длине."
+      },
+      "measureColumns": [
+        {
+          "label": {
+            "uz": "O'lcham",
+            "ru": "Размер"
+          },
+          "values": [
+            "28 (XS)",
+            "30 (S)",
+            "32 (M)",
+            "34 (L)",
+            "36 (XL)",
+            "38 (XXL)"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Bel",
+            "ru": "Талия"
+          },
+          "values": [
+            "70-74",
+            "75-79",
+            "80-85",
+            "86-91",
+            "92-98",
+            "99-105"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Son",
+            "ru": "Бёдра"
+          },
+          "values": [
+            "86-90",
+            "91-95",
+            "96-101",
+            "102-107",
+            "108-114",
+            "115-121"
+          ]
+        },
+        {
+          "label": {
+            "uz": "Bo'yi",
+            "ru": "Длина"
+          },
+          "values": [
+            "78-80",
+            "79-81",
+            "80-82",
+            "81-83",
+            "82-84",
+            "83-85"
+          ]
+        }
+      ],
+      "guideImages": [
+        {
+          "typeSize": "pants",
+          "title": {
+            "uz": "Shim o'lchovi",
+            "ru": "Схема замеров брюк"
+          }
+        }
+      ],
+      "notes": [
+        {
+          "uz": "Qulaylik uchun belda 1-2 sm zaxira qoldirish tavsiya etiladi.",
+          "ru": "Для комфорта рекомендуется оставить 1-2 см запаса по талии."
+        }
+      ]
+    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."

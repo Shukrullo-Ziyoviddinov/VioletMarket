@@ -4,6 +4,12 @@
  * mahsulotlarni (agar JSONda yo'q bo'lsa) qo'shadi.
  *
  * Ishga tushirish: node scripts/normalize-product-json.cjs
+ *
+ * sizeChart.typeSize — tanlanadigan qiymatlar: src/constants/sizeChartKind.js
+ *   (TYPE_SIZE_VALUES). Tarjima: locales da productDetail.sizeChartKind.<qiymat>
+ * guideImages[].typeSize — xuddi shu ro'yxatdan (ixtiyoriy; sizeChart.typeSize
+ *   ham ishlatiladi). Eski JSON: chartKind / kind hali o'qiladi.
+ * guideImages[].src — ixtiyoriy; bo'sh bo'lsa typeSize bo'yicha standart rasm.
  */
 const fs = require('fs');
 const path = require('path');

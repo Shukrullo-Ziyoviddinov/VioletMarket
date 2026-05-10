@@ -104,6 +104,12 @@
     "storageLabel": "Xotira:",
     "modelLabel": "Model:",
     "sizeChartLabel": "O'lchamlar jadvali",
+    "sizeChartKind": {
+      "footwear": "Oyoq kiyimi o'lchami",
+      "upper_body": "Tana (yuqori) kiyim o'lchami",
+      "pants": "Shim / pastki kiyim o'lchami"
+    },
+    "sizeChartDiagramHint": "O'lchov sxemasi",
     "deliveryInfoFallback": "Yetkazib berish ma'lumotlari",
     "addToCart": "Savatga qo'shish",
     "goToCart": "Savatga o'tish",
