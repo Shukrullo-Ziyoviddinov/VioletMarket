@@ -115,7 +115,8 @@
   left: 10px;
   background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 10px 15px;
+  padding: 5px 9px;
+  font-size: 0.8rem;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -147,7 +148,7 @@
 .product-info .product-title {
   font-size: 1.3rem;
   font-weight: bol6;
-  background: white;
+  /* background: white; */
   border-radius: 20px;
   padding: 7px 10px;
   margin-bottom: 20px;
@@ -1065,6 +1066,7 @@ body.no-scroll {
 .colors-container {
   gap: 2px;
 }
+
 }
 
 @media (max-width: 500px) {
@@ -1168,7 +1170,7 @@ body.no-scroll {
 }
 
 .product-info .product-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 }
 

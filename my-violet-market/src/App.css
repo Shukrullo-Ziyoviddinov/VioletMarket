@@ -31,7 +31,7 @@
 img {
   -webkit-user-drag: none;
   user-drag: none;
-  pointer-events: none;
+  pointer-events: auto; /* yoki bu qatorni umuman o‘chirib tashlang */
 }
 
 /* Link va buttonlarda ham highlight chiqmasin */
