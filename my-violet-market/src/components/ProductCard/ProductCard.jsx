@@ -99,6 +99,7 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
   const isLiked = isInWishlist(product.id);
 
   return (
+    <>
     <div 
       className="product-card" 
       onClick={(e) => {
@@ -188,16 +189,16 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
           </ButtonLoader>
         </button>
       )}
-
-      <CartModal
-        product={product}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAdd={() => {
-          showToast(i18n.t('common.addedToCart'), 'success');
-        }}
-      />
     </div>
+    <CartModal
+      product={product}
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      onAdd={() => {
+        showToast(i18n.t('common.addedToCart'), 'success');
+      }}
+    />
+    </>
   );
 };
 

@@ -197,10 +197,19 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
       }
     : undefined;
 
+  /** Fon bosilganda yopish — modal DOM dan ketgach sintetik click ProductCard ga yetmasligi uchun biroz kechiktirish */
+  const handleBackdropClick = useCallback((e) => {
+    if (e.target !== e.currentTarget) return;
+    e.stopPropagation();
+    window.setTimeout(() => {
+      onCloseRef.current();
+    }, 50);
+  }, []);
+
   if (!isOpen || !product) return null;
 
   const modalContent = (
-    <div className="cart-modal-overlay" onClick={onClose}>
+    <div className="cart-modal-overlay" onClick={handleBackdropClick}>
       <div className="cart-modal-sheet" style={sheetWrapStyle}>
         <div
           className="cart-modal-content"

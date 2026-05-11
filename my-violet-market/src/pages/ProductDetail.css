@@ -1173,6 +1173,15 @@ body.no-scroll {
     display: none !important;
   }
 
+  /* Katalog menyusi: navbar yo‘q paytda overlay butun ekranni qoplashi kerak (Navbar.css dagi top: 5.5rem bo‘shlig‘i yo‘qoladi) */
+  body.product-detail-page-active .dropdown-overlay {
+    top: 0 !important;
+    padding-top: env(safe-area-inset-top, 0px);
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
   body.product-detail-page-active .product-detail-page {
     margin-top: 0 !important;
   }
