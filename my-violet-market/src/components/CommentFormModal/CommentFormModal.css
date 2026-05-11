@@ -326,10 +326,12 @@
   .comment-form-modal-content {
     border-radius: 16px 16px 0 0;
     max-width: 640px;
-    max-height: min(96vh, 900px);
+    /* Savat modalidagi kabi: tepada dim zona, sheet pastga yaqin */
+    max-height: min(82vh, 720px);
     padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
     animation: commentFormModalSheetIn 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18);
+    margin: 0 auto;
   }
 }
 
