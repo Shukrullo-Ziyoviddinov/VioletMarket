@@ -23,7 +23,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  animation: slideUp 0.3s ease-out;
+  animation: commentFormModalSlideUp 0.3s ease-out;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -87,7 +87,7 @@
 }
 
 .comment-form-product-name {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #333;
 }
@@ -295,7 +295,7 @@
   }
 }
 
-@keyframes slideUp {
+@keyframes commentFormModalSlideUp {
   from {
     opacity: 0;
     transform: translateY(30px);
@@ -306,10 +306,37 @@
   }
 }
 
+@keyframes commentFormModalSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .comment-form-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .comment-form-modal-content {
+    border-radius: 16px 16px 0 0;
+    max-width: 640px;
+    max-height: min(96vh, 900px);
+    padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    animation: commentFormModalSheetIn 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18);
+  }
+}
+
 @media (max-width: 600px) {
   .comment-form-modal-content {
     padding: 20px;
-    max-height: 95vh;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
 
   .comment-form-modal-title {
