@@ -34,7 +34,8 @@
   overflow-y: hidden;
 }
 
-.scrollable-container.product > * {
+/* Mahsulot qatorlari: karta kengligi saqlansin. size-chart-guidance-card esa flex: 1 1 0 bilan yonma-yon bo'lishi kerak */
+.scrollable-container.product > *:not(.size-chart-guidance-card) {
   flex-shrink: 0;
   flex-grow: 0;
 }

@@ -270,12 +270,6 @@
             "ru": "Измерение стопы"
           }
         }
-      ],
-      "notes": [
-        {
-          "uz": "Agar ikkita o'lcham orasida bo'lsangiz, kattaroq o'lchamni tanlang.",
-          "ru": "Если размер между двумя значениями, выбирайте больший."
-        }
       ]
     },
     "relatedGroups": [
@@ -663,12 +657,6 @@
             "ru": "Схема замеров одежды"
           }
         }
-      ],
-      "notes": [
-        {
-          "uz": "Erkinroq turishi uchun bir o'lcham katta tanlashingiz mumkin.",
-          "ru": "Для более свободной посадки можно выбрать на размер больше."
-        }
       ]
     },
     "colors": [
@@ -880,12 +868,6 @@
             "uz": "Shim o'lchovi",
             "ru": "Схема замеров брюк"
           }
-        }
-      ],
-      "notes": [
-        {
-          "uz": "Qulaylik uchun belda 1-2 sm zaxira qoldirish tavsiya etiladi.",
-          "ru": "Для комфорта рекомендуется оставить 1-2 см запаса по талии."
         }
       ]
     },

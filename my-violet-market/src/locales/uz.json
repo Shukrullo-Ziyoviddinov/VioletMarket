@@ -111,6 +111,12 @@
     },
     "sizeChartDiagramHint": "O'lchov sxemasi",
     "sizeChartPickSize": "O'lchamni tanlang",
+    "sizeChartGuidance": {
+      "measureTitle": "Qanday o'lchanadi",
+      "measureText": "Santimetr lenta bilan o'lchang va jadvaldan mos o'lchamni tanlang.",
+      "noteTitle": "Eslatma",
+      "noteText": "Ushbu jadval umumiy o'lchamlar asosida tuzilgan. Mahsulot turiga qarab farq qilishi mumkin."
+    },
     "deliveryInfoFallback": "Yetkazib berish ma'lumotlari",
     "addToCart": "Savatga qo'shish",
     "goToCart": "Savatga o'tish",

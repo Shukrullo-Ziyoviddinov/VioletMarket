@@ -21,6 +21,7 @@ import DragScroll from '../components/DragScroll';
 import SizeChartUpperBodyDiagram from '../components/SizeChartUpperBodyDiagram/SizeChartUpperBodyDiagram';
 import SizeChartFootwearDiagram from '../components/SizeChartFootwearDiagram/SizeChartFootwearDiagram';
 import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChartPantsDiagram';
+import SizeChartGuidanceFooter from '../components/SizeChartGuidanceFooter/SizeChartGuidanceFooter';
 import { allProducts } from '../data/products';
 import {
   isValidTypeSize,
@@ -626,14 +627,13 @@ const ProductDetail = () => {
         })
         .filter((img) => Boolean(img.src));
       const images = Array.isArray(raw.images) ? raw.images : [];
-      const notes = Array.isArray(raw.notes) ? raw.notes : [];
 
       const hasTable = columns.length > 0 && rows.length > 0;
       const hasStructuredContent =
         hasTable || guideImages.length > 0 || images.length > 0;
       if (!hasStructuredContent) return null;
 
-      const { chartKind: _legacyChartKind, ...rawRest } = raw;
+      const { chartKind: _legacyChartKind, notes: _omitNotes, ...rawRest } = raw;
 
       return {
         mode: 'structured',
@@ -643,7 +643,6 @@ const ProductDetail = () => {
         rows,
         guideImages,
         images,
-        notes,
       };
     }
 
@@ -1449,15 +1448,7 @@ const ProductDetail = () => {
                     );
                   })()}
 
-                  {normalizedSizeChart.notes.length > 0 && (
-                    <div className="size-chart-section">
-                      <ul className="size-chart-notes">
-                        {normalizedSizeChart.notes.map((note, index) => (
-                          <li key={index}>{getLocalizedText(note, lang) || String(note)}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <SizeChartGuidanceFooter />
                 </>
               )}
 

@@ -1,0 +1,85 @@
+.size-chart-section--guidance {
+  margin-top: 4px;
+}
+
+.size-chart-guidance-scroll.scrollable-section {
+  margin-bottom: 0;
+}
+
+.size-chart-guidance-scroll .scroll-btn.prev,
+.size-chart-guidance-scroll .scroll-btn.next {
+  display: none;
+}
+
+.size-chart-guidance-scroll .scrollable-wrapper {
+  margin: 0;
+}
+
+.size-chart-guidance-scroll .scrollable-container {
+  gap: 12px;
+  padding: 12px 4px 4px;
+  align-items: stretch;
+  background: #f3f4f6;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.size-chart-guidance-card {
+  flex: 1 1 0;
+  min-width: 240px;
+  max-width: none;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.size-chart-guidance-card__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.size-chart-guidance-card__icon i {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.size-chart-guidance-card:nth-child(2) .size-chart-guidance-card__icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.size-chart-guidance-card__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.size-chart-guidance-card__title {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.size-chart-guidance-card__text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #4b5563;
+}

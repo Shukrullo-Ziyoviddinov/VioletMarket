@@ -689,6 +689,12 @@ body.share-menu-open {
   border: 1px solid #eef2f7;
   border-radius: 8px;
   background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.size-chart-table-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .size-chart-table {
@@ -739,16 +745,6 @@ body.share-menu-open {
 .size-chart-guide figcaption {
   font-size: 0.82rem;
   color: #4b5563;
-}
-
-.size-chart-notes {
-  margin: 0;
-  padding-left: 18px;
-  color: #4b5563;
-}
-
-.size-chart-notes li {
-  margin-bottom: 6px;
 }
 
 @keyframes fadeIn {
