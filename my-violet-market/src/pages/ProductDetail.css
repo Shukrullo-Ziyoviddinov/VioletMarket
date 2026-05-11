@@ -938,13 +938,15 @@ body.share-menu-open {
 }
 
 .technical-specs-table-wrap {
-  overflow-x: auto;
+  overflow-x: visible;
+  overflow-y: visible;
   border-radius: 12px;
   border: 1px solid #ccc;
 }
 
 .technical-specs-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9rem;
   color: #4a5568;
@@ -955,12 +957,17 @@ body.share-menu-open {
   text-align: left;
   border-bottom: 1px solid #a4a6a8;
   vertical-align: top;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .technical-specs-table td:first-child {
   font-weight: 600;
   color: #2d3748;
-  white-space: nowrap;
+  width: 36%;
+  max-width: 40%;
+  background: #e8e5e5;
 }
 
 .technical-specs-table tbody tr:last-child td {
