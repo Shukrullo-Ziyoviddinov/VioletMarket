@@ -18,6 +18,9 @@ import CommentsModal from '../components/CommentsModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
+import SizeChartUpperBodyDiagram from '../components/SizeChartUpperBodyDiagram/SizeChartUpperBodyDiagram';
+import SizeChartFootwearDiagram from '../components/SizeChartFootwearDiagram/SizeChartFootwearDiagram';
+import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChartPantsDiagram';
 import { allProducts } from '../data/products';
 import {
   isValidTypeSize,
@@ -1361,50 +1364,90 @@ const ProductDetail = () => {
                     </div>
                   )}
 
-                  {normalizedSizeChart.guideImages.length > 0 && (
+                  {(() => {
+                    const ts = normalizedSizeChart.typeSize;
+                    const canShowInteractiveSvg =
+                      (ts === 'upper_body' || ts === 'footwear' || ts === 'pants') &&
+                      normalizedSizeChart.rows?.length > 0 &&
+                      normalizedSizeChart.columns?.length >= 2;
+                    const showGuideImages = normalizedSizeChart.guideImages.length > 0;
+                    const diagramPhotoSrc =
+                      normalizedSizeChart.guideImages?.[0]?.src || undefined;
+                    if (!canShowInteractiveSvg && !showGuideImages) return null;
+                    return (
                     <div className="size-chart-section">
                       <p className="size-chart-diagram-heading">
                         {i18n.t('productDetail.sizeChartDiagramHint')}
                       </p>
-                      <div className="size-chart-images">
-                        {normalizedSizeChart.guideImages.map((img, index) => {
-                          const imgTypeSize = img.typeSize ?? normalizedSizeChart.typeSize;
-                          const typeAlt =
-                            imgTypeSize &&
-                            isValidTypeSize(imgTypeSize) &&
-                            i18n.exists(typeSizeI18nKey(imgTypeSize))
-                              ? i18n.t(typeSizeI18nKey(imgTypeSize))
-                              : '';
-                          const diagramAlt =
-                            getLocalizedText(img.title, lang) ||
-                            typeAlt ||
-                            i18n.t('productDetail.sizeChartLabel');
-                          return (
-                          <figure
-                            key={index}
-                            className="size-chart-guide"
-                            data-type-size={
-                              imgTypeSize && isValidTypeSize(imgTypeSize)
-                                ? imgTypeSize
-                                : undefined
-                            }
-                          >
-                            <img
-                              src={normalizeImagePath(img.src)}
-                              alt={diagramAlt}
-                              onError={(e) => {
-                                e.target.src = normalizeImagePath('/img/no-image.png');
-                              }}
+                      {canShowInteractiveSvg ? (
+                        <div className="size-chart-images size-chart-images--interactive">
+                          {ts === 'upper_body' && (
+                            <SizeChartUpperBodyDiagram
+                              columns={normalizedSizeChart.columns}
+                              rows={normalizedSizeChart.rows}
+                              lang={lang}
+                              imageSrc={diagramPhotoSrc}
                             />
-                            {getLocalizedText(img.title, lang) && (
-                              <figcaption>{getLocalizedText(img.title, lang)}</figcaption>
-                            )}
-                          </figure>
-                          );
-                        })}
-                      </div>
+                          )}
+                          {ts === 'footwear' && (
+                            <SizeChartFootwearDiagram
+                              columns={normalizedSizeChart.columns}
+                              rows={normalizedSizeChart.rows}
+                              lang={lang}
+                              imageSrc={diagramPhotoSrc}
+                            />
+                          )}
+                          {ts === 'pants' && (
+                            <SizeChartPantsDiagram
+                              columns={normalizedSizeChart.columns}
+                              rows={normalizedSizeChart.rows}
+                              lang={lang}
+                              imageSrc={diagramPhotoSrc}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="size-chart-images">
+                          {normalizedSizeChart.guideImages.map((img, index) => {
+                            const imgTypeSize = img.typeSize ?? normalizedSizeChart.typeSize;
+                            const typeAlt =
+                              imgTypeSize &&
+                              isValidTypeSize(imgTypeSize) &&
+                              i18n.exists(typeSizeI18nKey(imgTypeSize))
+                                ? i18n.t(typeSizeI18nKey(imgTypeSize))
+                                : '';
+                            const diagramAlt =
+                              getLocalizedText(img.title, lang) ||
+                              typeAlt ||
+                              i18n.t('productDetail.sizeChartLabel');
+                            return (
+                            <figure
+                              key={index}
+                              className="size-chart-guide"
+                              data-type-size={
+                                imgTypeSize && isValidTypeSize(imgTypeSize)
+                                  ? imgTypeSize
+                                  : undefined
+                              }
+                            >
+                              <img
+                                src={normalizeImagePath(img.src)}
+                                alt={diagramAlt}
+                                onError={(e) => {
+                                  e.target.src = normalizeImagePath('/img/no-image.png');
+                                }}
+                              />
+                              {getLocalizedText(img.title, lang) && (
+                                <figcaption>{getLocalizedText(img.title, lang)}</figcaption>
+                              )}
+                            </figure>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    );
+                  })()}
 
                   {normalizedSizeChart.notes.length > 0 && (
                     <div className="size-chart-section">

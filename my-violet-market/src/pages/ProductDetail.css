@@ -660,6 +660,14 @@ body.share-menu-open {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+.size-chart-images--interactive {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .size-chart-instruction {
   margin: 0;
   color: #4a5568;
@@ -674,11 +682,7 @@ body.share-menu-open {
 }
 
 .size-chart-section {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 12px;
   margin-bottom: 12px;
-  background: #fff;
 }
 
 .size-chart-table-wrap {
@@ -692,13 +696,13 @@ body.share-menu-open {
 .size-chart-table {
   width: max-content;
   min-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
+  border: 1px solid #a4a6a8;
 }
 
 .size-chart-table th,
 .size-chart-table td {
-  border-bottom: 1px solid #edf2f7;
+  border: 1px solid #a4a6a8;
   padding: 10px 12px;
   font-size: 0.92rem;
   vertical-align: middle;
@@ -718,17 +722,12 @@ body.share-menu-open {
   z-index: 1;
   min-width: 5.5rem;
   max-width: 8rem;
-  background: #fff;
-  box-shadow: 6px 0 10px -6px rgba(15, 23, 42, 0.18);
+  background: #e8e5e5;
 }
 
 .size-chart-table thead th.size-chart-col-size {
   z-index: 2;
   background: #f8fafc;
-}
-
-.size-chart-table tbody tr:last-child td {
-  border-bottom: none;
 }
 
 .size-chart-guide {
@@ -1317,6 +1316,12 @@ body.no-scroll {
 
   .price-section .original-price {
   font-size: 1.1rem;
+}
+
+.size-chart-close {
+  font-size: 25px;
+  width: 30px;
+  height: 30px;
 }
   
 }

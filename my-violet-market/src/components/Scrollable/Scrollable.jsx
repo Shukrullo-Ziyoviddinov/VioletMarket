@@ -5,7 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
 import './Scrollable.css';
 
-const Scrollable = ({ title, items = [], type = 'country', children, className = '' }) => {
+const Scrollable = ({
+  title,
+  items = [],
+  type = 'country',
+  children,
+  className = '',
+  /** true: touch bilan gorizontal surish tugma ustidan ham ishlaydi (masalan o'lcham pillari) */
+  skipInteractiveTouchHandling = false,
+}) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
@@ -132,7 +140,7 @@ const Scrollable = ({ title, items = [], type = 'country', children, className =
       el.removeEventListener('touchmove', handleTouchMove, opts);
       el.removeEventListener('touchend', handleTouchEnd, opts);
     };
-  }, []);
+  }, [skipInteractiveTouchHandling]);
 
   // Mishka bilan drag qilinganda click bloklash – capture phase (child'dan oldin)
   useEffect(() => {
@@ -177,9 +185,10 @@ const Scrollable = ({ title, items = [], type = 'country', children, className =
   // Touch events (mobil)
   const handleTouchStart = (e) => {
     if (!scrollRef.current) return;
-    
+
     const clickedElement = e.target;
-    
+
+    if (!skipInteractiveTouchHandling) {
     // Yurakcha ikonkasini topish - avval clickedElement o'zini tekshiramiz
     let heartIcon = null;
     if (clickedElement.classList && clickedElement.classList.contains('heart-icon')) {
@@ -209,7 +218,8 @@ const Scrollable = ({ title, items = [], type = 'country', children, className =
       if (e.cancelable) e.preventDefault();
       return;
     }
-    
+    }
+
     isTouchDraggingRef.current = true;
     setIsDragging(true);
     hasMovedRef.current = false;
@@ -224,6 +234,7 @@ const Scrollable = ({ title, items = [], type = 'country', children, className =
   };
 
   const handleTouchMove = (e) => {
+    if (!skipInteractiveTouchHandling) {
     // Agar yurakcha ikonkasiga bosilgan bo'lsa, scroll'ni to'xtatish
     const clickedElement = e.target;
     let heartIcon = null;
@@ -251,7 +262,8 @@ const Scrollable = ({ title, items = [], type = 'country', children, className =
       if (e.cancelable) e.preventDefault();
       return;
     }
-    
+    }
+
     if (!isTouchDraggingRef.current || !scrollRef.current) return;
     
     const deltaX = Math.abs(e.touches[0].pageX - startXRef.current);

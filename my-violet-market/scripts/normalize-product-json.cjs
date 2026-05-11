@@ -9,7 +9,8 @@
  *   (TYPE_SIZE_VALUES). Tarjima: locales da productDetail.sizeChartKind.<qiymat>
  * guideImages[].typeSize — xuddi shu ro'yxatdan (ixtiyoriy; sizeChart.typeSize
  *   ham ishlatiladi). Eski JSON: chartKind / kind hali o'qiladi.
- * guideImages[].src — ixtiyoriy; bo'sh bo'lsa typeSize bo'yicha standart rasm.
+ * guideImages[].src — sxema rasmi (PNG/JPG/SVG yo'l); bo'sh bo'lsa typeSize bo'yicha
+ *   standart: img/size-body-guide.png | size-pants-guide.png | size-foot-guide.png
  */
 const fs = require('fs');
 const path = require('path');

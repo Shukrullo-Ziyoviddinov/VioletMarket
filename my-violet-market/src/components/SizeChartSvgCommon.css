@@ -1,0 +1,220 @@
+/* O'lcham sxemasi: tugmalar + rasm + rasm ustidagi qiymatlar */
+.size-chart-svg-diagram {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Gorizontal scroll: Scrollable + pill tugmalar */
+.size-chart-svg-diagram__picker-scroll.scrollable-section {
+  margin-bottom: 16px;
+}
+
+.size-chart-svg-diagram__picker-scroll .scrollable-wrapper {
+  margin: 0 -4px;
+}
+
+/* Faqat o'lcham sxemasi pill qatori: chevron tugmalari yo'q (boshqa Scrollable ga tegmaydi) */
+.size-chart-svg-diagram__picker-scroll .scroll-btn.prev,
+.size-chart-svg-diagram__picker-scroll .scroll-btn.next {
+  display: none;
+}
+
+.size-chart-svg-diagram__picker-scroll .scrollable-container {
+  gap: 8px;
+  padding: 2px 4px 6px;
+  justify-content: flex-start;
+}
+
+.size-chart-svg-diagram__picker-scroll .size-chart-svg-diagram__pill {
+  flex-shrink: 0;
+}
+
+.size-chart-svg-diagram__pill {
+  min-width: 44px;
+  padding: 8px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.size-chart-svg-diagram__pill:hover {
+  border-color: #c7d2fe;
+  background: #f5f7ff;
+}
+
+.size-chart-svg-diagram__pill.is-active {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.size-chart-svg-diagram__wrap {
+  width: 100%;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.size-chart-photo-diagram__wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.size-chart-photo-diagram__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.size-chart-photo-diagram__overlay {
+  position: absolute;
+  inset: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.size-chart-photo-diagram__bubble {
+  position: absolute;
+  margin: 0;
+  padding: 6px 10px;
+  max-width: 46%;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  line-height: 1.25;
+}
+
+.size-chart-photo-diagram__bubble-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #1e293b;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px #fff, 0 0 8px #fff;
+}
+
+.size-chart-photo-diagram__bubble-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  text-shadow: 0 0 6px #fff, 0 0 8px #fff;
+}
+
+/* Futbolka: 0=ko'krak (o'rta), 1=yelka (yuqori), 2=bo'yi (chap) — jadval tartibi */
+.size-chart-photo-diagram__bubble--upper_body-0 {
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.size-chart-photo-diagram__bubble--upper_body-1 {
+  top: 15%;
+  left: 60%;
+  transform: translate(-50%, 0);
+}
+
+.size-chart-photo-diagram__bubble--upper_body-2 {
+  top: 52%;
+  left: 2%;
+  transform: translate(0, 0);
+  text-align: left;
+  max-width: 38%;
+}
+
+/* Shim: 0=bel, 1=son, 2=ichki bo'y */
+.size-chart-photo-diagram__bubble--pants-0 {
+  top: 6%;
+  left: 65%;
+  transform: translate(-50%, 0);
+}
+
+.size-chart-photo-diagram__bubble--pants-1 {
+  top: 36%;
+  right: 4%;
+  left: auto;
+  transform: none;
+  text-align: center;
+}
+
+.size-chart-photo-diagram__bubble--pants-2 {
+  bottom: 18%;
+  right: 4%;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+/* Oyoq kiyim: 0=past (uzunlik), 1=yuqori (ikkinchi o'lchov) */
+.size-chart-photo-diagram__bubble--footwear-0 {
+  bottom: 2%;
+  left: 70%;
+  transform: translate(-50%, 0);
+  top: auto;
+}
+
+.size-chart-photo-diagram__bubble--footwear-1 {
+  top: 32%;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+.size-chart-photo-diagram__bubble--extra {
+  bottom: 4%;
+  left: 4%;
+  top: auto;
+  max-width: 90%;
+  text-align: left;
+}
+
+@media (max-width: 480px) {
+  .size-chart-photo-diagram__bubble--footwear-0 {
+    bottom: 2%;
+    left: 80%;
+    transform: translate(-50%, 0);
+    top: auto;
+}
+
+.size-chart-photo-diagram__bubble--pants-0 {
+  top: 6%;
+  left: 75%;
+  transform: translate(-50%, 0);
+}
+}
+
+@media (max-width: 380px) {
+  .size-chart-photo-diagram__bubble {
+    padding: 4px 8px;
+    max-width: 52%;
+  }
+
+  .size-chart-photo-diagram__bubble-value {
+    font-size: 0.78rem;
+  }
+
+  .size-chart-photo-diagram__bubble--footwear-0 {
+    bottom: 2%;
+    left: 80%;
+    transform: translate(-50%, 0);
+    top: auto;
+}
+  
+}

@@ -110,6 +110,7 @@
       "pants": "Размеры брюк / низа"
     },
     "sizeChartDiagramHint": "Схема замеров",
+    "sizeChartPickSize": "Выберите размер",
     "deliveryInfoFallback": "Информация о доставке",
     "addToCart": "В корзину",
     "goToCart": "Перейти в корзину",
