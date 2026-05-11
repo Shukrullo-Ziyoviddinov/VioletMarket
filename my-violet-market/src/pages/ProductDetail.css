@@ -148,9 +148,7 @@
 .product-info .product-title {
   font-size: 1.3rem;
   font-weight: bol6;
-  /* background: white; */
   border-radius: 20px;
-  padding: 7px 10px;
   margin-bottom: 20px;
   max-height: none !important;
   display: block !important;
