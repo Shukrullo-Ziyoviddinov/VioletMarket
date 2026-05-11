@@ -318,7 +318,8 @@
   .cart-modal-content {
     border-radius: 16px 16px 0 0;
     max-width: 640px;
-    max-height: min(96vh, 900px);
+    /* Ekranning ~82% dan oshmasin — tepada dim overlay ko‘rinadi, sheet pastga yaqin */
+    max-height: min(82vh, 720px);
     padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
     animation: cartModalSheetIn 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18);
