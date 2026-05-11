@@ -198,6 +198,16 @@
   left: 75%;
   transform: translate(-50%, 0);
 }
+
+.size-chart-svg-diagram__pill {
+  min-width: 44px;
+  padding: 3px 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
 }
 
 @media (max-width: 380px) {
