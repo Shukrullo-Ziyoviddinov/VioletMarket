@@ -769,14 +769,19 @@ body.share-menu-open {
   max-width: 1250px;
 }
 
-.product-detail-seller {
+.product-detail-seller-wrap {
   margin-top: 20px;
-  padding-top: 10px;
-  background-color: white;
   padding: 12px 14px;
+  background-color: #fff;
   border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ece8f4;
+}
+
+.product-detail-seller {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
@@ -784,10 +789,52 @@ body.share-menu-open {
   color: #333;
   font-weight: 600;
   transition: background-color 0.2s, box-shadow 0.2s;
-  border: 1px solid #ece8f4;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
-.product-detail-seller:hover {
+.product-detail-seller__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.product-detail-seller-wrap .seller-profile__stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.product-detail-seller-wrap .seller-profile__product-count {
+  margin: 0;
+  font-size: 1rem;
+  color: #5b5675;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.product-detail-seller__subscribe-wrap {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.product-detail-seller__subscribe-wrap .seller-subscribe-btn {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.product-detail-seller-wrap:has(.product-detail-seller:hover) {
   background-color: #faf8ff;
   box-shadow: 0 2px 10px rgba(91, 33, 182, 0.08);
 }
@@ -808,6 +855,7 @@ body.share-menu-open {
 }
 
 .product-detail-seller__name {
+  display: block;
   font-size: 1.05rem;
   color: #5b21b6;
   font-weight: 600;

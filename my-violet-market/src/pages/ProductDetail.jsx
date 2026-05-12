@@ -23,8 +23,11 @@ import SizeChartFootwearDiagram from '../components/SizeChartFootwearDiagram/Siz
 import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChartPantsDiagram';
 import SizeChartGuidanceFooter from '../components/SizeChartGuidanceFooter/SizeChartGuidanceFooter';
 import ProductPolicy from '../components/ProductPolicy';
+import SellerSubscriberCount from '../components/SellerSubscriberCount';
+import SellerSubscribeButton from '../components/SellerSubscribeButton';
 import { allProducts } from '../data/products';
 import { getSellerById } from '../data/sellerData';
+import { useSellerSubscription } from '../hooks/useSellerSubscription';
 import {
   isValidTypeSize,
   resolveSizeChartGuideSrc,
@@ -394,6 +397,25 @@ const ProductDetail = () => {
       commentCount: count
     };
   }, [productData, comments, getCommentsByProductId]);
+
+  const detailSellerId = productData?.sellerId;
+  const detailSeller = useMemo(
+    () => (detailSellerId ? getSellerById(detailSellerId) : null),
+    [detailSellerId]
+  );
+  const sellerProductCountForDetail = useMemo(
+    () =>
+      detailSellerId
+        ? allProducts.filter((p) => p.sellerId === detailSellerId).length
+        : 0,
+    [detailSellerId]
+  );
+  const sellerBaseSubscribers = detailSeller?.subscriberCount ?? 0;
+  const {
+    displayCount: sellerSubscriberDisplay,
+    subscribed: sellerSubscribed,
+    toggle: sellerSubscribeToggle,
+  } = useSellerSubscription(detailSellerId, sellerBaseSubscribers);
 
   // All images calculation - must be before early return for hooks
   const allImages = useMemo(() => {
@@ -1125,29 +1147,41 @@ const ProductDetail = () => {
 
             <ProductPolicy product={productData} lang={lang} />
 
-            {(() => {
-              const seller = productData.sellerId ? getSellerById(productData.sellerId) : null;
-              if (!seller) return null;
-              return (
+            {detailSeller && (
+              <div className="product-detail-seller-wrap">
                 <Link
-                  to={`/seller/${productData.sellerId}`}
+                  to={`/seller/${detailSellerId}`}
                   className="product-detail-seller"
-                  aria-label={`${getLocalizedText(seller.name, lang)} — ${i18n.t('seller.productsTitle')}`}
+                  aria-label={`${getLocalizedText(detailSeller.name, lang)} — ${i18n.t('seller.productsTitle')}`}
                 >
                   <img
-                    src={normalizeImagePath(seller.logo)}
+                    src={normalizeImagePath(detailSeller.logo)}
                     alt=""
                     className="product-detail-seller__logo"
                     onError={(e) => {
                       e.target.src = normalizeImagePath('/img/no-image.png');
                     }}
                   />
-                  <span className="product-detail-seller__name">
-                    {getLocalizedText(seller.name, lang)}
-                  </span>
+                  <div className="product-detail-seller__main">
+                    <span className="product-detail-seller__name">
+                      {getLocalizedText(detailSeller.name, lang)}
+                    </span>
+                    <div className="seller-profile__stats-row">
+                      <p className="seller-profile__product-count">
+                        {i18n.t('seller.productCount', { count: sellerProductCountForDetail })}
+                      </p>
+                      <SellerSubscriberCount count={sellerSubscriberDisplay} />
+                    </div>
+                  </div>
                 </Link>
-              );
-            })()}
+                <div className="product-detail-seller__subscribe-wrap">
+                  <SellerSubscribeButton
+                    subscribed={sellerSubscribed}
+                    onToggle={sellerSubscribeToggle}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
