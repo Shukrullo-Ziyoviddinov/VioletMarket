@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
@@ -24,6 +24,7 @@ import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChart
 import SizeChartGuidanceFooter from '../components/SizeChartGuidanceFooter/SizeChartGuidanceFooter';
 import ProductPolicy from '../components/ProductPolicy';
 import { allProducts } from '../data/products';
+import { getSellerById } from '../data/sellerData';
 import {
   isValidTypeSize,
   resolveSizeChartGuideSrc,
@@ -937,7 +938,7 @@ const ProductDetail = () => {
 
           <div className="product-info">
             <h1 className="product-title">{getLocalizedText(productData.title, lang)}</h1>
-            
+
             <div className="price-section">
               <span className="price">{formatPrice(currentPrice)}</span>
               {productData.originalPrice && (
@@ -1123,6 +1124,30 @@ const ProductDetail = () => {
             <DeliveryInfo product={productData} />
 
             <ProductPolicy product={productData} lang={lang} />
+
+            {(() => {
+              const seller = productData.sellerId ? getSellerById(productData.sellerId) : null;
+              if (!seller) return null;
+              return (
+                <Link
+                  to={`/seller/${productData.sellerId}`}
+                  className="product-detail-seller"
+                  aria-label={`${getLocalizedText(seller.name, lang)} — ${i18n.t('seller.productsTitle')}`}
+                >
+                  <img
+                    src={normalizeImagePath(seller.logo)}
+                    alt=""
+                    className="product-detail-seller__logo"
+                    onError={(e) => {
+                      e.target.src = normalizeImagePath('/img/no-image.png');
+                    }}
+                  />
+                  <span className="product-detail-seller__name">
+                    {getLocalizedText(seller.name, lang)}
+                  </span>
+                </Link>
+              );
+            })()}
           </div>
         </div>
 

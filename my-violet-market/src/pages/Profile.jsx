@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
 import { footerData } from '../data/footerData';
 import { getLocalizedText } from '../utils/utils';
+import { getSellerById } from '../data/sellerData';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 
@@ -380,6 +381,13 @@ const Profile = () => {
             <i className="bx bx-receipt profile-orders-icon"></i>
             <span className="profile-orders-label">{t('profile.myOrders')}</span>
           </Link>
+
+          {userData.sellerAccountId && getSellerById(userData.sellerAccountId) && (
+            <Link to={`/seller/${userData.sellerAccountId}`} className="profile-seller-cabinet-row">
+              <i className="bx bx-store-alt profile-seller-cabinet-icon"></i>
+              <span className="profile-seller-cabinet-label">{t('profile.sellerMyCabinet')}</span>
+            </Link>
+          )}
 
           <div
             className="profile-violet-movie-row"

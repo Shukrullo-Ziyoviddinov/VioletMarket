@@ -87,6 +87,9 @@
   "common": {
     "addedToCart": "Товар добавлен в корзину!"
   },
+  "globalModal": {
+    "close": "Закрыть"
+  },
   "productDetail": {
     "descriptionHeader": "Характеристики товара",
     "policyDeliveryTitle": "Срок доставки",
@@ -120,7 +123,8 @@
     "deliveryInfoFallback": "Информация о доставке",
     "addToCart": "В корзину",
     "goToCart": "Перейти в корзину",
-    "adding": "Добавляем..."
+    "adding": "Добавляем...",
+    "sellerStore": "Магазин продавца: {{name}}"
   },
   "wishlist": {
     "emptyTitle": "Добавьте товар в избранное!",
@@ -273,7 +277,22 @@
     "imageSizeError": "Размер изображения не должен превышать 5MB!",
     "imageTypeError": "Загружать можно только изображения!",
     "imageUploadError": "Ошибка загрузки изображения. Попробуйте ещё раз.",
-    "imageReadError": "Ошибка чтения изображения. Выберите другое фото."
+    "imageReadError": "Ошибка чтения изображения. Выберите другое фото.",
+    "sellerMyCabinet": "Мой кабинет продавца",
+    "sellerStoreHint": "магазин"
+  },
+  "seller": {
+    "notFound": "Продавец не найден.",
+    "backHome": "На главную",
+    "aboutTitle": "О продавце",
+    "productsTitle": "Товары",
+    "noProducts": "Пока нет товаров.",
+    "readFullDescription": "Прочитать полностью",
+    "previewMore": "ещё",
+    "productCount": "{{count}} товаров",
+    "subscriberCount": "{{count}} подписчиков",
+    "subscribe": "Подписка",
+    "unsubscribe": "Отмена подписки"
   },
   "uzWarehouse": {
     "bannerAria": "Быстрая доставка со склада в Узбекистане",

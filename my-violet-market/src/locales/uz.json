@@ -87,6 +87,9 @@
   "common": {
     "addedToCart": "Mahsulot savatga qo'shildi!"
   },
+  "globalModal": {
+    "close": "Yopish"
+  },
   "productDetail": {
     "descriptionHeader": "Maxsulot xususiyatlari",
     "policyDeliveryTitle": "Yetkazib berish muddati",
@@ -120,7 +123,8 @@
     "deliveryInfoFallback": "Yetkazib berish ma'lumotlari",
     "addToCart": "Savatga qo'shish",
     "goToCart": "Savatga o'tish",
-    "adding": "Qo'shilyapti..."
+    "adding": "Qo'shilyapti...",
+    "sellerStore": "Sotuvchi do'koni: {{name}}"
   },
   "wishlist": {
     "emptyTitle": "Sevimli mahsulotingizni qo'shing!",
@@ -273,7 +277,22 @@
     "imageSizeError": "Rasm hajmi 5MB dan katta bo'lmasligi kerak!",
     "imageTypeError": "Faqat rasm fayllari yuklash mumkin!",
     "imageUploadError": "Rasm yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
-    "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang."
+    "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang.",
+    "sellerMyCabinet": "Mening sotuvchi kabinetim",
+    "sellerStoreHint": "do'kon"
+  },
+  "seller": {
+    "notFound": "Sotuvchi topilmadi.",
+    "backHome": "Bosh sahifaga",
+    "aboutTitle": "Sotuvchi haqida",
+    "productsTitle": "Mahsulotlar",
+    "noProducts": "Hozircha mahsulotlar yo'q.",
+    "readFullDescription": "To'liq matnni o'qish",
+    "previewMore": "yana",
+    "productCount": "{{count}} mahsulot",
+    "subscriberCount": "{{count}} obunachi",
+    "subscribe": "Obuna",
+    "unsubscribe": "Obunani bekor qilish"
   },
   "uzWarehouse": {
     "bannerAria": "Mahalliy ombordan tez yetkazish",

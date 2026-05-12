@@ -23,6 +23,7 @@ import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
 import OrderHistory from './pages/OrderHistory';
 import UzWarehousePage from './pages/UzWarehousePage';
+import SellerProfile from './pages/SellerProfile';
 import './App.css';
 
 const AppContent = () => {
@@ -73,6 +74,7 @@ const AppContent = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/uzWarehousePage" element={<UzWarehousePage />} />
+          <Route path="/seller/:sellerId" element={<SellerProfile />} />
         </Routes>
       </main>
       <MobileNavigation />

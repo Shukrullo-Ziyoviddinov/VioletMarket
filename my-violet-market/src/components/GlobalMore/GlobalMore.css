@@ -1,0 +1,70 @@
+/* 1 qator: boshidagi matn + "..." + "yana" (yoki tarjima) */
+.global-more__preview--single {
+  margin: 0;
+  display: block;
+  max-width: 100%;
+  line-height: 1.55;
+}
+
+.global-more__single-row {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  max-width: 100%;
+  gap: 0;
+}
+
+.global-more__head {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-more__tail {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.global-more__dots {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.global-more__suffix {
+  margin-left: 2px;
+  font-weight: 600;
+  color: #7c3aed;
+}
+
+/* Bir necha qator (lineClamp > 1) */
+.global-more__preview--multi {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.global-more__preview--truncated {
+  cursor: pointer;
+}
+
+.global-more__preview--truncated:hover {
+  color: #5b21b6;
+}
+
+.global-more__preview--truncated:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.global-more__modal-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -1,0 +1,140 @@
+.seller-profile-page .seller-profile__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.seller-profile__avatar-wrap {
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2);
+  background: #fff;
+}
+
+.seller-profile__avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.seller-profile__meta {
+  flex: 1;
+  min-width: 200px;
+}
+
+.seller-profile__name {
+  margin: 0 0 8px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #1f1f2e;
+  font-family: Tahoma, sans-serif;
+}
+
+.seller-profile__product-count {
+  margin: 0;
+  font-size: 1rem;
+  color: #5b5675;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.seller-profile__stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.seller-profile__subscribe-inline-desktop {
+  display: flex;
+  align-items: center;
+}
+
+.seller-profile__subscribe-mobile {
+  display: none;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 767px) {
+  .seller-profile__subscribe-inline-desktop {
+    display: none;
+  }
+
+  .seller-profile__subscribe-mobile {
+    display: block;
+    width: 100%;
+  }
+
+  .seller-profile__subscribe-mobile .seller-subscribe-btn {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.seller-profile__section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: #333;
+  font-family: Tahoma, sans-serif;
+}
+
+.seller-profile__about {
+  margin-bottom: 32px;
+  width: 100%;
+  min-width: 0;
+}
+
+.seller-profile__description {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #444;
+}
+
+.seller-profile__description.global-more__preview--truncated {
+  text-decoration: none;
+}
+
+.seller-profile__products {
+  margin-bottom: 40px;
+}
+
+.seller-profile__back-home {
+  display: inline-block;
+  margin-top: 16px;
+  color: #667eea;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.seller-profile__back-home:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 550px) {
+  .seller-profile__name {
+    font-size: 1rem;
+  }
+
+  .seller-profile__about .seller-profile__section-title{
+    font-size: 1rem;
+    margin: 0 0 4px;
+  }
+
+  
+
+  .seller-profile__avatar-wrap {
+    width: 60px;
+    height: 60px;
+}
+}

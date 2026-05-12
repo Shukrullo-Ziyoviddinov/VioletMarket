@@ -15,6 +15,8 @@ const defaultUserData = {
   firstName: '',
   lastName: '',
   phone: '',
+  /** Sotuvchi kabineti: sellerData dagi id (masalan 'violet'). null — oddiy mijoz. */
+  sellerAccountId: null,
   language: 'uz',
   profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=',
   hasUploadedImage: false
