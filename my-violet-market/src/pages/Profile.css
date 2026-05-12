@@ -18,8 +18,6 @@
 .profile-card {
   background: white;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  /* padding: 30px; */
   animation: slideUp 0.5s ease-out;
 }
 
