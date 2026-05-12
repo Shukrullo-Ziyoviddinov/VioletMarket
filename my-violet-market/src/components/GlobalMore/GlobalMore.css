@@ -20,6 +20,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.9rem;
 }
 
 .global-more__tail {
@@ -36,6 +37,7 @@
   margin-left: 2px;
   font-weight: 600;
   color: #7c3aed;
+  font-size: 0.9rem;
 }
 
 /* Bir necha qator (lineClamp > 1) */
