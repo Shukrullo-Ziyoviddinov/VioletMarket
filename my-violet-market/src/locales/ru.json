@@ -279,7 +279,9 @@
     "imageUploadError": "Ошибка загрузки изображения. Попробуйте ещё раз.",
     "imageReadError": "Ошибка чтения изображения. Выберите другое фото.",
     "sellerMyCabinet": "Мой кабинет продавца",
-    "sellerStoreHint": "магазин"
+    "sellerStoreHint": "магазин",
+    "subscriptions": "Подписки",
+    "subscriptionsEmpty": "Пока нет подписок на магазины."
   },
   "seller": {
     "notFound": "Продавец не найден.",

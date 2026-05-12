@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
 import { footerData } from '../data/footerData';
-import { getLocalizedText } from '../utils/utils';
+import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { getSellerById } from '../data/sellerData';
+import { getSubscribedSellerIds, SELLER_SUBSCRIBE_STORAGE_PREFIX } from '../hooks/useSellerSubscription';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 
@@ -17,6 +18,7 @@ const LANGUAGES = [
 
 const Profile = () => {
   const { i18n, t } = useTranslation();
+  const location = useLocation();
   const { userData, updateUserData } = useUser();
   const [formData, setFormData] = useState({
     username: '',
@@ -32,6 +34,7 @@ const Profile = () => {
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [aboutModalClosing, setAboutModalClosing] = useState(false);
   const [openAboutSections, setOpenAboutSections] = useState({});
+  const [subscribedSellers, setSubscribedSellers] = useState([]);
   const [tempLanguage, setTempLanguage] = useState(i18n.language || 'uz');
   const [dragY, setDragY] = useState(0);
   const [editDragY, setEditDragY] = useState(0);
@@ -211,8 +214,33 @@ const Profile = () => {
     return () => el.removeEventListener('touchmove', onMove);
   }, [contactModalOpen]);
 
+  const refreshSubscribedSellers = useCallback(() => {
+    const ids = getSubscribedSellerIds();
+    setSubscribedSellers(ids.map((id) => getSellerById(id)).filter(Boolean));
+  }, []);
+
+  useEffect(() => {
+    refreshSubscribedSellers();
+  }, [location.pathname, refreshSubscribedSellers]);
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (!e.key || e.key.startsWith(SELLER_SUBSCRIBE_STORAGE_PREFIX)) {
+        refreshSubscribedSellers();
+      }
+    };
+    const onFocus = () => refreshSubscribedSellers();
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refreshSubscribedSellers]);
+
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
+  const langKey = String(lang).toLowerCase().startsWith('ru') ? 'ru' : 'uz';
 
   const closeAboutModal = () => {
     setAboutModalClosing(true);
@@ -411,6 +439,41 @@ const Profile = () => {
           >
             <i className="bx bx-message-dots profile-contact-icon"></i>
             <span className="profile-contact-label">{getLocalizedText({ uz: "Biz bilan bog'lanish", ru: "Связаться с нами" }, lang)}</span>
+          </div>
+
+          <div className="profile-subscriptions-block">
+            <div className="profile-subscriptions-heading">
+              <i className="bx bx-bell profile-subscriptions-heading__icon" aria-hidden="true" />
+              <span className="profile-subscriptions-heading__label">{t('profile.subscriptions')}</span>
+            </div>
+            {subscribedSellers.length === 0 ? (
+              <p className="profile-subscriptions-empty">{t('profile.subscriptionsEmpty')}</p>
+            ) : (
+              <ul className="profile-subscriptions-list">
+                {subscribedSellers.map((seller) => (
+                  <li key={seller.id}>
+                    <Link
+                      to={`/seller/${seller.id}`}
+                      className="profile-subscriptions-item"
+                      aria-label={getLocalizedText(seller.name, langKey)}
+                    >
+                      <img
+                        src={normalizeImagePath(seller.logo)}
+                        alt=""
+                        className="profile-subscriptions-item__logo"
+                        onError={(e) => {
+                          e.target.src = normalizeImagePath('/img/no-image.png');
+                        }}
+                      />
+                      <span className="profile-subscriptions-item__name">
+                        {getLocalizedText(seller.name, langKey)}
+                      </span>
+                      <i className="bx bx-chevron-right profile-subscriptions-item__chevron" aria-hidden="true" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div

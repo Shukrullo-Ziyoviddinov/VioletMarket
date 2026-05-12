@@ -279,7 +279,9 @@
     "imageUploadError": "Rasm yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang.",
     "sellerMyCabinet": "Mening sotuvchi kabinetim",
-    "sellerStoreHint": "do'kon"
+    "sellerStoreHint": "do'kon",
+    "subscriptions": "Obunalar",
+    "subscriptionsEmpty": "Hozircha obuna bo'lgan do'konlar yo'q."
   },
   "seller": {
     "notFound": "Sotuvchi topilmadi.",
