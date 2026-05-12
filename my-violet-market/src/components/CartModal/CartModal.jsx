@@ -7,6 +7,7 @@ import { formatPrice, getNumberPrice, normalizeImagePath, getLocalizedText } fro
 import { useToast } from '../../contexts/ToastContext';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import Scrollable from '../Scrollable';
+import ProductPolicy from '../ProductPolicy';
 import './CartModal.css';
 
 const LOADER_DURATION_MS = 2000;
@@ -386,54 +387,7 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
           </button>
         </div>
 
-        {/* Product Policy */}
-        <div className="product-policy">
-          <div className="policy-block policy-block__linia">
-            <i className="bx bx-package"></i>
-            <div className="policy-text">
-              <h3>{i18n.t('productDetail.policyDeliveryTitle')}</h3>
-              <p>{i18n.t('productDetail.policyDeliveryText')}</p>
-            </div>
-          </div>
-
-          <div className="policy-block policy-block__linia">
-            <i className="bx bxs-truck"></i>
-            <div className="policy-text">
-              <h3>{i18n.t('productDetail.policyServiceTitle')}</h3>
-              <p>{i18n.t('productDetail.policyServiceText')}</p>
-            </div>
-          </div>
-
-          <div className="policy-block policy-block__linia">
-            <i className="bx bx-refresh"></i>
-            <div className="policy-text">
-              <h3>{i18n.t('productDetail.policyReturnTitle')}</h3>
-              <p>{i18n.t('productDetail.policyReturnText')}</p>
-            </div>
-          </div>
-
-          <div className="policy-block policy-block__linia">
-            <i className="bx bx-chat"></i>
-            <div className="policy-text">
-              <h3>{i18n.t('productDetail.policyContactTitle')}</h3>
-              <p>{i18n.t('productDetail.policyContactText')}</p>
-            </div>
-          </div>
-
-          <div className="policy-block">
-            <i className="bx bx-credit-card"></i>
-            <div className="policy-text">
-              <h3>{i18n.t('productDetail.policyPaymentTitle')}</h3>
-              <p>{i18n.t('productDetail.policyPaymentText')}</p>
-              <div className="payment-icons">
-                <img src={normalizeImagePath('/img/Visa_Inc.-Logo.wine.png')} alt="Visa" className="img-policy" />
-                <img src={normalizeImagePath('/img/humo kart.jpg')} alt="Humo" className="img-policy" />
-                <img src={normalizeImagePath('/img/uzkart.jpg')} alt="Uzcard" className="img-policy" />
-                <img src={normalizeImagePath('/img/payme-logo.png')} alt="Payme" className="img-policy" />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProductPolicy product={product} lang={lang} />
       </div>
       </div>
 

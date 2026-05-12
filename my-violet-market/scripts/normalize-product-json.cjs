@@ -11,6 +11,10 @@
  *   ham ishlatiladi). Eski JSON: chartKind / kind hali o'qiladi.
  * guideImages[].src — sxema rasmi (PNG/JPG/SVG yo'l); bo'sh bo'lsa typeSize bo'yicha
  *   standart: img/size-body-guide.png | size-pants-guide.png | size-foot-guide.png
+ *
+ * policy.blocks (ixtiyoriy) — mahsulot siyosati; bo'lmasa src/data/defaultProductPolicy.json.
+ *   icon: package | truck | refresh | chat | credit-card (src/utils/productPolicy.js)
+ *   title, text: { uz, ru }; divider: true/false; paymentIcons?: [{ src, alt }]
  */
 const fs = require('fs');
 const path = require('path');

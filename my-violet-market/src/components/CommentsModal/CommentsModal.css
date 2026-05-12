@@ -33,10 +33,17 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+.comments-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 25px;
+  flex-shrink: 0;
+}
+
 .comments-modal-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+  flex-shrink: 0;
   background: #ddd;
   border: none;
   border-radius: 50%;
@@ -49,7 +56,6 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.2s;
-  z-index: 10;
 }
 
 .comments-modal-close:hover {
@@ -59,9 +65,11 @@
 .comments-modal-title {
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 25px;
+  margin: 0;
   color: #333;
-  padding-right: 40px;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 .comments-modal-list {
@@ -116,12 +124,15 @@
     min-height: 100dvh;
     border-radius: 0;
     padding: 20px;
-    padding-top: 50px;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  }
+
+  .comments-modal-header {
+    margin-bottom: 20px;
   }
 
   .comments-modal-title {
     font-size: 1.3rem;
-    margin-bottom: 20px;
   }
 
   .comments-modal-list {

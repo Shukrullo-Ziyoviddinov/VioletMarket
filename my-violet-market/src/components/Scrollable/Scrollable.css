@@ -115,7 +115,8 @@
   height: 150px;
   border-radius: 15px;
   border: 1px solid #ddd;
-  background-color: rgb(251, 183, 251);
+  /* background-color: rgb(251, 183, 251); */
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;

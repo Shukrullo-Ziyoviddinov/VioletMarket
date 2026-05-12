@@ -70,10 +70,12 @@ const CommentsModal = ({ isOpen, onClose, comments, productId }) => {
   const modalContent = (
     <div className="comments-modal-overlay" onClick={onClose}>
       <div className="comments-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="comments-modal-close" onClick={onClose}>
-          <i className="bx bx-x"></i>
-        </button>
-        <h2 className="comments-modal-title">Hamma izohlar</h2>
+        <div className="comments-modal-header">
+          <h2 className="comments-modal-title">Hamma izohlar</h2>
+          <button type="button" className="comments-modal-close" onClick={onClose} aria-label="Yopish">
+            <i className="bx bx-x"></i>
+          </button>
+        </div>
         <div className="comments-modal-list">
           {comments.length === 0 ? (
             <p className="no-comments">Izohlar topilmadi</p>
