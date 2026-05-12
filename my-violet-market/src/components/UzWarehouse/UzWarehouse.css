@@ -1,0 +1,31 @@
+.uz-warehouse-banner {
+  width: 100%;
+  margin: 16px 0 28px;
+}
+
+.uz-warehouse-banner__link {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
+.uz-warehouse-banner__link:focus-visible {
+  outline: 3px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.uz-warehouse-banner__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  vertical-align: bottom;
+  border-radius: 10px;
+}
+
+@media (max-width: 576px) {
+  .uz-warehouse-banner {
+    width: 100%;
+    margin: 5px 0 10px;
+}
+}

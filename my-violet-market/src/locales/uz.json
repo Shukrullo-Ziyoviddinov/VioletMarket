@@ -274,5 +274,11 @@
     "imageTypeError": "Faqat rasm fayllari yuklash mumkin!",
     "imageUploadError": "Rasm yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang."
+  },
+  "uzWarehouse": {
+    "bannerAria": "Mahalliy ombordan tez yetkazish",
+    "bannerAlt": "O'zbekiston omboridan tez yetkazish — batafsil",
+    "pageTitle": "Mahalliy ombordagi mahsulotlar",
+    "empty": "Hozircha bu bo'limda mahsulot yo'q."
   }
 }

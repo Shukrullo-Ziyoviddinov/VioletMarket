@@ -10,6 +10,7 @@ import ProductCard from '../components/ProductCard';
 import ImageBanner from '../components/ImageBanner';
 import VideoBanner from '../components/VideoBanner';
 import Scrollable from '../components/Scrollable';
+import UzWarehouse from '../components/UzWarehouse';
 import SectionTitleWithMore from '../components/SectionTitleWithMore';
 import LoadMore from '../components/LoadMore';
 import RealTimeClock from '../components/RealTimeClock/RealTimeClock';
@@ -112,7 +113,8 @@ const Home = () => {
   return (
     <div className="home-page">
       {imageBanners.length > 0 && <ImageBanner images={imageBanners} />}
-      
+      <UzWarehouse />
+
       <div className="container">
         <Scrollable
           title="Davlat kategoriyalari"
