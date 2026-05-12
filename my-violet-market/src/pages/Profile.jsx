@@ -6,6 +6,7 @@ import { footerData } from '../data/footerData';
 import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { getSellerById } from '../data/sellerData';
 import { getSubscribedSellerIds, SELLER_SUBSCRIBE_STORAGE_PREFIX } from '../hooks/useSellerSubscription';
+import GlobalModal from '../components/GlobalModal';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 
@@ -31,6 +32,7 @@ const Profile = () => {
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [socialModalOpen, setSocialModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [subscriptionsModalOpen, setSubscriptionsModalOpen] = useState(false);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [aboutModalClosing, setAboutModalClosing] = useState(false);
   const [openAboutSections, setOpenAboutSections] = useState({});
@@ -441,40 +443,66 @@ const Profile = () => {
             <span className="profile-contact-label">{getLocalizedText({ uz: "Biz bilan bog'lanish", ru: "Связаться с нами" }, lang)}</span>
           </div>
 
-          <div className="profile-subscriptions-block">
+          <div
+            className="profile-subscriptions-block"
+            onClick={() => {
+              refreshSubscribedSellers();
+              setSubscriptionsModalOpen(true);
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                refreshSubscribedSellers();
+                setSubscriptionsModalOpen(true);
+              }
+            }}
+            aria-label={t('profile.subscriptions')}
+            aria-haspopup="dialog"
+            aria-expanded={subscriptionsModalOpen}
+          >
             <div className="profile-subscriptions-heading">
               <i className="bx bx-bell profile-subscriptions-heading__icon" aria-hidden="true" />
               <span className="profile-subscriptions-heading__label">{t('profile.subscriptions')}</span>
+              <i className="bx bx-chevron-right profile-subscriptions-heading__chevron" aria-hidden="true" />
             </div>
+          </div>
+
+          <GlobalModal
+            isOpen={subscriptionsModalOpen}
+            onClose={() => setSubscriptionsModalOpen(false)}
+            title={t('profile.subscriptions')}
+          >
             {subscribedSellers.length === 0 ? (
-              <p className="profile-subscriptions-empty">{t('profile.subscriptionsEmpty')}</p>
+              <p className="profile-subscriptions-modal-empty">{t('profile.subscriptionsEmpty')}</p>
             ) : (
-              <ul className="profile-subscriptions-list">
+              <ul className="profile-subscriptions-modal-list">
                 {subscribedSellers.map((seller) => (
                   <li key={seller.id}>
                     <Link
                       to={`/seller/${seller.id}`}
-                      className="profile-subscriptions-item"
-                      aria-label={getLocalizedText(seller.name, langKey)}
+                      className="profile-subscriptions-modal-item"
+                      onClick={() => setSubscriptionsModalOpen(false)}
                     >
                       <img
                         src={normalizeImagePath(seller.logo)}
                         alt=""
-                        className="profile-subscriptions-item__logo"
+                        className="profile-subscriptions-modal-item__logo"
                         onError={(e) => {
                           e.target.src = normalizeImagePath('/img/no-image.png');
                         }}
                       />
-                      <span className="profile-subscriptions-item__name">
+                      <span className="profile-subscriptions-modal-item__name">
                         {getLocalizedText(seller.name, langKey)}
                       </span>
-                      <i className="bx bx-chevron-right profile-subscriptions-item__chevron" aria-hidden="true" />
+                      <i className="bx bx-chevron-right profile-subscriptions-modal-item__chevron" aria-hidden="true" />
                     </Link>
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </GlobalModal>
 
           <div
             className="profile-about-row"

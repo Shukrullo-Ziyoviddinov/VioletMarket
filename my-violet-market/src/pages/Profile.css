@@ -582,18 +582,28 @@
 }
 
 .profile-subscriptions-block {
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 14px 26px;
+  margin-bottom: 20px;
   background: #f8f9fa;
   border-radius: 12px;
-  border: 1px solid #ece8f4;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.profile-subscriptions-block:hover {
+  background: #eee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .profile-subscriptions-heading {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .profile-subscriptions-heading__icon {
@@ -608,42 +618,50 @@
   color: #333;
 }
 
-.profile-subscriptions-empty {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: #777;
-  line-height: 1.4;
+.profile-subscriptions-heading__chevron {
+  margin-left: auto;
+  color: #999;
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
-.profile-subscriptions-list {
+.profile-subscriptions-modal-empty {
+  margin: 0;
+  padding: 8px 0 4px;
+  font-size: 15px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.profile-subscriptions-modal-list {
   list-style: none;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0;
 }
 
-.profile-subscriptions-item {
+.profile-subscriptions-modal-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
+  padding: 12px 0;
   text-decoration: none;
   color: inherit;
-  border-top: 1px solid #e8e4ef;
+  border-top: 1px solid #eee;
   transition: background 0.15s, opacity 0.15s;
 }
 
-.profile-subscriptions-list li:first-child .profile-subscriptions-item {
+.profile-subscriptions-modal-list li:first-child .profile-subscriptions-modal-item {
   border-top: none;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 
-.profile-subscriptions-item:hover {
+.profile-subscriptions-modal-item:hover {
   opacity: 0.92;
 }
 
-.profile-subscriptions-item__logo {
-  width: 36px;
-  height: 36px;
+.profile-subscriptions-modal-item__logo {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -651,15 +669,15 @@
   background: #fafafa;
 }
 
-.profile-subscriptions-item__name {
+.profile-subscriptions-modal-item__name {
   flex: 1;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: #5b21b6;
   min-width: 0;
 }
 
-.profile-subscriptions-item__chevron {
+.profile-subscriptions-modal-item__chevron {
   color: #999;
   font-size: 1.25rem;
   flex-shrink: 0;
