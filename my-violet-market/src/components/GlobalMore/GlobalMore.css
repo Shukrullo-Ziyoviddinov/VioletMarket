@@ -70,3 +70,13 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+@media (max-width: 576px) {
+  .global-more__modal-text{
+    font-size: 0.9rem;
+  }
+
+  .global-modal__title{
+    font-size: 1rem;
+  }
+}
