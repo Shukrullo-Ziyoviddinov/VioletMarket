@@ -21,6 +21,7 @@
   object-fit: cover;
   vertical-align: bottom;
   border-radius: 10px;
+  border: 1px solid #ccc;
 }
 
 @media (max-width: 576px) {

@@ -381,17 +381,50 @@ const Profile = () => {
                 </button>
               </div>
               <div className="profile-filled-data">
-                <div className="profile-filled-item">
-                  <span className="profile-filled-label">{t('profile.firstName')}</span>
-                  <span className="profile-filled-value">{formData.firstName || '—'}</span>
+                <div className="profile-filled-names-row">
+                  <div
+                    className={`profile-filled-item profile-filled-item--name${formData.firstName?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                  >
+                    {!formData.firstName?.trim() && (
+                      <span className="profile-filled-label">{t('profile.firstName')}</span>
+                    )}
+                    <span
+                      className="profile-filled-value"
+                      {...(formData.firstName?.trim()
+                        ? { 'aria-label': t('profile.firstName') }
+                        : {})}
+                    >
+                      {formData.firstName?.trim() || '—'}
+                    </span>
+                  </div>
+                  <div
+                    className={`profile-filled-item profile-filled-item--name${formData.lastName?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                  >
+                    {!formData.lastName?.trim() && (
+                      <span className="profile-filled-label">{t('profile.lastName')}</span>
+                    )}
+                    <span
+                      className="profile-filled-value"
+                      {...(formData.lastName?.trim()
+                        ? { 'aria-label': t('profile.lastName') }
+                        : {})}
+                    >
+                      {formData.lastName?.trim() || '—'}
+                    </span>
+                  </div>
                 </div>
-                <div className="profile-filled-item">
-                  <span className="profile-filled-label">{t('profile.lastName')}</span>
-                  <span className="profile-filled-value">{formData.lastName || '—'}</span>
-                </div>
-                <div className="profile-filled-item">
-                  <span className="profile-filled-label">{t('profile.phone')}</span>
-                  <span className="profile-filled-value">{formData.phone || '—'}</span>
+                <div
+                  className={`profile-filled-item profile-filled-item--phone${formData.phone?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                >
+                  {!formData.phone?.trim() && (
+                    <span className="profile-filled-label">{t('profile.phone')}</span>
+                  )}
+                  <span
+                    className="profile-filled-value"
+                    {...(formData.phone?.trim() ? { 'aria-label': t('profile.phone') } : {})}
+                  >
+                    {formData.phone?.trim() || '—'}
+                  </span>
                 </div>
               </div>
             </div>
