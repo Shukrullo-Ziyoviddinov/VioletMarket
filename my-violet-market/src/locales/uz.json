@@ -300,6 +300,7 @@
     "bannerAria": "Mahalliy ombordan tez yetkazish",
     "bannerAlt": "O'zbekiston omboridan tez yetkazish — batafsil",
     "pageTitle": "Mahalliy ombordagi mahsulotlar",
-    "empty": "Hozircha bu bo'limda mahsulot yo'q."
+    "empty": "Hozircha bu bo'limda mahsulot yo'q.",
+    "filterEmpty": "Filtrlarga mos mahsulot topilmadi."
   }
 }
