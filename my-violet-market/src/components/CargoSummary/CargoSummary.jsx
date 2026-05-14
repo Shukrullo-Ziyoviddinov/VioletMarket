@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
-import { cargoRates } from '../../data/cargo';
+import { useAppData } from '../../contexts/AppDataContext';
 import { formatCargoPrice, getLocalizedText } from '../../utils/utils';
 import './CargoSummary.css';
 
 const CargoSummary = () => {
   const { i18n } = useTranslation();
+  const { cargoRates: rawCargoRates } = useAppData();
+  const cargoRates = rawCargoRates || {};
   const lang = i18n.language || 'uz';
   const { cart, selectedCargoOptions, updateCargoSelection } = useCart();
   const [showInfoModal, setShowInfoModal] = useState(null);

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../contexts/CartContext';
 import { useUser } from '../contexts/UserContext';
+import { useAppData } from '../contexts/AppDataContext';
 import {
   calculateDeliveryPrice,
   calculateCargoPrice,
@@ -35,15 +36,16 @@ const Checkout = () => {
     selectedDeliveryType,
     selectedCargoOptions,
   } = useCart();
+  const { deliveryPrices, cargoRates } = useAppData();
 
   const totalProductPrice = useMemo(() => getTotal(), [cart]);
   const deliveryPrice = useMemo(
-    () => calculateDeliveryPrice(totalProductPrice, selectedDeliveryType),
-    [totalProductPrice, selectedDeliveryType]
+    () => calculateDeliveryPrice(totalProductPrice, selectedDeliveryType, deliveryPrices),
+    [totalProductPrice, selectedDeliveryType, deliveryPrices]
   );
   const cargoPrice = useMemo(
-    () => calculateCargoPrice(cart, selectedCargoOptions),
-    [cart, selectedCargoOptions]
+    () => calculateCargoPrice(cart, selectedCargoOptions, cargoRates),
+    [cart, selectedCargoOptions, cargoRates]
   );
   const finalTotal = totalProductPrice + deliveryPrice;
 

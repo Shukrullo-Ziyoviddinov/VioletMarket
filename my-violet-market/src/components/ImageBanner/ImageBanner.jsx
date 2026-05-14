@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import { SkeletonMangaBanner } from '../SkeletonLoader';
 import './ImageBanner.css';
 
-const ImageBanner = ({ images = [] }) => {
+const ImageBanner = ({ images = [], isLoading = false }) => {
     const navigate = useNavigate();
     const { i18n } = useTranslation();
     const lang = i18n.language || 'uz';
@@ -269,7 +270,11 @@ const ImageBanner = ({ images = [] }) => {
         return 'hidden';
     };
 
-    if (images.length === 0) return null;
+    if (isLoading && (!images || images.length === 0)) {
+        return <SkeletonMangaBanner />;
+    }
+
+    if (!images || images.length === 0) return null;
 
     return (
         <div className="containers">

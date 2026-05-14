@@ -20,6 +20,18 @@
   flex-direction: column-reverse;
 }
 
+.product-page .product-card.product-card--skeleton.skeleton-pulse {
+  pointer-events: none;
+  cursor: default;
+  width: 100%;
+  min-height: 300px;
+  box-sizing: border-box;
+}
+
+.product-page--big-discount .product-card.product-card--skeleton.skeleton-pulse {
+  min-height: 318px;
+}
+
 .product-page__empty {
   color: #666;
   text-align: center;

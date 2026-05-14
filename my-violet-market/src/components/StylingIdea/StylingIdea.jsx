@@ -1,15 +1,18 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { allProducts } from '../../data/products';
+import { useAppData } from '../../contexts/AppDataContext';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import { SkeletonPulse } from '../SkeletonLoader';
 import './StylingIdea.css';
 
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
-const StylingIdea = ({ currentProduct }) => {
+const StylingIdea = ({ currentProduct, skeleton = false }) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const { allProducts } = useAppData();
+  const catalog = allProducts || [];
   const lang = i18n.language || 'uz';
   const groupsContainerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -80,7 +83,7 @@ const StylingIdea = ({ currentProduct }) => {
     if (productElement) {
       const productId = productElement.getAttribute('data-product-id');
       if (productId) {
-        const product = allProducts.find(p => String(p.id) === productId);
+        const product = catalog.find(p => String(p.id) === productId);
         touchProductRef.current = product;
       }
     }
@@ -183,26 +186,56 @@ const StylingIdea = ({ currentProduct }) => {
     if (!productIds || !Array.isArray(productIds)) {
       return [];
     }
-    return allProducts.filter(p => 
+    return catalog.filter(p => 
       productIds.includes(p.id) && p.id !== currentProductId
     );
   };
 
   return (
-    <div className="styling-idea-section">
+    <div className="styling-idea-section" aria-busy={skeleton}>
       <div 
-        className="styling-idea-container"
+        className={`styling-idea-container${skeleton ? ' styling-idea-container--skeleton' : ''}`}
         ref={groupsContainerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onMouseDown={skeleton ? undefined : handleMouseDown}
+        onMouseMove={skeleton ? undefined : handleMouseMove}
+        onMouseUp={skeleton ? undefined : handleMouseUp}
+        onMouseLeave={skeleton ? undefined : handleMouseUp}
+        onTouchStart={skeleton ? undefined : handleTouchStart}
+        onTouchMove={skeleton ? undefined : handleTouchMove}
+        onTouchEnd={skeleton ? undefined : handleTouchEnd}
       >
         {currentProduct.relatedGroups.map((group, groupIndex) => {
-          if (!group || !group.productIds || !Array.isArray(group.productIds)) {
+          if (!group) return null;
+
+          if (skeleton) {
+            return (
+              <div
+                key={`si-sk-${groupIndex}`}
+                className="styling-idea-group styling-idea-group--skeleton"
+                aria-hidden
+              >
+                <SkeletonPulse className="styling-idea-group-title-skeleton" />
+                <div className="styling-idea-products">
+                  <div className="styling-idea-product styling-idea-product--skeleton">
+                    <SkeletonPulse className="styling-idea-product-image-skeleton" />
+                    <SkeletonPulse className="styling-idea-product-price-skeleton" />
+                  </div>
+                  <div className="styling-idea-right-column">
+                    <div className="styling-idea-product styling-idea-product--skeleton">
+                      <SkeletonPulse className="styling-idea-product-image-skeleton" />
+                      <SkeletonPulse className="styling-idea-product-price-skeleton styling-idea-product-price-skeleton--small" />
+                    </div>
+                    <div className="styling-idea-product styling-idea-product--skeleton">
+                      <SkeletonPulse className="styling-idea-product-image-skeleton" />
+                      <SkeletonPulse className="styling-idea-product-price-skeleton styling-idea-product-price-skeleton--small" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (!group.productIds || !Array.isArray(group.productIds)) {
             return null;
           }
           const matchingProducts = findMatchingProducts(group.productIds, currentProduct.id);

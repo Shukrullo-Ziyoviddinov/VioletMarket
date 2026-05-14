@@ -313,12 +313,37 @@
   border-radius: 16px;
   text-decoration: none;
   color: #333;
-  background: #fff;
   border: 2px solid #f0f0f0;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+}
+
+.dropdown-item:not(.skeleton-pulse) {
+  background: #fff;
+}
+
+/* API yuklanishi — katalog dropdown .dropdown-item */
+.navbar-dropdown-heading-skeleton {
+  width: min(280px, 55%);
+  height: 36px;
+  border-radius: 10px;
+  margin: 0 0 4px;
+}
+
+.dropdown-item.dropdown-item--skeleton.skeleton-pulse {
+  pointer-events: none;
+  cursor: default;
+  min-height: 120px;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item.dropdown-item--skeleton::before {
+  display: none;
 }
 
 .dropdown-item::before {

@@ -145,6 +145,15 @@
   opacity: 0.5;
 }
 
+.thumbnail.thumbnail--skeleton {
+  cursor: default;
+  pointer-events: none;
+  flex-shrink: 0;
+  object-fit: unset;
+  border-color: transparent;
+  box-sizing: border-box;
+}
+
 .product-info .product-title {
   font-size: 1.3rem;
   font-weight: bol6;
@@ -164,6 +173,40 @@
   gap: 10px;
   align-items: center;
   margin-bottom: 15px;
+}
+
+/* AppData yuklanishi — asosiy rasm, sarlavha, narx (SkeletonPulse) */
+.product-detail-main-image__skeleton {
+  width: 100%;
+  height: 550px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.product-info .product-title > .product-detail-title__skeleton {
+  display: block;
+  width: min(100%, 380px);
+  height: 1.35em;
+  margin: 0;
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.price-section .product-detail-price__skeleton--main {
+  width: 132px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.price-section .product-detail-price__skeleton--muted {
+  width: 72px;
+  height: 26px;
+  border-radius: 8px;
+  opacity: 0.88;
+  pointer-events: none;
 }
 
 .product-rating-comments-detail {
@@ -306,11 +349,14 @@
   padding: 9px 13px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  background: white;
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.size-option:not(.skeleton-pulse) {
+  background: white;
 }
 
 .size-option.selected {
@@ -342,7 +388,6 @@
   padding: 9px 13px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  background: white;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.9rem;
@@ -350,11 +395,81 @@
   white-space: nowrap;
 }
 
+.storage-option:not(.skeleton-pulse),
+.model-option:not(.skeleton-pulse) {
+  background: white;
+}
+
 .storage-option.selected,
 .model-option.selected {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-color: transparent;
+}
+
+/* Variant tanlovlar — AppData yuklanishi (SkeletonPulse) */
+.color-option.color-option--skeleton {
+  cursor: default;
+  pointer-events: none;
+  border-color: transparent;
+}
+
+.size-option.size-option--skeleton,
+.storage-option.storage-option--skeleton,
+.model-option.model-option--skeleton {
+  padding: 0;
+  border: none;
+  cursor: default;
+  pointer-events: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.size-option.size-option--skeleton {
+  height: 38px;
+}
+
+.size-option.size-option--skeleton.size-option--skeleton-1 {
+  width: 44px;
+  min-width: 44px;
+}
+
+.size-option.size-option--skeleton.size-option--skeleton-2 {
+  width: 52px;
+  min-width: 52px;
+}
+
+.size-option.size-option--skeleton.size-option--skeleton-3 {
+  width: 48px;
+  min-width: 48px;
+}
+
+.size-option.size-option--skeleton.size-option--skeleton-4 {
+  width: 58px;
+  min-width: 58px;
+}
+
+.storage-option.storage-option--skeleton,
+.model-option.model-option--skeleton {
+  min-height: 38px;
+}
+
+.storage-option.storage-option--skeleton.storage-option--skeleton-1,
+.model-option.model-option--skeleton.model-option--skeleton-1 {
+  width: 64px;
+  min-width: 64px;
+}
+
+.storage-option.storage-option--skeleton.storage-option--skeleton-2,
+.model-option.model-option--skeleton.model-option--skeleton-2 {
+  width: 80px;
+  min-width: 80px;
+}
+
+.storage-option.storage-option--skeleton.storage-option--skeleton-3,
+.model-option.model-option--skeleton.model-option--skeleton-3 {
+  width: 72px;
+  min-width: 72px;
 }
 
 .add-to-cart-btn-detail {
@@ -909,6 +1024,47 @@ body.share-menu-open {
   border-radius: 4px;
 }
 
+/* Product policy — API yuklanishi */
+.product-policy--skeleton {
+  pointer-events: none;
+}
+
+.policy-block--skeleton .policy-text {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.policy-block__icon-skeleton {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.policy-block__title-skeleton {
+  width: min(100%, 240px);
+  height: 22px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.policy-block__line-skeleton {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.policy-block__line-skeleton--a {
+  width: 100%;
+  max-width: 100%;
+}
+
+.policy-block__line-skeleton--b {
+  width: min(100%, 88%);
+}
+
 /* Product Description */
 .product-description {
   padding: 15px;
@@ -970,8 +1126,89 @@ body.share-menu-open {
   color: #4a5568;
 }
 
+.description-info--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  pointer-events: none;
+}
+
+.description-info__line {
+  margin-bottom: 10px;
+  height: 14px;
+  border-radius: 6px;
+}
+
+.description-info__line:last-child {
+  margin-bottom: 0;
+}
+
+.description-info__line--a {
+  width: 100%;
+  max-width: 100%;
+}
+
+.description-info__line--b {
+  width: min(100%, 92%);
+}
+
+.description-info__line--c {
+  width: min(100%, 72%);
+}
+
+.description-header__icon-skeleton {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.description-header__title-skeleton {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  max-width: min(100%, 320px);
+  border-radius: 8px;
+}
+
+.description-section-subtitle .description-section-subtitle__skeleton {
+  display: block;
+  width: min(100%, 260px);
+  height: 18px;
+  border-radius: 8px;
+}
+
+.technical-specs-td-skeleton {
+  display: block;
+  width: 100%;
+  min-height: 18px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.technical-specs-td-skeleton--first {
+  max-width: 96%;
+}
+
+.technical-specs-td-skeleton--value {
+  max-width: 100%;
+}
+
+.description-images__img-skeleton {
+  width: calc(30% - 10px);
+  max-width: 100%;
+  min-height: 140px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 576px) {
   .description-info {
+    padding-left: 0;
+  }
+
+  .description-info--skeleton {
     padding-left: 0;
   }
 }
@@ -1474,6 +1711,10 @@ body.no-scroll {
   }
   
   .main-image {
+    height: 400px;
+  }
+
+  .product-detail-main-image__skeleton {
     height: 400px;
   }
 }

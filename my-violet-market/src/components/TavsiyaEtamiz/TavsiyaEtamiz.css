@@ -31,6 +31,14 @@
   cursor: pointer;
 }
 
+.tavsiya-etamiz-section .product-card.product-card--skeleton.skeleton-pulse {
+  pointer-events: none;
+  cursor: default;
+  width: 100%;
+  min-height: 320px;
+  box-sizing: border-box;
+}
+
 @media (max-width: 900px) {
   .tavsiya-etamiz-product-item {
     width: 180px;

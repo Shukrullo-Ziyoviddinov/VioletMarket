@@ -2,13 +2,15 @@
   border: 1px solid #dddddd;
   border-radius: 12px;
   padding: 5px;
-  background: white;
-  /* box-shadow: 0 0 6px rgba(0, 0, 0, 0.1); */
   /* transition: transform 0.2s ease; */
   cursor: pointer;
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.product-card:not(.skeleton-pulse) {
+  background: white;
 }
 
 .img-box {

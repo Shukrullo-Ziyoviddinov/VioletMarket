@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { allProducts } from '../../data/products';
+import { useAppData } from '../../contexts/AppDataContext';
 import { useSearchHistory } from '../../contexts/SearchHistoryContext';
 import { normalizeImagePath, productMatchesSearchByTitle, getLocalizedText } from '../../utils/utils';
+import { SkeletonPulse } from '../SkeletonLoader';
 import './SearchBar.css';
 
 const MAX_SUGGESTIONS = 5;
@@ -82,6 +83,9 @@ function getSimilarRecommended(allProducts, recentProductIds, recentSearchQuerie
 const SearchBar = ({ isMobile = false, className = '' }) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const { allProducts, loading, error } = useAppData();
+  const catalog = allProducts || [];
+  const appLoading = loading && !error;
   const lang = i18n.language || 'uz';
   const { recentProductIds, addProduct, recentSearchQueries, addSearchQuery, removeSearchQuery } = useSearchHistory();
   const [query, setQuery] = useState('');
@@ -92,14 +96,14 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
   /* Takliflar va Tavsiya etamiz – barcha bo'limlar (allProducts) dan */
   const suggestions = useMemo(() => {
     if (!(query || '').trim()) return [];
-    return allProducts
+    return catalog
       .filter((p) => productMatchesSearchByTitle(p, query))
       .slice(0, MAX_SUGGESTIONS);
-  }, [query]);
+  }, [query, catalog]);
 
   const recommended = useMemo(
-    () => getSimilarRecommended(allProducts, recentProductIds, recentSearchQueries),
-    [recentProductIds, recentSearchQueries]
+    () => getSimilarRecommended(catalog, recentProductIds, recentSearchQueries),
+    [recentProductIds, recentSearchQueries, catalog]
   );
 
   const showRecommendations = !query.trim() && isPanelOpen;
@@ -274,8 +278,27 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
                 )}
                 <div className="search-bar__recommended">
                   <h3 className="search-bar__recommended-title">{i18n.t('search.recommendedTitle')}</h3>
-                <div className="search-bar__recommended-list">
-                  {recommended.length === 0 ? (
+                <div
+                  className="search-bar__recommended-list"
+                  aria-busy={appLoading && catalog.length === 0}
+                >
+                  {appLoading && catalog.length === 0 ? (
+                    Array.from({ length: DEFAULT_RECOMMENDED_COUNT }, (_, index) => (
+                      <div
+                        key={`search-bar-rec-sk-${index}`}
+                        className="search-bar__recommended-item search-bar__recommended-item--skeleton"
+                        aria-hidden
+                      >
+                        <div className="search-bar__recommended-image">
+                          <SkeletonPulse className="search-bar__recommended-image-skeleton skeleton-pulse--fill" />
+                        </div>
+                        <div className="search-bar__recommended-info">
+                          <SkeletonPulse className="search-bar__recommended-name-skeleton" />
+                          <SkeletonPulse className="search-bar__recommended-price-skeleton" />
+                        </div>
+                      </div>
+                    ))
+                  ) : recommended.length === 0 ? (
                     <p className="search-bar__recommended-empty">{i18n.t('search.recommendedEmpty')}</p>
                   ) : (
                     recommended.map((product) => {

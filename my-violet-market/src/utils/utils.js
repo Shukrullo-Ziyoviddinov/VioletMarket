@@ -1,6 +1,3 @@
-// Import statements
-import { deliveryPrices, cargoRates } from '../data/cargo';
-
 export const getPortalContainer = () =>
   document.getElementById('modal-root') || document.body;
 
@@ -188,9 +185,10 @@ export const getOriginalPrice = (val) => {
   return null;
 };
 
-// Yetkazib berish narxini hisoblash
-export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType = 'toshkent') => {
-  
+// Yetkazib berish narxini hisoblash (deliveryPrices — API / AppData dan)
+export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType = 'toshkent', deliveryPrices) => {
+  if (!deliveryPrices?.toshkent || !deliveryPrices?.viloyat) return 0;
+
   const deliveryType = selectedDeliveryType === 'toshkent'
     ? deliveryPrices.toshkent
     : deliveryPrices.viloyat;
@@ -208,9 +206,10 @@ export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType =
   }
 };
 
-// Kargo narxini hisoblash
-export const calculateCargoPrice = (items, selectedCargoOptions = {}) => {
-  
+// Kargo narxini hisoblash (cargoRates — API / AppData dan)
+export const calculateCargoPrice = (items, selectedCargoOptions = {}, cargoRates) => {
+  if (!cargoRates || typeof cargoRates !== 'object') return 0;
+
   const countryGroups = {};
   
   // Davlatlar bo'yicha guruhlash

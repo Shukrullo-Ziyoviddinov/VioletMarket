@@ -1,18 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams, useLocation } from 'react-router-dom';
-import { allProducts, newCollection, womensCollection, mensCollection, engArzonlare, electronicsCollection, booksCollection, trendingItems, stationeryCollection, beautyCareCollection, accessoriesCollection, giftsToysCollection, vitaminsHealthCollection, activeLifestyleCollection, travelGearCollection, householdAppliancesCollection, allKindsProductsCollection, bigDiscountCollection } from '../data/products';
-import { categoriyCountries, categoriesBrend } from '../data/categories';
-import { navbarItems } from '../data/navbarItems';
+import { useAppData } from '../contexts/AppDataContext';
 import { getProductPriceNumber, productMatchesSearchByTitleWithSimilar } from '../utils/utils';
 import ProductCard from '../components/ProductCard';
 import Filters from '../components/Filters/Filters';
+import { SkeletonPulse } from '../components/SkeletonLoader';
 import './ProductPage.css';
 
 const categoryLink = (slug) => `/category/${(slug || '').toLowerCase()}`;
 
-const getNavbarCategoriesFlat = () => {
+const getNavbarCategoriesFlat = (navbarItems) => {
   const flat = [];
-  navbarItems.forEach((section) => {
+  (navbarItems || []).forEach((section) => {
     (section.items || []).forEach((item) => {
       flat.push({ id: item.id, name: item.name });
     });
@@ -24,6 +23,33 @@ const ProductPage = () => {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const {
+    loading,
+    error,
+    reload,
+    allProducts,
+    newCollection,
+    womensCollection,
+    mensCollection,
+    engArzonlare,
+    electronicsCollection,
+    booksCollection,
+    trendingItems,
+    stationeryCollection,
+    beautyCareCollection,
+    accessoriesCollection,
+    giftsToysCollection,
+    vitaminsHealthCollection,
+    activeLifestyleCollection,
+    travelGearCollection,
+    householdAppliancesCollection,
+    allKindsProductsCollection,
+    bigDiscountCollection,
+    categoriyCountries,
+    categoriesBrend,
+    navbarItems,
+  } = useAppData();
+
   const isSearchPage = location.pathname === '/search';
   const isNewCollectionPage = location.pathname === '/new-collection';
   const isWomenCollectionPage = location.pathname === '/women-collection';
@@ -64,9 +90,9 @@ const ProductPage = () => {
     setSelectedGenres([]);
   }, [slug, searchQuery, location.pathname]);
 
-  const countryItem = !isSearchPage && categoriyCountries.find((c) => c.link === link);
-  const brandItem = !isSearchPage && categoriesBrend.find((b) => b.link === link);
-  const navbarCategories = useMemo(() => getNavbarCategoriesFlat(), []);
+  const countryItem = !isSearchPage && (categoriyCountries || []).find((c) => c.link === link);
+  const brandItem = !isSearchPage && (categoriesBrend || []).find((b) => b.link === link);
+  const navbarCategories = useMemo(() => getNavbarCategoriesFlat(navbarItems), [navbarItems]);
   const navbarItem = !isSearchPage && isNavbarCategorySlug ? navbarCategories.find((n) => n.id === slugNum) : null;
 
   const countryValue = countryItem?.filterValue;
@@ -122,7 +148,50 @@ const ProductPage = () => {
       list = list.filter((p) => (p.brandCategories || '').toLowerCase() === b);
     }
     return list;
-  }, [isNewCollectionPage, isWomenCollectionPage, isMenCollectionPage, isCheapestPage, isElectronicsPage, isBooksPage, isTrendingPage, isStationeryPage, isBeautyCarePage, isAccessoriesPage, isGiftsToysPage, isVitaminsHealthPage, isActiveLifestylePage, isTravelGearPage, isHouseholdAppliancesPage, isAllKindsProductsPage, isBigDiscountPage, isSearchPage, searchQuery, countryValue, brandValue, navbarCategoryNameStr, paramCountry, paramBrand]);
+  }, [
+    isNewCollectionPage,
+    isWomenCollectionPage,
+    isMenCollectionPage,
+    isCheapestPage,
+    isElectronicsPage,
+    isBooksPage,
+    isTrendingPage,
+    isStationeryPage,
+    isBeautyCarePage,
+    isAccessoriesPage,
+    isGiftsToysPage,
+    isVitaminsHealthPage,
+    isActiveLifestylePage,
+    isTravelGearPage,
+    isHouseholdAppliancesPage,
+    isAllKindsProductsPage,
+    isBigDiscountPage,
+    isSearchPage,
+    searchQuery,
+    countryValue,
+    brandValue,
+    navbarCategoryNameStr,
+    paramCountry,
+    paramBrand,
+    allProducts,
+    newCollection,
+    womensCollection,
+    mensCollection,
+    engArzonlare,
+    electronicsCollection,
+    booksCollection,
+    trendingItems,
+    stationeryCollection,
+    beautyCareCollection,
+    accessoriesCollection,
+    giftsToysCollection,
+    vitaminsHealthCollection,
+    activeLifestyleCollection,
+    travelGearCollection,
+    householdAppliancesCollection,
+    allKindsProductsCollection,
+    bigDiscountCollection,
+  ]);
 
   const isBooksCategory = useMemo(() => {
     if (isBooksPage || (isNavbarCategorySlug && slugNum === 301) || navbarCategoryNameStr === 'Kitoblar') return true;
@@ -261,6 +330,17 @@ const ProductPage = () => {
     [productsAfterBrand, selectedCountries]
   );
 
+  if (error) {
+    return (
+      <div style={{ padding: 24 }}>
+        <p>API xatosi: {error}</p>
+        <button type="button" onClick={() => reload()}>
+          Qayta urinish
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={`product-page${isBigDiscountPage ? ' product-page--big-discount' : ''}`}>
       <div className="container">
@@ -296,11 +376,24 @@ const ProductPage = () => {
         />
 
         <div className="products-grid">
-          {finalProducts.map((product, index) => (
-            <ProductCard key={`${product.id}-${index}`} product={product} hideAddToCart={isBigDiscountPage} flashDurationHours={product.flashDurationHours} />
-          ))}
+          {loading && !error
+            ? Array.from({ length: 10 }, (_, i) => (
+                <SkeletonPulse
+                  key={`product-page-sk-${i}`}
+                  className="product-card product-card--skeleton"
+                  aria-hidden
+                />
+              ))
+            : finalProducts.map((product, index) => (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  product={product}
+                  hideAddToCart={isBigDiscountPage}
+                  flashDurationHours={product.flashDurationHours}
+                />
+              ))}
         </div>
-        {finalProducts.length === 0 && (
+        {!loading && finalProducts.length === 0 && (
           <p className="product-page__empty">
             {isSearchPage ? 'Qidiruv bo\'yicha mahsulot topilmadi.' : 'Bu kategoriyada mahsulot topilmadi.'}
           </p>

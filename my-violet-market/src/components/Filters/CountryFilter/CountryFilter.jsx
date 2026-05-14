@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { categoriyCountries } from '../../../data/categories';
+import { useAppData } from '../../../contexts/AppDataContext';
 import { getLocalizedText } from '../../../utils/utils';
 import './CountryFilter.css';
 
@@ -8,6 +8,7 @@ const MOBILE_BREAKPOINT = 768;
 
 const CountryFilter = ({ isOpen, onClose, onApply, availableCountries, selectedCountries, setSelectedCountries }) => {
   const { i18n } = useTranslation();
+  const { categoriyCountries } = useAppData();
   const lang = i18n.language || 'uz';
   const [dragY, setDragY] = useState(0);
   const sheetRef = useRef(null);
@@ -15,7 +16,7 @@ const CountryFilter = ({ isOpen, onClose, onApply, availableCountries, selectedC
   const startYRef = useRef(0);
   const isMobile = () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
 
-  const options = categoriyCountries.filter((c) => availableCountries.includes(c.filterValue));
+  const options = (categoriyCountries || []).filter((c) => availableCountries.includes(c.filterValue));
   const hasSelection = selectedCountries.length > 0;
 
   const toggle = (filterValue) => {

@@ -1,8 +1,5 @@
-import defaultProductPolicy from '../data/defaultProductPolicy.json';
-
 /**
  * Boxicons classlari — admin/CMS faqat kalit yozadi (HTML emas).
- * Yangi ikonka: shu xaritaga qo‘shing.
  */
 export const PRODUCT_POLICY_ICON_MAP = Object.freeze({
   package: 'bx bx-package',
@@ -20,15 +17,13 @@ export function getProductPolicyIconClass(iconKey) {
 }
 
 /**
- * Mahsulotda policy bo‘lmasa — defaultProductPolicy.json.
- * Override: product.policy.blocks — har bir element:
- * { icon, title, text, divider?, paymentIcons?: [{ src, alt }] }
- * paymentIcons ixtiyoriy; alt — string yoki { uz, ru }.
+ * Mahsulotda policy bo‘lmasa — defaultBlocks (API / AppData dan).
  */
-export function getProductPolicyBlocks(product) {
+export function getProductPolicyBlocks(product, defaultBlocks) {
+  const fallback = Array.isArray(defaultBlocks) ? defaultBlocks : [];
   const raw = product?.policy?.blocks ?? product?.policyBlocks;
   if (Array.isArray(raw) && raw.length > 0) {
     return raw;
   }
-  return defaultProductPolicy;
+  return fallback;
 }

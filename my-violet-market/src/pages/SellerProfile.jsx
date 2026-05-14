@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { allProducts } from '../data/products';
-import { getSellerById } from '../data/sellerData';
+import { useAppData } from '../contexts/AppDataContext';
 import ProductCard from '../components/ProductCard';
 import GlobalMore from '../components/GlobalMore';
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
@@ -15,13 +14,15 @@ import './SellerProfile.css';
 const SellerProfile = () => {
   const { sellerId } = useParams();
   const { i18n, t } = useTranslation();
+  const { allProducts, getSellerById } = useAppData();
+  const catalog = allProducts || [];
   const lang = (i18n.language || 'uz').split('-')[0] === 'ru' ? 'ru' : 'uz';
 
-  const seller = useMemo(() => getSellerById(sellerId), [sellerId]);
+  const seller = useMemo(() => getSellerById(sellerId), [sellerId, getSellerById]);
 
   const products = useMemo(
-    () => allProducts.filter((p) => p.sellerId === sellerId),
-    [sellerId]
+    () => catalog.filter((p) => p.sellerId === sellerId),
+    [sellerId, catalog]
   );
 
   const baseSubscribers = seller?.subscriberCount ?? 0;

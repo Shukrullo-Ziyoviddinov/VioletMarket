@@ -25,8 +25,8 @@ import SizeChartGuidanceFooter from '../components/SizeChartGuidanceFooter/SizeC
 import ProductPolicy from '../components/ProductPolicy';
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
 import SellerSubscribeButton from '../components/SellerSubscribeButton';
-import { allProducts } from '../data/products';
-import { getSellerById } from '../data/sellerData';
+import { useAppData } from '../contexts/AppDataContext';
+import { SkeletonPulse } from '../components/SkeletonLoader';
 import { useSellerSubscription } from '../hooks/useSellerSubscription';
 import {
   isValidTypeSize,
@@ -46,8 +46,9 @@ const ProductDetail = () => {
   const { showToast } = useToast();
   const { getCommentsByProductId, comments } = useComments();
   const { addProduct: addToSearchHistory } = useSearchHistory();
-
-  const [productData, setProductData] = useState(null);
+  const { allProducts, getSellerById, loading, error } = useAppData();
+  const catalog = allProducts || [];
+  const showDetailSkeleton = loading && !error;
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedStorage, setSelectedStorage] = useState(null);
@@ -64,7 +65,8 @@ const ProductDetail = () => {
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
-  
+  const [productData, setProductData] = useState(null);
+
   // Carousel uchun state'lar
   const [dragOffset, setDragOffset] = useState(0);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -83,7 +85,7 @@ const ProductDetail = () => {
       try {
         const product = JSON.parse(savedProduct);
         const latestProduct =
-          allProducts.find((p) => String(p.id) === String(product?.id)) || product;
+          catalog.find((p) => String(p.id) === String(product?.id)) || product;
         // Debug: product ma'lumotlarini tekshirish
         console.log('Product loaded:', {
           id: latestProduct.id,
@@ -110,7 +112,7 @@ const ProductDetail = () => {
     } else {
       navigate('/');
     }
-  }, [navigate, addToSearchHistory]);
+  }, [navigate, addToSearchHistory, catalog]);
 
   useEffect(() => {
     loadProductData();
@@ -401,14 +403,14 @@ const ProductDetail = () => {
   const detailSellerId = productData?.sellerId;
   const detailSeller = useMemo(
     () => (detailSellerId ? getSellerById(detailSellerId) : null),
-    [detailSellerId]
+    [detailSellerId, getSellerById]
   );
   const sellerProductCountForDetail = useMemo(
     () =>
       detailSellerId
-        ? allProducts.filter((p) => p.sellerId === detailSellerId).length
+        ? catalog.filter((p) => p.sellerId === detailSellerId).length
         : 0,
-    [detailSellerId]
+    [detailSellerId, catalog]
   );
   const sellerBaseSubscribers = detailSeller?.subscriberCount ?? 0;
   const {
@@ -496,26 +498,26 @@ const ProductDetail = () => {
 
   // Mouse drag handlers
   const handleImageMouseDown = useCallback((e) => {
-    if (allImages.length <= 1) return;
+    if (showDetailSkeleton || allImages.length <= 1) return;
     e.preventDefault();
     handleImageDragStart(e.pageX);
-  }, [allImages.length, handleImageDragStart]);
+  }, [showDetailSkeleton, allImages.length, handleImageDragStart]);
 
   // Touch events
   const handleImageTouchStart = useCallback((e) => {
-    if (allImages.length <= 1) return;
+    if (showDetailSkeleton || allImages.length <= 1) return;
     handleImageDragStart(e.touches[0].clientX);
-  }, [allImages.length, handleImageDragStart]);
+  }, [showDetailSkeleton, allImages.length, handleImageDragStart]);
 
   const handleImageTouchMove = useCallback((e) => {
-    if (allImages.length <= 1) return;
+    if (showDetailSkeleton || allImages.length <= 1) return;
     handleImageDragMove(e.touches[0].clientX);
-  }, [allImages.length, handleImageDragMove]);
+  }, [showDetailSkeleton, allImages.length, handleImageDragMove]);
 
   const handleImageTouchEnd = useCallback(() => {
-    if (allImages.length <= 1) return;
+    if (showDetailSkeleton || allImages.length <= 1) return;
     handleImageDragEnd();
-  }, [allImages.length, handleImageDragEnd]);
+  }, [showDetailSkeleton, allImages.length, handleImageDragEnd]);
 
   // Document event listeners for drag
   useEffect(() => {
@@ -824,7 +826,7 @@ const ProductDetail = () => {
         <div className="product-detail-grid">
           <div className="product-images">
             <div 
-              className={`main-image-wrapper ${allImages.length > 1 ? 'main-image-draggable' : ''} ${isDraggingImage ? 'is-dragging' : ''}`}
+              className={`main-image-wrapper ${allImages.length > 1 && !showDetailSkeleton ? 'main-image-draggable' : ''} ${isDraggingImage ? 'is-dragging' : ''}`}
               ref={mainImageWrapperRef}
               onMouseDown={handleImageMouseDown}
               onTouchStart={handleImageTouchStart}
@@ -900,31 +902,39 @@ const ProductDetail = () => {
               <div 
                 className={`main-image-container ${isDraggingImage ? 'is-dragging' : ''}`}
                 style={{ '--drag-offset': `${dragOffset}px` }}
+                aria-busy={showDetailSkeleton}
               >
-                <img 
-                  src={allImages[currentImageIndex] || '/img/no-image.png'} 
-                  alt={getLocalizedText(productData.title, lang)}
-                  className="main-image"
-                  onClick={(e) => {
-                    // Faqat haqiqiy click bo'lsa modal och (drag emas)
-                    if (
-                      !isDraggingImage && 
-                      !hasMovedDuringDragRef.current &&
-                      Math.abs(dragOffset) < 3 && 
-                      allImages.length > 0
-                    ) {
-                      e.preventDefault();
-                      setIsImageModalOpen(true);
-                    }
-                  }}
-                  draggable={false}
-                  onError={(e) => {
-                    if (!imageErrors.has(currentImageIndex)) {
-                      setImageErrors(prev => new Set([...prev, currentImageIndex]));
-                      e.target.src = '/img/no-image.png';
-                    }
-                  }}
-                />
+                {showDetailSkeleton ? (
+                  <SkeletonPulse
+                    className="product-detail-main-image__skeleton"
+                    aria-hidden
+                  />
+                ) : (
+                  <img 
+                    src={allImages[currentImageIndex] || '/img/no-image.png'} 
+                    alt={getLocalizedText(productData.title, lang)}
+                    className="main-image"
+                    onClick={(e) => {
+                      // Faqat haqiqiy click bo'lsa modal och (drag emas)
+                      if (
+                        !isDraggingImage && 
+                        !hasMovedDuringDragRef.current &&
+                        Math.abs(dragOffset) < 3 && 
+                        allImages.length > 0
+                      ) {
+                        e.preventDefault();
+                        setIsImageModalOpen(true);
+                      }
+                    }}
+                    draggable={false}
+                    onError={(e) => {
+                      if (!imageErrors.has(currentImageIndex)) {
+                        setImageErrors(prev => new Set([...prev, currentImageIndex]));
+                        e.target.src = '/img/no-image.png';
+                      }
+                    }}
+                  />
+                )}
               </div>
               {productData.video && (
                 <div 
@@ -940,34 +950,61 @@ const ProductDetail = () => {
               )}
             </div>
             {allImages.length > 1 && (
-              <DragScroll className="thumbnail-list" direction="horizontal">
-                {allImages.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Thumbnail ${index + 1}`}
-                    className={`thumbnail ${index === currentImageIndex ? 'selected' : ''}`}
-                    draggable={false}
-                    onClick={() => setCurrentImageIndex(index)}
-                    onError={(e) => {
-                      e.target.src = normalizeImagePath('/img/no-image.png');
-                    }}
-                  />
-                ))}
+              <DragScroll
+                className="thumbnail-list"
+                direction="horizontal"
+                aria-busy={showDetailSkeleton}
+              >
+                {showDetailSkeleton
+                  ? Array.from({ length: Math.min(allImages.length, 10) }, (_, index) => (
+                      <SkeletonPulse
+                        key={`thumbnail-sk-${index}`}
+                        className={`thumbnail thumbnail--skeleton ${index === currentImageIndex ? 'selected' : ''}`}
+                        aria-hidden
+                      />
+                    ))
+                  : allImages.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`Thumbnail ${index + 1}`}
+                        className={`thumbnail ${index === currentImageIndex ? 'selected' : ''}`}
+                        draggable={false}
+                        onClick={() => setCurrentImageIndex(index)}
+                        onError={(e) => {
+                          e.target.src = normalizeImagePath('/img/no-image.png');
+                        }}
+                      />
+                    ))}
               </DragScroll>
             )}
           </div>
 
           <div className="product-info">
-            <h1 className="product-title">{getLocalizedText(productData.title, lang)}</h1>
-
-            <div className="price-section">
-              <span className="price">{formatPrice(currentPrice)}</span>
-              {productData.originalPrice && (
-                <span className="original-price">{productData.originalPrice}</span>
+            <h1 className="product-title">
+              {showDetailSkeleton ? (
+                <SkeletonPulse className="product-detail-title__skeleton" aria-hidden />
+              ) : (
+                getLocalizedText(productData.title, lang)
               )}
-              {productData.discount && (
-                <span className="discount">{getLocalizedText(productData.discount, lang)}</span>
+            </h1>
+
+            <div className="price-section" aria-busy={showDetailSkeleton}>
+              {showDetailSkeleton ? (
+                <>
+                  <SkeletonPulse className="product-detail-price__skeleton product-detail-price__skeleton--main" aria-hidden />
+                  <SkeletonPulse className="product-detail-price__skeleton product-detail-price__skeleton--muted" aria-hidden />
+                </>
+              ) : (
+                <>
+                  <span className="price">{formatPrice(currentPrice)}</span>
+                  {productData.originalPrice && (
+                    <span className="original-price">{productData.originalPrice}</span>
+                  )}
+                  {productData.discount && (
+                    <span className="discount">{getLocalizedText(productData.discount, lang)}</span>
+                  )}
+                </>
               )}
             </div>
 
@@ -998,28 +1035,36 @@ const ProductDetail = () => {
               <div className="color-selection">
                 <h3>{i18n.t('productDetail.colorLabel')} {selectedColor !== null ? getLocalizedText(selectedColor?.name, lang) : getLocalizedText(productData.colors[0]?.name, lang)}</h3>
                 <div className="colors-container">
-                  {productData.colors.map((color, index) => {
-                    const currentColor = selectedColor !== null ? selectedColor : productData.colors[0];
-                    const isSelected = currentColor && color && (
-                      (currentColor.colorFilter && color.colorFilter && currentColor.colorFilter === color.colorFilter) ||
-                      (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage)
-                    );
-                    return (
-                      <img
-                        key={`color-${index}-${getLocalizedText(color.name, lang) || index}`}
-                        src={normalizeImagePath(color.mainImage)}
-                        alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
-                        className={`color-option ${isSelected ? 'selected' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleColorChange(color);
-                        }}
-                        onError={(e) => {
-                          e.target.src = normalizeImagePath('/img/no-image.png');
-                        }}
-                      />
-                    );
-                  })}
+                  {showDetailSkeleton
+                    ? Array.from({ length: Math.min(productData.colors.length, 8) }, (_, index) => (
+                        <SkeletonPulse
+                          key={`color-sk-${index}`}
+                          className="color-option color-option--skeleton"
+                          aria-hidden
+                        />
+                      ))
+                    : productData.colors.map((color, index) => {
+                        const currentColor = selectedColor !== null ? selectedColor : productData.colors[0];
+                        const isSelected = currentColor && color && (
+                          (currentColor.colorFilter && color.colorFilter && currentColor.colorFilter === color.colorFilter) ||
+                          (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage)
+                        );
+                        return (
+                          <img
+                            key={`color-${index}-${getLocalizedText(color.name, lang) || index}`}
+                            src={normalizeImagePath(color.mainImage)}
+                            alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                            className={`color-option ${isSelected ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleColorChange(color);
+                            }}
+                            onError={(e) => {
+                              e.target.src = normalizeImagePath('/img/no-image.png');
+                            }}
+                          />
+                        );
+                      })}
                 </div>
               </div>
             )}
@@ -1028,24 +1073,32 @@ const ProductDetail = () => {
               <div className="size-selection">
                 <h3>{i18n.t('productDetail.sizeLabel')} {selectedSize !== null ? selectedSize : (selectedColor.sizes[0] || '')}</h3>
                 <div className="sizes-container">
-                  {selectedColor.sizes.map((size, index) => {
-                    const currentSize = selectedSize !== null ? selectedSize : selectedColor.sizes[0];
-                    const isSelected = size === currentSize;
-                    return (
-                      <button
-                        key={`size-${index}`}
-                        className={`size-option ${isSelected ? 'selected' : ''}`}
-                        onClick={() => {
-                          setSelectedSize(size);
-                        }}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
+                  {showDetailSkeleton
+                    ? Array.from({ length: Math.min(selectedColor.sizes.length, 10) }, (_, index) => (
+                        <SkeletonPulse
+                          key={`size-sk-${index}`}
+                          className={`size-option size-option--skeleton size-option--skeleton-${(index % 4) + 1}`}
+                          aria-hidden
+                        />
+                      ))
+                    : selectedColor.sizes.map((size, index) => {
+                        const currentSize = selectedSize !== null ? selectedSize : selectedColor.sizes[0];
+                        const isSelected = size === currentSize;
+                        return (
+                          <button
+                            key={`size-${index}`}
+                            className={`size-option ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedSize(size);
+                            }}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
                 </div>
                 {/* Size Chart */}
-                {hasSizeChart && (
+                {!showDetailSkeleton && hasSizeChart && (
                   <div className="size-chart">
                     <button 
                       className="size-chart-trigger"
@@ -1068,23 +1121,31 @@ const ProductDetail = () => {
                     : (selectedColor.storage[0] ? (typeof selectedColor.storage[0] === 'object' && selectedColor.storage[0].size ? selectedColor.storage[0].size : selectedColor.storage[0]) : '')
                 }</h3>
                 <div className="storage-container">
-                  {selectedColor.storage.map((storage, index) => {
-                    const storageValue = typeof storage === 'object' && storage.size ? storage.size : storage;
-                    const currentStorage = selectedStorage !== null ? selectedStorage : selectedColor.storage[0];
-                    const currentStorageValue = currentStorage ? (typeof currentStorage === 'object' && currentStorage.size ? currentStorage.size : currentStorage) : null;
-                    const isSelected = storageValue === currentStorageValue;
-                    return (
-                      <button
-                        key={`storage-${index}`}
-                        className={`storage-option ${isSelected ? 'selected' : ''}`}
-                        onClick={() => {
-                          setSelectedStorage(storage);
-                        }}
-                      >
-                        {storageValue}
-                      </button>
-                    );
-                  })}
+                  {showDetailSkeleton
+                    ? Array.from({ length: Math.min(selectedColor.storage.length, 6) }, (_, index) => (
+                        <SkeletonPulse
+                          key={`storage-sk-${index}`}
+                          className={`storage-option storage-option--skeleton storage-option--skeleton-${(index % 3) + 1}`}
+                          aria-hidden
+                        />
+                      ))
+                    : selectedColor.storage.map((storage, index) => {
+                        const storageValue = typeof storage === 'object' && storage.size ? storage.size : storage;
+                        const currentStorage = selectedStorage !== null ? selectedStorage : selectedColor.storage[0];
+                        const currentStorageValue = currentStorage ? (typeof currentStorage === 'object' && currentStorage.size ? currentStorage.size : currentStorage) : null;
+                        const isSelected = storageValue === currentStorageValue;
+                        return (
+                          <button
+                            key={`storage-${index}`}
+                            className={`storage-option ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedStorage(storage);
+                            }}
+                          >
+                            {storageValue}
+                          </button>
+                        );
+                      })}
                 </div>
               </div>
             )}
@@ -1097,23 +1158,31 @@ const ProductDetail = () => {
                     : (selectedColor.models[0] ? (typeof selectedColor.models[0] === 'object' && selectedColor.models[0].name ? selectedColor.models[0].name : selectedColor.models[0]) : '')
                 }</h3>
                 <div className="models-container">
-                  {selectedColor.models.map((model, index) => {
-                    const modelName = typeof model === 'object' && model.name ? model.name : model;
-                    const currentModel = selectedModel !== null ? selectedModel : selectedColor.models[0];
-                    const currentModelName = currentModel ? (typeof currentModel === 'object' && currentModel.name ? currentModel.name : currentModel) : null;
-                    const isSelected = modelName === currentModelName;
-                    return (
-                      <button
-                        key={`model-${index}`}
-                        className={`model-option ${isSelected ? 'selected' : ''}`}
-                        onClick={() => {
-                          setSelectedModel(model);
-                        }}
-                      >
-                        {modelName}
-                      </button>
-                    );
-                  })}
+                  {showDetailSkeleton
+                    ? Array.from({ length: Math.min(selectedColor.models.length, 6) }, (_, index) => (
+                        <SkeletonPulse
+                          key={`model-sk-${index}`}
+                          className={`model-option model-option--skeleton model-option--skeleton-${(index % 3) + 1}`}
+                          aria-hidden
+                        />
+                      ))
+                    : selectedColor.models.map((model, index) => {
+                        const modelName = typeof model === 'object' && model.name ? model.name : model;
+                        const currentModel = selectedModel !== null ? selectedModel : selectedColor.models[0];
+                        const currentModelName = currentModel ? (typeof currentModel === 'object' && currentModel.name ? currentModel.name : currentModel) : null;
+                        const isSelected = modelName === currentModelName;
+                        return (
+                          <button
+                            key={`model-${index}`}
+                            className={`model-option ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              setSelectedModel(model);
+                            }}
+                          >
+                            {modelName}
+                          </button>
+                        );
+                      })}
                 </div>
               </div>
             )}
@@ -1145,7 +1214,7 @@ const ProductDetail = () => {
             {/* Delivery Info - Only for UZB products */}
             <DeliveryInfo product={productData} />
 
-            <ProductPolicy product={productData} lang={lang} />
+            <ProductPolicy product={productData} lang={lang} skeleton={showDetailSkeleton} />
 
             {detailSeller && (
               <div className="product-detail-seller-wrap">
@@ -1187,26 +1256,47 @@ const ProductDetail = () => {
 
         {/* Product Description - Below grid on desktop */}
         {shouldShowDescription && (
-          <div className="product-description auto-loader-bg" id="descriptionSection">
+          <div
+            className="product-description auto-loader-bg"
+            id="descriptionSection"
+            aria-busy={showDetailSkeleton}
+          >
             <div className="description-intro">
               <div className="description-header">
-                <div className="header-icon auto-loader-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                </div>
-                <h3>
-                  {structuredDescriptionBlock
-                    ? getLocalizedText(structuredDescriptionBlock.title, lang)
-                    : i18n.t('productDetail.descriptionHeader')}
-                </h3>
+                {showDetailSkeleton ? (
+                  <>
+                    <SkeletonPulse className="description-header__icon-skeleton" aria-hidden />
+                    <SkeletonPulse className="description-header__title-skeleton" aria-hidden />
+                  </>
+                ) : (
+                  <>
+                    <div className="header-icon auto-loader-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                    </div>
+                    <h3>
+                      {structuredDescriptionBlock
+                        ? getLocalizedText(structuredDescriptionBlock.title, lang)
+                        : i18n.t('productDetail.descriptionHeader')}
+                    </h3>
+                  </>
+                )}
               </div>
-              {descriptionIntroInfoText.length > 0 && (
-                <p className="description-info">{descriptionIntroInfoText}</p>
+              {showDetailSkeleton && descriptionIntroInfoText.length > 0 ? (
+                <div className="description-info description-info--skeleton" aria-hidden>
+                  <SkeletonPulse className="description-info__line description-info__line--a" />
+                  <SkeletonPulse className="description-info__line description-info__line--b" />
+                  <SkeletonPulse className="description-info__line description-info__line--c" />
+                </div>
+              ) : (
+                descriptionIntroInfoText.length > 0 && (
+                  <p className="description-info">{descriptionIntroInfoText}</p>
+                )
               )}
             </div>
             {structuredDescriptionBlock && (
@@ -1216,18 +1306,44 @@ const ProductDetail = () => {
                     <div className="description description--technical">
                       {structuredDescriptionBlock.technicalHeading && (
                         <h4 className="description-section-subtitle">
-                          {getLocalizedText(structuredDescriptionBlock.technicalHeading, lang)}
+                          {showDetailSkeleton ? (
+                            <SkeletonPulse className="description-section-subtitle__skeleton" aria-hidden />
+                          ) : (
+                            getLocalizedText(structuredDescriptionBlock.technicalHeading, lang)
+                          )}
                         </h4>
                       )}
                       <div className="technical-specs-table-wrap">
                         <table className="technical-specs-table">
                           <tbody>
-                            {structuredDescriptionBlock.technicalSpecs.map((row, idx) => (
-                              <tr key={idx}>
-                                <td>{getLocalizedText(row.label, lang)}</td>
-                                <td>{getLocalizedText(row.value, lang)}</td>
-                              </tr>
-                            ))}
+                            {showDetailSkeleton
+                              ? Array.from(
+                                  {
+                                    length: Math.min(structuredDescriptionBlock.technicalSpecs.length, 8),
+                                  },
+                                  (_, idx) => (
+                                    <tr key={`tech-sk-${idx}`}>
+                                      <td>
+                                        <SkeletonPulse
+                                          className="technical-specs-td-skeleton technical-specs-td-skeleton--first"
+                                          aria-hidden
+                                        />
+                                      </td>
+                                      <td>
+                                        <SkeletonPulse
+                                          className="technical-specs-td-skeleton technical-specs-td-skeleton--value"
+                                          aria-hidden
+                                        />
+                                      </td>
+                                    </tr>
+                                  )
+                                )
+                              : structuredDescriptionBlock.technicalSpecs.map((row, idx) => (
+                                  <tr key={idx}>
+                                    <td>{getLocalizedText(row.label, lang)}</td>
+                                    <td>{getLocalizedText(row.value, lang)}</td>
+                                  </tr>
+                                ))}
                           </tbody>
                         </table>
                       </div>
@@ -1241,18 +1357,47 @@ const ProductDetail = () => {
                       <div className="description description--technical">
                         {structuredDescriptionBlock.mainFeaturesHeading && (
                           <h4 className="description-section-subtitle">
-                            {getLocalizedText(structuredDescriptionBlock.mainFeaturesHeading, lang)}
+                            {showDetailSkeleton ? (
+                              <SkeletonPulse className="description-section-subtitle__skeleton" aria-hidden />
+                            ) : (
+                              getLocalizedText(structuredDescriptionBlock.mainFeaturesHeading, lang)
+                            )}
                           </h4>
                         )}
                         <div className="technical-specs-table-wrap">
                           <table className="technical-specs-table">
                             <tbody>
-                              {structuredDescriptionBlock.mainFeatures.map((item, idx) => (
-                                <tr key={idx}>
-                                  <td>{getLocalizedText(item.title, lang)}</td>
-                                  <td>{getLocalizedText(item.text, lang)}</td>
-                                </tr>
-                              ))}
+                              {showDetailSkeleton
+                                ? Array.from(
+                                    {
+                                      length: Math.min(
+                                        structuredDescriptionBlock.mainFeatures.length,
+                                        8
+                                      ),
+                                    },
+                                    (_, idx) => (
+                                      <tr key={`mainf-sk-${idx}`}>
+                                        <td>
+                                          <SkeletonPulse
+                                            className="technical-specs-td-skeleton technical-specs-td-skeleton--first"
+                                            aria-hidden
+                                          />
+                                        </td>
+                                        <td>
+                                          <SkeletonPulse
+                                            className="technical-specs-td-skeleton technical-specs-td-skeleton--value"
+                                            aria-hidden
+                                          />
+                                        </td>
+                                      </tr>
+                                    )
+                                  )
+                                : structuredDescriptionBlock.mainFeatures.map((item, idx) => (
+                                    <tr key={idx}>
+                                      <td>{getLocalizedText(item.title, lang)}</td>
+                                      <td>{getLocalizedText(item.text, lang)}</td>
+                                    </tr>
+                                  ))}
                             </tbody>
                           </table>
                         </div>
@@ -1268,16 +1413,24 @@ const ProductDetail = () => {
             )}
             {hasDescriptionImages && (
               <div className={`description-images ${isDescriptionExpanded ? 'show' : ''}`}>
-                {productData.descriptionImages.map((imgSrc, index) => (
-                  <img 
-                    key={index}
-                    src={normalizeImagePath(imgSrc)} 
-                    alt={`Description ${index + 1}`}
-                    onError={(e) => {
-                      e.target.src = normalizeImagePath('/img/no-image.png');
-                    }}
-                  />
-                ))}
+                {showDetailSkeleton
+                  ? productData.descriptionImages.map((_, index) => (
+                      <SkeletonPulse
+                        key={`desc-img-sk-${index}`}
+                        className="description-images__img-skeleton"
+                        aria-hidden
+                      />
+                    ))
+                  : productData.descriptionImages.map((imgSrc, index) => (
+                      <img 
+                        key={index}
+                        src={normalizeImagePath(imgSrc)} 
+                        alt={`Description ${index + 1}`}
+                        onError={(e) => {
+                          e.target.src = normalizeImagePath('/img/no-image.png');
+                        }}
+                      />
+                    ))}
               </div>
             )}
             {showReadMoreBtn && (
@@ -1491,10 +1644,10 @@ const ProductDetail = () => {
            Array.isArray(group.productIds) && 
            group.productIds.length > 0
          ) && (
-          <StylingIdea currentProduct={productData} />
+          <StylingIdea currentProduct={productData} skeleton={showDetailSkeleton} />
         )}
 
-        <Recommended currentProduct={productData} />
+        <Recommended currentProduct={productData} skeleton={showDetailSkeleton} />
         <TavsiyaEtamiz currentProduct={productData} />
 
       </div>

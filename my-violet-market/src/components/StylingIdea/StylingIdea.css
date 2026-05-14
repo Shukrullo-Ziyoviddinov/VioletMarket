@@ -72,6 +72,67 @@
   border-color: #ea0cdc;
 }
 
+.styling-idea-container--skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.styling-idea-group--skeleton {
+  pointer-events: none;
+}
+
+.styling-idea-group--skeleton:hover {
+  border-color: #e9ecef;
+}
+
+.styling-idea-group-title-skeleton {
+  display: block;
+  width: min(100%, 280px);
+  height: 36px;
+  margin-bottom: 25px;
+  margin-left: 20px;
+  border-radius: 10px;
+}
+
+.styling-idea-product.styling-idea-product--skeleton {
+  cursor: default;
+  pointer-events: none;
+  background: #f3f4f6;
+}
+
+.styling-idea-product.styling-idea-product--skeleton::before {
+  display: none;
+}
+
+.styling-idea-product-image-skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.styling-idea-product-price-skeleton {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 92px;
+  height: 34px;
+  z-index: 2;
+  border-radius: 12px;
+}
+
+.styling-idea-product-price-skeleton--small {
+  width: 78px;
+  height: 30px;
+  bottom: 15px;
+  left: 15px;
+}
+
+.styling-idea-right-column .styling-idea-product.styling-idea-product--skeleton {
+  background: #f3f4f6;
+}
+
 /* ============================================
    GURUH SARLAVHASI
    ============================================ */

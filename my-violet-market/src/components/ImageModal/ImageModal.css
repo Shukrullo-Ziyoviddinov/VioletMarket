@@ -115,6 +115,69 @@
 .im-img-wrap.slide-left  { animation: imSlideLeft  0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 .im-img-wrap.slide-right { animation: imSlideRight 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 
+/* Carousel: faqat markazdagi asosiy rasm ko‘rinadi; qo‘shnilar faqat surilganda (overflow clip) */
+.im-img-wrap.im-img-wrap--carousel {
+  animation: none;
+}
+
+.im-drag-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.im-drag-track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: max-content;
+  will-change: transform;
+}
+
+.im-slide {
+  position: relative;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.14),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.im-slide-center {
+  z-index: 2;
+}
+
+.im-slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.im-slide-center .im-image {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: none;
+}
+
 /* =============================================
    IMAGE — blokni to'liq to'ldiradi, kesilmaydi
    ============================================= */
@@ -142,6 +205,22 @@
 
 .im-image:not(.is-zoomed) {
   cursor: zoom-in;
+}
+
+.im-overlay.im-multi .im-image.main-image:not(.is-zoomed) {
+  cursor: grab;
+}
+
+.im-overlay.im-multi .im-drag-viewport {
+  cursor: grab;
+}
+
+.im-img-wrap.is-img-dragging .im-image.main-image:not(.is-zoomed) {
+  cursor: grabbing;
+}
+
+.im-img-wrap.is-img-dragging.im-img-wrap--carousel .im-drag-viewport {
+  cursor: grabbing;
 }
 
 .im-zoom-hint {

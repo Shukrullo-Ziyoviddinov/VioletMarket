@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
-import { footerData } from '../data/footerData';
+import { useAppData } from '../contexts/AppDataContext';
 import { getLocalizedText, normalizeImagePath } from '../utils/utils';
-import { getSellerById } from '../data/sellerData';
 import { getSubscribedSellerIds, SELLER_SUBSCRIBE_STORAGE_PREFIX } from '../hooks/useSellerSubscription';
 import GlobalModal from '../components/GlobalModal';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
@@ -19,6 +18,7 @@ const LANGUAGES = [
 
 const Profile = () => {
   const { i18n, t } = useTranslation();
+  const { footerData, getSellerById } = useAppData();
   const location = useLocation();
   const { userData, updateUserData } = useUser();
   const [formData, setFormData] = useState({
@@ -460,7 +460,7 @@ const Profile = () => {
             onKeyDown={(e) => e.key === 'Enter' && setSocialModalOpen(true)}
             aria-label={getLocalizedText({ uz: "Violet Market ijtimoiy tarmoqlari", ru: "Социальные сети Violet Market" }, lang)}
           >
-            <img src={footerData.socialMedia[0]?.icon || '/img/telegram.png'} alt="" className="profile-violet-movie-icon-img" />
+            <img src={footerData?.socialMedia?.[0]?.icon || '/img/telegram.png'} alt="" className="profile-violet-movie-icon-img" />
             <span className="profile-violet-movie-label">{getLocalizedText({ uz: "Violet Market ijtimoiy tarmoqlari", ru: "Социальные сети Violet Market" }, lang)}</span>
           </div>
 
@@ -709,7 +709,7 @@ const Profile = () => {
                 <div className="profile-social-modal__body">
                   <h3 className="profile-social-modal__title">{getLocalizedText({ uz: "Violet Market ijtimoiy tarmoqlari", ru: "Социальные сети Violet Market" }, lang)}</h3>
                   <div className="profile-social-modal__icons">
-                    {footerData.socialMedia.map((social) => (
+                    {(footerData?.socialMedia || []).map((social) => (
                       <a
                         key={social.id}
                         href={social.link}
@@ -722,7 +722,7 @@ const Profile = () => {
                     ))}
                   </div>
                   <div className="profile-social-modal__app-stores">
-                    {footerData.appStores.map((store) => (
+                    {(footerData?.appStores || []).map((store) => (
                       <a
                         key={store.id}
                         href={store.link}
@@ -759,7 +759,7 @@ const Profile = () => {
                 <div className="profile-contact-modal__body">
                   <h3 className="profile-contact-modal__title profile-contact-modal__title--center">{getLocalizedText({ uz: "Biz bilan bog'lanish", ru: "Связаться с нами" }, lang)}</h3>
                   <div className="profile-contact-modal__icons">
-                    {footerData.socialMedia.filter((s) => s.name === 'Telegram').map((social) => (
+                    {(footerData?.socialMedia || []).filter((s) => s.name === 'Telegram').map((social) => (
                       <a
                         key={social.id}
                         href={social.link}
@@ -800,7 +800,7 @@ const Profile = () => {
                   </h3>
                 </div>
                 <div className="profile-about-modal__body">
-                  {(footerData.aboutSections || []).map((section) => (
+                  {(footerData?.aboutSections || []).map((section) => (
                     <div key={section.id} className="profile-about-modal__section">
                       <button
                         type="button"

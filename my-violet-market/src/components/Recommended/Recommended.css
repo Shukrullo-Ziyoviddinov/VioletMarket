@@ -3,6 +3,18 @@
   width: 100%;
 }
 
+.recommended-section--skeleton .recommended-product-item {
+  cursor: default;
+  pointer-events: none;
+}
+
+.recommended-section--skeleton .recommended-product-item .product-card.product-card--skeleton {
+  width: 100%;
+  min-height: 320px;
+  box-sizing: border-box;
+  display: block;
+}
+
 .recommended-section__header {
   margin-bottom: 5px;
 }

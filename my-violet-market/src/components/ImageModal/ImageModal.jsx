@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { getPortalContainer } from '../../utils/utils';
 import { normalizeImagePath } from '../../utils/utils';
@@ -7,15 +7,23 @@ import './ImageModal.css';
 const ZOOM_SCALE = 2.5;
 
 const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
+  const multi = images.length > 1;
   const [index, setIndex] = useState(initialIndex);
   const [slideDir, setSlideDir] = useState(null);
   const [animKey, setAnimKey] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const imgRef = useRef(null);
-  const touchStartX = useRef(null);
-  const touchStartY = useRef(null);
-  const isDragging = useRef(false);
+  const startXRef = useRef(0);
+  const currentXRef = useRef(0);
+  const dragStartTimeRef = useRef(0);
+  const wasDragRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragViewportRef = useRef(null);
+  /** Carousel: viewport o‘lchami (px) — track markazlash */
+  const [dragLayout, setDragLayout] = useState({ slideW: 0, gap: 0, baseX: 0 });
 
   useEffect(() => {
     if (isOpen) {
@@ -23,14 +31,22 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
       setIsZoomed(false);
       setZoomOrigin({ x: 50, y: 50 });
       setSlideDir(null);
+      setDragOffset(0);
+      setIsDragging(false);
+      isDraggingRef.current = false;
+      wasDragRef.current = false;
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setDragOffset(0);
+      setIsDragging(false);
+      isDraggingRef.current = false;
     }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen, initialIndex]);
 
   const go = useCallback((dir) => {
+    setDragOffset(0);
     setIsZoomed(false);
     setZoomOrigin({ x: 50, y: 50 });
     setSlideDir(dir > 0 ? 'slide-left' : 'slide-right');
@@ -57,42 +73,128 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
     return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, go, onClose, isZoomed]);
 
-  const onTouchStart = (e) => {
-    if (isZoomed) return;
-    const target = e.target;
-    if (target.classList.contains('im-image')) {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-      isDragging.current = false;
-    }
+  const nextSlide = useCallback(() => go(1), [go]);
+  const prevSlide = useCallback(() => go(-1), [go]);
+
+  // ImageBanner bilan bir xil: start → move (offset) → end (threshold + velocity)
+  const handleDragStart = (clientX) => {
+    if (images.length <= 1 || isZoomed) return;
+    wasDragRef.current = false;
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    startXRef.current = clientX;
+    currentXRef.current = clientX;
+    dragStartTimeRef.current = Date.now();
   };
 
-  const onTouchMove = (e) => {
-    if (isZoomed || touchStartX.current === null) return;
-    const target = e.target;
-    if (target.classList.contains('im-image')) {
-      const diffX = Math.abs(touchStartX.current - e.touches[0].clientX);
-      const diffY = Math.abs(touchStartY.current - e.touches[0].clientY);
-      if (diffX > 10 || diffY > 10) {
-        isDragging.current = true;
-      }
+  const handleDragMove = (clientX) => {
+    if (!isDraggingRef.current) return;
+    currentXRef.current = clientX;
+    let diff = clientX - startXRef.current;
+    const w = dragViewportRef.current?.offsetWidth ?? 0;
+    if (w > 0) {
+      diff = Math.max(-w, Math.min(w, diff));
     }
+    if (Math.abs(diff) > 10) wasDragRef.current = true;
+    setDragOffset(diff);
   };
 
-  const onTouchEnd = (e) => {
-    if (isZoomed || touchStartX.current === null) return;
-    const target = e.target;
-    if (target.classList.contains('im-image') && isDragging.current) {
-      const diff = touchStartX.current - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) go(diff > 0 ? 1 : -1);
+  const handleDragEnd = () => {
+    if (!isDraggingRef.current) return;
+
+    const diff = currentXRef.current - startXRef.current;
+    const dragDuration = Date.now() - dragStartTimeRef.current;
+    const vw = dragViewportRef.current?.offsetWidth || 400;
+    const clamped = Math.max(-vw, Math.min(vw, diff));
+
+    // Kenglik bo‘yicha: surish ko‘rinishi uchun juda past threshold + velocity faqat yetarli masofa bo‘lsa
+    const threshold = Math.max(56, vw * 0.14);
+    const velocity = Math.abs(clamped) / Math.max(dragDuration, 1);
+    const velocitySwipe =
+      Math.abs(clamped) > threshold * 0.45 && velocity > 0.65;
+
+    if (Math.abs(clamped) > threshold || velocitySwipe) {
+      if (clamped > 0) prevSlide();
+      else nextSlide();
+    } else {
+      setDragOffset(0);
     }
-    touchStartX.current = null;
-    touchStartY.current = null;
-    isDragging.current = false;
+
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    window.setTimeout(() => {
+      wasDragRef.current = false;
+    }, 150);
   };
+
+  const handleMouseDown = (e) => {
+    if (images.length <= 1 || isZoomed) return;
+    e.preventDefault();
+    handleDragStart(e.pageX);
+  };
+
+  const handleTouchStart = (e) => {
+    if (images.length <= 1 || isZoomed) return;
+    handleDragStart(e.touches[0].clientX);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onDocMove = (e) => handleDragMove(e.pageX);
+    const onDocUp = () => handleDragEnd();
+
+    const onDocTouchMove = (e) => {
+      if (e.touches.length === 0) return;
+      e.preventDefault();
+      handleDragMove(e.touches[0].clientX);
+    };
+    const onDocTouchEnd = () => handleDragEnd();
+
+    document.addEventListener('mousemove', onDocMove);
+    document.addEventListener('mouseup', onDocUp);
+    document.addEventListener('touchmove', onDocTouchMove, { passive: false });
+    document.addEventListener('touchend', onDocTouchEnd);
+    document.addEventListener('touchcancel', onDocTouchEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', onDocMove);
+      document.removeEventListener('mouseup', onDocUp);
+      document.removeEventListener('touchmove', onDocTouchMove);
+      document.removeEventListener('touchend', onDocTouchEnd);
+      document.removeEventListener('touchcancel', onDocTouchEnd);
+    };
+  }, [isDragging]);
+
+  const measureDragCarousel = useCallback(() => {
+    const el = dragViewportRef.current;
+    if (!el || !isOpen) return;
+    const w = el.offsetWidth;
+    if (w <= 0) return;
+    // Har bir slayd viewport kengligi = dam olishda faqat markazdagi rasm ko‘rinadi
+    const slideW = w;
+    const gap = 0;
+    const baseX = w / 2 - (slideW + gap + slideW / 2);
+    setDragLayout({ slideW, gap, baseX });
+  }, [isOpen]);
+
+  useLayoutEffect(() => {
+    if (!multi || isZoomed || !isOpen) return;
+    measureDragCarousel();
+  }, [multi, isZoomed, isOpen, index, animKey, measureDragCarousel]);
+
+  useEffect(() => {
+    if (!multi || isZoomed || !isOpen) return;
+    const el = dragViewportRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => measureDragCarousel());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [multi, isZoomed, isOpen, measureDragCarousel]);
 
   const jumpTo = (i) => {
     if (i === index) return;
+    setDragOffset(0);
     setIsZoomed(false);
     setZoomOrigin({ x: 50, y: 50 });
     setSlideDir(i > index ? 'slide-left' : 'slide-right');
@@ -101,15 +203,18 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
   };
 
   const handleImageClick = (e) => {
+    if (wasDragRef.current) return;
     if (isZoomed) {
       setIsZoomed(false);
       setZoomOrigin({ x: 50, y: 50 });
       return;
     }
-    const rect = imgRef.current.getBoundingClientRect();
+    const rect = imgRef.current?.getBoundingClientRect();
+    if (!rect?.width) return;
     const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
     const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
     setZoomOrigin({ x: xPercent, y: yPercent });
+    setSlideDir(null);
     setIsZoomed(true);
   };
 
@@ -119,18 +224,41 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
 
   if (!isOpen || images.length === 0) return null;
 
-  const multi = images.length > 1;
   const src = normalizeImagePath(images[index]);
+  const n = images.length;
+  const prevIdx = (index - 1 + n) % n;
+  const nextIdx = (index + 1) % n;
+  const prevSrc = normalizeImagePath(images[prevIdx]);
+  const nextSrc = normalizeImagePath(images[nextIdx]);
 
-  // Rasm zoom origin va scale — width/height CSS dan boshqariladi
+  // Rasm zoom + (bitta rasm yoki zoom) uchun surish
   const imgStyle = {
     transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
-    transform: isZoomed ? `scale(${ZOOM_SCALE})` : 'scale(1)',
+    transition:
+      isDragging && !isZoomed ? 'none' : 'transform 0.15s ease, border-radius 0.25s',
+    transform: isZoomed
+      ? `scale(${ZOOM_SCALE})`
+      : `translateX(${dragOffset}px) scale(1)`,
   };
+
+  const wrapSlideClass =
+    (!multi || isZoomed) && slideDir ? slideDir : '';
+
+  const trackStyle = {
+    transform: `translateX(${(dragLayout.slideW ? dragLayout.baseX : 0) + dragOffset}px)`,
+    gap: dragLayout.slideW ? `${dragLayout.gap}px` : undefined,
+    transition: isDragging
+      ? 'none'
+      : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 1)',
+  };
+
+  const slideFrameStyle = dragLayout.slideW
+    ? { flex: `0 0 ${dragLayout.slideW}px`, width: dragLayout.slideW, minWidth: dragLayout.slideW }
+    : { flex: '0 0 100%', width: '100%', minWidth: '100%' };
 
   return createPortal(
     <div
-      className="im-overlay"
+      className={'im-overlay' + (multi ? ' im-multi' : '')}
       onClick={isZoomed ? () => { setIsZoomed(false); setZoomOrigin({ x: 50, y: 50 }); } : onClose}
     >
       {/* ---- HEADER ---- */}
@@ -164,22 +292,86 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
 
       {/* ---- STAGE (rasm maydon) ---- */}
       <div className="im-stage" onClick={e => e.stopPropagation()}>
-        <div key={animKey} className={'im-img-wrap ' + (slideDir || '')}>
-          <img
-            ref={imgRef}
-            src={src}
-            alt={'Rasm ' + (index + 1)}
-            className={'im-image' + (isZoomed ? ' is-zoomed' : '')}
-            style={imgStyle}
-            onClick={handleImageClick}
-            onError={onImgError}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            draggable={false}
-          />
-          {!isZoomed && (
-            <span className="im-zoom-hint">🔍 Kattalashtirish uchun bosing</span>
+        <div
+          key={animKey}
+          className={
+            'im-img-wrap ' +
+            wrapSlideClass +
+            (isDragging && !isZoomed ? ' is-img-dragging' : '') +
+            (multi && !isZoomed ? ' im-img-wrap--carousel' : '')
+          }
+        >
+          {!multi || isZoomed ? (
+            <>
+              <img
+                ref={imgRef}
+                src={src}
+                alt={'Rasm ' + (index + 1)}
+                className={
+                  'im-image main-image' + (isZoomed ? ' is-zoomed' : '')
+                }
+                style={imgStyle}
+                onClick={handleImageClick}
+                onError={onImgError}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                draggable={false}
+              />
+              {!isZoomed && (
+                <span className="im-zoom-hint">🔍 Kattalashtirish uchun bosing</span>
+              )}
+            </>
+          ) : (
+            <div
+              ref={dragViewportRef}
+              className="im-drag-viewport"
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
+            >
+              <div className="im-drag-track" style={trackStyle}>
+                <div
+                  className="im-slide im-slide-side"
+                  style={slideFrameStyle}
+                  aria-hidden="true"
+                >
+                  <img
+                    src={prevSrc}
+                    alt=""
+                    className="im-slide-img"
+                    draggable={false}
+                    onError={onImgError}
+                  />
+                </div>
+                <div
+                  className="im-slide im-slide-center"
+                  style={slideFrameStyle}
+                >
+                  <img
+                    ref={imgRef}
+                    src={src}
+                    alt={'Rasm ' + (index + 1)}
+                    className="im-image main-image"
+                    onClick={handleImageClick}
+                    onError={onImgError}
+                    draggable={false}
+                  />
+                </div>
+                <div
+                  className="im-slide im-slide-side"
+                  style={slideFrameStyle}
+                  aria-hidden="true"
+                >
+                  <img
+                    src={nextSrc}
+                    alt=""
+                    className="im-slide-img"
+                    draggable={false}
+                    onError={onImgError}
+                  />
+                </div>
+              </div>
+              <span className="im-zoom-hint">🔍 Kattalashtirish uchun bosing</span>
+            </div>
           )}
         </div>
       </div>

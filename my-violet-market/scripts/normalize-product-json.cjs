@@ -1,9 +1,8 @@
 /**
- * product.json ba'zan JS literal (kalitlar qo'shtirnoqsiz) bo'lib qoladi.
- * Ushbu skript uni RFC JSON qilib yozadi va engArzonlare.js dagi
- * mahsulotlarni (agar JSONda yo'q bo'lsa) qo'shadi.
+ * violet-server/src/seed/seedProduct.js ba'zan noto'g'ri JS literal bo'lib qolishi mumkin.
+ * Ushbu skript uni RFC JSON massiv sifatida qayta yozadi (fayl `[ ... ]` ko'rinishida qoladi).
  *
- * Ishga tushirish: node scripts/normalize-product-json.cjs
+ * Ishga tushirish: my-violet-market papkasidan: node scripts/normalize-product-json.cjs
  *
  * sizeChart.typeSize — tanlanadigan qiymatlar: src/constants/sizeChartKind.js
  *   (TYPE_SIZE_VALUES). Tarjima: locales da productDetail.sizeChartKind.<qiymat>
@@ -12,16 +11,22 @@
  * guideImages[].src — sxema rasmi (PNG/JPG/SVG yo'l); bo'sh bo'lsa typeSize bo'yicha
  *   standart: img/size-body-guide.png | size-pants-guide.png | size-foot-guide.png
  *
- * policy.blocks (ixtiyoriy) — mahsulot siyosati; bo'lmasa src/data/defaultProductPolicy.json.
+ * policy.blocks (ixtiyoriy) — mahsulot siyosati; bo'lmasa API: GET /api/default-product-policy.
  *   icon: package | truck | refresh | chat | credit-card (src/utils/productPolicy.js)
  *   title, text: { uz, ru }; divider: true/false; paymentIcons?: [{ src, alt }]
  */
 const fs = require('fs');
 const path = require('path');
 
-const dataDir = path.join(__dirname, '..', 'src', 'data');
-const jsonPath = path.join(dataDir, 'product.json');
-const engPath = path.join(dataDir, 'engArzonlare.js');
+const productsPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'violet-server',
+  'src',
+  'seed',
+  'seedProduct.js'
+);
 
 function parseBracketArrayFromFile(filePath) {
   let text = fs.readFileSync(filePath, 'utf8').trim();
@@ -29,21 +34,12 @@ function parseBracketArrayFromFile(filePath) {
   return Function('"use strict"; return (' + text + ')')();
 }
 
-function parseEngArzonlareExport(filePath) {
-  const text = fs.readFileSync(filePath, 'utf8');
-  const start = text.indexOf('[');
-  const end = text.lastIndexOf(']');
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error('engArzonlare.js: massiv topilmadi');
-  }
-  const literal = text.slice(start, end + 1);
-  return Function('"use strict"; return (' + literal + ')')();
+if (!fs.existsSync(productsPath)) {
+  console.error('Topilmadi:', productsPath);
+  process.exit(1);
 }
 
-const main = parseBracketArrayFromFile(jsonPath);
-const eng = parseEngArzonlareExport(engPath);
-const ids = new Set(main.map((p) => p.id));
-const merged = [...main, ...eng.filter((p) => !ids.has(p.id))];
-
-fs.writeFileSync(jsonPath, JSON.stringify(merged, null, 2) + '\n', 'utf8');
-console.log('Yozildi:', jsonPath, '—', merged.length, 'ta mahsulot');
+const main = parseBracketArrayFromFile(productsPath);
+const out = JSON.stringify(main, null, 2) + '\n';
+fs.writeFileSync(productsPath, out, 'utf8');
+console.log('Yozildi:', productsPath, '—', main.length, 'ta mahsulot');

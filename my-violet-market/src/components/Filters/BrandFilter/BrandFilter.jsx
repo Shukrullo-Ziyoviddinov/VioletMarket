@@ -1,19 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { categoriesBrend } from '../../../data/categories';
+import { useAppData } from '../../../contexts/AppDataContext';
 import './BrandFilter.css';
 
 const MOBILE_BREAKPOINT = 768;
 
 const BrandFilter = ({ isOpen, onClose, onApply, availableBrands, selectedBrands, setSelectedBrands }) => {
   const { i18n } = useTranslation();
+  const { categoriesBrend } = useAppData();
   const [dragY, setDragY] = useState(0);
   const sheetRef = useRef(null);
   const handleRef = useRef(null);
   const startYRef = useRef(0);
   const isMobile = () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
 
-  const options = categoriesBrend.filter((b) => availableBrands.includes(b.filterValue));
+  const options = (categoriesBrend || []).filter((b) => availableBrands.includes(b.filterValue));
   const hasSelection = selectedBrands.length > 0;
 
   const toggle = (filterValue) => {

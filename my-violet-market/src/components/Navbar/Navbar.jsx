@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
 import { useNavbar } from '../../contexts/NavbarContext';
-import { navbarItems } from '../../data/navbarItems';
+import { useAppData } from '../../contexts/AppDataContext';
 import { normalizeImagePath } from '../../utils/utils';
 import SearchBar from '../SearchBar';
+import { SkeletonPulse } from '../SkeletonLoader';
 import './Navbar.css';
 
 const LANGUAGES = [
@@ -28,6 +29,8 @@ const useIsMobile = () => {
 
 const Navbar = () => {
   const { i18n } = useTranslation();
+  const { navbarItems, loading, error } = useAppData();
+  const appLoading = loading && !error;
   const { isDropdownOpen, toggleDropdown } = useNavbar();
   const { getTotalItems } = useCart();
   const cartCount = getTotalItems();
@@ -125,35 +128,70 @@ const Navbar = () => {
               <i className="bx bx-x"></i>
             </button>
             <div className="dropdown-content">
-              {navbarItems.map(section => (
-                <div key={section.id} className="dropdown-section">
-                  <h3 className="dropdown-section-title">{typeof section?.title === 'object' ? (section.title?.[langCode] || section.title?.uz || section.title?.ru || '') : (section?.title || '')}</h3>
+              {appLoading && (!navbarItems || navbarItems.length === 0) ? (
+                <div className="dropdown-section" aria-busy="true">
+                  <SkeletonPulse className="navbar-dropdown-heading-skeleton" aria-hidden />
                   <div className="dropdown-items-grid">
-                    {section.items && section.items.map(item => (
-                      <Link
-                        key={item.id}
-                        to={`/category/${item.id}`}
-                        className="dropdown-item"
-                        onClick={toggleDropdown}
-                      >
-                        <div className="dropdown-item-image">
-                          <img 
-                            src={normalizeImagePath(item.image)} 
-                            alt={typeof item?.name === 'object' ? (item.name?.[langCode] || item.name?.uz || '') : (item?.name || '')}
-                            onError={(e) => {
-                              e.target.src = normalizeImagePath('/img/no-image.png');
-                            }}
-                          />
-                        </div>
-                        <div className="dropdown-item-info">
-                          <h4 className="dropdown-item-name">{typeof item?.name === 'object' ? (item.name?.[langCode] || item.name?.uz || item.name?.ru || '') : (item?.name || '')}</h4>
-                          <p className="dropdown-item-description">{typeof item?.description === 'object' ? (item.description?.[langCode] || item.description?.uz || item.description?.ru || '') : (item?.description || '')}</p>
-                        </div>
-                      </Link>
+                    {Array.from({ length: 6 }, (_, i) => (
+                      <SkeletonPulse
+                        key={`navbar-dd-item-sk-${i}`}
+                        className="dropdown-item dropdown-item--skeleton"
+                        aria-hidden
+                      />
                     ))}
                   </div>
                 </div>
-              ))}
+              ) : (
+                (navbarItems || []).map((section) => (
+                  <div key={section.id} className="dropdown-section">
+                    <h3 className="dropdown-section-title">
+                      {typeof section?.title === 'object'
+                        ? section.title?.[langCode] || section.title?.uz || section.title?.ru || ''
+                        : section?.title || ''}
+                    </h3>
+                    <div className="dropdown-items-grid">
+                      {section.items &&
+                        section.items.map((item) => (
+                          <Link
+                            key={item.id}
+                            to={`/category/${item.id}`}
+                            className="dropdown-item"
+                            onClick={toggleDropdown}
+                          >
+                            <div className="dropdown-item-image">
+                              <img
+                                src={normalizeImagePath(item.image)}
+                                alt={
+                                  typeof item?.name === 'object'
+                                    ? item.name?.[langCode] || item.name?.uz || ''
+                                    : item?.name || ''
+                                }
+                                onError={(e) => {
+                                  e.target.src = normalizeImagePath('/img/no-image.png');
+                                }}
+                              />
+                            </div>
+                            <div className="dropdown-item-info">
+                              <h4 className="dropdown-item-name">
+                                {typeof item?.name === 'object'
+                                  ? item.name?.[langCode] || item.name?.uz || item.name?.ru || ''
+                                  : item?.name || ''}
+                              </h4>
+                              <p className="dropdown-item-description">
+                                {typeof item?.description === 'object'
+                                  ? item.description?.[langCode] ||
+                                    item.description?.uz ||
+                                    item.description?.ru ||
+                                    ''
+                                  : item?.description || ''}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import ProductCard from '../ProductCard';
 import SectionTitleWithMore from '../SectionTitleWithMore';
 import Scrollable from '../Scrollable';
+import { SkeletonPulse } from '../SkeletonLoader';
 import { useSearchHistory } from '../../contexts/SearchHistoryContext';
-import { allProducts } from '../../data/products';
+import { useAppData } from '../../contexts/AppDataContext';
 import { getRecommendationsForProductDetail, getRecommendationsByViewingHistory } from '../../services/recommendationService';
 import './TavsiyaEtamiz.css';
 
@@ -17,39 +18,59 @@ import './TavsiyaEtamiz.css';
 const TavsiyaEtamiz = ({ currentProduct, useScrollable = false, limit = 12 }) => {
   const { i18n } = useTranslation();
   const { recentProductIds } = useSearchHistory();
+  const { allProducts, loading, error } = useAppData();
+  const catalog = allProducts || [];
+  const appLoading = loading && !error;
 
   const recommendedProducts = useMemo(() => {
     if (currentProduct) {
       return getRecommendationsForProductDetail(
         currentProduct,
         recentProductIds || [],
-        allProducts,
+        catalog,
         limit
       );
     }
     const byHistory = getRecommendationsByViewingHistory(
       recentProductIds || [],
-      allProducts,
+      catalog,
       limit
     );
     if (byHistory.length > 0) return byHistory;
-    return allProducts.slice(0, limit);
-  }, [currentProduct, recentProductIds, limit]);
+    return catalog.slice(0, limit);
+  }, [currentProduct, recentProductIds, limit, catalog]);
 
-  if (recommendedProducts.length === 0) return null;
+  const showSkeleton = appLoading && recommendedProducts.length === 0;
+  const showSection = recommendedProducts.length > 0 || showSkeleton;
 
-  const content = recommendedProducts.map((product) => (
-    useScrollable ? (
-      <div key={product.id} className="tavsiya-etamiz-product-item" data-product-id={product.id}>
-        <ProductCard product={product} />
-      </div>
-    ) : (
-      <ProductCard key={product.id} product={product} />
-    )
-  ));
+  if (!showSection) return null;
+
+  const content = showSkeleton
+    ? Array.from({ length: limit }, (_, i) =>
+        useScrollable ? (
+          <div key={`tavsiya-sk-${i}`} className="tavsiya-etamiz-product-item">
+            <SkeletonPulse className="product-card product-card--skeleton" aria-hidden />
+          </div>
+        ) : (
+          <SkeletonPulse
+            key={`tavsiya-sk-${i}`}
+            className="product-card product-card--skeleton"
+            aria-hidden
+          />
+        )
+      )
+    : recommendedProducts.map((product) =>
+        useScrollable ? (
+          <div key={product.id} className="tavsiya-etamiz-product-item" data-product-id={product.id}>
+            <ProductCard product={product} />
+          </div>
+        ) : (
+          <ProductCard key={product.id} product={product} />
+        )
+      );
 
   return (
-    <section className="tavsiya-etamiz-section">
+    <section className="tavsiya-etamiz-section" aria-busy={showSkeleton ? 'true' : undefined}>
       <SectionTitleWithMore
         title={i18n.t('tavsiyaEtamiz.title')}
         moreLink=""
@@ -61,9 +82,7 @@ const TavsiyaEtamiz = ({ currentProduct, useScrollable = false, limit = 12 }) =>
           {content}
         </Scrollable>
       ) : (
-        <div className="tavsiya-etamiz-grid">
-          {content}
-        </div>
+        <div className="tavsiya-etamiz-grid">{content}</div>
       )}
     </section>
   );

@@ -1,8 +1,8 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import { SkeletonPulse } from '../SkeletonLoader';
 import './Scrollable.css';
 
 const Scrollable = ({
@@ -11,6 +11,8 @@ const Scrollable = ({
   type = 'country',
   children,
   className = '',
+  /** API dan ma'lumot kelayotganda davlat/brend qatorlari uchun skeleton */
+  isLoading = false,
   /** true: touch bilan gorizontal surish tugma ustidan ham ishlaydi (masalan o'lcham pillari) */
   skipInteractiveTouchHandling = false,
 }) => {
@@ -180,7 +182,7 @@ const Scrollable = ({
       window.removeEventListener('resize', handleResize);
       el.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [items.length, isLoading, type]);
 
   // Touch events (mobil)
   const handleTouchStart = (e) => {
@@ -481,6 +483,10 @@ const Scrollable = ({
     navigate(item.link);
   };
 
+  const showCountryBrandSkeleton =
+    isLoading && (type === 'country' || type === 'brand') && items.length === 0;
+  const skeletonCardCount = type === 'country' ? 6 : 8;
+
   // Agar children bo'lsa, children'ni render qilamiz
   if (children) {
     return (
@@ -518,21 +524,22 @@ const Scrollable = ({
   }
 
   // Agar items bo'lsa, eski funksiyani ishlatamiz
-  if (items.length === 0) return null;
+  if (items.length === 0 && !showCountryBrandSkeleton) return null;
 
   return (
-    <div className="scrollable-section">
+    <div className={`scrollable-section ${className}`.trim()}>
       <div className="scrollable-wrapper">
         {canScrollLeft && (
-          <button className="scroll-btn prev" onClick={() => scroll(-1)}>
+          <button type="button" className="scroll-btn prev" onClick={() => scroll(-1)}>
             <i className="bx bx-chevron-left"></i>
           </button>
         )}
         <div
-          className={`scrollable-container ${type} ${isDragging ? 'is-dragging' : ''}`}
+          className={`scrollable-container ${type} ${isDragging ? 'is-dragging' : ''}`.trim()}
           ref={scrollRef}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
+          aria-busy={showCountryBrandSkeleton ? 'true' : undefined}
           onClick={(e) => {
             // Agar scroll bo'lgan bo'lsa, click event'ni to'xtatish
             if (hasMovedRef.current || shouldBlockClickRef.current || isDragging) {
@@ -542,50 +549,67 @@ const Scrollable = ({
             }
           }}
         >
-          {items.map(item => (
-            <div 
-              key={item.id} 
-              className={`scrollable-item ${type}`}
-              onClick={(e) => handleItemClick(e, item)}
-            >
-              {type === 'country' && (
-                <>
-                  <div className="item-image-wrapper">
-                    <img 
-                      src={normalizeImagePath(item.image)} 
-                      alt={getLocalizedText(item.name, lang)}
-                      onError={(e) => {
-                        e.target.src = normalizeImagePath('/img/no-image.png');
-                      }}
-                    />
-                    <img 
-                      src={normalizeImagePath(item.flag)} 
-                      alt={getLocalizedText(item.name, lang)} 
-                      className="flag-badge"
-                      onError={(e) => {
-                        e.target.src = normalizeImagePath('/img/no-image.png');
-                      }}
-                    />
-                  </div>
-                  <div className="item-info">
-                    <h3>{getLocalizedText(item.name, lang)}</h3>
-                  </div>
-                </>
-              )}
-              {type === 'brand' && (
-                <img 
-                  src={normalizeImagePath(item.image)} 
-                  alt={item.name}
-                  onError={(e) => {
-                    e.target.src = normalizeImagePath('/img/no-image.png');
-                  }}
-                />
-              )}
-            </div>
-          ))}
+          {showCountryBrandSkeleton
+            ? Array.from({ length: skeletonCardCount }).map((_, index) =>
+                type === 'country' ? (
+                  <SkeletonPulse
+                    key={`sk-country-${index}`}
+                    className="scrollable-item country scrollable-item--skeleton"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <SkeletonPulse
+                    key={`sk-brand-${index}`}
+                    className="scrollable-item brand scrollable-item--skeleton"
+                    aria-hidden="true"
+                  />
+                )
+              )
+            : items.map((item, index) => (
+              <div
+                key={`${type}-${String(item.id)}-${index}`}
+                className={`scrollable-item ${type}`}
+                onClick={(e) => handleItemClick(e, item)}
+              >
+                {type === 'country' && (
+                  <>
+                    <div className="item-image-wrapper">
+                      <img
+                        src={normalizeImagePath(item.image)}
+                        alt={getLocalizedText(item.name, lang)}
+                        onError={(e) => {
+                          e.target.src = normalizeImagePath('/img/no-image.png');
+                        }}
+                      />
+                      <img
+                        src={normalizeImagePath(item.flag)}
+                        alt={getLocalizedText(item.name, lang)}
+                        className="flag-badge"
+                        onError={(e) => {
+                          e.target.src = normalizeImagePath('/img/no-image.png');
+                        }}
+                      />
+                    </div>
+                    <div className="item-info">
+                      <h3>{getLocalizedText(item.name, lang)}</h3>
+                    </div>
+                  </>
+                )}
+                {type === 'brand' && (
+                  <img
+                    src={normalizeImagePath(item.image)}
+                    alt={item.name}
+                    onError={(e) => {
+                      e.target.src = normalizeImagePath('/img/no-image.png');
+                    }}
+                  />
+                )}
+              </div>
+            ))
+          }
         </div>
         {canScrollRight && (
-          <button className="scroll-btn next" onClick={() => scroll(1)}>
+          <button type="button" className="scroll-btn next" onClick={() => scroll(1)}>
             <i className="bx bx-chevron-right"></i>
           </button>
         )}

@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { allProducts } from '../data/products';
+import { useAppData } from '../contexts/AppDataContext';
 import ProductCard from '../components/ProductCard';
 import Filters from '../components/Filters';
+import { SkeletonPulse } from '../components/SkeletonLoader';
 import { getProductPriceNumber } from '../utils/utils';
 import './ProductPage.css';
 
@@ -50,6 +51,9 @@ const filterByGenre = (list, genres) => {
 
 const UzWarehousePage = () => {
   const { t } = useTranslation();
+  const { allProducts, loading, error } = useAppData();
+  const catalog = allProducts || [];
+  const appLoading = loading && !error;
   const [priceRange, setPriceRange] = useState(null);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
@@ -57,7 +61,7 @@ const UzWarehousePage = () => {
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
 
-  const categoryProducts = useMemo(() => allProducts.filter(productInUzbWarehouse), []);
+  const categoryProducts = useMemo(() => catalog.filter(productInUzbWarehouse), [catalog]);
 
   const isBooksCategory = useMemo(
     () => categoryProducts.some((p) => (p.category || '').trim() === 'Kitoblar'),
@@ -201,7 +205,17 @@ const UzWarehousePage = () => {
           onGenreApply={() => {}}
         />
 
-        {finalProducts.length === 0 ? (
+        {appLoading && catalog.length === 0 ? (
+          <div className="products-grid">
+            {Array.from({ length: 10 }, (_, i) => (
+              <SkeletonPulse
+                key={`uz-warehouse-sk-${i}`}
+                className="product-card product-card--skeleton"
+                aria-hidden
+              />
+            ))}
+          </div>
+        ) : finalProducts.length === 0 ? (
           <p className="product-page__empty">{emptyMessage}</p>
         ) : (
           <div className="products-grid">

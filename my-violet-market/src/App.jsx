@@ -7,6 +7,7 @@ import { ToastProvider, useToast } from './contexts/ToastContext';
 import { NavbarProvider } from './contexts/NavbarContext';
 import { SearchHistoryProvider } from './contexts/SearchHistoryContext';
 import { CommentsProvider } from './contexts/CommentsContext';
+import { AppDataProvider } from './contexts/AppDataContext';
 import { TestOrderModalProvider, useTestOrderModal } from './contexts/TestOrderModalContext';
 import './i18n';
 import Navbar from './components/Navbar';
@@ -98,23 +99,25 @@ const AppContent = () => {
 function App() {
   return (
     <Router>
-      <CartProvider>
-        <WishlistProvider>
-          <UserProvider>
-            <ToastProvider>
-              <NavbarProvider>
-                <SearchHistoryProvider>
-                  <CommentsProvider>
-                  <TestOrderModalProvider>
-                    <AppContent />
-                  </TestOrderModalProvider>
-                  </CommentsProvider>
-                </SearchHistoryProvider>
-              </NavbarProvider>
-            </ToastProvider>
-          </UserProvider>
-        </WishlistProvider>
-      </CartProvider>
+      <AppDataProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <UserProvider>
+              <ToastProvider>
+                <NavbarProvider>
+                  <SearchHistoryProvider>
+                    <CommentsProvider>
+                      <TestOrderModalProvider>
+                        <AppContent />
+                      </TestOrderModalProvider>
+                    </CommentsProvider>
+                  </SearchHistoryProvider>
+                </NavbarProvider>
+              </ToastProvider>
+            </UserProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AppDataProvider>
     </Router>
   );
 }

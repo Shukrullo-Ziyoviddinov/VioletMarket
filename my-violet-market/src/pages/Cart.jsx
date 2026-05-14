@@ -2,12 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../contexts/CartContext';
+import { useAppData } from '../contexts/AppDataContext';
 import { formatPrice, calculateDeliveryPrice, calculateCargoPrice, getLocalizedText } from '../utils/utils';
 import CargoSummary from '../components/CargoSummary';
 import DeliveryInfoModal from '../components/DeliveryInfoModal';
 import ClearCartModal from '../components/ClearCartModal';
 import ButtonLoader from '../components/ButtonLoader/ButtonLoader';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
+import { SkeletonCartCargoPanel } from '../components/SkeletonLoader';
 import { useToast } from '../contexts/ToastContext';
 import './Cart.css';
 
@@ -34,26 +36,27 @@ const Cart = () => {
     selectedCargoOptions,
     updateCargoSelection
   } = useCart();
+  const { deliveryPrices, cargoRates, loading: appDataLoading } = useAppData();
 
   // Mahsulotlar narxi
   const totalProductPrice = useMemo(() => getTotal(), [cart]);
   
   // Yetkazib berish narxi - selectedDeliveryType o'zgarganda yangilanadi
   const deliveryPrice = useMemo(() => {
-    return calculateDeliveryPrice(totalProductPrice, selectedDeliveryType);
-  }, [totalProductPrice, selectedDeliveryType]);
+    return calculateDeliveryPrice(totalProductPrice, selectedDeliveryType, deliveryPrices);
+  }, [totalProductPrice, selectedDeliveryType, deliveryPrices]);
   
   // Kargo narxi
   const cargoPrice = useMemo(() => {
-    return calculateCargoPrice(cart, selectedCargoOptions);
-  }, [cart, selectedCargoOptions]);
+    return calculateCargoPrice(cart, selectedCargoOptions, cargoRates);
+  }, [cart, selectedCargoOptions, cargoRates]);
   
   // Umumiy summa - kargo narxi kiritilmaydi
   // selectedDeliveryType o'zgarganda deliveryPrice yangilanadi, shuning uchun finalTotal ham yangilanadi
   const finalTotal = useMemo(() => {
-    const calculatedDeliveryPrice = calculateDeliveryPrice(totalProductPrice, selectedDeliveryType);
+    const calculatedDeliveryPrice = calculateDeliveryPrice(totalProductPrice, selectedDeliveryType, deliveryPrices);
     return totalProductPrice + calculatedDeliveryPrice;
-  }, [totalProductPrice, selectedDeliveryType]);
+  }, [totalProductPrice, selectedDeliveryType, deliveryPrices]);
 
   if (cart.length === 0) {
     return (
@@ -191,7 +194,7 @@ const Cart = () => {
             </div>
           </div>
 
-          <CargoSummary />
+          {appDataLoading ? <SkeletonCartCargoPanel /> : <CargoSummary />}
 
           <div className="cart-actions">
             <button 

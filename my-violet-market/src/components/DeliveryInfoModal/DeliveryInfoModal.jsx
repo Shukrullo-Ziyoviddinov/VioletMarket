@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { getPortalContainer } from '../../utils/utils';
 import { useTranslation } from 'react-i18next';
-import { deliveryPrices } from '../../data/cargo';
+import { useAppData } from '../../contexts/AppDataContext';
 import { formatPrice, getLocalizedText } from '../../utils/utils';
 import './DeliveryInfoModal.css';
 
@@ -10,6 +10,8 @@ const CLOSE_THRESHOLD_PERCENT = 0.2; // 20% pastga surilsa yopiladi
 
 const DeliveryInfoModal = ({ isOpen, onClose }) => {
   const { i18n } = useTranslation();
+  const { deliveryPrices } = useAppData();
+  const prices = deliveryPrices || {};
   const lang = i18n.language || 'uz';
   const contentRef = useRef(null);
   const [dragY, setDragY] = useState(0);
@@ -85,8 +87,8 @@ const DeliveryInfoModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const toshkentInfo = deliveryPrices.toshkent;
-  const viloyatInfo = deliveryPrices.viloyat;
+  const toshkentInfo = prices.toshkent;
+  const viloyatInfo = prices.viloyat;
   const freeLabel = i18n.t('cart.free');
 
   const dragHandleProps = {
