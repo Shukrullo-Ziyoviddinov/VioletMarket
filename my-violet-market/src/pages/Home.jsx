@@ -199,7 +199,10 @@ const Home = () => {
         {(bigDiscountCollection.length > 0 || appLoading) && (
           <div className="big-discount-section">
             <SectionTitleWithMore
+              className="big-discount-section__header"
               title={i18n.t('home.sectionBigDiscount')}
+              subtitle={i18n.t('home.sectionBigDiscountSubtitle')}
+              leadingIcon={<i className="bx bxs-bolt" />}
               moreLink="/big-discount"
               showMore={true}
               titleExtra={<RealTimeClock />}

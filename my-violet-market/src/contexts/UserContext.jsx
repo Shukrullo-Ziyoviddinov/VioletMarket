@@ -11,15 +11,37 @@ export const useUser = () => {
 };
 
 const defaultUserData = {
-  username: '',
   firstName: '',
   lastName: '',
   phone: '',
+  /** ISO YYYY-MM-DD yoki '' */
+  birthDate: '',
+  /** 'male' | 'female' | '' */
+  gender: '',
   /** Sotuvchi kabineti: sellerData dagi id (masalan 'violet'). null — oddiy mijoz. */
   sellerAccountId: null,
   language: 'uz',
   profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=',
-  hasUploadedImage: false
+  hasUploadedImage: false,
+  /** Backend sessiyasi (keyinchalik token bilan almashtiriladi) */
+  isAuthenticated: false,
+};
+
+/** localStorage dagi eski yozuvlarni (masalan username) yangi shaklga moslashtirish */
+const normalizeSavedUserData = (saved) => {
+  if (!saved || typeof saved !== 'object') return { ...defaultUserData };
+  const next = { ...defaultUserData };
+  for (const key of Object.keys(defaultUserData)) {
+    if (key in saved && saved[key] !== undefined) {
+      next[key] = saved[key];
+    }
+  }
+  if (!('isAuthenticated' in saved)) {
+    const phoneOk = String(saved.phone || '').replace(/\D/g, '').length >= 9;
+    const nameOk = String(saved.firstName || '').trim().length > 0;
+    if (phoneOk && nameOk) next.isAuthenticated = true;
+  }
+  return next;
 };
 
 export const UserProvider = ({ children }) => {
@@ -30,7 +52,7 @@ export const UserProvider = ({ children }) => {
     const savedData = localStorage.getItem('userData');
     if (savedData) {
       try {
-        setUserData(JSON.parse(savedData));
+        setUserData(normalizeSavedUserData(JSON.parse(savedData)));
       } catch (e) {
         console.error('Error loading user data:', e);
       }

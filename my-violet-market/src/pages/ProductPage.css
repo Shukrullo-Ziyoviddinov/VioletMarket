@@ -14,10 +14,44 @@
   gap: 13px;
 }
 
-/* Big discount sahifasida: flash sale countdown — track tepada, vaqt pastda */
+/* Big discount sahifasi — bosh sahifadagi karta uslubi */
 .product-page--big-discount .product-card .flash-sale-countdown {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-page--big-discount .product-card .flash-sale-countdown__time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.product-page--big-discount .product-card .flash-sale-countdown__time::before {
+  content: '🔥';
+  font-size: 16px;
+}
+
+.product-page--big-discount .product-card .flash-sale-countdown__track {
+  height: 7px;
+  padding: 0;
+  margin: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.product-page--big-discount .product-card .flash-sale-countdown__bar {
+  background: linear-gradient(90deg, #ef4444 0%, #9b4fe7 100%);
+  box-shadow: none;
+  border-radius: 999px;
+}
+
+.product-page--big-discount .product-card .flash-sale-countdown__bar-icon {
+  display: none;
 }
 
 .product-page .product-card.product-card--skeleton.skeleton-pulse {

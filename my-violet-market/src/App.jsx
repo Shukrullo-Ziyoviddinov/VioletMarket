@@ -22,6 +22,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Wishlist from './pages/Wishlist';
 import Profile from './pages/Profile';
+import Login from './pages/Login';
 import OrderHistory from './pages/OrderHistory';
 import UzWarehousePage from './pages/UzWarehousePage';
 import SellerProfile from './pages/SellerProfile';
@@ -73,6 +74,7 @@ const AppContent = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/uzWarehousePage" element={<UzWarehousePage />} />
           <Route path="/seller/:sellerId" element={<SellerProfile />} />

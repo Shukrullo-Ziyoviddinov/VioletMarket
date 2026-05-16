@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
@@ -11,6 +12,16 @@ import './Profile.css';
 
 const MOBILE_BREAKPOINT = 768;
 
+function daysInMonth(month, year) {
+  return new Date(year, month, 0).getDate();
+}
+
+function formatBirthDateDisplay(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
 const LANGUAGES = [
   { code: 'uz', flag: '/img/uzb-by.jpg', labelKey: 'language.uz' },
   { code: 'ru', flag: '/img/ru%20b.png', labelKey: 'language.ru' },
@@ -20,15 +31,21 @@ const Profile = () => {
   const { i18n, t } = useTranslation();
   const { footerData, getSellerById } = useAppData();
   const location = useLocation();
-  const { userData, updateUserData } = useUser();
+  const { userData, updateUserData, logout } = useUser();
   const [formData, setFormData] = useState({
-    username: '',
     firstName: '',
     lastName: '',
-    phone: ''
+    phone: '',
+    birthDate: '',
+    gender: '',
   });
   const [errors, setErrors] = useState({});
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [birthDatePickerOpen, setBirthDatePickerOpen] = useState(false);
+  const [openBirthList, setOpenBirthList] = useState(null);
+  const [pickYear, setPickYear] = useState(2000);
+  const [pickMonth, setPickMonth] = useState(1);
+  const [pickDay, setPickDay] = useState(1);
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [socialModalOpen, setSocialModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -60,18 +77,32 @@ const Profile = () => {
 
   useEffect(() => {
     setFormData({
-      username: userData.username || '',
       firstName: userData.firstName || '',
       lastName: userData.lastName || '',
-      phone: userData.phone || ''
+      phone: userData.phone || '',
+      birthDate: userData.birthDate || '',
+      gender: userData.gender || '',
     });
   }, [userData]);
 
   useEffect(() => {
-    if (languageModalOpen) {
-      setTempLanguage(i18n.language || 'uz');
+    if (!languageModalOpen) {
+      return;
     }
+    setTempLanguage(i18n.language || 'uz');
   }, [languageModalOpen, i18n.language]);
+
+  useEffect(() => {
+    if (!editModalOpen) {
+      setBirthDatePickerOpen(false);
+    }
+  }, [editModalOpen]);
+
+  useEffect(() => {
+    if (!birthDatePickerOpen) {
+      setOpenBirthList(null);
+    }
+  }, [birthDatePickerOpen]);
 
   const handleLanguageSave = () => {
     i18n.changeLanguage(tempLanguage);
@@ -244,6 +275,86 @@ const Profile = () => {
   const lang = i18n.language || 'uz';
   const langKey = String(lang).toLowerCase().startsWith('ru') ? 'ru' : 'uz';
 
+  const yearOptions = useMemo(() => {
+    const current = new Date().getFullYear();
+    const list = [];
+    for (let y = current; y >= 1920; y -= 1) list.push(y);
+    return list;
+  }, []);
+
+  const monthOptions = useMemo(() => {
+    const locale = langKey === 'ru' ? 'ru-RU' : 'uz-UZ';
+    return Array.from({ length: 12 }, (_, i) => {
+      const label = new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2000, i, 1));
+      return { value: i + 1, label };
+    });
+  }, [langKey]);
+
+  const dayOptions = useMemo(() => {
+    const dim = daysInMonth(pickMonth, pickYear);
+    return Array.from({ length: dim }, (_, i) => i + 1);
+  }, [pickMonth, pickYear]);
+
+  const birthDateDisplay = useMemo(
+    () => formatBirthDateDisplay(formData.birthDate),
+    [formData.birthDate],
+  );
+
+  const openBirthDatePicker = () => {
+    const iso = formData.birthDate;
+    if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+      const [y, m, d] = iso.split('-').map(Number);
+      const dim = daysInMonth(m, y);
+      setPickYear(y);
+      setPickMonth(m);
+      setPickDay(Math.min(d, dim));
+    } else {
+      const currentY = new Date().getFullYear();
+      setPickYear(Math.max(1920, currentY - 25));
+      setPickMonth(1);
+      setPickDay(1);
+    }
+    setBirthDatePickerOpen(true);
+  };
+
+  const cancelBirthDatePicker = () => setBirthDatePickerOpen(false);
+
+  const saveBirthDatePicker = () => {
+    const dim = daysInMonth(pickMonth, pickYear);
+    const day = Math.min(pickDay, dim);
+    const pad = (n) => String(n).padStart(2, '0');
+    setFormData((prev) => ({
+      ...prev,
+      birthDate: `${pickYear}-${pad(pickMonth)}-${pad(day)}`,
+    }));
+    setBirthDatePickerOpen(false);
+  };
+
+  const applyPickMonth = (m) => {
+    setPickMonth(m);
+    const dim = daysInMonth(m, pickYear);
+    setPickDay((d) => Math.min(d, dim));
+    setOpenBirthList(null);
+  };
+
+  const applyPickYear = (y) => {
+    setPickYear(y);
+    const dim = daysInMonth(pickMonth, y);
+    setPickDay((d) => Math.min(d, dim));
+    setOpenBirthList(null);
+  };
+
+  const applyPickDay = (d) => {
+    setPickDay(d);
+    setOpenBirthList(null);
+  };
+
+  useEffect(() => {
+    if (!birthDatePickerOpen) return;
+    const dim = daysInMonth(pickMonth, pickYear);
+    setPickDay((d) => (d > dim ? dim : d));
+  }, [birthDatePickerOpen, pickMonth, pickYear]);
+
   const closeAboutModal = () => {
     setAboutModalClosing(true);
     setTimeout(() => {
@@ -284,8 +395,7 @@ const Profile = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const newErrors = {};
-    
-    if (!formData.username.trim()) newErrors.username = t('profile.errorUsername');
+
     if (!formData.firstName.trim()) newErrors.firstName = t('profile.errorFirstName');
     if (!formData.lastName.trim()) newErrors.lastName = t('profile.errorLastName');
     if (!formData.phone.trim()) newErrors.phone = t('profile.errorPhone');
@@ -295,7 +405,14 @@ const Profile = () => {
       return;
     }
 
-    updateUserData(formData);
+    updateUserData({
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      phone: formData.phone.trim(),
+      birthDate: formData.birthDate,
+      gender: formData.gender,
+      isAuthenticated: true,
+    });
     setEditModalOpen(false);
   };
 
@@ -549,6 +666,18 @@ const Profile = () => {
             <span className="profile-about-label">{getLocalizedText({ uz: "Biz haqimizda", ru: "О нас" }, lang)}</span>
           </div>
 
+          <div className="profile-card-auth">
+            {userData.isAuthenticated ? (
+              <button type="button" className="profile-card-auth__btn profile-card-auth__btn--logout" onClick={() => logout()}>
+                {t('profile.logout')}
+              </button>
+            ) : (
+              <Link to="/login" className="profile-card-auth__btn profile-card-auth__btn--login">
+                {t('profile.login')}
+              </Link>
+            )}
+          </div>
+
           {editModalOpen && (
             <>
               <div className="profile-edit-modal-backdrop" onClick={() => setEditModalOpen(false)} aria-hidden="true" />
@@ -584,18 +713,6 @@ const Profile = () => {
                     <h3 className="profile-edit-modal__title">{t('profile.editModalTitle')}</h3>
                   </div>
                   <form className="profile-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                      <label>{t('profile.username')}</label>
-                      <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        className={errors.username ? 'error' : ''}
-                      />
-                      {errors.username && <span className="error-message">{errors.username}</span>}
-                    </div>
-
                     <div className="form-row">
                       <div className="form-group">
                         <label>{t('profile.firstName')}</label>
@@ -623,6 +740,35 @@ const Profile = () => {
                     </div>
 
                     <div className="form-group">
+                      <label>{t('profile.birthDate')}</label>
+                      <div className="profile-birth-field">
+                        <input
+                          type="text"
+                          readOnly
+                          value={birthDateDisplay}
+                          placeholder={t('profile.birthDatePlaceholder')}
+                          className="profile-birth-field__input"
+                          onClick={openBirthDatePicker}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              openBirthDatePicker();
+                            }
+                          }}
+                          aria-label={t('profile.pickBirthDateAria')}
+                        />
+                        <button
+                          type="button"
+                          className="profile-birth-field__icon-btn"
+                          onClick={openBirthDatePicker}
+                          aria-label={t('profile.pickBirthDateAria')}
+                        >
+                          <i className="bx bx-calendar" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
                       <label>{t('profile.phone')}</label>
                       <input
                         type="tel"
@@ -635,10 +781,171 @@ const Profile = () => {
                       {errors.phone && <span className="error-message">{errors.phone}</span>}
                     </div>
 
+                    <div className="form-group profile-form-group--gender">
+                      <label>{t('profile.gender')}</label>
+                      <div className="profile-gender-toggle" role="group" aria-label={t('profile.gender')}>
+                        <button
+                          type="button"
+                          className={`profile-gender-btn${formData.gender === 'male' ? ' profile-gender-btn--active' : ''}`}
+                          onClick={() => setFormData((p) => ({ ...p, gender: 'male' }))}
+                        >
+                          {t('profile.genderMale')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`profile-gender-btn${formData.gender === 'female' ? ' profile-gender-btn--active' : ''}`}
+                          onClick={() => setFormData((p) => ({ ...p, gender: 'female' }))}
+                        >
+                          {t('profile.genderFemale')}
+                        </button>
+                      </div>
+                    </div>
+
                     <button type="submit" className="save-btn">
                       {t('profile.save')}
                     </button>
                   </form>
+
+                  {birthDatePickerOpen
+                    && createPortal(
+                      <>
+                        <div
+                          className="profile-birth-picker-backdrop"
+                          onClick={cancelBirthDatePicker}
+                          role="presentation"
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="profile-birth-picker"
+                          role="dialog"
+                          aria-modal="true"
+                          aria-labelledby="profile-birth-picker-title"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <h4 id="profile-birth-picker-title" className="profile-birth-picker__title">
+                            {t('profile.datePickerTitle')}
+                          </h4>
+                          <div className="profile-birth-picker__fields">
+                            <div className="profile-birth-picker__select-wrap">
+                              <span className="profile-birth-picker__select-label" id="birth-picker-month-lbl">
+                                {t('profile.month')}
+                              </span>
+                              <div className="profile-birth-picker__dropdown">
+                                <button
+                                  type="button"
+                                  className={`profile-birth-picker__trigger${openBirthList === 'month' ? ' profile-birth-picker__trigger--open' : ''}`}
+                                  onClick={() => setOpenBirthList((p) => (p === 'month' ? null : 'month'))}
+                                  aria-haspopup="listbox"
+                                  aria-expanded={openBirthList === 'month'}
+                                  aria-labelledby="birth-picker-month-lbl"
+                                >
+                                  <span className="profile-birth-picker__trigger-text">
+                                    {monthOptions.find((mo) => mo.value === pickMonth)?.label ?? '—'}
+                                  </span>
+                                  <i className="bx bx-chevron-down profile-birth-picker__trigger-chevron" aria-hidden="true" />
+                                </button>
+                                {openBirthList === 'month' && (
+                                  <ul className="profile-birth-picker__list" role="listbox" aria-labelledby="birth-picker-month-lbl">
+                                    {monthOptions.map((mo) => (
+                                      <li key={mo.value} role="none">
+                                        <button
+                                          type="button"
+                                          role="option"
+                                          aria-selected={pickMonth === mo.value}
+                                          className={`profile-birth-picker__list-option${pickMonth === mo.value ? ' profile-birth-picker__list-option--selected' : ''}`}
+                                          onClick={() => applyPickMonth(mo.value)}
+                                        >
+                                          {mo.label}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                            <div className="profile-birth-picker__select-wrap">
+                              <span className="profile-birth-picker__select-label" id="birth-picker-day-lbl">
+                                {t('profile.day')}
+                              </span>
+                              <div className="profile-birth-picker__dropdown">
+                                <button
+                                  type="button"
+                                  className={`profile-birth-picker__trigger${openBirthList === 'day' ? ' profile-birth-picker__trigger--open' : ''}`}
+                                  onClick={() => setOpenBirthList((p) => (p === 'day' ? null : 'day'))}
+                                  aria-haspopup="listbox"
+                                  aria-expanded={openBirthList === 'day'}
+                                  aria-labelledby="birth-picker-day-lbl"
+                                >
+                                  <span className="profile-birth-picker__trigger-text">{pickDay}</span>
+                                  <i className="bx bx-chevron-down profile-birth-picker__trigger-chevron" aria-hidden="true" />
+                                </button>
+                                {openBirthList === 'day' && (
+                                  <ul className="profile-birth-picker__list" role="listbox" aria-labelledby="birth-picker-day-lbl">
+                                    {dayOptions.map((d) => (
+                                      <li key={d} role="none">
+                                        <button
+                                          type="button"
+                                          role="option"
+                                          aria-selected={pickDay === d}
+                                          className={`profile-birth-picker__list-option${pickDay === d ? ' profile-birth-picker__list-option--selected' : ''}`}
+                                          onClick={() => applyPickDay(d)}
+                                        >
+                                          {d}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                            <div className="profile-birth-picker__select-wrap">
+                              <span className="profile-birth-picker__select-label" id="birth-picker-year-lbl">
+                                {t('profile.year')}
+                              </span>
+                              <div className="profile-birth-picker__dropdown">
+                                <button
+                                  type="button"
+                                  className={`profile-birth-picker__trigger${openBirthList === 'year' ? ' profile-birth-picker__trigger--open' : ''}`}
+                                  onClick={() => setOpenBirthList((p) => (p === 'year' ? null : 'year'))}
+                                  aria-haspopup="listbox"
+                                  aria-expanded={openBirthList === 'year'}
+                                  aria-labelledby="birth-picker-year-lbl"
+                                >
+                                  <span className="profile-birth-picker__trigger-text">{pickYear}</span>
+                                  <i className="bx bx-chevron-down profile-birth-picker__trigger-chevron" aria-hidden="true" />
+                                </button>
+                                {openBirthList === 'year' && (
+                                  <ul className="profile-birth-picker__list profile-birth-picker__list--year" role="listbox" aria-labelledby="birth-picker-year-lbl">
+                                    {yearOptions.map((y) => (
+                                      <li key={y} role="none">
+                                        <button
+                                          type="button"
+                                          role="option"
+                                          aria-selected={pickYear === y}
+                                          className={`profile-birth-picker__list-option${pickYear === y ? ' profile-birth-picker__list-option--selected' : ''}`}
+                                          onClick={() => applyPickYear(y)}
+                                        >
+                                          {y}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="profile-birth-picker__actions">
+                            <button type="button" className="profile-birth-picker__btn profile-birth-picker__btn--ghost" onClick={cancelBirthDatePicker}>
+                              {t('profile.cancel')}
+                            </button>
+                            <button type="button" className="profile-birth-picker__btn profile-birth-picker__btn--primary" onClick={saveBirthDatePicker}>
+                              {t('profile.save')}
+                            </button>
+                          </div>
+                        </div>
+                      </>,
+                      document.body,
+                    )}
                 </div>
               </div>
             </>

@@ -7,6 +7,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .product-card:not(.skeleton-pulse) {
@@ -121,32 +123,47 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 5px 0;
-  color: #333;
-  font-weight: 500;
+  color: #1a1a1a;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
+/* Barcha kartochkalarda: narx va eski narx yonma-yon, qator o‘tmaydi; original o‘ng tomonda xiralashadi */
 .price-box {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: flex-start;
-  margin-bottom: 3px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-bottom: 6px;
+  overflow: hidden;
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
 .price {
-  font-size: 12px;
-  font-weight: bold;
-  color: #9b4fe7;;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+  color: #7c3aed;
   line-height: 1.2;
 }
 
 .original-price {
-  font-size: 15px;
-  color: #999;
-  text-decoration: line-through;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #9ca3af;
   line-height: 1.2;
+  text-decoration: line-through;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to right, #000 0%, #000 72%, transparent 100%);
 }
 
 .product-rating-comments {
@@ -312,7 +329,7 @@
     height: 185px;
   }
 
-  .product-title {
+  .product-title, .big-discount-section .product-card .product-title {
     font-size: 12px;
     margin: 2px 0;
 }

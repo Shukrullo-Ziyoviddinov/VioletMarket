@@ -36,14 +36,14 @@
 
 .new-collection {
   margin: 40px 0;
-padding: 5px 7px;
+  padding: 17px 11px;
   border-radius: 20px;
   background: rgb(186, 162, 251);
 }
 
 .womens-collection {
   margin: 40px 0;
-  padding: 5px 7px;
+  padding: 17px 11px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e074fe 0%, #f581eb 50%, #b581f5 100% );
 }
@@ -58,7 +58,7 @@ padding: 5px 7px;
 
 .mens-collection {
   margin: 40px 0;
-  padding: 5px 7px;
+  padding: 17px 11px;
   border-radius: 20px;
   background: linear-gradient(135deg, #b4b5f8 0%, #a499fa 50%, #9a8ff4 100%);
 }
@@ -88,7 +88,7 @@ padding: 5px 7px;
 .beauty-care-section {
   margin: 40px 0;
   padding-top: 10px;
-  padding: 5px 7px;
+  padding: 17px 11px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e074fe 0%, #b581f5 100%);
 }
@@ -116,7 +116,7 @@ padding: 5px 7px;
 .active-lifestyle-section {
   margin: 40px 0;
   padding-top: 10px;
-  padding: 5px 7px;
+  padding: 17px 11px;
   border-radius: 20px;
   background: #cad2fc;
 }
@@ -141,52 +141,217 @@ padding: 5px 7px;
   margin: 40px 0;
 }
 
+/* ——— Katta chegirma (rasmdagi ko‘rinish) ——— */
 .big-discount-section {
   margin: 40px 0;
-  padding-top: 10px;
-  padding: 5px 7px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #9b4fe7 0%,#764ba2 100%);
+  padding: 17px 11px;
+  border-radius: 28px;
+
+  /* background: linear-gradient(
+    135deg,
+    #b02cfc 0%,
+    #a12cef 35%,
+    #ad21ee 70%,
+    #9a0fda 100%
+  ); */
+
+  background: linear-gradient(
+    135deg,
+    #ae03f2 0%,
+    #9b04f3 35%,
+    #a904f5 70%,
+    #ad05fa 100%
+  );
 }
 
-.big-discount-section .section-title-with-more__title{
-  color: white;
+.big-discount-section .big-discount-section__header.section-title-with-more {
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 0;
+  margin-bottom: 13px;
 }
 
-/* Faqat Katta chegirma bo'limidagi kartochkalar — qisqaroq height, kichikroq matn va rasm */
+.big-discount-section .section-title-with-more__title-wrap {
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.big-discount-section .section-title-with-more__leading-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 20px;
+}
+
+.big-discount-section .section-title-with-more__title {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.big-discount-section .section-title-with-more__subtitle {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.big-discount-section .section-title-with-more__title-extra {
+  flex-shrink: 0;
+  margin-left: auto;
+  line-height: 0;
+}
+
+.big-discount-section .section-title-with-more__title-extra .rtc-clock {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5))
+    drop-shadow(0 0 4px rgba(196, 181, 253, 0.85));
+}
+
+.big-discount-section .section-title-with-more__title-extra .rtc-svg {
+  width: 40px;
+  height: 40px;
+}
+
+.big-discount-section .section-title-with-more__btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #7c3aed;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.big-discount-section .section-title-with-more__btn:hover {
+  background: #f5f3ff;
+  color: #6d28d9;
+  transform: none;
+}
+
+/* Kartochkalar */
 .big-discount-section .product-card {
-  padding: 4px;
+  padding: 8px;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .big-discount-section .product-card .img-box {
   height: 190px;
+  border-radius: 12px;
 }
 
 .big-discount-section .product-card .img-box img {
   object-fit: cover;
+  border-radius: 12px;
+}
+
+.big-discount-section .product-card .product-labels {
+  top: 10px;
+  bottom: auto;
+  left: 10px;
+  right: auto;
+}
+
+.big-discount-section .product-card .product-label {
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.big-discount-section .product-card .heart-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.big-discount-section .product-card .heart-icon.liked {
+  color: #7c3aed;
 }
 
 .big-discount-section .product-card .product-title {
   font-size: 14px;
+  font-weight: 600;
   max-height: calc(1.38em * 2);
-  margin: 6px 0;
+  margin: 8px 0 6px;
+  color: #1a1a1a;
 }
 
-.big-discount-section .product-card .price {
+/* Scroll bo‘limlari — sarlavha va narx o‘lchamlari katta chegirma bilan bir xil (narx qatori — ProductCard.css) */
+.new-collection .product-card .product-title,
+.womens-collection .product-card .product-title,
+.mens-collection .product-card .product-title,
+.beauty-care-section .product-card .product-title,
+.active-lifestyle-section .product-card .product-title {
   font-size: 14px;
+  font-weight: 600;
+  max-height: calc(1.38em * 2);
+  margin: 8px 0 6px;
+  color: #1a1a1a;
 }
 
-.big-discount-section .product-card .original-price {
-  font-size: 12px;
+.big-discount-section .product-card .product-rating-comments {
+  margin-bottom: 8px;
 }
 
-/* Katta chegirma kartochkasida: track tepada, vaqt pastda */
+/* Flash sale: olov + vaqt, pastda qizil→binafsha track */
 .big-discount-section .product-card .flash-sale-countdown {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
 }
 
-/* API yuklanishi: shimmer o‘zi .product-card blokida */
+.big-discount-section .product-card .flash-sale-countdown__time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+  letter-spacing: 0.03em;
+}
+
+.big-discount-section .product-card .flash-sale-countdown__time::before {
+  content: '🔥';
+  font-size: 16px;
+  line-height: 1;
+}
+
+.big-discount-section .product-card .flash-sale-countdown__track {
+  height: 7px;
+  padding: 0;
+  margin: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.big-discount-section .product-card .flash-sale-countdown__bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ef4444 0%, #9b4fe7 100%);
+  box-shadow: none;
+}
+
+.big-discount-section .product-card .flash-sale-countdown__bar-icon {
+  display: none;
+}
+
+/* API yuklanishi */
 .big-discount-section .product-card.product-card--skeleton.skeleton-pulse {
   pointer-events: none;
   cursor: default;
@@ -222,6 +387,35 @@ padding: 5px 7px;
     min-width: 180px;
     max-width: 180px;
   }
+}
+
+@media (max-width: 768px) {
+  .big-discount-section .section-title-with-more__btn {
+    padding: 4px 8px;
+    font-size: 0.95rem;
+}
+
+.big-discount-section .section-title-with-more__leading-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 17px;
+}
+
+.big-discount-section .section-title-with-more__title {
+  font-size: 1.1rem;
+}
+
+.big-discount-section .section-title-with-more__subtitle {
+  font-size: 0.75rem;
+}
+
+.big-discount-section .section-title-with-more__title-wrap {
+  gap: 8px;
+}
+
+.big-discount-section .big-discount-section__header.section-title-with-more {
+  gap: 8px;
+}
 }
 
 @media (max-width: 500px) {
