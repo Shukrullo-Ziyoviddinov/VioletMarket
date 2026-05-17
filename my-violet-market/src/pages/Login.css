@@ -99,10 +99,119 @@
   color: #4c5fd5;
 }
 
-.login-page__login-block {
+.login-page__login-block,
+.login-page__otp-block {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.login-page__otp-hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #555;
+  text-align: center;
+}
+
+/* OTP katakchalar va tugmalar bir xil kenglikda (desktop) */
+.login-page__inner .login-page__otp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.login-page__inner .login-page__otp-stack .login-page__otp-cells,
+.login-page__inner .login-page__otp-stack .login-page__otp-actions {
+  width: 100%;
+}
+
+.login-page__otp-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.login-page__otp-actions .login-page__submit {
+  flex: 1;
+  margin-top: 0;
+  min-width: 0;
+}
+
+.login-page__otp-timer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #4c5fd5;
+  background: #eef0ff;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.login-page__otp-resend {
+  flex-shrink: 0;
+  width: 52px;
+  min-width: 52px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  border: none;
+  border-radius: 10px;
+  background: #eef0ff;
+  color: #4c5fd5;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.login-page__otp-resend:hover:not(:disabled) {
+  background: #dce2ff;
+  color: #022ff9;
+}
+
+.login-page__otp-resend:active:not(:disabled) {
+  transform: rotate(-90deg);
+}
+
+.login-page__otp-resend:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-page__link-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 2px;
+  font-size: 14px;
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  color: #4c5fd5;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-page__link-btn:hover:not(:disabled) {
+  color: #022ff9;
+}
+
+.login-page__link-btn:disabled,
+.login-page__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .login-page__phone-prefixed {
@@ -216,7 +325,7 @@
   margin-bottom: 0;
 }
 
-.login-page__inner .form-group label {
+.login-page__inner .form-group > label {
   margin-bottom: 5px;
   font-size: 13px;
   font-weight: 500;
@@ -285,7 +394,6 @@
 }
 
 .login-page__inner .profile-gender-btn--active:hover {
-  border-color: rgb(67, 24, 118);
   color: #555;
 }
 

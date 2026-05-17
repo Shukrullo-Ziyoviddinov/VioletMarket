@@ -13,15 +13,12 @@ import { SkeletonCartCargoPanel } from '../components/SkeletonLoader';
 import { useToast } from '../contexts/ToastContext';
 import './Cart.css';
 
-const LOADER_DURATION_MS = 2000;
-
 const Cart = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
   const [isDeliveryInfoModalOpen, setIsDeliveryInfoModalOpen] = useState(false);
   const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [isClearLoading, setIsClearLoading] = useState(false);
   const { showToast } = useToast();
   const {
@@ -197,28 +194,17 @@ const Cart = () => {
           {appDataLoading ? <SkeletonCartCargoPanel /> : <CargoSummary />}
 
           <div className="cart-actions">
-            <button 
-              className="checkout-btn" 
-              onClick={async () => {
-                setIsCheckoutLoading(true);
-                await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
-                setIsCheckoutLoading(false);
-                navigate('/checkout');
-              }}
-              disabled={isCheckoutLoading}
+            <button
+              className="checkout-btn"
+              type="button"
+              onClick={() => navigate('/checkout')}
             >
-              <ButtonLoader isLoading={isCheckoutLoading}>
-                {i18n.t('cart.checkout')}
-              </ButtonLoader>
+              {i18n.t('cart.checkout')}
             </button>
-            <button 
-              className="clear-btn" 
-              onClick={async () => {
-                setIsClearLoading(true);
-                await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
-                setIsClearLoading(false);
-                setIsClearCartModalOpen(true);
-              }}
+            <button
+              className="clear-btn"
+              type="button"
+              onClick={() => setIsClearCartModalOpen(true)}
               disabled={isClearLoading}
             >
               <ButtonLoader isLoading={isClearLoading}>
@@ -243,9 +229,17 @@ const Cart = () => {
       <ClearCartModal
         isOpen={isClearCartModalOpen}
         onClose={() => setIsClearCartModalOpen(false)}
-        onConfirm={() => {
-          clearCart();
-          showToast(i18n.t('cart.toastCleared'), 'success');
+        onConfirm={async () => {
+          setIsClearLoading(true);
+          try {
+            await clearCart();
+            showToast(i18n.t('cart.toastCleared'), 'success');
+            setIsClearCartModalOpen(false);
+          } catch {
+            /* xato toast CartContext da */
+          } finally {
+            setIsClearLoading(false);
+          }
         }}
       />
     </div>

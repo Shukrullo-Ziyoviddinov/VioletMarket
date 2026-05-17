@@ -6,6 +6,7 @@ import { UserProvider } from './contexts/UserContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { NavbarProvider } from './contexts/NavbarContext';
 import { SearchHistoryProvider } from './contexts/SearchHistoryContext';
+import { ViewedAtProvider } from './contexts/ViewedAtContext';
 import { CommentsProvider } from './contexts/CommentsContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { TestOrderModalProvider, useTestOrderModal } from './contexts/TestOrderModalContext';
@@ -102,10 +103,11 @@ function App() {
   return (
     <Router>
       <AppDataProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <UserProvider>
-              <ToastProvider>
+          <UserProvider>
+            <ToastProvider>
+              <WishlistProvider>
+              <CartProvider>
+                <ViewedAtProvider>
                 <NavbarProvider>
                   <SearchHistoryProvider>
                     <CommentsProvider>
@@ -115,10 +117,11 @@ function App() {
                     </CommentsProvider>
                   </SearchHistoryProvider>
                 </NavbarProvider>
-              </ToastProvider>
-            </UserProvider>
-          </WishlistProvider>
-        </CartProvider>
+                </ViewedAtProvider>
+              </CartProvider>
+              </WishlistProvider>
+            </ToastProvider>
+          </UserProvider>
       </AppDataProvider>
     </Router>
   );

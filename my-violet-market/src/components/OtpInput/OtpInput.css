@@ -1,0 +1,69 @@
+.login-page__inner .login-page__otp-cells {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+.login-page__inner .login-page__otp-cell {
+  flex: 1;
+  max-width: 48px;
+  height: 52px;
+  padding: 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #222;
+  border: none;
+  border-radius: 10px;
+  background: #ddd;
+  box-shadow: none;
+  box-sizing: border-box;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.login-page__inner .login-page__otp-cell:hover,
+.login-page__inner .login-page__otp-cell:focus,
+.login-page__inner .login-page__otp-cell:focus-visible,
+.login-page__inner .login-page__otp-cell:active {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: #ddd;
+}
+
+.login-page__inner .login-page__otp-cells--error .login-page__otp-cell,
+.login-page__inner .login-page__otp-cells--error .login-page__otp-cell:hover,
+.login-page__inner .login-page__otp-cells--error .login-page__otp-cell:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: #ccc;
+}
+
+.login-page__inner .login-page__otp-cell:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.login-page__inner .login-page__otp-form-group {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+/* .form-group input umumiy stillarini OTP katakchalardan uzoqlashtirish */
+.login-page__inner .login-page__otp-form-group .login-page__otp-cell {
+  border: none;
+  box-shadow: none;
+}
+
+.login-page__inner .login-page__otp-form-group .login-page__otp-cell:focus {
+  border: none;
+  box-shadow: none;
+}

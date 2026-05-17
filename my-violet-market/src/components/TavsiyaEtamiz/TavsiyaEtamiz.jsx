@@ -1,52 +1,62 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductCard from '../ProductCard';
 import SectionTitleWithMore from '../SectionTitleWithMore';
 import Scrollable from '../Scrollable';
 import { SkeletonPulse } from '../SkeletonLoader';
-import { useSearchHistory } from '../../contexts/SearchHistoryContext';
-import { useAppData } from '../../contexts/AppDataContext';
-import { getRecommendationsForProductDetail, getRecommendationsByViewingHistory } from '../../services/recommendationService';
+import { useUser } from '../../contexts/UserContext';
+import {
+  fetchRecommendationsForProduct,
+  fetchRecommendationsByHistory,
+} from '../../api/recommendationApi';
 import './TavsiyaEtamiz.css';
 
+const SKELETON_COUNT = 8;
+
 /**
- * Tavsiya etamiz – Product detail, Wishlist, Profile, Cart sahifalarida.
- * @param {Object} [currentProduct] - Joriy mahsulot (ProductDetail uchun). Bo'lmasa ko'rilganlar bo'yicha tavsiya.
- * @param {boolean} [useScrollable] - true bo'lsa Scrollable (gorizontal), false bo'lsa oddiy grid.
- * @param {number} [limit] - Maksimal mahsulotlar soni.
+ * Tavsiya etamiz — faqat server API (algoritm frontendda yo'q).
+ * violet-server: services/tavsiyaEtamiz + viewedAt DB.
+ * Search panel: /api/search/recommended (alohida, 12 ta limit).
  */
-const TavsiyaEtamiz = ({ currentProduct, useScrollable = false, limit = 12 }) => {
+const TavsiyaEtamiz = ({ currentProduct, useScrollable = false }) => {
   const { i18n } = useTranslation();
-  const { recentProductIds } = useSearchHistory();
-  const { allProducts, loading, error } = useAppData();
-  const catalog = allProducts || [];
-  const appLoading = loading && !error;
+  const { authToken } = useUser();
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const recommendedProducts = useMemo(() => {
-    if (currentProduct) {
-      return getRecommendationsForProductDetail(
-        currentProduct,
-        recentProductIds || [],
-        catalog,
-        limit
-      );
-    }
-    const byHistory = getRecommendationsByViewingHistory(
-      recentProductIds || [],
-      catalog,
-      limit
-    );
-    if (byHistory.length > 0) return byHistory;
-    return catalog.slice(0, limit);
-  }, [currentProduct, recentProductIds, limit, catalog]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
 
-  const showSkeleton = appLoading && recommendedProducts.length === 0;
+    const request = currentProduct?.id
+      ? fetchRecommendationsForProduct(currentProduct.id, authToken)
+      : fetchRecommendationsByHistory(authToken);
+
+    request
+      .then((data) => {
+        if (!cancelled) {
+          setRecommendedProducts(Array.isArray(data.products) ? data.products : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendedProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentProduct?.id, authToken]);
+
+  const showSkeleton = loading && recommendedProducts.length === 0;
   const showSection = recommendedProducts.length > 0 || showSkeleton;
 
   if (!showSection) return null;
 
   const content = showSkeleton
-    ? Array.from({ length: limit }, (_, i) =>
+    ? Array.from({ length: SKELETON_COUNT }, (_, i) =>
         useScrollable ? (
           <div key={`tavsiya-sk-${i}`} className="tavsiya-etamiz-product-item">
             <SkeletonPulse className="product-card product-card--skeleton" aria-hidden />
@@ -57,7 +67,7 @@ const TavsiyaEtamiz = ({ currentProduct, useScrollable = false, limit = 12 }) =>
             className="product-card product-card--skeleton"
             aria-hidden
           />
-        )
+        ),
       )
     : recommendedProducts.map((product) =>
         useScrollable ? (
@@ -66,7 +76,7 @@ const TavsiyaEtamiz = ({ currentProduct, useScrollable = false, limit = 12 }) =>
           </div>
         ) : (
           <ProductCard key={product.id} product={product} />
-        )
+        ),
       );
 
   return (

@@ -1,21 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Scrollable from '../Scrollable';
 import ProductCard from '../ProductCard';
 import SectionTitleWithMore from '../SectionTitleWithMore';
 import { SkeletonPulse } from '../SkeletonLoader';
-import { useAppData } from '../../contexts/AppDataContext';
+import { fetchRelatedRecommendations } from '../../api/recommendationApi';
 import './Recommended.css';
 
-/** O'xshash mahsulotlar – barcha bo'limlardan allProducts orqali */
+/** O'xshash mahsulotlar — server algoritmi (productType + productCountry) */
 const Recommended = ({ currentProduct, skeleton = false }) => {
   const { i18n } = useTranslation();
-  const { allProducts } = useAppData();
-  const catalog = allProducts || [];
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (skeleton || !currentProduct?.id) {
+      setRecommendedProducts([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    fetchRelatedRecommendations(currentProduct.id)
+      .then((data) => {
+        if (!cancelled) {
+          setRecommendedProducts(Array.isArray(data.products) ? data.products : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendedProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentProduct?.id, skeleton]);
 
   if (!currentProduct) return null;
 
-  if (skeleton) {
+  if (skeleton || loading) {
     return (
       <div className="recommended-section recommended-section--skeleton" aria-busy="true">
         <SectionTitleWithMore
@@ -38,21 +64,6 @@ const Recommended = ({ currentProduct, skeleton = false }) => {
     );
   }
 
-  const currentProductType = currentProduct.productType;
-  const currentProductCountry = currentProduct.productCountry;
-
-  if (!currentProductType || !currentProductCountry) return null;
-
-  const recommendedProducts = catalog
-    .filter(product => {
-      if (product.id === currentProduct.id) return false;
-      return (
-        product.productType === currentProductType &&
-        product.productCountry === currentProductCountry
-      );
-    })
-    .slice(0, 8);
-
   if (recommendedProducts.length === 0) return null;
 
   return (
@@ -64,9 +75,9 @@ const Recommended = ({ currentProduct, skeleton = false }) => {
         className="recommended-section__header"
       />
       <Scrollable type="product" className="recommended-scrollable">
-        {recommendedProducts.map(product => (
-          <div 
-            key={product.id} 
+        {recommendedProducts.map((product) => (
+          <div
+            key={product.id}
             className="recommended-product-item"
             data-product-id={product.id}
           >

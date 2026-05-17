@@ -9,6 +9,13 @@ const videoBannersRoutes = require("./videoBanners.routes");
 const sellersRoutes = require("./sellers.routes");
 const defaultProductPolicyRoutes = require("./defaultProductPolicy.routes");
 const uzWarehouseRoutes = require("./uzWarehouse.routes");
+const loginRoutes = require("./login.routes");
+const profileRoutes = require("./profile.routes");
+const wishlistRoutes = require("./wishlist.routes");
+const cartRoutes = require("./cart.routes");
+const searchRoutes = require("./search.routes");
+const viewedAtRoutes = require("./viewedAt.routes");
+const recommendationRoutes = require("./recommendation.routes");
 
 const router = express.Router();
 
@@ -22,5 +29,12 @@ router.use(videoBannersRoutes);
 router.use(sellersRoutes);
 router.use(defaultProductPolicyRoutes);
 router.use(uzWarehouseRoutes);
+router.use(loginRoutes);
+router.use(profileRoutes);
+router.use(wishlistRoutes);
+router.use(cartRoutes);
+router.use(searchRoutes);
+router.use(viewedAtRoutes);
+router.use(recommendationRoutes);
 
 module.exports = router;

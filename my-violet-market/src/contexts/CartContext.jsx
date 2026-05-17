@@ -1,6 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { formatPrice, getLabelFromOption, getNumberPrice } from '../utils/utils';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getLabelFromOption, getNumberPrice } from '../utils/utils';
 import i18n from '../i18n';
+import { useUser } from './UserContext';
+import { useToast } from './ToastContext';
+import {
+  fetchCart,
+  addCartItem,
+  updateCartItemQuantity,
+  removeCartItem,
+  clearCartApi,
+} from '../api/cartApi';
 
 const CartContext = createContext();
 
@@ -12,146 +29,192 @@ export const useCart = () => {
   return context;
 };
 
+function buildCartPayload(product, color, size, storage, model) {
+  const lang = i18n.language || 'uz';
+  const colorLabel = getLabelFromOption(color, lang);
+  const sizeLabel = getLabelFromOption(size, lang);
+  const storageLabel = getLabelFromOption(storage, lang);
+  const modelLabel = getLabelFromOption(model, lang);
+
+  const price =
+    getNumberPrice(model) ??
+    getNumberPrice(storage) ??
+    getNumberPrice(color) ??
+    getNumberPrice(product) ??
+    0;
+
+  const originalPrice =
+    getNumberPrice(model?.originalPrice) ??
+    getNumberPrice(storage?.originalPrice) ??
+    getNumberPrice(color?.originalPrice) ??
+    getNumberPrice(product?.originalPrice) ??
+    price;
+
+  let image = '/img/no-image.png';
+  if (model?.image) image = model.image;
+  else if (storage?.image) image = storage.image;
+  else if (color?.mainImage) image = color.mainImage;
+  else if (product?.image) image = product.image;
+
+  return {
+    productId: product?.id,
+    title: product?.title || 'Mahsulot',
+    price,
+    originalPrice,
+    color: colorLabel,
+    size: sizeLabel,
+    storage: storageLabel,
+    model: modelLabel,
+    image,
+    quantity: 1,
+    countries: product?.countries || [],
+    weight: product?.weight || 300,
+  };
+}
+
 export const CartProvider = ({ children }) => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { authToken, userData } = useUser();
   const [cart, setCart] = useState([]);
+  const [cartLoading, setCartLoading] = useState(false);
   const [selectedDeliveryType, setSelectedDeliveryType] = useState(
-    localStorage.getItem('selectedDeliveryType') || 'toshkent'
+    localStorage.getItem('selectedDeliveryType') || 'toshkent',
   );
   const [selectedCargoOptions, setSelectedCargoOptions] = useState(
-    JSON.parse(localStorage.getItem('selectedCargoOptions') || '{}')
+    JSON.parse(localStorage.getItem('selectedCargoOptions') || '{}'),
   );
 
-  // LocalStorage dan yuklash
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const parsed = JSON.parse(savedCart);
-        const withIds = parsed.map((item, i) => ({
-          ...item,
-          cartItemId: item.cartItemId || `cart-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`,
-        }));
-        setCart(withIds);
-      } catch (e) {
-        console.error('Error loading cart:', e);
-      }
-    }
+  const syncFromResponse = useCallback((data) => {
+    setCart(Array.isArray(data.items) ? data.items : []);
   }, []);
 
-  // LocalStorage ga saqlash
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+  const loadCart = useCallback(async () => {
+    if (!authToken) {
+      setCart([]);
+      return;
+    }
+    setCartLoading(true);
+    try {
+      const data = await fetchCart(authToken);
+      syncFromResponse(data);
+    } catch (err) {
+      console.error('Savat yuklanmadi:', err);
+    } finally {
+      setCartLoading(false);
+    }
+  }, [authToken, syncFromResponse]);
 
-  // Delivery type saqlash
+  useEffect(() => {
+    loadCart();
+  }, [loadCart, userData.id]);
+
+  useEffect(() => {
+    localStorage.removeItem('cart');
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('selectedDeliveryType', selectedDeliveryType);
   }, [selectedDeliveryType]);
 
-  // Cargo options saqlash
   useEffect(() => {
     localStorage.setItem('selectedCargoOptions', JSON.stringify(selectedCargoOptions));
   }, [selectedCargoOptions]);
 
-  // Savatga qo'shish
-  const addToCart = (product, color, size, storage, model) => {
-    const lang = i18n.language || 'uz';
-    const colorLabel = getLabelFromOption(color, lang);
-    const sizeLabel = getLabelFromOption(size, lang);
-    const storageLabel = getLabelFromOption(storage, lang);
-    const modelLabel = getLabelFromOption(model, lang);
-
-    // Narx aniqlash (priority: model > storage > color > product)
-    const price = getNumberPrice(model) ?? 
-                  getNumberPrice(storage) ?? 
-                  getNumberPrice(color) ?? 
-                  getNumberPrice(product) ?? 0;
-
-    const originalPrice = getNumberPrice(model?.originalPrice) ?? 
-                         getNumberPrice(storage?.originalPrice) ?? 
-                         getNumberPrice(color?.originalPrice) ?? 
-                         getNumberPrice(product?.originalPrice) ?? price;
-
-    // Rasm aniqlash (priority: model > storage > color > product)
-    let image = '/img/no-image.png';
-    if (model?.image) image = model.image;
-    else if (storage?.image) image = storage.image;
-    else if (color?.mainImage) image = color.mainImage;
-    else if (product?.image) image = product.image;
-
-    const cartItem = {
-      id: product?.id ?? Date.now(),
-      cartItemId: `cart-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      title: product?.title || 'Mahsulot',
-      price: price,
-      originalPrice: originalPrice,
-      color: colorLabel,
-      size: sizeLabel,
-      storage: storageLabel,
-      model: modelLabel,
-      image: image,
-      quantity: 1,
-      countries: product?.countries || [],
-      weight: product?.weight || 300
-    };
-
-    setCart(prev => [...prev, cartItem]);
-    return cartItem;
-  };
-
-  // Miqdorni yangilash (obektni mutate qilmaslik — yangi nusxa yaratish)
-  const updateQuantity = (index, change) => {
-    setCart(prev => {
-      const newCart = [...prev];
-      if (!newCart[index]) return prev;
-      const newQuantity = (newCart[index].quantity || 1) + change;
-      if (newQuantity > 0) {
-        newCart[index] = { ...newCart[index], quantity: newQuantity };
-        return newCart;
+  const addToCart = useCallback(
+    async (product, color, size, storage, model) => {
+      if (product?.id == null) {
+        throw new Error('INVALID_PRODUCT');
       }
-      return prev;
-    });
-  };
 
-  // Savatdan o'chirish
-  const removeFromCart = (index) => {
-    setCart(prev => prev.filter((_, i) => i !== index));
-  };
+      if (!authToken) {
+        showToast(t('cart.loginRequired'), 'info');
+        navigate('/login');
+        throw new Error('UNAUTHORIZED');
+      }
 
-  // Savatni tozalash
-  const clearCart = () => {
-    setCart([]);
-  };
+      const payload = buildCartPayload(product, color, size, storage, model);
+      const data = await addCartItem(authToken, payload);
+      syncFromResponse(data);
+      return payload;
+    },
+    [authToken, navigate, showToast, syncFromResponse, t],
+  );
 
-  // Jami summa
-  const getTotal = () => {
+  const updateQuantity = useCallback(
+    async (index, change) => {
+      const item = cart[index];
+      if (!item?.cartItemId || !authToken) return;
+
+      try {
+        const data = await updateCartItemQuantity(authToken, item.cartItemId, change);
+        syncFromResponse(data);
+      } catch (err) {
+        console.error('Savat miqdori yangilanmadi:', err);
+        showToast(t('cart.updateError'), 'error');
+      }
+    },
+    [authToken, cart, showToast, syncFromResponse, t],
+  );
+
+  const removeFromCart = useCallback(
+    async (index) => {
+      const item = cart[index];
+      if (!item?.cartItemId || !authToken) return;
+
+      try {
+        const data = await removeCartItem(authToken, item.cartItemId);
+        syncFromResponse(data);
+      } catch (err) {
+        console.error('Savatdan o\'chirilmadi:', err);
+        showToast(t('cart.updateError'), 'error');
+      }
+    },
+    [authToken, cart, showToast, syncFromResponse, t],
+  );
+
+  const clearCart = useCallback(async () => {
+    if (!authToken) {
+      setCart([]);
+      return;
+    }
+    try {
+      const data = await clearCartApi(authToken);
+      syncFromResponse(data);
+    } catch (err) {
+      console.error('Savat tozalanmadi:', err);
+      showToast(t('cart.updateError'), 'error');
+      throw err;
+    }
+  }, [authToken, showToast, syncFromResponse, t]);
+
+  const getTotal = useCallback(() => {
     return cart.reduce((sum, item) => {
       const price = Number(item.price) || 0;
       const quantity = item.quantity || 1;
-      return sum + (price * quantity);
+      return sum + price * quantity;
     }, 0);
-  };
+  }, [cart]);
 
-  // Jami dona
-  const getTotalItems = () => {
+  const getTotalItems = useCallback(() => {
     return cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-  };
+  }, [cart]);
 
-  // Delivery type o'zgartirish
   const changeDeliveryType = (type) => {
     setSelectedDeliveryType(type);
   };
 
-  // Cargo option o'zgartirish
   const updateCargoSelection = (country, type) => {
-    setSelectedCargoOptions(prev => ({
+    setSelectedCargoOptions((prev) => ({
       ...prev,
-      [country.toLowerCase()]: type
+      [country.toLowerCase()]: type,
     }));
   };
 
   const value = {
     cart,
+    cartLoading,
     addToCart,
     updateQuantity,
     removeFromCart,
@@ -161,13 +224,9 @@ export const CartProvider = ({ children }) => {
     selectedDeliveryType,
     changeDeliveryType,
     selectedCargoOptions,
-    updateCargoSelection
+    updateCargoSelection,
+    refreshCart: loadCart,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
-

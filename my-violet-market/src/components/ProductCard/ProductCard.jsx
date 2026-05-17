@@ -1,29 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
-import { useToast } from '../../contexts/ToastContext';
 import { useComments } from '../../contexts/CommentsContext';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
 import CartModal from '../CartModal';
 import FlashSaleCountdown from '../FlashSaleCountdown/FlashSaleCountdown';
-import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './ProductCard.css';
 
-const LOADER_DURATION_MS = 2000;
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
 const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
-  const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { showToast } = useToast();
   const { getCommentsByProductId, comments } = useComments();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddLoading, setIsAddLoading] = useState(false);
 
   const firstColor = product.colors?.[0];
   const imageSrc = firstColor?.mainImage || '/img/no-image.png';
@@ -79,16 +72,13 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
     }
   };
 
-  const handleAddToCart = async (e) => {
+  const handleAddToCart = (e) => {
     e.stopPropagation();
-    setIsAddLoading(true);
-    await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
     if (onAddToCart) {
       onAddToCart(product);
     } else {
       setIsModalOpen(true);
     }
-    setIsAddLoading(false);
   };
 
   const handleWishlist = (e) => {
@@ -183,10 +173,8 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
         />
       )}
       {!hideAddToCart && (
-        <button className="add-to-cart-btn" onClick={handleAddToCart} disabled={isAddLoading}>
-          <ButtonLoader isLoading={isAddLoading}>
-            {i18n.t('productCard.addToCart')}
-          </ButtonLoader>
+        <button className="add-to-cart-btn" type="button" onClick={handleAddToCart}>
+          {i18n.t('productCard.addToCart')}
         </button>
       )}
     </div>
@@ -194,9 +182,6 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
       product={product}
       isOpen={isModalOpen}
       onClose={() => setIsModalOpen(false)}
-      onAdd={() => {
-        showToast(i18n.t('common.addedToCart'), 'success');
-      }}
     />
     </>
   );

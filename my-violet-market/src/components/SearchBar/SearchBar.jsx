@@ -1,83 +1,40 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useSearchHistory } from '../../contexts/SearchHistoryContext';
-import { normalizeImagePath, productMatchesSearchByTitle, getLocalizedText } from '../../utils/utils';
+import { useUser } from '../../contexts/UserContext';
+import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import {
+  fetchSearchRecommended,
+  fetchSearchRecommendedDefault,
+} from '../../api/searchApi';
 import { SkeletonPulse } from '../SkeletonLoader';
 import './SearchBar.css';
 
 const MAX_SUGGESTIONS = 5;
-const DEFAULT_RECOMMENDED_COUNT = 15;
+/** Server searchAlgorithm.js — SEARCH_RECOMMENDED_LIMIT bilan bir xil */
+const SEARCH_RECOMMENDED_SKELETON_COUNT = 12;
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
-/** Default recommendations when user has no history (by rating/sales or first N) */
-function getDefaultRecommended(allProducts) {
-  const withScore = allProducts
-    .map((p) => ({
-      product: p,
-      score: (Number(p.rating) || 0) * 10 + (Number(p.sales) || 0),
-    }))
-    .sort((a, b) => b.score - a.score);
-  return withScore.slice(0, DEFAULT_RECOMMENDED_COUNT).map((x) => x.product);
+function normalizeForSearch(str) {
+  return (str || '')
+    .toLowerCase()
+    .replace(/[-''`]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-/**
- * Tavsiya etamiz: barcha bo'limlardan (allProducts) mahsulot oladi.
- * Algoritm: ko'rilgan mahsulotlarga o'xshash (category, brand, davlat) + qidirilgan so'rovlarga mos ball, eng yuqori ballilar qaytariladi.
- */
-function getSimilarRecommended(allProducts, recentProductIds, recentSearchQueries) {
-  const scores = new Map();
-
-  const recentSet = new Set(recentProductIds);
-  const recent = (recentProductIds || [])
-    .map((id) => allProducts.find((p) => p.id === id))
-    .filter(Boolean);
-  const fields = ['category', 'productCountry', 'brandCategories', 'countriesCategories', 'productType'];
-
-  if (recent.length > 0) {
-    allProducts.forEach((p) => {
-      if (recentSet.has(p.id)) return;
-      let score = 0;
-      recent.forEach((r) => {
-        fields.forEach((field) => {
-          const a = (r[field] || '').toString().toLowerCase();
-          const b = (p[field] || '').toString().toLowerCase();
-          if (a && b && a === b) score += 2;
-        });
-      });
-      if (score > 0) scores.set(p.id, { product: p, score });
-    });
-  }
-
-  const getTitleString = (p) => {
-    const t = p.title;
-    if (t == null) return '';
-    if (typeof t === 'string') return t;
-    return (t.uz || t.ru || '').toString();
-  };
-
-  (recentSearchQueries || []).forEach((q) => {
-    const qLower = (q || '').trim().toLowerCase();
-    if (qLower.length < 2) return;
-    allProducts.forEach((p) => {
-      const title = getTitleString(p).toLowerCase();
-      if (title.includes(qLower)) {
-        const cur = scores.get(p.id);
-        const add = 3;
-        scores.set(p.id, { product: p, score: (cur?.score ?? 0) + add });
-      }
-    });
-  });
-
-  if (scores.size > 0) {
-    return [...scores.values()]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, DEFAULT_RECOMMENDED_COUNT)
-      .map((x) => x.product);
-  }
-
-  return getDefaultRecommended(allProducts);
+function productMatchesSearchByTitle(product, searchQuery, lang) {
+  const q = normalizeForSearch(searchQuery);
+  if (!q) return false;
+  const title = normalizeForSearch(
+    getLocalizedText(product.title, lang) ||
+      getLocalizedText(product.title, 'uz') ||
+      getLocalizedText(product.title, 'ru') ||
+      '',
+  );
+  return title.includes(q) || (q.length >= 3 && title.length >= 3 && q.includes(title));
 }
 
 const SearchBar = ({ isMobile = false, className = '' }) => {
@@ -87,27 +44,59 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
   const catalog = allProducts || [];
   const appLoading = loading && !error;
   const lang = i18n.language || 'uz';
-  const { recentProductIds, addProduct, recentSearchQueries, addSearchQuery, removeSearchQuery } = useSearchHistory();
+  const { authToken } = useUser();
+  const { recentSearchQueries, addSearchQuery, removeSearchQuery, refreshHistory } =
+    useSearchHistory();
   const [query, setQuery] = useState('');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [recommended, setRecommended] = useState([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
 
-  /* Takliflar va Tavsiya etamiz – barcha bo'limlar (allProducts) dan */
+  /* Takliflar — katalog; Tavsiya etamiz — server /api/search/recommended */
   const suggestions = useMemo(() => {
     if (!(query || '').trim()) return [];
     return catalog
-      .filter((p) => productMatchesSearchByTitle(p, query))
+      .filter((p) => productMatchesSearchByTitle(p, query, lang))
       .slice(0, MAX_SUGGESTIONS);
-  }, [query, catalog]);
-
-  const recommended = useMemo(
-    () => getSimilarRecommended(catalog, recentProductIds, recentSearchQueries),
-    [recentProductIds, recentSearchQueries, catalog]
-  );
+  }, [query, catalog, lang]);
 
   const showRecommendations = !query.trim() && isPanelOpen;
   const showSuggestions = query.trim() && isPanelOpen;
+
+  useEffect(() => {
+    if (isPanelOpen) {
+      refreshHistory();
+    }
+  }, [isPanelOpen, refreshHistory]);
+
+  useEffect(() => {
+    if (!showRecommendations) return undefined;
+
+    let cancelled = false;
+    setRecommendedLoading(true);
+    const fetchRecommended = authToken
+      ? fetchSearchRecommended(authToken)
+      : fetchSearchRecommendedDefault();
+
+    fetchRecommended
+      .then((data) => {
+        if (!cancelled) {
+          setRecommended(Array.isArray(data.products) ? data.products : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRecommended([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRecommendedLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showRecommendations, authToken, recentSearchQueries]);
 
   useEffect(() => {
     if (!isPanelOpen) return;
@@ -132,12 +121,13 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
   };
 
   const handleSuggestionClick = (product) => {
-    addProduct(product);
-    const q = (inputRef.current?.value ?? query).toString().trim();
-    if (q) addSearchQuery(q);
+    const clickedLabel = getLocalizedText(product.title, lang).trim();
+    if (clickedLabel) addSearchQuery(clickedLabel);
     setIsPanelOpen(false);
     setQuery('');
-    if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+    if (clickedLabel) {
+      navigate(`/search?q=${encodeURIComponent(clickedLabel)}`);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -163,7 +153,6 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
   };
 
   const handleRecommendedClick = (product) => {
-    addProduct(product);
     try {
       sessionStorage.setItem('selectedProduct', JSON.stringify(product));
       if (window.location.pathname !== '/product-detail') {
@@ -280,10 +269,10 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
                   <h3 className="search-bar__recommended-title">{i18n.t('search.recommendedTitle')}</h3>
                 <div
                   className="search-bar__recommended-list"
-                  aria-busy={appLoading && catalog.length === 0}
+                  aria-busy={recommendedLoading || appLoading}
                 >
-                  {appLoading && catalog.length === 0 ? (
-                    Array.from({ length: DEFAULT_RECOMMENDED_COUNT }, (_, index) => (
+                  {recommendedLoading || appLoading ? (
+                    Array.from({ length: SEARCH_RECOMMENDED_SKELETON_COUNT }, (_, index) => (
                       <div
                         key={`search-bar-rec-sk-${index}`}
                         className="search-bar__recommended-item search-bar__recommended-item--skeleton"

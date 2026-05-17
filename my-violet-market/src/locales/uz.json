@@ -14,7 +14,9 @@
     "historyTitle": "Qidirilgan tarix",
     "remove": "O'chirish",
     "recommendedTitle": "Tavsiya etamiz",
-    "recommendedEmpty": "Tavsiyalar yo'q"
+    "recommendedEmpty": "Tavsiyalar yo'q",
+    "loginRequired": "Qidiruv tarixini saqlash uchun tizimga kiring",
+    "saveError": "Qidiruv tarixini saqlab bo'lmadi"
   },
   "filters": {
     "price": "Narx",
@@ -128,7 +130,10 @@
   },
   "wishlist": {
     "emptyTitle": "Sevimli mahsulotingizni qo'shing!",
-    "emptyButton": "Mahsulotlarga o'tish"
+    "emptyButton": "Mahsulotlarga o'tish",
+    "loginRequired": "Sevimlilarga qo'shish uchun tizimga kiring",
+    "toggleError": "Sevimlilar ro'yxatini yangilab bo'lmadi. Serverni qayta ishga tushiring yoki keyinroq urinib ko'ring",
+    "productNotFound": "Mahsulot topilmadi"
   },
   "testOrder": {
     "title": "Buyurtma uchun baho bering",
@@ -205,7 +210,10 @@
     "deliveryViloyat": "Viloyat",
     "checkout": "Buyurtma berish",
     "clearCart": "Savatni tozalash",
-    "toastCleared": "Savat tozalandi"
+    "toastCleared": "Savat tozalandi",
+    "toastAdded": "Mahsulot savatga qo'shildi!",
+    "loginRequired": "Savatga qo'shish uchun tizimga kiring",
+    "updateError": "Savatni yangilab bo'lmadi. Qayta urinib ko'ring"
   },
   "cargo": {
     "title": "Kargo ma'lumotlari",
@@ -261,6 +269,8 @@
     "firstName": "Ism",
     "lastName": "Familiya",
     "phone": "Telefon",
+    "email": "Email",
+    "emailPlaceholder": "email@misol.uz",
     "appLanguage": "Ilova tili",
     "wishlist": "Saralanganlar",
     "myOrders": "Mening buyurtmalarim",
@@ -283,11 +293,16 @@
     "errorFirstName": "Ism majburiy",
     "errorLastName": "Familiya majburiy",
     "errorPhone": "Telefon majburiy",
+    "errorEmail": "Email majburiy",
+    "errorEmailInvalid": "Email formati noto'g'ri",
     "phonePlaceholder": "+998 90 123 45 67",
     "imageSizeError": "Rasm hajmi 5MB dan katta bo'lmasligi kerak!",
     "imageTypeError": "Faqat rasm fayllari yuklash mumkin!",
     "imageUploadError": "Rasm yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     "imageReadError": "Rasm o'qishda xatolik yuz berdi. Iltimos, boshqa rasmni tanlang.",
+    "avatarModalTitle": "Avatarka tanlash",
+    "chooseAvatarPhoto": "Rasm tanlash",
+    "avatarChangeHint": "Rasm dumaloq ko'rinishda saqlanadi",
     "sellerMyCabinet": "Mening sotuvchi kabinetim",
     "sellerStoreHint": "do'kon",
     "subscriptions": "Obunalar",
@@ -297,7 +312,22 @@
     "loginPageTitle": "Violet Marketga kirish",
     "registerTab": "Ro'yxatdan o'tish",
     "registerSubmit": "Ro'yxatdan o'tish",
-    "getCode": "Kodni olish"
+    "getCode": "Kodni olish",
+    "otpCode": "Tasdiqlash kodi",
+    "otpPlaceholder": "6 xonali kod",
+    "verifyCode": "Tasdiqlash",
+    "resendCode": "Kodni qayta yuborish",
+    "otpSent": "Kod {{email}} manziliga yuborildi",
+    "errorBrevoEmail": "Email yuborilmadi. Server .env da BREVO_SENDER_EMAIL (Brevo da tasdiqlangan) kerak",
+    "backToEmail": "Emailni o'zgartirish",
+    "backToForm": "Formaga qaytish",
+    "loading": "Yuklanmoqda...",
+    "errorOtp": "Tasdiqlash kodi noto'g'ri",
+    "errorOtpExpired": "Kod muddati tugagan",
+    "errorSendCode": "Xatolik yuz berdi. Qayta urinib ko'ring",
+    "errorUserNotFound": "Foydalanuvchi topilmadi. Ro'yxatdan o'ting",
+    "errorEmailTaken": "Bu email allaqachon ro'yxatdan o'tgan",
+    "errorApiNotFound": "Server yangilanmagan. violet-server ni to'xtating va qayta npm start qiling"
   },
   "seller": {
     "notFound": "Sotuvchi topilmadi.",

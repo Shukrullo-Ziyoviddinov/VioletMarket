@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
+import { updateProfile } from '../api/profileApi';
+import { mapApiUserToClient } from '../api/mapApiUser';
 import { useAppData } from '../contexts/AppDataContext';
 import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { getSubscribedSellerIds, SELLER_SUBSCRIBE_STORAGE_PREFIX } from '../hooks/useSellerSubscription';
@@ -27,15 +29,32 @@ const LANGUAGES = [
   { code: 'ru', flag: '/img/ru%20b.png', labelKey: 'language.ru' },
 ];
 
+const DEFAULT_AVATAR_SRC =
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=';
+
+const AVATAR_PRESETS = [
+  {
+    id: 'male',
+    src: `${process.env.PUBLIC_URL || ''}/img/avatar.img.erkak_preview_rev_1.png`,
+    ariaLabelKey: 'profile.genderMale',
+  },
+  {
+    id: 'female',
+    src: `${process.env.PUBLIC_URL || ''}/img/avatar.img.ayol_preview_rev_1.png`,
+    ariaLabelKey: 'profile.genderFemale',
+  },
+];
+
 const Profile = () => {
   const { i18n, t } = useTranslation();
   const { footerData, getSellerById } = useAppData();
   const location = useLocation();
-  const { userData, updateUserData, logout } = useUser();
+  const { userData, authToken, updateUserData, logout } = useUser();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
+    email: '',
     birthDate: '',
     gender: '',
   });
@@ -67,6 +86,8 @@ const Profile = () => {
   const socialHandleRef = useRef(null);
   const contactSheetRef = useRef(null);
   const contactHandleRef = useRef(null);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const startYRef = useRef(0);
   const editStartYRef = useRef(0);
   const socialStartYRef = useRef(0);
@@ -80,6 +101,7 @@ const Profile = () => {
       firstName: userData.firstName || '',
       lastName: userData.lastName || '',
       phone: userData.phone || '',
+      email: userData.email || '',
       birthDate: userData.birthDate || '',
       gender: userData.gender || '',
     });
@@ -392,68 +414,83 @@ const Profile = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
     if (!formData.firstName.trim()) newErrors.firstName = t('profile.errorFirstName');
     if (!formData.lastName.trim()) newErrors.lastName = t('profile.errorLastName');
     if (!formData.phone.trim()) newErrors.phone = t('profile.errorPhone');
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed) {
+      newErrors.email = t('profile.errorEmail');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      newErrors.email = t('profile.errorEmailInvalid');
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    updateUserData({
+    const payload = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       phone: formData.phone.trim(),
+      email: emailTrimmed,
       birthDate: formData.birthDate,
       gender: formData.gender,
-      isAuthenticated: true,
-    });
-    setEditModalOpen(false);
+    };
+
+    if (!authToken) {
+      updateUserData({ ...payload, isAuthenticated: true });
+      setEditModalOpen(false);
+      return;
+    }
+
+    try {
+      const res = await updateProfile(authToken, payload);
+      const mapped = mapApiUserToClient(res.user);
+      if (mapped) updateUserData(mapped);
+      setEditModalOpen(false);
+    } catch (err) {
+      setErrors({ email: err.message || t('profile.errorSendCode') });
+    }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Fayl hajmini tekshirish (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert(t('profile.imageSizeError'));
-        e.target.value = '';
-        return;
-      }
-      
-      // Fayl turini tekshirish
-      if (!file.type.startsWith('image/')) {
-        alert(t('profile.imageTypeError'));
-        e.target.value = '';
-        return;
-      }
+  const openAvatarModal = () => {
+    setAvatarPreview(userData.profileImage || null);
+    setAvatarModalOpen(true);
+  };
 
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        try {
-          updateUserData({
-            profileImage: event.target.result,
-            hasUploadedImage: true
-          });
-        } catch (error) {
-          console.error('Rasm yuklashda xatolik:', error);
-          alert(t('profile.imageUploadError'));
-        }
-      };
-      
-      reader.onerror = () => {
-        console.error('FileReader xatolik');
-        alert(t('profile.imageReadError'));
-        e.target.value = '';
-      };
-      
-      reader.readAsDataURL(file);
+  const closeAvatarModal = () => {
+    setAvatarModalOpen(false);
+    setAvatarPreview(null);
+  };
+
+  const selectPresetAvatar = (src) => {
+    setAvatarPreview(src);
+  };
+
+  const saveAvatar = async () => {
+    if (!avatarPreview) return;
+    const patch = {
+      profileImage: avatarPreview,
+      hasUploadedImage: true,
+    };
+    if (!authToken) {
+      updateUserData(patch);
+      closeAvatarModal();
+      return;
+    }
+    try {
+      const res = await updateProfile(authToken, patch);
+      const mapped = mapApiUserToClient(res.user);
+      if (mapped) updateUserData(mapped);
+      closeAvatarModal();
+    } catch {
+      updateUserData(patch);
+      closeAvatarModal();
     }
   };
 
@@ -463,25 +500,28 @@ const Profile = () => {
         <div className="profile-card">
           <div className="profile-header">
             <div className="profile-header__image">
-              <div className="profile-image-wrapper">
-                <img 
-                  src={userData.profileImage} 
-                  alt="Profile"
+              <div
+                className="profile-image-wrapper"
+                role="button"
+                tabIndex={0}
+                onClick={openAvatarModal}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openAvatarModal();
+                  }
+                }}
+                aria-label={t('profile.avatarModalTitle')}
+              >
+                <img
+                  src={userData.profileImage}
+                  alt=""
                   onError={(e) => {
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=';
+                    e.target.src = DEFAULT_AVATAR_SRC;
                   }}
                 />
-                <div className="image-overlay">
-                  <label htmlFor="image-upload">
-                    <i className="bx bx-camera"></i>
-                  </label>
-                  <input
-                    type="file"
-                    id="image-upload"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="input-file-hidden"
-                  />
+                <div className="image-overlay" aria-hidden="true">
+                  <i className="bx bx-camera" />
                 </div>
               </div>
             </div>
@@ -618,6 +658,54 @@ const Profile = () => {
               <i className="bx bx-chevron-right profile-subscriptions-heading__chevron" aria-hidden="true" />
             </div>
           </div>
+
+          <GlobalModal
+            isOpen={avatarModalOpen}
+            onClose={closeAvatarModal}
+            title={t('profile.avatarModalTitle')}
+          >
+            <div className="profile-avatar-modal">
+              <div className="profile-avatar-modal__choices">
+                <div className="profile-avatar-modal__preview">
+                  <img
+                    src={avatarPreview || userData.profileImage || DEFAULT_AVATAR_SRC}
+                    alt=""
+                    onError={(e) => {
+                      e.target.src = DEFAULT_AVATAR_SRC;
+                    }}
+                  />
+                </div>
+                <div className="profile-avatar-modal__presets" role="group" aria-label={t('profile.avatarModalTitle')}>
+                  {AVATAR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={`profile-avatar-modal__preset${avatarPreview === preset.src ? ' profile-avatar-modal__preset--active' : ''}`}
+                      onClick={() => selectPresetAvatar(preset.src)}
+                      aria-label={t(preset.ariaLabelKey)}
+                      aria-pressed={avatarPreview === preset.src}
+                    >
+                      <img
+                        src={preset.src}
+                        alt=""
+                        onError={(e) => {
+                          e.target.src = DEFAULT_AVATAR_SRC;
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="profile-avatar-modal__save"
+                onClick={saveAvatar}
+                disabled={!avatarPreview}
+              >
+                {t('profile.save')}
+              </button>
+            </div>
+          </GlobalModal>
 
           <GlobalModal
             isOpen={subscriptionsModalOpen}
@@ -779,6 +867,21 @@ const Profile = () => {
                         className={errors.phone ? 'error' : ''}
                       />
                       {errors.phone && <span className="error-message">{errors.phone}</span>}
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="profile-edit-email">{t('profile.email')}</label>
+                      <input
+                        id="profile-edit-email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder={t('profile.emailPlaceholder')}
+                        className={errors.email ? 'error' : ''}
+                        autoComplete="email"
+                      />
+                      {errors.email && <span className="error-message">{errors.email}</span>}
                     </div>
 
                     <div className="form-group profile-form-group--gender">

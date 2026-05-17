@@ -45,28 +45,32 @@
 }
 
 .global-modal__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 8px;
   padding: 16px 16px 0;
   flex-shrink: 0;
 }
 
 .global-modal__title {
+  grid-column: 2;
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
   color: #222;
   line-height: 1.35;
-  padding-top: 2px;
+  text-align: center;
+  justify-self: center;
 }
 
 .global-modal__title-spacer {
-  flex: 1;
+  grid-column: 2;
 }
 
 .global-modal__close {
+  grid-column: 3;
+  justify-self: end;
   flex-shrink: 0;
   width: 40px;
   height: 40px;

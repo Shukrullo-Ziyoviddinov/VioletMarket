@@ -14,7 +14,9 @@
     "historyTitle": "История поиска",
     "remove": "Удалить",
     "recommendedTitle": "Рекомендуем",
-    "recommendedEmpty": "Нет рекомендаций"
+    "recommendedEmpty": "Нет рекомендаций",
+    "loginRequired": "Войдите, чтобы сохранять историю поиска",
+    "saveError": "Не удалось сохранить историю поиска"
   },
   "filters": {
     "price": "Цена",
@@ -128,7 +130,10 @@
   },
   "wishlist": {
     "emptyTitle": "Добавьте товар в избранное!",
-    "emptyButton": "Перейти к товарам"
+    "emptyButton": "Перейти к товарам",
+    "loginRequired": "Войдите, чтобы добавить в избранное",
+    "toggleError": "Не удалось обновить избранное. Перезапустите сервер или попробуйте позже",
+    "productNotFound": "Товар не найден"
   },
   "testOrder": {
     "title": "Оцените заказ",
@@ -205,7 +210,10 @@
     "deliveryViloyat": "Регионы",
     "checkout": "Оформить заказ",
     "clearCart": "Очистить корзину",
-    "toastCleared": "Корзина очищена"
+    "toastCleared": "Корзина очищена",
+    "toastAdded": "Товар добавлен в корзину!",
+    "loginRequired": "Войдите, чтобы добавить в корзину",
+    "updateError": "Не удалось обновить корзину. Попробуйте снова"
   },
   "cargo": {
     "title": "Информация о Карго",
@@ -261,6 +269,8 @@
     "firstName": "Имя",
     "lastName": "Фамилия",
     "phone": "Телефон",
+    "email": "Email",
+    "emailPlaceholder": "email@example.ru",
     "appLanguage": "Язык приложения",
     "wishlist": "Избранное",
     "myOrders": "Мои заказы",
@@ -283,11 +293,16 @@
     "errorFirstName": "Имя обязательно",
     "errorLastName": "Фамилия обязательна",
     "errorPhone": "Телефон обязателен",
+    "errorEmail": "Email обязателен",
+    "errorEmailInvalid": "Неверный формат email",
     "phonePlaceholder": "+998 90 123 45 67",
     "imageSizeError": "Размер изображения не должен превышать 5MB!",
     "imageTypeError": "Загружать можно только изображения!",
     "imageUploadError": "Ошибка загрузки изображения. Попробуйте ещё раз.",
     "imageReadError": "Ошибка чтения изображения. Выберите другое фото.",
+    "avatarModalTitle": "Выбор аватара",
+    "chooseAvatarPhoto": "Выбрать фото",
+    "avatarChangeHint": "Фото будет сохранено в круглой форме",
     "sellerMyCabinet": "Мой кабинет продавца",
     "sellerStoreHint": "магазин",
     "subscriptions": "Подписки",
@@ -297,7 +312,22 @@
     "loginPageTitle": "Вход в Violet Market",
     "registerTab": "Регистрация",
     "registerSubmit": "Зарегистрироваться",
-    "getCode": "Получить код"
+    "getCode": "Получить код",
+    "otpCode": "Код подтверждения",
+    "otpPlaceholder": "6-значный код",
+    "verifyCode": "Подтвердить",
+    "resendCode": "Отправить код снова",
+    "otpSent": "Код отправлен на {{email}}",
+    "errorBrevoEmail": "Email не отправлен. В .env нужен BREVO_SENDER_EMAIL (подтверждённый в Brevo)",
+    "backToEmail": "Изменить email",
+    "backToForm": "Вернуться к форме",
+    "loading": "Загрузка...",
+    "errorOtp": "Неверный код подтверждения",
+    "errorOtpExpired": "Срок действия кода истёк",
+    "errorSendCode": "Ошибка. Попробуйте снова",
+    "errorUserNotFound": "Пользователь не найден. Зарегистрируйтесь",
+    "errorEmailTaken": "Этот email уже зарегистрирован",
+    "errorApiNotFound": "Сервер устарел. Остановите violet-server и снова выполните npm start"
   },
   "seller": {
     "notFound": "Продавец не найден.",

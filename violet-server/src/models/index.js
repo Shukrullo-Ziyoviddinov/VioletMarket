@@ -12,6 +12,8 @@ const { VideoBannerItem } = require("./videoBannerItem");
 const { SellerAccount } = require("./sellerAccount");
 const { UzWarehouseLocale } = require("./uzWarehouseLocale");
 const { ProductPolicyBlock } = require("./productPolicyBlock");
+const { User } = require("./user");
+const { Wishlist } = require("./wishlist");
 
 module.exports = {
   Product,
@@ -28,4 +30,6 @@ module.exports = {
   SellerAccount,
   UzWarehouseLocale,
   ProductPolicyBlock,
+  User,
+  Wishlist,
 };

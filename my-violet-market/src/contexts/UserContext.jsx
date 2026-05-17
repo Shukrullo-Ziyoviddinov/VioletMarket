@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { fetchProfile } from '../api/profileApi';
+import { mapApiUserToClient } from '../api/mapApiUser';
 
 const UserContext = createContext();
 
@@ -10,24 +12,24 @@ export const useUser = () => {
   return context;
 };
 
+const DEFAULT_AVATAR =
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=';
+
 const defaultUserData = {
+  id: null,
   firstName: '',
   lastName: '',
   phone: '',
-  /** ISO YYYY-MM-DD yoki '' */
+  email: '',
   birthDate: '',
-  /** 'male' | 'female' | '' */
   gender: '',
-  /** Sotuvchi kabineti: sellerData dagi id (masalan 'violet'). null — oddiy mijoz. */
   sellerAccountId: null,
   language: 'uz',
-  profileImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=',
+  profileImage: DEFAULT_AVATAR,
   hasUploadedImage: false,
-  /** Backend sessiyasi (keyinchalik token bilan almashtiriladi) */
   isAuthenticated: false,
 };
 
-/** localStorage dagi eski yozuvlarni (masalan username) yangi shaklga moslashtirish */
 const normalizeSavedUserData = (saved) => {
   if (!saved || typeof saved !== 'object') return { ...defaultUserData };
   const next = { ...defaultUserData };
@@ -36,55 +38,81 @@ const normalizeSavedUserData = (saved) => {
       next[key] = saved[key];
     }
   }
-  if (!('isAuthenticated' in saved)) {
-    const phoneOk = String(saved.phone || '').replace(/\D/g, '').length >= 9;
-    const nameOk = String(saved.firstName || '').trim().length > 0;
-    if (phoneOk && nameOk) next.isAuthenticated = true;
-  }
   return next;
 };
 
 export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(defaultUserData);
+  const [authToken, setAuthToken] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // LocalStorage dan yuklash
   useEffect(() => {
+    const savedToken = localStorage.getItem('authToken');
     const savedData = localStorage.getItem('userData');
+    let parsed = null;
     if (savedData) {
       try {
-        setUserData(normalizeSavedUserData(JSON.parse(savedData)));
+        parsed = normalizeSavedUserData(JSON.parse(savedData));
       } catch (e) {
         console.error('Error loading user data:', e);
       }
     }
+    if (!savedToken) {
+      if (parsed) setUserData(parsed);
+      setAuthLoading(false);
+      return;
+    }
+    setAuthToken(savedToken);
+    if (parsed) setUserData(parsed);
+    fetchProfile(savedToken)
+      .then((res) => {
+        const mapped = mapApiUserToClient(res.user);
+        if (mapped) setUserData(mapped);
+      })
+      .catch(() => {
+        localStorage.removeItem('authToken');
+        setAuthToken(null);
+        setUserData(defaultUserData);
+      })
+      .finally(() => setAuthLoading(false));
   }, []);
 
-  // LocalStorage ga saqlash
   useEffect(() => {
     localStorage.setItem('userData', JSON.stringify(userData));
   }, [userData]);
 
-  // Ma'lumotlarni yangilash
-  const updateUserData = (newData) => {
-    setUserData(prev => ({ ...prev, ...newData }));
-  };
+  useEffect(() => {
+    if (authToken) localStorage.setItem('authToken', authToken);
+    else localStorage.removeItem('authToken');
+  }, [authToken]);
 
-  // Logout
-  const logout = () => {
+  const setSession = useCallback((token, apiUser) => {
+    const mapped = mapApiUserToClient(apiUser);
+    if (!mapped) return;
+    setAuthToken(token);
+    setUserData(mapped);
+  }, []);
+
+  const updateUserData = useCallback((newData) => {
+    setUserData((prev) => ({ ...prev, ...newData }));
+  }, []);
+
+  const logout = useCallback(() => {
     setUserData(defaultUserData);
+    setAuthToken(null);
     localStorage.removeItem('userData');
-  };
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('wishlist');
+  }, []);
 
   const value = {
     userData,
+    authToken,
+    authLoading,
+    setSession,
     updateUserData,
-    logout
+    logout,
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
-

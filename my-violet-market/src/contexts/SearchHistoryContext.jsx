@@ -1,9 +1,18 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-
-const STORAGE_KEY = 'violet_search_history';
-const QUERY_STORAGE_KEY = 'violet_search_query_history';
-const MAX_HISTORY = 20;
-const MAX_QUERY_HISTORY = 15;
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { useUser } from './UserContext';
+import { useToast } from './ToastContext';
+import {
+  fetchSearchHistory,
+  addSearchHistoryQuery,
+  removeSearchHistoryQuery,
+} from '../api/searchApi';
 
 const SearchHistoryContext = createContext();
 
@@ -15,85 +24,92 @@ export const useSearchHistory = () => {
   return context;
 };
 
-const loadFromStorage = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_HISTORY) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveToStorage = (items) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, MAX_HISTORY)));
-  } catch {}
-};
-
-const loadQueryHistory = () => {
-  try {
-    const raw = localStorage.getItem(QUERY_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_QUERY_HISTORY) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveQueryHistory = (items) => {
-  try {
-    localStorage.setItem(QUERY_STORAGE_KEY, JSON.stringify(items.slice(0, MAX_QUERY_HISTORY)));
-  } catch {}
-};
-
 export const SearchHistoryProvider = ({ children }) => {
-  const [recentProductIds, setRecentProductIds] = useState(loadFromStorage);
-  const [recentSearchQueries, setRecentSearchQueries] = useState(loadQueryHistory);
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { authToken, userData } = useUser();
+  const [recentSearchQueries, setRecentSearchQueries] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const syncFromResponse = useCallback((data) => {
+    if (!data) return;
+    if (Array.isArray(data.queries)) setRecentSearchQueries(data.queries);
+  }, []);
+
+  const loadHistory = useCallback(async () => {
+    if (!authToken) {
+      setRecentSearchQueries([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await fetchSearchHistory(authToken);
+      syncFromResponse(data);
+    } catch (err) {
+      console.error('Qidiruv tarixi yuklanmadi:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [authToken, syncFromResponse]);
 
   useEffect(() => {
-    saveToStorage(recentProductIds);
-  }, [recentProductIds]);
+    loadHistory();
+  }, [loadHistory, userData.id]);
 
   useEffect(() => {
-    saveQueryHistory(recentSearchQueries);
-  }, [recentSearchQueries]);
-
-  const addProduct = useCallback((product) => {
-    if (!product?.id) return;
-    setRecentProductIds((prev) => {
-      const next = [product.id, ...prev.filter((id) => id !== product.id)];
-      return next.slice(0, MAX_HISTORY);
-    });
+    localStorage.removeItem('violet_search_history');
+    localStorage.removeItem('violet_search_query_history');
   }, []);
 
-  const addSearchQuery = useCallback((q) => {
-    const trimmed = (q || '').trim();
-    if (!trimmed) return;
-    setRecentSearchQueries((prev) => {
-      const next = [trimmed, ...prev.filter((item) => item !== trimmed)];
-      return next.slice(0, MAX_QUERY_HISTORY);
-    });
-  }, []);
+  const addSearchQuery = useCallback(
+    async (q) => {
+      const trimmed = (q || '').trim();
+      if (!trimmed) return false;
+      if (!authToken) {
+        showToast(t('search.loginRequired'), 'info');
+        return false;
+      }
+      try {
+        const data = await addSearchHistoryQuery(authToken, trimmed);
+        syncFromResponse(data);
+        return true;
+      } catch (err) {
+        console.error('Qidiruv tarixi saqlanmadi:', err);
+        showToast(t('search.saveError'), 'error');
+        return false;
+      }
+    },
+    [authToken, showToast, syncFromResponse, t],
+  );
 
-  const removeSearchQuery = useCallback((q) => {
-    setRecentSearchQueries((prev) => prev.filter((item) => item !== q));
-  }, []);
+  const applyHistoryFromSearchResponse = useCallback(
+    (data) => {
+      if (data?.queries) syncFromResponse(data);
+    },
+    [syncFromResponse],
+  );
 
-  const getRecentProductIds = useCallback(() => recentProductIds, [recentProductIds]);
-
-  const clearHistory = useCallback(() => setRecentProductIds([]), []);
+  const removeSearchQuery = useCallback(
+    async (q) => {
+      if (!authToken) return;
+      try {
+        const data = await removeSearchHistoryQuery(authToken, q);
+        syncFromResponse(data);
+      } catch (err) {
+        console.error('Qidiruv tarixi o\'chirilmadi:', err);
+        showToast(t('search.saveError'), 'error');
+      }
+    },
+    [authToken, showToast, syncFromResponse, t],
+  );
 
   const value = {
-    recentProductIds,
-    addProduct,
-    getRecentProductIds,
-    clearHistory,
     recentSearchQueries,
+    loading,
     addSearchQuery,
     removeSearchQuery,
+    applyHistoryFromSearchResponse,
+    refreshHistory: loadHistory,
   };
 
   return (

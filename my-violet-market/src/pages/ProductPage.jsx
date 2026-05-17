@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppData } from '../contexts/AppDataContext';
-import { getProductPriceNumber, productMatchesSearchByTitleWithSimilar } from '../utils/utils';
+import { useUser } from '../contexts/UserContext';
+import { useSearchHistory } from '../contexts/SearchHistoryContext';
+import { getProductPriceNumber } from '../utils/utils';
+import { searchProducts } from '../api/searchApi';
 import ProductCard from '../components/ProductCard';
 import Filters from '../components/Filters/Filters';
 import { SkeletonPulse } from '../components/SkeletonLoader';
@@ -69,6 +72,38 @@ const ProductPage = () => {
   const isAllKindsProductsPage = location.pathname === '/all-kinds-products';
   const isBigDiscountPage = location.pathname === '/big-discount';
   const searchQuery = searchParams.get('q') || '';
+  const { authToken } = useUser();
+  const { applyHistoryFromSearchResponse } = useSearchHistory();
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isSearchPage || !searchQuery.trim()) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+    searchProducts(searchQuery, undefined, authToken)
+      .then((data) => {
+        if (!cancelled) {
+          setSearchResults(Array.isArray(data.products) ? data.products : []);
+          applyHistoryFromSearchResponse(data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isSearchPage, searchQuery, authToken, applyHistoryFromSearchResponse]);
 
   const link = categoryLink(slug);
   const slugNum = slug ? Number(slug) : NaN;
@@ -123,10 +158,7 @@ const ProductPage = () => {
     if (isHouseholdAppliancesPage) return householdAppliancesCollection;
     if (isAllKindsProductsPage) return allKindsProductsCollection;
     if (isBigDiscountPage) return bigDiscountCollection;
-    if (isSearchPage && searchQuery.trim()) {
-      return allProducts.filter((p) => productMatchesSearchByTitleWithSimilar(p, searchQuery));
-    }
-    if (isSearchPage) return [];
+    if (isSearchPage) return searchResults;
     let list = allProducts.filter((product) => {
       if (countryValue) {
         return (product.countriesCategories || '').toLowerCase() === countryValue;
@@ -167,7 +199,7 @@ const ProductPage = () => {
     isAllKindsProductsPage,
     isBigDiscountPage,
     isSearchPage,
-    searchQuery,
+    searchResults,
     countryValue,
     brandValue,
     navbarCategoryNameStr,
@@ -376,7 +408,7 @@ const ProductPage = () => {
         />
 
         <div className="products-grid">
-          {loading && !error
+          {(loading || (isSearchPage && searchLoading)) && !error
             ? Array.from({ length: 10 }, (_, i) => (
                 <SkeletonPulse
                   key={`product-page-sk-${i}`}
@@ -393,7 +425,7 @@ const ProductPage = () => {
                 />
               ))}
         </div>
-        {!loading && finalProducts.length === 0 && (
+        {!loading && !(isSearchPage && searchLoading) && finalProducts.length === 0 && (
           <p className="product-page__empty">
             {isSearchPage ? 'Qidiruv bo\'yicha mahsulot topilmadi.' : 'Bu kategoriyada mahsulot topilmadi.'}
           </p>

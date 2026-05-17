@@ -7,8 +7,6 @@ import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './CheckoutOrderSummary.css';
 
-const LOADER_DURATION_MS = 2000;
-
 const CheckoutOrderSummary = ({
   productTypesCount,
   totalItems,
@@ -27,15 +25,17 @@ const CheckoutOrderSummary = ({
   const handlePayClick = async () => {
     if (!hasAddress) return;
     setIsPayLoading(true);
-    await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
-    scheduleOpenOnHome({
-      cartSnapshot: [...cart],
-      onCloseExtra: () => {
-        clearCart();
-      },
-    });
-    setIsPayLoading(false);
-    navigate('/', { replace: true });
+    try {
+      scheduleOpenOnHome({
+        cartSnapshot: [...cart],
+        onCloseExtra: async () => {
+          await clearCart();
+        },
+      });
+      navigate('/', { replace: true });
+    } finally {
+      setIsPayLoading(false);
+    }
   };
 
   return (

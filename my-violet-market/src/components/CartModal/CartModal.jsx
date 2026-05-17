@@ -10,7 +10,6 @@ import Scrollable from '../Scrollable';
 import ProductPolicy from '../ProductPolicy';
 import './CartModal.css';
 
-const LOADER_DURATION_MS = 2000;
 const MOBILE_SHEET_MQ = '(max-width: 768px)';
 const SHEET_CLOSE_DRAG_RATIO = 0.3;
 
@@ -81,12 +80,16 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
 
   const handleAddToCart = async () => {
     setIsAddLoading(true);
-    await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
-    addToCart(product, selectedColor, selectedSize, selectedStorage, selectedModel);
-    showToast('Mahsulot savatga qo\'shildi!', 'success');
-    if (onAdd) onAdd();
-    setIsAddLoading(false);
-    setTimeout(() => onClose(), 100);
+    try {
+      await addToCart(product, selectedColor, selectedSize, selectedStorage, selectedModel);
+      showToast(i18n.t('cart.toastAdded'), 'success');
+      if (onAdd) onAdd();
+      setTimeout(() => onClose(), 100);
+    } catch {
+      /* login redirect yoki xato — toast CartContext da */
+    } finally {
+      setIsAddLoading(false);
+    }
   };
 
   const handleColorChange = (color) => {

@@ -3,10 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useToast } from '../contexts/ToastContext';
-import { useSearchHistory } from '../contexts/SearchHistoryContext';
+import { useViewedAt } from '../contexts/ViewedAtContext';
+import { useUser } from '../contexts/UserContext';
 import { useComments } from '../contexts/CommentsContext';
 import { useTranslation } from 'react-i18next';
 import { formatPrice, getNumberPrice, normalizeImagePath, getLabelFromOption, getLocalizedText } from '../utils/utils';
+import ButtonLoader from '../components/ButtonLoader/ButtonLoader';
 import ProductCard from '../components/ProductCard';
 import StylingIdea from '../components/StylingIdea';
 import Recommended from '../components/Recommended';
@@ -45,7 +47,8 @@ const ProductDetail = () => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
   const { getCommentsByProductId, comments } = useComments();
-  const { addProduct: addToSearchHistory } = useSearchHistory();
+  const { recordView } = useViewedAt();
+  const { authToken, authLoading } = useUser();
   const { allProducts, getSellerById, loading, error } = useAppData();
   const catalog = allProducts || [];
   const showDetailSkeleton = loading && !error;
@@ -97,7 +100,6 @@ const ProductDetail = () => {
           hasDeliveryInfo: !!latestProduct.deliveryInfo
         });
         setProductData(latestProduct);
-        addToSearchHistory(latestProduct);
         setSelectedColor(latestProduct.colors?.[0] || null);
         setSelectedSize(latestProduct.colors?.[0]?.sizes?.[0] || null);
         setSelectedStorage(latestProduct.colors?.[0]?.storage?.[0] || null);
@@ -112,11 +114,16 @@ const ProductDetail = () => {
     } else {
       navigate('/');
     }
-  }, [navigate, addToSearchHistory, catalog]);
+  }, [navigate, catalog]);
 
   useEffect(() => {
     loadProductData();
   }, [loadProductData]);
+
+  useEffect(() => {
+    if (authLoading || !authToken || !productData?.id) return;
+    recordView(productData.id);
+  }, [authLoading, authToken, productData?.id, recordView]);
 
   useEffect(() => {
     if (!productData) return;
@@ -685,25 +692,21 @@ const ProductDetail = () => {
                       getNumberPrice(productData) ?? 0;
 
   const handleAddToCart = async () => {
-    // Agar mahsulot allaqachon cart da bo'lsa, faqat cart ga o'tish
     if (isProductInCart || isAddedToCart) {
       navigate('/cart');
       return;
     }
 
-    // Loader ko'rsatish
     setIsAddingToCart(true);
-
-    // 2 soniya kutish (loader uchun)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Mahsulotni cart ga qo'shish
-    addToCart(productData, selectedColor, selectedSize, selectedStorage, selectedModel);
-    showToast('Mahsulot savatga qo\'shildi!', 'success');
-
-    // Loader yopish va qo'shilgan holatni belgilash
-    setIsAddingToCart(false);
-    setIsAddedToCart(true);
+    try {
+      await addToCart(productData, selectedColor, selectedSize, selectedStorage, selectedModel);
+      showToast(i18n.t('cart.toastAdded'), 'success');
+      setIsAddedToCart(true);
+    } catch {
+      /* login redirect yoki xato */
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleColorChange = (color) => {
@@ -1188,24 +1191,21 @@ const ProductDetail = () => {
             )}
 
             <div className='addo-btn__detail'>
-              <button 
-                className="add-to-cart-btn-detail" 
+              <button
+                className="add-to-cart-btn-detail"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
               >
-                {isAddingToCart ? (
-                  <>
-                    <span className="loader"></span>
-                    <span>{i18n.t('productDetail.adding')}</span>
-                  </>
-                ) : isAddedToCart || isProductInCart ? (
-                  <>
-                    <i className="fas fa-shopping-cart"></i>
-                    <span>{i18n.t('productDetail.goToCart')}</span>
-                  </>
-                ) : (
-                  <span>{i18n.t('productDetail.addToCart')}</span>
-                )}
+                <ButtonLoader isLoading={isAddingToCart}>
+                  {isAddedToCart || isProductInCart ? (
+                    <>
+                      <i className="fas fa-shopping-cart"></i>
+                      <span>{i18n.t('productDetail.goToCart')}</span>
+                    </>
+                  ) : (
+                    <span>{i18n.t('productDetail.addToCart')}</span>
+                  )}
+                </ButtonLoader>
               </button>
             </div>
 

@@ -3,10 +3,20 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
+import { sendLoginCode, sendRegisterCode, verifyLogin, registerUser } from '../api/authApi';
+import OtpInput from '../components/OtpInput/OtpInput';
 import './Profile.css';
 import './Login.css';
 
 const LOGIN_LOGO_SRC = `${process.env.PUBLIC_URL || ''}/img/vio_preview_rev_1%20(1).png`;
+const DEFAULT_OTP_SECONDS = 60;
+
+function formatOtpCountdown(seconds) {
+  const s = Math.max(0, seconds);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, '0')}`;
+}
 
 function daysInMonth(month, year) {
   return new Date(year, month, 0).getDate();
@@ -18,37 +28,27 @@ function formatBirthDateDisplay(iso) {
   return `${d}.${m}.${y}`;
 }
 
-/** 9 raqamgacha: masalan 901234567 → "90 123 45 67" */
-function formatUzbekLocalDigits(rawDigits) {
-  const d = rawDigits.replace(/\D/g, '').replace(/^998/, '').slice(0, 9);
-  if (d.length === 0) return '';
-  let out = d.slice(0, 2);
-  if (d.length > 2) out += ` ${d.slice(2, 5)}`;
-  if (d.length > 5) out += ` ${d.slice(5, 7)}`;
-  if (d.length > 7) out += ` ${d.slice(7, 9)}`;
-  return out;
-}
-
-function fullPhoneFromLocalDigits(rawDigits) {
-  const d = rawDigits.replace(/\D/g, '').replace(/^998/, '').slice(0, 9);
-  if (d.length === 0) return '';
-  const formatted = formatUzbekLocalDigits(d);
-  return `+998 ${formatted}`;
-}
-
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { updateUserData, userData } = useUser();
+  const { setSession, userData } = useUser();
 
   const [authMode, setAuthMode] = useState('register');
-  const [loginLocalDigits, setLoginLocalDigits] = useState('');
-  const [loginPhoneError, setLoginPhoneError] = useState('');
+  const [loginStep, setLoginStep] = useState('email');
+  const [registerStep, setRegisterStep] = useState('form');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginEmailError, setLoginEmailError] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [apiMessage, setApiMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [otpCountdown, setOtpCountdown] = useState(0);
 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
+    email: '',
     birthDate: '',
     gender: '',
   });
@@ -74,9 +74,11 @@ const Login = () => {
       firstName: userData.firstName || '',
       lastName: userData.lastName || '',
       phone: userData.phone || '',
+      email: userData.email || '',
       birthDate: userData.birthDate || '',
       gender: userData.gender || '',
     });
+    setLoginEmail(userData.email || '');
   }, [userData]);
 
   useEffect(() => {
@@ -186,56 +188,249 @@ const Login = () => {
     }
   };
 
-  const loginPhoneDisplay = useMemo(() => formatUzbekLocalDigits(loginLocalDigits), [loginLocalDigits]);
+  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  const handleLoginPhoneChange = (e) => {
-    let v = e.target.value.replace(/\D/g, '');
-    if (v.startsWith('998')) v = v.slice(3);
-    v = v.slice(0, 9);
-    setLoginLocalDigits(v);
-    if (loginPhoneError) setLoginPhoneError('');
+  const mapApiError = (err) => {
+    if (err?.status === 404) return t('profile.errorApiNotFound');
+    if (err?.code === 'BREVO_NOT_CONFIGURED' || err?.code === 'BREVO_SEND_FAILED') {
+      return err.message || t('profile.errorBrevoEmail');
+    }
+    if (err?.code === 'USER_NOT_FOUND') return t('profile.errorUserNotFound');
+    if (err?.code === 'EMAIL_EXISTS') return t('profile.errorEmailTaken');
+    if (err?.code === 'OTP_INVALID') return t('profile.errorOtp');
+    if (err?.code === 'OTP_EXPIRED') return t('profile.errorOtpExpired');
+    return err?.message || t('profile.errorSendCode');
   };
 
-  const handleGetCode = () => {
-    const d = loginLocalDigits.replace(/\D/g, '');
-    if (d.length < 9) {
-      setLoginPhoneError(t('profile.errorPhone'));
+  const resetOtpFlow = () => {
+    setOtpCode('');
+    setOtpError('');
+    setApiMessage('');
+    setLoading(false);
+    setOtpCountdown(0);
+  };
+
+  const startOtpCountdown = (seconds = DEFAULT_OTP_SECONDS) => {
+    setOtpCountdown(Math.max(1, Number(seconds) || DEFAULT_OTP_SECONDS));
+  };
+
+  useEffect(() => {
+    if (otpCountdown <= 0) return undefined;
+    const timer = window.setTimeout(() => {
+      setOtpCountdown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [otpCountdown]);
+
+  const otpTimerActive = otpCountdown > 0;
+
+  const handleLoginEmailChange = (e) => {
+    setLoginEmail(e.target.value);
+    if (loginEmailError) setLoginEmailError('');
+  };
+
+  const handleOtpChange = (v) => {
+    setOtpCode(v);
+    if (otpError) setOtpError('');
+  };
+
+  const handleGetCode = async () => {
+    const emailTrimmed = loginEmail.trim();
+    if (!emailTrimmed) {
+      setLoginEmailError(t('profile.errorEmail'));
       return;
     }
-    const phone = fullPhoneFromLocalDigits(d);
-    updateUserData({
-      phone,
-      isAuthenticated: true,
-    });
-    navigate('/profile', { replace: true });
+    if (!isValidEmail(emailTrimmed)) {
+      setLoginEmailError(t('profile.errorEmailInvalid'));
+      return;
+    }
+    setLoading(true);
+    setLoginEmailError('');
+    setApiMessage('');
+    try {
+      const res = await sendLoginCode(emailTrimmed);
+      setLoginStep('otp');
+      startOtpCountdown(res.expiresInSeconds);
+      setApiMessage(t('profile.otpSent', { email: emailTrimmed }));
+    } catch (err) {
+      setLoginEmailError(mapApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyLogin = async () => {
+    const emailTrimmed = loginEmail.trim();
+    if (otpCode.length !== 6) {
+      setOtpError(t('profile.errorOtp'));
+      return;
+    }
+    setLoading(true);
+    setOtpError('');
+    try {
+      const res = await verifyLogin(emailTrimmed, otpCode);
+      setSession(res.token, res.user);
+      navigate('/profile', { replace: true });
+    } catch (err) {
+      setOtpError(mapApiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const switchAuthMode = (mode) => {
     setAuthMode(mode);
-    setLoginPhoneError('');
+    setLoginEmailError('');
     setErrors({});
+    setLoginStep('email');
+    setRegisterStep('form');
+    resetOtpFlow();
+    if (mode === 'login') {
+      setLoginEmail((prev) => prev || userData.email || formData.email || '');
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleRegisterSendCode = async (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = t('profile.errorFirstName');
     if (!formData.lastName.trim()) newErrors.lastName = t('profile.errorLastName');
     if (!formData.phone.trim()) newErrors.phone = t('profile.errorPhone');
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed) {
+      newErrors.email = t('profile.errorEmail');
+    } else if (!isValidEmail(emailTrimmed)) {
+      newErrors.email = t('profile.errorEmailInvalid');
+    }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    updateUserData({
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      phone: formData.phone.trim(),
-      birthDate: formData.birthDate,
-      gender: formData.gender,
-      isAuthenticated: true,
-    });
-    navigate('/profile', { replace: true });
+    setLoading(true);
+    setApiMessage('');
+    try {
+      const res = await sendRegisterCode(emailTrimmed);
+      setRegisterStep('otp');
+      setOtpCode('');
+      startOtpCountdown(res.expiresInSeconds);
+      setApiMessage(t('profile.otpSent', { email: emailTrimmed }));
+    } catch (err) {
+      setErrors({ email: mapApiError(err) });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleCompleteRegister = async () => {
+    const emailTrimmed = formData.email.trim();
+    if (otpCode.length !== 6) {
+      setOtpError(t('profile.errorOtp'));
+      return;
+    }
+    setLoading(true);
+    setOtpError('');
+    try {
+      const res = await registerUser({
+        email: emailTrimmed,
+        code: otpCode,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone.trim(),
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        language: langKey,
+      });
+      setSession(res.token, res.user);
+      navigate('/profile', { replace: true });
+    } catch (err) {
+      setOtpError(mapApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendLoginCode = async () => {
+    if (otpTimerActive || loading) return;
+    await handleGetCode();
+  };
+
+  const handleResendRegisterCode = async () => {
+    if (otpTimerActive || loading) return;
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed || !isValidEmail(emailTrimmed)) return;
+    setLoading(true);
+    setOtpError('');
+    try {
+      const res = await sendRegisterCode(emailTrimmed);
+      setOtpCode('');
+      startOtpCountdown(res.expiresInSeconds);
+      setApiMessage(t('profile.otpSent', { email: emailTrimmed }));
+    } catch (err) {
+      setOtpError(mapApiError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderOtpStep = ({
+    idPrefix,
+    onVerify,
+    onResend,
+    onBack,
+    backLabel,
+    submitClassName = 'login-page__submit',
+  }) => (
+    <div className="login-page__otp-block">
+      <p className="login-page__otp-hint">{apiMessage}</p>
+      <div className="login-page__otp-stack">
+        <div className="form-group login-page__otp-form-group">
+          <OtpInput
+            idPrefix={idPrefix}
+            value={otpCode}
+            onChange={handleOtpChange}
+            error={!!otpError}
+            disabled={loading}
+            autoFocus
+          />
+          {otpError && <span className="error-message">{otpError}</span>}
+        </div>
+        <div className="login-page__otp-actions">
+          <button
+            type="button"
+            className={submitClassName}
+            disabled={loading}
+            onClick={onVerify}
+          >
+            {loading ? t('profile.loading') : t('profile.verifyCode')}
+          </button>
+          {otpTimerActive ? (
+            <span className="login-page__otp-timer" aria-live="polite">
+              {formatOtpCountdown(otpCountdown)}
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="login-page__otp-resend"
+              disabled={loading}
+              onClick={onResend}
+              aria-label={t('profile.resendCode')}
+              title={t('profile.resendCode')}
+            >
+              <i className="bx bx-refresh" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="login-page__link-btn"
+        disabled={loading}
+        onClick={onBack}
+      >
+        {backLabel}
+      </button>
+    </div>
+  );
 
   const birthPickerPortal = birthDatePickerOpen
     ? createPortal(
@@ -420,7 +615,19 @@ const Login = () => {
         </div>
 
         {authMode === 'register' ? (
-          <form className="profile-form login-page__form" onSubmit={handleSubmit} noValidate>
+          registerStep === 'otp' ? (
+            renderOtpStep({
+              idPrefix: 'register',
+              onVerify: handleCompleteRegister,
+              onResend: handleResendRegisterCode,
+              onBack: () => {
+                setRegisterStep('form');
+                resetOtpFlow();
+              },
+              backLabel: t('profile.backToForm'),
+            })
+          ) : (
+          <form className="profile-form login-page__form" onSubmit={handleRegisterSendCode} noValidate>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="login-firstName">{t('profile.firstName')}</label>
@@ -514,34 +721,61 @@ const Login = () => {
               {errors.phone && <span className="error-message">{errors.phone}</span>}
             </div>
 
-            <button type="submit" className="login-page__submit">
-              {t('profile.registerSubmit')}
+            <div className="form-group">
+              <label htmlFor="login-email">{t('profile.email')}</label>
+              <input
+                id="login-email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder={t('profile.emailPlaceholder')}
+                className={errors.email ? 'error' : ''}
+                autoComplete="email"
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+
+            <button type="submit" className="login-page__submit" disabled={loading}>
+              {loading ? t('profile.loading') : t('profile.getCode')}
             </button>
           </form>
+          )
+        ) : loginStep === 'otp' ? (
+          renderOtpStep({
+            idPrefix: 'login',
+            onVerify: handleVerifyLogin,
+            onResend: handleResendLoginCode,
+            onBack: () => {
+              setLoginStep('email');
+              resetOtpFlow();
+            },
+            backLabel: t('profile.backToEmail'),
+            submitClassName: 'login-page__submit login-page__submit--code',
+          })
         ) : (
           <div className="login-page__login-block">
             <div className="form-group">
-              <label htmlFor="login-phone-local">{t('profile.phone')}</label>
-              <div
-                className={`login-page__phone-prefixed${loginPhoneError ? ' login-page__phone-prefixed--error' : ''}`}
-              >
-                <span className="login-page__phone-prefix">+998</span>
-                <input
-                  id="login-phone-local"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel-national"
-                  className={`login-page__phone-input${loginPhoneError ? ' error' : ''}`}
-                  placeholder="90 123 45 67"
-                  value={loginPhoneDisplay}
-                  onChange={handleLoginPhoneChange}
-                  aria-label={t('profile.phone')}
-                />
-              </div>
-              {loginPhoneError && <span className="error-message">{loginPhoneError}</span>}
+              <label htmlFor="login-auth-email">{t('profile.email')}</label>
+              <input
+                id="login-auth-email"
+                type="email"
+                value={loginEmail}
+                onChange={handleLoginEmailChange}
+                placeholder={t('profile.emailPlaceholder')}
+                className={loginEmailError ? 'error' : ''}
+                autoComplete="email"
+                disabled={loading}
+              />
+              {loginEmailError && <span className="error-message">{loginEmailError}</span>}
             </div>
-            <button type="button" className="login-page__submit login-page__submit--code" onClick={handleGetCode}>
-              {t('profile.getCode')}
+            <button
+              type="button"
+              className="login-page__submit login-page__submit--code"
+              disabled={loading}
+              onClick={handleGetCode}
+            >
+              {loading ? t('profile.loading') : t('profile.getCode')}
             </button>
           </div>
         )}

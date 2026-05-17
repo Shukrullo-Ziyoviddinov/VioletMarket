@@ -4,12 +4,21 @@ const express = require("express");
 const cors = require("cors");
 const config = require("./config");
 const routes = require("./routes");
+const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 app.use("/", routes);
+app.use((req, res) => {
+  res.status(404).json({
+    ok: false,
+    message: `API topilmadi: ${req.method} ${req.path}. violet-server ni qayta ishga tushiring.`,
+    code: "NOT_FOUND",
+  });
+});
+app.use(errorHandler);
 
 async function start() {
   if (config.db.isDatabaseConfigured()) {
@@ -21,6 +30,19 @@ async function start() {
 
   app.listen(config.port, () => {
     console.log(`Server http://localhost:${config.port}`);
+    console.log(
+      "Auth API: POST /api/auth/send-register-code, /api/auth/register, /api/auth/send-login-code, /api/auth/verify-login",
+    );
+    console.log("Wishlist API: GET /api/wishlist, POST /api/wishlist/toggle");
+    console.log("Cart API: GET /api/cart, POST /api/cart/add, PATCH/DELETE /api/cart/items/:itemId");
+    console.log("Search API: GET /api/search, GET /api/search/suggestions, GET /api/search/history");
+    console.log("ViewedAt API: GET/POST /api/viewed-at (max 20 recently viewed)");
+    console.log(
+      "Recommendations API: GET /api/recommendations/related/:id (o'xshash mahsulotlar)",
+    );
+    console.log(
+      "TavsiyaEtamiz API: GET /api/recommendations/for-product/:id, /by-history (viewedAt + algoritm)",
+    );
   });
 }
 
