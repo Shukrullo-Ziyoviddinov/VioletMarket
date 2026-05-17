@@ -1015,7 +1015,7 @@ const ProductDetail = () => {
               <div className="product-detail-page__flash-sale">
                 <FlashSaleCountdown
                   flashDurationHours={productData.flashDurationHours}
-                  storageKey={String(productData.id)}
+                  productId={productData.id}
                 />
               </div>
             )}

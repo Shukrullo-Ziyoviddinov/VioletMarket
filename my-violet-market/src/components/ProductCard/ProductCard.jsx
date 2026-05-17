@@ -169,7 +169,7 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
       {(flashDurationHours != null && flashDurationHours > 0) && (
         <FlashSaleCountdown
           flashDurationHours={flashDurationHours}
-          storageKey={String(product.id)}
+          productId={product.id}
         />
       )}
       {!hideAddToCart && (

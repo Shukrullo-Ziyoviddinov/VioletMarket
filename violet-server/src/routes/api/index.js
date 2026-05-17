@@ -16,6 +16,7 @@ const cartRoutes = require("./cart.routes");
 const searchRoutes = require("./search.routes");
 const viewedAtRoutes = require("./viewedAt.routes");
 const recommendationRoutes = require("./recommendation.routes");
+const flashSaleCountdownRoutes = require("./flashSaleCountdown.routes");
 
 const router = express.Router();
 
@@ -36,5 +37,6 @@ router.use(cartRoutes);
 router.use(searchRoutes);
 router.use(viewedAtRoutes);
 router.use(recommendationRoutes);
+router.use(flashSaleCountdownRoutes);
 
 module.exports = router;

@@ -43,6 +43,9 @@ async function start() {
     console.log(
       "TavsiyaEtamiz API: GET /api/recommendations/for-product/:id, /by-history (viewedAt + algoritm)",
     );
+    console.log(
+      "Flash sale API: GET /api/flash-sale/:productId, POST /api/flash-sale/batch (DB countdown)",
+    );
   });
 }
 

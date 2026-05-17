@@ -314,8 +314,8 @@ const Home = () => {
           <div className="trending-section">
             <SectionTitleWithMore
               title={i18n.t('home.sectionTrending')}
-              moreLink=""
-              showMore={false}
+              moreLink="/trending"
+              showMore={trendingItems.length > SECTION_HOME_DISPLAY_LIMIT}
             />
             <div className="products-grid">
               {appLoading && trendingItems.length === 0
