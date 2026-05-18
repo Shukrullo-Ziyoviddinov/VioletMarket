@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../contexts/AppDataContext';
-import { SECTION_HOME_DISPLAY_LIMIT, LOAD_MORE_INITIAL, LOAD_MORE_STEP } from '../config/sectionLimits';
+import { SECTION_HOME_DISPLAY_LIMIT } from '../config/sectionLimits';
 import ProductCard from '../components/ProductCard';
 import ImageBanner from '../components/ImageBanner';
 import VideoBanner from '../components/VideoBanner';
 import Scrollable from '../components/Scrollable';
 import UzWarehouse from '../components/UzWarehouse';
 import SectionTitleWithMore from '../components/SectionTitleWithMore';
-import LoadMore from '../components/LoadMore';
+import HomeCollectionGrid from '../components/HomeCollectionGrid/HomeCollectionGrid';
 import RealTimeClock from '../components/RealTimeClock/RealTimeClock';
 import { SkeletonPulse } from '../components/SkeletonLoader';
 import './Home.css';
@@ -62,35 +62,17 @@ const Home = () => {
     categoriesBrend,
     homeBannerData,
     videoBannerData,
-    products,
     newCollection,
     womensCollection,
     mensCollection,
-    engArzonlare,
-    trendingItems,
-    electronicsCollection,
     booksCollection,
-    stationeryCollection,
     beautyCareCollection,
-    accessoriesCollection,
     giftsToysCollection,
-    vitaminsHealthCollection,
     activeLifestyleCollection,
-    travelGearCollection,
     householdAppliancesCollection,
     allKindsProductsCollection,
     bigDiscountCollection,
   } = useAppData();
-
-  const [displayedProducts, setDisplayedProducts] = useState([]);
-  const [displayCount, setDisplayCount] = useState(LOAD_MORE_INITIAL);
-  const [displayCheapestCount, setDisplayCheapestCount] = useState(LOAD_MORE_INITIAL);
-  const [displayTrendingCount, setDisplayTrendingCount] = useState(LOAD_MORE_INITIAL);
-  const [displayElectronicsCount, setDisplayElectronicsCount] = useState(LOAD_MORE_INITIAL);
-  const [displayStationeryCount, setDisplayStationeryCount] = useState(LOAD_MORE_INITIAL);
-  const [displayAccessoriesCount, setDisplayAccessoriesCount] = useState(LOAD_MORE_INITIAL);
-  const [displayVitaminsHealthCount, setDisplayVitaminsHealthCount] = useState(LOAD_MORE_INITIAL);
-  const [displayTravelGearCount, setDisplayTravelGearCount] = useState(LOAD_MORE_INITIAL);
 
   const imageBanners = useMemo(
     () =>
@@ -102,10 +84,6 @@ const Home = () => {
         })),
     [homeBannerData, navbarItems, categoriyCountries, categoriesBrend]
   );
-
-  useEffect(() => {
-    setDisplayedProducts(products.slice(0, displayCount));
-  }, [displayCount, products]);
 
   if (error) {
     return (
@@ -120,38 +98,6 @@ const Home = () => {
       </div>
     );
   }
-
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreCheapest = () => {
-    setDisplayCheapestCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreTrending = () => {
-    setDisplayTrendingCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreElectronics = () => {
-    setDisplayElectronicsCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreStationery = () => {
-    setDisplayStationeryCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreAccessories = () => {
-    setDisplayAccessoriesCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreVitaminsHealth = () => {
-    setDisplayVitaminsHealthCount(prev => prev + LOAD_MORE_STEP);
-  };
-
-  const handleLoadMoreTravelGear = () => {
-    setDisplayTravelGearCount(prev => prev + LOAD_MORE_STEP);
-  };
 
   const appLoading = loading && !error;
 
@@ -226,24 +172,13 @@ const Home = () => {
           </div>
         )}
 
-        <div className="product-collection">
-          <SectionTitleWithMore
-            title={i18n.t('home.sectionBest')}
-            moreLink=""
-            showMore={false}
-          />
-          <div className="products-grid">
-            {appLoading && products.length === 0
-              ? renderSkeletonProductCardsInGrid(displayCount, 'home-best')
-              : displayedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-          </div>
-        </div>
-
-        {!(appLoading && products.length === 0) && displayCount < products.length && (
-          <LoadMore onLoadMore={handleLoadMore} />
-        )}
+        <HomeCollectionGrid
+          categoryName="products"
+          title={i18n.t('home.sectionBest')}
+          className="product-collection"
+          skeletonPrefix="home-best"
+          alwaysShow
+        />
 
         {((appLoading && videoBannerData.length === 0) || videoBannerData.length > 0) && (
           <VideoBanner
@@ -271,25 +206,12 @@ const Home = () => {
           </div>
         )}
 
-        {(engArzonlare.length > 0 || appLoading) && (
-          <div className="eng-arzonlare">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionEngArzonlare')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && engArzonlare.length === 0
-                ? renderSkeletonProductCardsInGrid(displayCheapestCount, 'home-cheap')
-                : engArzonlare.slice(0, displayCheapestCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && engArzonlare.length === 0) && displayCheapestCount < engArzonlare.length && (
-              <LoadMore onLoadMore={handleLoadMoreCheapest} />
-            )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="engArzonlare"
+          title={i18n.t('home.sectionEngArzonlare')}
+          className="eng-arzonlare"
+          skeletonPrefix="home-cheap"
+        />
 
         {(womensCollection.length > 0 || appLoading) && (
           <div className="womens-collection">
@@ -310,25 +232,14 @@ const Home = () => {
           </div>
         )}
 
-        {(trendingItems.length > 0 || appLoading) && (
-          <div className="trending-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionTrending')}
-              moreLink="/trending"
-              showMore={trendingItems.length > SECTION_HOME_DISPLAY_LIMIT}
-            />
-            <div className="products-grid">
-              {appLoading && trendingItems.length === 0
-                ? renderSkeletonProductCardsInGrid(displayTrendingCount, 'home-trend')
-                : trendingItems.slice(0, displayTrendingCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && trendingItems.length === 0) && displayTrendingCount < trendingItems.length && (
-              <LoadMore onLoadMore={handleLoadMoreTrending} />
-            )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="trendingItems"
+          title={i18n.t('home.sectionTrending')}
+          moreLink="/trending"
+          showMore
+          className="trending-section"
+          skeletonPrefix="home-trend"
+        />
 
         {(mensCollection.length > 0 || appLoading) && (
           <div className="mens-collection">
@@ -349,26 +260,12 @@ const Home = () => {
           </div>
         )}
 
-        {(electronicsCollection.length > 0 || appLoading) && (
-          <div className="electronics-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionElectronics')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && electronicsCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(displayElectronicsCount, 'home-electronics')
-                : electronicsCollection.slice(0, displayElectronicsCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && electronicsCollection.length === 0) &&
-              displayElectronicsCount < electronicsCollection.length && (
-                <LoadMore onLoadMore={handleLoadMoreElectronics} />
-              )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="electronicsCollection"
+          title={i18n.t('home.sectionElectronics')}
+          className="electronics-section"
+          skeletonPrefix="home-electronics"
+        />
 
         {(booksCollection.length > 0 || appLoading) && (
           <div className="books-section">
@@ -389,26 +286,12 @@ const Home = () => {
           </div>
         )}
 
-        {(stationeryCollection.length > 0 || appLoading) && (
-          <div className="stationery-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionStationery')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && stationeryCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(displayStationeryCount, 'home-stationery')
-                : stationeryCollection.slice(0, displayStationeryCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && stationeryCollection.length === 0) &&
-              displayStationeryCount < stationeryCollection.length && (
-                <LoadMore onLoadMore={handleLoadMoreStationery} />
-              )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="stationeryCollection"
+          title={i18n.t('home.sectionStationery')}
+          className="stationery-section"
+          skeletonPrefix="home-stationery"
+        />
 
         {(beautyCareCollection.length > 0 || appLoading) && (
           <div className="beauty-care-section">
@@ -429,26 +312,12 @@ const Home = () => {
           </div>
         )}
 
-        {(accessoriesCollection.length > 0 || appLoading) && (
-          <div className="accessories-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionAccessories')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && accessoriesCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(displayAccessoriesCount, 'home-accessories')
-                : accessoriesCollection.slice(0, displayAccessoriesCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && accessoriesCollection.length === 0) &&
-              displayAccessoriesCount < accessoriesCollection.length && (
-                <LoadMore onLoadMore={handleLoadMoreAccessories} />
-              )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="accessoriesCollection"
+          title={i18n.t('home.sectionAccessories')}
+          className="accessories-section"
+          skeletonPrefix="home-accessories"
+        />
 
         {(giftsToysCollection.length > 0 || appLoading) && (
           <div className="gifts-toys-section">
@@ -469,26 +338,12 @@ const Home = () => {
           </div>
         )}
 
-        {(vitaminsHealthCollection.length > 0 || appLoading) && (
-          <div className="vitamins-health-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionVitaminsHealth')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && vitaminsHealthCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(displayVitaminsHealthCount, 'home-vitamins')
-                : vitaminsHealthCollection.slice(0, displayVitaminsHealthCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && vitaminsHealthCollection.length === 0) &&
-              displayVitaminsHealthCount < vitaminsHealthCollection.length && (
-                <LoadMore onLoadMore={handleLoadMoreVitaminsHealth} />
-              )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="vitaminsHealthCollection"
+          title={i18n.t('home.sectionVitaminsHealth')}
+          className="vitamins-health-section"
+          skeletonPrefix="home-vitamins"
+        />
 
         {(activeLifestyleCollection.length > 0 || appLoading) && (
           <div className="active-lifestyle-section">
@@ -509,26 +364,12 @@ const Home = () => {
           </div>
         )}
 
-        {(travelGearCollection.length > 0 || appLoading) && (
-          <div className="travel-gear-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionTravelGear')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && travelGearCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(displayTravelGearCount, 'home-travel')
-                : travelGearCollection.slice(0, displayTravelGearCount).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
-            {!(appLoading && travelGearCollection.length === 0) &&
-              displayTravelGearCount < travelGearCollection.length && (
-                <LoadMore onLoadMore={handleLoadMoreTravelGear} />
-              )}
-          </div>
-        )}
+        <HomeCollectionGrid
+          categoryName="travelGearCollection"
+          title={i18n.t('home.sectionTravelGear')}
+          className="travel-gear-section"
+          skeletonPrefix="home-travel"
+        />
 
         {(householdAppliancesCollection.length > 0 || appLoading) && (
           <div className="household-appliances-section">

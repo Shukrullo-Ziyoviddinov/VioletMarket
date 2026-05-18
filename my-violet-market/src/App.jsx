@@ -7,6 +7,7 @@ import { ToastProvider, useToast } from './contexts/ToastContext';
 import { NavbarProvider } from './contexts/NavbarContext';
 import { SearchHistoryProvider } from './contexts/SearchHistoryContext';
 import { ViewedAtProvider } from './contexts/ViewedAtContext';
+import { SellerSubscriptionProvider } from './contexts/SellerSubscriptionContext';
 import { CommentsProvider } from './contexts/CommentsContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { TestOrderModalProvider, useTestOrderModal } from './contexts/TestOrderModalContext';
@@ -105,6 +106,7 @@ function App() {
       <AppDataProvider>
           <UserProvider>
             <ToastProvider>
+              <SellerSubscriptionProvider>
               <WishlistProvider>
               <CartProvider>
                 <ViewedAtProvider>
@@ -120,6 +122,7 @@ function App() {
                 </ViewedAtProvider>
               </CartProvider>
               </WishlistProvider>
+              </SellerSubscriptionProvider>
             </ToastProvider>
           </UserProvider>
       </AppDataProvider>

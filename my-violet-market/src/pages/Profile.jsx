@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
 import { updateProfile } from '../api/profileApi';
 import { mapApiUserToClient } from '../api/mapApiUser';
 import { useAppData } from '../contexts/AppDataContext';
 import { getLocalizedText, normalizeImagePath } from '../utils/utils';
-import { getSubscribedSellerIds, SELLER_SUBSCRIBE_STORAGE_PREFIX } from '../hooks/useSellerSubscription';
+import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
 import GlobalModal from '../components/GlobalModal';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
@@ -48,8 +48,8 @@ const AVATAR_PRESETS = [
 const Profile = () => {
   const { i18n, t } = useTranslation();
   const { footerData, getSellerById } = useAppData();
-  const location = useLocation();
   const { userData, authToken, updateUserData, logout } = useUser();
+  const { subscribedSellerIds, loadMySubscriptions } = useSellerSubscriptions();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -269,29 +269,16 @@ const Profile = () => {
     return () => el.removeEventListener('touchmove', onMove);
   }, [contactModalOpen]);
 
-  const refreshSubscribedSellers = useCallback(() => {
-    const ids = getSubscribedSellerIds();
+  useEffect(() => {
+    const ids = [...subscribedSellerIds];
     setSubscribedSellers(ids.map((id) => getSellerById(id)).filter(Boolean));
-  }, []);
+  }, [subscribedSellerIds, getSellerById]);
 
   useEffect(() => {
-    refreshSubscribedSellers();
-  }, [location.pathname, refreshSubscribedSellers]);
-
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (!e.key || e.key.startsWith(SELLER_SUBSCRIBE_STORAGE_PREFIX)) {
-        refreshSubscribedSellers();
-      }
-    };
-    const onFocus = () => refreshSubscribedSellers();
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('focus', onFocus);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('focus', onFocus);
-    };
-  }, [refreshSubscribedSellers]);
+    if (subscriptionsModalOpen) {
+      loadMySubscriptions();
+    }
+  }, [subscriptionsModalOpen, loadMySubscriptions]);
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
@@ -500,29 +487,29 @@ const Profile = () => {
         <div className="profile-card">
           <div className="profile-header">
             <div className="profile-header__image">
-              <div
-                className="profile-image-wrapper"
-                role="button"
-                tabIndex={0}
-                onClick={openAvatarModal}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openAvatarModal();
-                  }
-                }}
-                aria-label={t('profile.avatarModalTitle')}
-              >
-                <img
-                  src={userData.profileImage}
-                  alt=""
-                  onError={(e) => {
-                    e.target.src = DEFAULT_AVATAR_SRC;
+                <div
+                  className="profile-image-wrapper"
+                  role="button"
+                  tabIndex={0}
+                  onClick={openAvatarModal}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openAvatarModal();
+                    }
                   }}
-                />
-                <div className="image-overlay" aria-hidden="true">
-                  <i className="bx bx-camera" />
-                </div>
+                  aria-label={t('profile.avatarModalTitle')}
+                >
+                  <img
+                    src={userData.profileImage}
+                    alt=""
+                    onError={(e) => {
+                      e.target.src = DEFAULT_AVATAR_SRC;
+                    }}
+                  />
+                  <div className="image-overlay" aria-hidden="true">
+                    <i className="bx bx-camera" />
+                  </div>
               </div>
             </div>
             <div className="profile-header__info">
@@ -540,47 +527,47 @@ const Profile = () => {
               <div className="profile-filled-data">
                 <div className="profile-filled-names-row">
                   <div
-                    className={`profile-filled-item profile-filled-item--name${formData.firstName?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                    className={`profile-filled-item profile-filled-item--name${userData.firstName?.trim() ? ' profile-filled-item--value-only' : ''}`}
                   >
-                    {!formData.firstName?.trim() && (
+                    {!userData.firstName?.trim() && (
                       <span className="profile-filled-label">{t('profile.firstName')}</span>
                     )}
                     <span
                       className="profile-filled-value"
-                      {...(formData.firstName?.trim()
+                      {...(userData.firstName?.trim()
                         ? { 'aria-label': t('profile.firstName') }
                         : {})}
                     >
-                      {formData.firstName?.trim() || '—'}
+                      {userData.firstName?.trim() || '—'}
                     </span>
                   </div>
                   <div
-                    className={`profile-filled-item profile-filled-item--name${formData.lastName?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                    className={`profile-filled-item profile-filled-item--name${userData.lastName?.trim() ? ' profile-filled-item--value-only' : ''}`}
                   >
-                    {!formData.lastName?.trim() && (
+                    {!userData.lastName?.trim() && (
                       <span className="profile-filled-label">{t('profile.lastName')}</span>
                     )}
                     <span
                       className="profile-filled-value"
-                      {...(formData.lastName?.trim()
+                      {...(userData.lastName?.trim()
                         ? { 'aria-label': t('profile.lastName') }
                         : {})}
                     >
-                      {formData.lastName?.trim() || '—'}
+                      {userData.lastName?.trim() || '—'}
                     </span>
                   </div>
                 </div>
                 <div
-                  className={`profile-filled-item profile-filled-item--phone${formData.phone?.trim() ? ' profile-filled-item--value-only' : ''}`}
+                  className={`profile-filled-item profile-filled-item--phone${userData.phone?.trim() ? ' profile-filled-item--value-only' : ''}`}
                 >
-                  {!formData.phone?.trim() && (
+                  {!userData.phone?.trim() && (
                     <span className="profile-filled-label">{t('profile.phone')}</span>
                   )}
                   <span
                     className="profile-filled-value"
-                    {...(formData.phone?.trim() ? { 'aria-label': t('profile.phone') } : {})}
+                    {...(userData.phone?.trim() ? { 'aria-label': t('profile.phone') } : {})}
                   >
-                    {formData.phone?.trim() || '—'}
+                    {userData.phone?.trim() || '—'}
                   </span>
                 </div>
               </div>
@@ -636,7 +623,7 @@ const Profile = () => {
           <div
             className="profile-subscriptions-block"
             onClick={() => {
-              refreshSubscribedSellers();
+              loadMySubscriptions();
               setSubscriptionsModalOpen(true);
             }}
             role="button"
@@ -644,7 +631,7 @@ const Profile = () => {
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                refreshSubscribedSellers();
+                loadMySubscriptions();
                 setSubscriptionsModalOpen(true);
               }
             }}

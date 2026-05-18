@@ -1,57 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
-
-export const SELLER_SUBSCRIBE_STORAGE_PREFIX = 'seller_subscribed:';
-
-const storageKey = (sellerId) => `${SELLER_SUBSCRIBE_STORAGE_PREFIX}${sellerId}`;
-
-/** localStorage dan obuna bo'lgan sotuvchi idlari */
-export function getSubscribedSellerIds() {
-  try {
-    const ids = [];
-    const len = localStorage.length;
-    for (let i = 0; i < len; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(SELLER_SUBSCRIBE_STORAGE_PREFIX) && localStorage.getItem(k) === '1') {
-        ids.push(k.slice(SELLER_SUBSCRIBE_STORAGE_PREFIX.length));
-      }
-    }
-    return ids;
-  } catch {
-    return [];
-  }
-}
+import { useCallback, useEffect } from 'react';
+import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
 
 /**
- * Sotuvchi obunasi: localStorage (demo). Obuna bo'lganda ko'rsatiladigan son +1.
+ * Sotuvchi obunasi — server (DB) orqali.
+ * @param {string} sellerId
+ * @param {number} [fallbackSubscriberCount] — API yuklanmaguncha ko‘rsatiladigan son
  */
-export function useSellerSubscription(sellerId, baseSubscriberCount) {
-  const base = Number(baseSubscriberCount) || 0;
-  const [subscribed, setSubscribed] = useState(false);
+export function useSellerSubscription(sellerId, fallbackSubscriberCount = 0) {
+  const {
+    loadSellerStatus,
+    toggleSubscription,
+    getSellerSubscriptionState,
+  } = useSellerSubscriptions();
+
+  const fallback = Number(fallbackSubscriberCount) || 0;
+  const { subscriberCount, subscribed, loading } = getSellerSubscriptionState(
+    sellerId,
+    fallback,
+  );
 
   useEffect(() => {
     if (!sellerId) return;
-    try {
-      setSubscribed(localStorage.getItem(storageKey(sellerId)) === '1');
-    } catch {
-      setSubscribed(false);
-    }
-  }, [sellerId]);
+    loadSellerStatus(sellerId, fallback);
+  }, [sellerId, fallback, loadSellerStatus]);
 
   const toggle = useCallback(() => {
     if (!sellerId) return;
-    setSubscribed((prev) => {
-      const next = !prev;
-      try {
-        if (next) localStorage.setItem(storageKey(sellerId), '1');
-        else localStorage.removeItem(storageKey(sellerId));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, [sellerId]);
+    return toggleSubscription(sellerId);
+  }, [sellerId, toggleSubscription]);
 
-  const displayCount = base + (subscribed ? 1 : 0);
-
-  return { displayCount, subscribed, toggle };
+  return {
+    displayCount: subscriberCount,
+    subscribed,
+    toggle,
+    loading,
+  };
 }

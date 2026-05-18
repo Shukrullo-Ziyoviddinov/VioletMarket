@@ -42,7 +42,7 @@
     }
   },
   "productCard": {
-    "addToCart": "Savatga qo'shish",
+    "addToCart": "Savatga",
     "commentsCount": "ta sharh"
   },
   "mobileNav": {
@@ -147,13 +147,18 @@
     "comment": "Izohingiz",
     "imageOptional": "Rasm (ixtiyoriy)",
     "userNamePlaceholder": "Ismingizni kiriting",
+    "userNameFromProfile": "Profildan",
+    "errorProfileName": "Izoh uchun profilda ism va familiyani to'ldiring",
     "commentPlaceholder": "Izohingizni yozing",
     "uploadImage": "Rasm yuklash",
     "submit": "Yuborish",
     "fillRequired": "Iltimos, barcha majburiy maydonlarni to'ldiring",
     "errorUserName": "Ism majburiy",
     "errorRating": "Reyting tanlanishi kerak",
-    "errorComment": "Izoh majburiy"
+    "errorComment": "Izoh majburiy",
+    "loginRequired": "Izoh qoldirish uchun tizimga kiring",
+    "success": "Izohingiz qo'shildi!",
+    "errorSubmit": "Xatolik yuz berdi. Qayta urinib ko'ring"
   },
   "comments": {
     "title": "Izohlar",
@@ -340,7 +345,8 @@
     "productCount": "{{count}} mahsulot",
     "subscriberCount": "{{count}} obunachi",
     "subscribe": "Obuna",
-    "unsubscribe": "Obunani bekor qilish"
+    "unsubscribe": "Obunani bekor qilish",
+    "loginRequired": "Obuna bo‘lish uchun tizimga kiring"
   },
   "uzWarehouse": {
     "bannerAria": "Mahalliy ombordan tez yetkazish",

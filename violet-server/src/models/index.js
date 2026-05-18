@@ -14,6 +14,8 @@ const { UzWarehouseLocale } = require("./uzWarehouseLocale");
 const { ProductPolicyBlock } = require("./productPolicyBlock");
 const { User } = require("./user");
 const { Wishlist } = require("./wishlist");
+const { SellerSubscription } = require("./sellerSubscription");
+const { Comment } = require("./comment");
 
 module.exports = {
   Product,
@@ -32,4 +34,6 @@ module.exports = {
   ProductPolicyBlock,
   User,
   Wishlist,
+  SellerSubscription,
+  Comment,
 };

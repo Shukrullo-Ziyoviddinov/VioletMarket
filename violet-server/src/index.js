@@ -46,6 +46,15 @@ async function start() {
     console.log(
       "Flash sale API: GET /api/flash-sale/:productId, POST /api/flash-sale/batch (DB countdown)",
     );
+    console.log(
+      "Seller API: GET /api/sellers/:sellerId/profile, GET /api/sellers/:sellerId/products",
+    );
+    console.log(
+      "Collections API: GET /api/collections/:categoryName/products (Home load-more)",
+    );
+    console.log(
+      "Seller subscriptions: GET /api/seller-subscriptions/seller/:sellerId, POST /api/seller-subscriptions/toggle",
+    );
   });
 }
 

@@ -93,6 +93,7 @@ export const CartProvider = ({ children }) => {
   const loadCart = useCallback(async () => {
     if (!authToken) {
       setCart([]);
+      setCartLoading(false);
       return;
     }
     setCartLoading(true);

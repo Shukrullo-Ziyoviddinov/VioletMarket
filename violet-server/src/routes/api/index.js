@@ -6,6 +6,8 @@ const homeBannersRoutes = require("./homeBanners.routes");
 const footerRoutes = require("./footer.routes");
 const cargoRoutes = require("./cargo.routes");
 const videoBannersRoutes = require("./videoBanners.routes");
+const collectionRoutes = require("./collection.routes");
+const sellerRoutes = require("./seller.routes");
 const sellersRoutes = require("./sellers.routes");
 const defaultProductPolicyRoutes = require("./defaultProductPolicy.routes");
 const uzWarehouseRoutes = require("./uzWarehouse.routes");
@@ -17,6 +19,8 @@ const searchRoutes = require("./search.routes");
 const viewedAtRoutes = require("./viewedAt.routes");
 const recommendationRoutes = require("./recommendation.routes");
 const flashSaleCountdownRoutes = require("./flashSaleCountdown.routes");
+const sellerSubscriptionRoutes = require("./sellerSubscription.routes");
+const commentRoutes = require("./comment.routes");
 
 const router = express.Router();
 
@@ -27,6 +31,8 @@ router.use(homeBannersRoutes);
 router.use(footerRoutes);
 router.use(cargoRoutes);
 router.use(videoBannersRoutes);
+router.use(collectionRoutes);
+router.use(sellerRoutes);
 router.use(sellersRoutes);
 router.use(defaultProductPolicyRoutes);
 router.use(uzWarehouseRoutes);
@@ -38,5 +44,7 @@ router.use(searchRoutes);
 router.use(viewedAtRoutes);
 router.use(recommendationRoutes);
 router.use(flashSaleCountdownRoutes);
+router.use(sellerSubscriptionRoutes);
+router.use(commentRoutes);
 
 module.exports = router;

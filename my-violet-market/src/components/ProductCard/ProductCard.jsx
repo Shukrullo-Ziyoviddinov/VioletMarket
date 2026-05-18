@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -15,8 +15,14 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { getCommentsByProductId, comments } = useComments();
+  const { getCommentsByProductId, comments, loadCommentsForProduct } = useComments();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (product?.id != null) {
+      loadCommentsForProduct(product.id);
+    }
+  }, [product?.id, loadCommentsForProduct]);
 
   const firstColor = product.colors?.[0];
   const imageSrc = firstColor?.mainImage || '/img/no-image.png';
@@ -174,7 +180,10 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
       )}
       {!hideAddToCart && (
         <button className="add-to-cart-btn" type="button" onClick={handleAddToCart}>
-          {i18n.t('productCard.addToCart')}
+          <span className="add-to-cart-btn__inner">
+            <i className="fas fa-shopping-cart" aria-hidden="true" />
+            <span>{i18n.t('productCard.addToCart')}</span>
+          </span>
         </button>
       )}
     </div>

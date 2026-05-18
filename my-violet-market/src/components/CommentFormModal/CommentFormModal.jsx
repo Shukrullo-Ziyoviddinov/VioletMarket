@@ -1,25 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { getPortalContainer } from '../../utils/utils';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useComments } from '../../contexts/CommentsContext';
+import { useUser } from '../../contexts/UserContext';
 import { useToast } from '../../contexts/ToastContext';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './CommentFormModal.css';
 
-const LOADER_DURATION_MS = 2000;
+function getProfileDisplayName(userData) {
+  return [userData?.firstName, userData?.lastName].filter(Boolean).join(' ').trim();
+}
 
 const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, productImage }) => {
+  const navigate = useNavigate();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
   const displayProductName = typeof productName === 'string' ? productName : getLocalizedText(productName, lang) || '';
   const { addComment } = useComments();
+  const { authToken, userData } = useUser();
   const { showToast } = useToast();
   const fileInputRef = useRef(null);
 
+  const profileDisplayName = useMemo(() => getProfileDisplayName(userData), [userData]);
+
   const [formData, setFormData] = useState({
-    userName: '',
     rating: 0,
     text: '',
     image: null,
@@ -56,16 +63,13 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      // Reset form data when modal closes
       setFormData({
-        userName: '',
         rating: 0,
         text: '',
         image: null,
         imagePreview: null,
       });
       setErrors({});
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -74,7 +78,6 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
 
   const handleClose = () => {
     setFormData({
-      userName: '',
       rating: 0,
       text: '',
       image: null,
@@ -149,12 +152,12 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
   };
 
   // Check if form is valid for enabling submit button (reactive validation)
-  const isFormValid = formData.userName.trim() && formData.rating > 0 && formData.text.trim();
+  const isFormValid = profileDisplayName && formData.rating > 0 && formData.text.trim();
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.userName.trim()) {
-      newErrors.userName = i18n.t('commentForm.errorUserName');
+    if (!profileDisplayName) {
+      newErrors.userName = i18n.t('commentForm.errorProfileName');
     }
     if (formData.rating === 0) {
       newErrors.rating = i18n.t('commentForm.errorRating');
@@ -176,31 +179,31 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
       return;
     }
 
-    setIsSubmitLoading(true);
-    await new Promise((r) => setTimeout(r, LOADER_DURATION_MS));
+    if (!authToken) {
+      showToast(i18n.t('commentForm.loginRequired'), 'info');
+      navigate('/login');
+      return;
+    }
 
-    // Prepare comment data - ensure productId is string
-    // Ensure rating is a valid number (1-5) - use exact value from formData
+    setIsSubmitLoading(true);
+
     const ratingValue = Number(formData.rating);
-    const validRating = (ratingValue >= 1 && ratingValue <= 5) ? ratingValue : 1;
-    
+    const validRating = ratingValue >= 1 && ratingValue <= 5 ? ratingValue : 1;
+
     const commentData = {
       productId: String(productId),
-      userName: formData.userName.trim(),
       rating: validRating,
       text: formData.text.trim(),
-      image: formData.imagePreview || null, // Store as base64 for now (in real app, upload to server)
+      image: formData.imagePreview || null,
       isTest: true,
     };
 
-    // Add comment
     try {
-      addComment(commentData);
-      showToast('Izohingiz qo\'shildi!', 'success');
+      await addComment(commentData);
+      showToast(i18n.t('commentForm.success'), 'success');
       
       // Reset form immediately to prevent double submission
       setFormData({
-        userName: '',
         rating: 0,
         text: '',
         image: null,
@@ -222,7 +225,15 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      showToast('Xatolik yuz berdi. Qayta urinib ko\'ring.', 'error');
+      if (error?.code === 'UNAUTHORIZED' || error?.status === 401) {
+        showToast(i18n.t('commentForm.loginRequired'), 'info');
+        navigate('/login');
+      } else if (error?.code === 'PROFILE_NAME_REQUIRED') {
+        showToast(i18n.t('commentForm.errorProfileName'), 'error');
+        navigate('/profile');
+      } else {
+        showToast(i18n.t('commentForm.errorSubmit'), 'error');
+      }
       setIsSubmitLoading(false);
     }
   };
@@ -284,10 +295,12 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
               type="text"
               id="userName"
               name="userName"
-              className={`form-input ${errors.userName ? 'error' : ''}`}
-              value={formData.userName}
-              onChange={handleInputChange}
-              placeholder={i18n.t('commentForm.userNamePlaceholder')}
+              className={`form-input form-input--readonly ${errors.userName ? 'error' : ''}`}
+              value={profileDisplayName}
+              readOnly
+              tabIndex={-1}
+              aria-readonly="true"
+              placeholder={i18n.t('commentForm.userNameFromProfile')}
             />
             {errors.userName && (
               <span className="error-message">{errors.userName}</span>

@@ -48,10 +48,81 @@ export function SkeletonUzWarehouseBanner() {
 /** Savat: kargo / tegishli API bloki */
 export function SkeletonCartCargoPanel() {
   return (
-    <div className="skeleton-cart-cargo" aria-busy="true" aria-label="Kargo ma’lumoti yuklanmoqda">
-      <SkeletonPulse className="skeleton-cart-cargo__row" />
-      <SkeletonPulse className="skeleton-cart-cargo__row skeleton-cart-cargo__row--short" />
-      <SkeletonPulse className="skeleton-cart-cargo__row skeleton-cart-cargo__row--medium" />
+    <div className="cargo-summary cargo-summary--skeleton" aria-busy="true" aria-label="Kargo ma’lumoti yuklanmoqda">
+      <SkeletonPulse className="cargo-summary__title--skeleton" />
+      <SkeletonPulse className="cargo-country-section cargo-country-section--skeleton" />
+      <SkeletonPulse className="cargo-country-section cargo-country-section--skeleton cargo-country-section--skeleton-short" />
+    </div>
+  );
+}
+
+function CartItemSkeleton() {
+  return (
+    <div className="cart-item cart-item--skeleton" aria-hidden>
+      <SkeletonPulse className="cart-item__img-skeleton" />
+      <div className="cart-item-info">
+        <SkeletonPulse className="cart-item-title cart-item-title--skeleton" />
+        <div className="cart-item-details cart-item-details--skeleton">
+          <SkeletonPulse className="cart-item-details__line" />
+          <SkeletonPulse className="cart-item-details__line cart-item-details__line--short" />
+        </div>
+        <SkeletonPulse className="quantity-controls quantity-controls--skeleton" />
+        <SkeletonPulse className="cart-item-price cart-item-price--skeleton" />
+      </div>
+    </div>
+  );
+}
+
+function CartSummarySkeleton() {
+  return (
+    <div className="cart-summary cart-summary--skeleton" aria-hidden>
+      <div className="cart-stats">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={`cart-stat-sk-${i}`} className="stat-item stat-item--skeleton">
+            <SkeletonPulse className="stat-item__line stat-item__line--label" />
+            <SkeletonPulse className="stat-item__line stat-item__line--value" />
+          </div>
+        ))}
+      </div>
+      <SkeletonPulse className="total-price total-price--skeleton" />
+    </div>
+  );
+}
+
+function CartDeliverySectionSkeleton() {
+  return (
+    <div className="delivery-section delivery-section--skeleton" aria-hidden>
+      <div className="delivery-section-header delivery-section-header--skeleton">
+        <SkeletonPulse className="delivery-section__title-skeleton" />
+        <SkeletonPulse className="delivery-info-btn delivery-info-btn--skeleton" />
+      </div>
+      <div className="delivery-options">
+        <SkeletonPulse className="delivery-option delivery-option--skeleton" />
+        <SkeletonPulse className="delivery-option delivery-option--skeleton" />
+      </div>
+    </div>
+  );
+}
+
+/** Savat sahifasi: mahsulotlar + yig‘indi + yetkazish + kargo */
+export function CartPageSkeleton({ itemCount = 2 }) {
+  return (
+    <div className="cart-container" aria-busy="true" aria-label="Savat yuklanmoqda">
+        <div className="cart-items-section">
+          <SkeletonPulse className="seller-profile__section-title seller-profile__section-title--skeleton cart-items-section__title-skeleton" />
+          {Array.from({ length: itemCount }).map((_, i) => (
+            <CartItemSkeleton key={`cart-item-sk-${i}`} />
+          ))}
+        </div>
+        <div className="cart-summary-section">
+          <CartSummarySkeleton />
+          <CartDeliverySectionSkeleton />
+          <SkeletonCartCargoPanel />
+          <div className="cart-actions cart-actions--skeleton" aria-hidden>
+            <SkeletonPulse className="checkout-btn checkout-btn--skeleton" />
+            <SkeletonPulse className="clear-btn clear-btn--skeleton" />
+          </div>
+        </div>
     </div>
   );
 }
@@ -65,6 +136,56 @@ export function SkeletonProductGrid({ count = 10, className = '' }) {
     >
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonPulse key={i} className="skeleton-product-grid__cell" />
+      ))}
+    </div>
+  );
+}
+
+/** Sotuvchi profili: avatar, nom, statistika */
+export function SellerProfileHeaderSkeleton() {
+  return (
+    <header className="seller-profile__header" aria-busy="true" aria-label="Sotuvchi yuklanmoqda">
+      <div className="seller-profile__avatar-wrap">
+        <SkeletonPulse className="seller-profile__avatar seller-profile__avatar--skeleton" />
+      </div>
+      <div className="seller-profile__meta">
+        <SkeletonPulse className="seller-profile__name seller-profile__name--skeleton" />
+        <div className="seller-profile__stats-row seller-profile__stats-row--skeleton">
+          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton" />
+          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
+          <SkeletonPulse className="seller-profile__subscribe-btn seller-profile__subscribe-btn--skeleton seller-profile__subscribe-btn--desktop" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/** Sotuvchi haqida: sarlavha + qisqa matn */
+export function SellerProfileAboutSkeleton() {
+  return (
+    <section className="seller-profile__about" aria-busy="true" aria-hidden>
+      <SkeletonPulse className="seller-profile__section-title seller-profile__section-title--skeleton" />
+      <SkeletonPulse className="seller-profile__description seller-profile__description--skeleton global-more__preview--truncated" />
+    </section>
+  );
+}
+
+/** Mahsulotlar bo‘limi sarlavhasi */
+export function SellerProfileProductsTitleSkeleton() {
+  return (
+    <SkeletonPulse className="seller-profile__section-title seller-profile__section-title--skeleton seller-profile__section-title--products" />
+  );
+}
+
+export function SellerProfileProductsGridSkeleton({ count = 8 }) {
+  return (
+    <div className="products-grid" aria-busy="true" aria-label="Mahsulotlar yuklanmoqda">
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonPulse
+          key={`seller-profile-product-sk-${i}`}
+          className="product-card product-card--skeleton"
+          aria-hidden
+        />
       ))}
     </div>
   );

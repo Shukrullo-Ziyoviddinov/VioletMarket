@@ -147,13 +147,18 @@
     "comment": "Ваш отзыв",
     "imageOptional": "Фото (необязательно)",
     "userNamePlaceholder": "Введите имя",
+    "userNameFromProfile": "Из профиля",
+    "errorProfileName": "Заполните имя и фамилию в профиле, чтобы оставить отзыв",
     "commentPlaceholder": "Напишите отзыв",
     "uploadImage": "Загрузить фото",
     "submit": "Отправить",
     "fillRequired": "Пожалуйста, заполните все обязательные поля",
     "errorUserName": "Имя обязательно",
     "errorRating": "Выберите рейтинг",
-    "errorComment": "Отзыв обязателен"
+    "errorComment": "Отзыв обязателен",
+    "loginRequired": "Войдите, чтобы оставить отзыв",
+    "success": "Отзыв добавлен!",
+    "errorSubmit": "Ошибка. Попробуйте снова"
   },
   "comments": {
     "title": "Отзывы",
@@ -340,7 +345,8 @@
     "productCount": "{{count}} товаров",
     "subscriberCount": "{{count}} подписчиков",
     "subscribe": "Подписка",
-    "unsubscribe": "Отмена подписки"
+    "unsubscribe": "Отмена подписки",
+    "loginRequired": "Войдите, чтобы подписаться"
   },
   "uzWarehouse": {
     "bannerAria": "Быстрая доставка со склада в Узбекистане",

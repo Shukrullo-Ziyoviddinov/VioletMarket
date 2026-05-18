@@ -1,84 +1,122 @@
 .comments-section {
+
   margin: 40px 0;
+
   padding: 20px 10px;
+
   /* background: linear-gradient(135deg, #d3a8f8, #c688fc); */
+
   background: rgba(245, 222, 179, 0.371);
+
   border-radius: 10px;
+
 }
+
+
+
 
 
 .comments-section-header {
+
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 20px;
+
+  margin-bottom: 10px;
+
 }
+
+
 
 .comments-section-title {
+
   font-size: 1.5rem;
+
   font-weight: 700;
+
   margin: 0;
+
   color: #333;
+
 }
+
+
 
 .view-more-comments-btn {
+
   background: transparent;
+
   border: none;
+
   color: #333;
+
   background-color: white;
+
   font-size: 0.8rem;
+
   font-weight: 600;
+
   cursor: pointer;
+
   padding: 5px 10px;
+
   border-radius: 15px;
+
   transition: background-color 0.2s;
+
 }
+
+
 
 .view-more-comments-btn:hover {
+
   background-color: rgba(102, 126, 234, 0.1);
+
 }
 
-.comments-scroll-container {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  padding: 10px 0;
-  margin-bottom: 20px;
-  cursor: grab;
-  user-select: none;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
 
-.comments-scroll-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
 
-.comments-scroll-container:active {
-  cursor: grabbing;
-}
+.comments-scrollable .scrollable-container {
 
-.comments-list {
-  display: flex;
   gap: 15px;
+
   padding: 10px 0;
+
 }
+
+
 
 .no-comments-text {
+
   text-align: center;
+
   color: #999;
+
   font-size: 1rem;
+
   padding: 40px 20px;
+
   font-style: italic;
+
 }
 
+
+
 /* Mobile responsive */
+
 @media (max-width: 768px) {
+
   .comments-section {
+
     margin: 30px 0;
+
     padding: 15px 0;
+
   }
+
+
 
   .comments-section-header {
     flex-direction: row;
@@ -86,30 +124,51 @@
     align-items: center;
     gap: 10px;
     padding: 0 10px;
+
   }
+
+
 
   .comments-section-title {
+
     font-size: 1.3rem;
+
     padding: 0;
+
   }
 
-  .comments-list {
+
+
+  .comments-scrollable .scrollable-container {
+
     gap: 12px;
+
     padding: 0 10px;
+
   }
 
-  .comments-scroll-container {
-    padding: 0;
-  }
 
-  .comments-list .comment-card {
+
+  .comments-scrollable .scrollable-container .comment-card {
+
     min-width: calc(100vw - 120px);
+
     max-width: calc(100vw - 120px);
+
     width: calc(100vw - 120px);
+
     flex-shrink: 0;
+
   }
+
+
 
   .view-more-comments-btn {
+
     flex-shrink: 0;
+
   }
+
 }
+
+

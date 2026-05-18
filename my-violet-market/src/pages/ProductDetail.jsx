@@ -46,7 +46,7 @@ const ProductDetail = () => {
   const { addToCart, cart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
-  const { getCommentsByProductId, comments } = useComments();
+  const { getCommentsByProductId, comments, loadCommentsForProduct } = useComments();
   const { recordView } = useViewedAt();
   const { authToken, authLoading } = useUser();
   const { allProducts, getSellerById, loading, error } = useAppData();
@@ -360,6 +360,12 @@ const ProductDetail = () => {
       dragState.clear();
     };
   }, [productData]);
+
+  useEffect(() => {
+    if (productData?.id != null) {
+      loadCommentsForProduct(productData.id);
+    }
+  }, [productData?.id, loadCommentsForProduct]);
 
   // Get all comments for this product
   const allComments = useMemo(() => {

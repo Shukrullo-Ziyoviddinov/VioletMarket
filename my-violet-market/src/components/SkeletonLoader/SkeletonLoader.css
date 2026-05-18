@@ -54,28 +54,7 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-/* Savat — kargo / API bloki */
-.skeleton-cart-cargo {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.skeleton-cart-cargo__row {
-  height: 52px;
-  border-radius: 8px;
-}
-
-.skeleton-cart-cargo__row--short {
-  width: 70%;
-  height: 40px;
-}
-
-.skeleton-cart-cargo__row--medium {
-  width: 88%;
-  height: 44px;
-}
+/* Savat sahifasidagi kargo skeleton — .cargo-summary o‘lchamlari Cart.css da */
 
 .skeleton-product-grid--span {
   grid-column: 1 / -1;

@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
+import { useUser } from './UserContext';
+import { fetchProductComments, createComment as createCommentApi } from '../api/commentsApi';
 
 const CommentsContext = createContext();
 
@@ -11,117 +19,94 @@ export const useComments = () => {
 };
 
 export const CommentsProvider = ({ children }) => {
+  const { authToken } = useUser();
   const [comments, setComments] = useState([]);
+  const loadingProductsRef = useRef(new Set());
+  const loadedProductsRef = useRef(new Set());
 
-  // Load comments from localStorage on mount
-  useEffect(() => {
-    const savedComments = localStorage.getItem('productComments');
-    if (savedComments) {
-      try {
-        const parsedComments = JSON.parse(savedComments);
-        // Fix any comments with invalid ratings
-        const fixedComments = parsedComments.map(comment => {
-          const rating = Number(comment.rating);
-          if (!isNaN(rating) && rating >= 1 && rating <= 5) {
-            // Rating is valid, but ensure it's a whole number
-            return {
-              ...comment,
-              rating: Math.floor(rating)
-            };
-          }
-          // Keep original if invalid (will be handled by UI)
-          return comment;
-        });
-        setComments(fixedComments);
-        // Save fixed comments back to localStorage
-        if (JSON.stringify(parsedComments) !== JSON.stringify(fixedComments)) {
-          localStorage.setItem('productComments', JSON.stringify(fixedComments));
-        }
-      } catch (error) {
-        console.error('Error loading comments:', error);
-      }
+  const getCommentsByProductId = useCallback(
+    (productId) => {
+      const productIdStr = String(productId);
+      return comments.filter((c) => String(c.productId) === productIdStr);
+    },
+    [comments],
+  );
+
+  const loadCommentsForProduct = useCallback(async (productId) => {
+    const productIdStr = String(productId);
+    if (!productIdStr || productIdStr === 'undefined') return;
+
+    if (loadedProductsRef.current.has(productIdStr)) return;
+    if (loadingProductsRef.current.has(productIdStr)) return;
+
+    loadingProductsRef.current.add(productIdStr);
+    try {
+      const data = await fetchProductComments(productIdStr);
+      const items = Array.isArray(data.comments) ? data.comments : [];
+      setComments((prev) => {
+        const rest = prev.filter((c) => String(c.productId) !== productIdStr);
+        return [...rest, ...items];
+      });
+      loadedProductsRef.current.add(productIdStr);
+    } catch (err) {
+      console.error('Izohlar yuklanmadi:', err);
+    } finally {
+      loadingProductsRef.current.delete(productIdStr);
     }
   }, []);
 
-  // Save comments to localStorage whenever comments change
-  useEffect(() => {
-    localStorage.setItem('productComments', JSON.stringify(comments));
-  }, [comments]);
+  const addComment = useCallback(
+    async (comment) => {
+      if (!authToken) {
+        const err = new Error('UNAUTHORIZED');
+        err.code = 'UNAUTHORIZED';
+        throw err;
+      }
 
-  // Get comments for a specific product (handle both string and number productId)
-  const getCommentsByProductId = (productId) => {
-    const productIdStr = String(productId);
-    return comments.filter(comment => String(comment.productId) === productIdStr);
-  };
+      const rating = Number(comment.rating);
+      let validRating = 1;
+      if (!Number.isNaN(rating) && rating >= 1 && rating <= 5) {
+        validRating = Math.floor(rating);
+      }
 
-  // Add a new comment
-  const addComment = (comment) => {
-    // Ensure rating is a number between 1 and 5
-    const rating = Number(comment.rating);
-    
-    console.log('CommentsContext addComment - Input:', {
-      commentRating: comment.rating,
-      ratingNumber: rating,
-      commentData: comment
-    });
-    
-    // Validate and normalize rating (must be 1-5, whole number)
-    // IMPORTANT: Use the exact rating value - don't modify it if it's valid
-    let validRating;
-    if (isNaN(rating) || rating < 1 || rating > 5) {
-      // Invalid rating - default to 1 to prevent errors
-      validRating = 1;
-      console.warn('CommentsContext - Invalid rating, defaulting to 1:', comment.rating);
-    } else {
-      // Use the exact rating value (2 = 2, 3 = 3, 5 = 5)
-      // Only floor to ensure whole number (2.7 -> 2, 3.2 -> 3)
-      validRating = Math.floor(rating);
-      console.log('CommentsContext addComment - Valid rating:', validRating);
-    }
-    
-    const newComment = {
-      id: Date.now().toString(),
-      productId: String(comment.productId), // Ensure productId is always string
-      userName: comment.userName,
-      rating: validRating, // Save the validated rating value
-      text: comment.text,
-      image: comment.image || null,
-      isTest: comment.isTest !== undefined ? comment.isTest : true,
-      createdAt: new Date().toISOString(),
-    };
-    
-    console.log('CommentsContext addComment - Saving comment:', {
-      id: newComment.id,
-      rating: newComment.rating,
-      ratingType: typeof newComment.rating
-    });
-    
-    setComments(prev => {
-      const updated = [...prev, newComment];
-      console.log('CommentsContext addComment - Updated comments:', updated.map(c => ({
-        id: c.id,
-        rating: c.rating
-      })));
-      return updated;
-    });
-    return newComment;
-  };
+      const payload = {
+        productId: String(comment.productId),
+        rating: validRating,
+        text: String(comment.text || '').trim(),
+        image: comment.image || null,
+        isTest: comment.isTest === true,
+      };
 
-  // Delete a comment (for future use)
-  const deleteComment = (commentId) => {
-    setComments(prev => prev.filter(comment => comment.id !== commentId));
-  };
+      const data = await createCommentApi(authToken, payload);
+      const saved = data.comment;
+      if (!saved) {
+        throw new Error('COMMENT_SAVE_FAILED');
+      }
+
+      const productIdStr = String(saved.productId);
+      setComments((prev) => {
+        const rest = prev.filter((c) => c.id !== saved.id);
+        return [...rest, saved];
+      });
+      loadedProductsRef.current.add(productIdStr);
+      return saved;
+    },
+    [authToken],
+  );
+
+  const deleteComment = useCallback((commentId) => {
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+  }, []);
 
   const value = {
     comments,
     getCommentsByProductId,
+    loadCommentsForProduct,
     addComment,
     deleteComment,
   };
 
   return (
-    <CommentsContext.Provider value={value}>
-      {children}
-    </CommentsContext.Provider>
+    <CommentsContext.Provider value={value}>{children}</CommentsContext.Provider>
   );
 };

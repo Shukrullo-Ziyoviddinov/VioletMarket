@@ -9,7 +9,8 @@ import DeliveryInfoModal from '../components/DeliveryInfoModal';
 import ClearCartModal from '../components/ClearCartModal';
 import ButtonLoader from '../components/ButtonLoader/ButtonLoader';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
-import { SkeletonCartCargoPanel } from '../components/SkeletonLoader';
+import { SkeletonCartCargoPanel, CartPageSkeleton } from '../components/SkeletonLoader';
+import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
 import './Cart.css';
 
@@ -21,8 +22,10 @@ const Cart = () => {
   const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
   const [isClearLoading, setIsClearLoading] = useState(false);
   const { showToast } = useToast();
+  const { authToken, authLoading } = useUser();
   const {
     cart,
+    cartLoading,
     updateQuantity,
     removeFromCart,
     clearCart,
@@ -55,7 +58,23 @@ const Cart = () => {
     return totalProductPrice + calculatedDeliveryPrice;
   }, [totalProductPrice, selectedDeliveryType, deliveryPrices]);
 
-  if (cart.length === 0) {
+  const hasAuthToken =
+    Boolean(authToken) || (authLoading && Boolean(localStorage.getItem('authToken')));
+  const showCartSkeleton = hasAuthToken && (authLoading || cartLoading);
+  const showEmpty = !authLoading && !cartLoading && cart.length === 0;
+
+  if (showCartSkeleton) {
+    return (
+      <div className="cart-page cart-page--skeleton">
+        <CartPageSkeleton />
+        <div className="container">
+          <TavsiyaEtamiz useScrollable={true} />
+        </div>
+      </div>
+    );
+  }
+
+  if (showEmpty) {
     return (
       <div className="cart-page">
         <div className="empty-cart">

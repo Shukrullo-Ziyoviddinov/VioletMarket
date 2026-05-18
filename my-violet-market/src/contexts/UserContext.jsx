@@ -86,13 +86,6 @@ export const UserProvider = ({ children }) => {
     else localStorage.removeItem('authToken');
   }, [authToken]);
 
-  const setSession = useCallback((token, apiUser) => {
-    const mapped = mapApiUserToClient(apiUser);
-    if (!mapped) return;
-    setAuthToken(token);
-    setUserData(mapped);
-  }, []);
-
   const updateUserData = useCallback((newData) => {
     setUserData((prev) => ({ ...prev, ...newData }));
   }, []);
@@ -103,6 +96,13 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('userData');
     localStorage.removeItem('authToken');
     localStorage.removeItem('wishlist');
+  }, []);
+
+  const setSession = useCallback((token, apiUser) => {
+    const mapped = mapApiUserToClient(apiUser);
+    if (!mapped) return;
+    setAuthToken(token);
+    setUserData(mapped);
   }, []);
 
   const value = {

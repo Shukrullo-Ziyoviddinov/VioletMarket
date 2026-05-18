@@ -121,20 +121,105 @@
   text-decoration: underline;
 }
 
+/* Skeleton — API yuklanishi */
+.seller-profile-page .seller-profile__avatar--skeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.seller-profile-page .seller-profile__name--skeleton {
+  display: block;
+  height: 1.45rem;
+  width: min(280px, 72%);
+  margin: 0 0 8px;
+  border-radius: 8px;
+}
+
+.seller-profile-page .seller-profile__stats-row--skeleton {
+  align-items: center;
+}
+
+.seller-profile-page .seller-profile__stat-line--skeleton {
+  height: 1rem;
+  width: 140px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.seller-profile-page .seller-profile__stat-line--short {
+  width: 96px;
+}
+
+.seller-profile-page .seller-profile__subscribe-btn--skeleton {
+  height: 38px;
+  width: 108px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.seller-profile-page .seller-profile__subscribe-btn--skeleton.seller-profile__subscribe-btn--mobile {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+}
+
+.seller-profile-page .seller-profile__section-title--skeleton {
+  display: block;
+  height: 1.25rem;
+  width: 200px;
+  max-width: 85%;
+  margin: 0 0 5px;
+  border-radius: 6px;
+}
+
+.seller-profile-page .seller-profile__section-title--products {
+  width: 160px;
+}
+
+.seller-profile-page .seller-profile__description--skeleton {
+  display: block;
+  height: 1.05rem;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.seller-profile-page .seller-profile__subscribe-mobile--skeleton {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 767px) {
+  .seller-profile-page .seller-profile__subscribe-btn--skeleton.seller-profile__subscribe-btn--desktop {
+    display: none;
+  }
+
+  .seller-profile-page .seller-profile__subscribe-btn--skeleton.seller-profile__subscribe-btn--mobile {
+    display: block;
+  }
+}
+
 @media (max-width: 550px) {
   .seller-profile__name {
     font-size: 1rem;
   }
 
-  .seller-profile__about .seller-profile__section-title{
+  .seller-profile-page .seller-profile__name--skeleton {
+    height: 1rem;
+  }
+
+  .seller-profile__about .seller-profile__section-title {
     font-size: 1rem;
     margin: 0 0 4px;
   }
 
-  
+  .seller-profile-page .seller-profile__section-title--skeleton {
+    height: 1rem;
+  }
 
   .seller-profile__avatar-wrap {
     width: 60px;
     height: 60px;
-}
+  }
 }
