@@ -15,6 +15,8 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const imgRef = useRef(null);
   const startXRef = useRef(0);
   const currentXRef = useRef(0);
@@ -22,6 +24,7 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
   const wasDragRef = useRef(false);
   const isDraggingRef = useRef(false);
   const dragViewportRef = useRef(null);
+  const settleTimerRef = useRef(null);
   /** Carousel: viewport o‘lchami (px) — track markazlash */
   const [dragLayout, setDragLayout] = useState({ slideW: 0, gap: 0, baseX: 0 });
 
@@ -33,6 +36,8 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
       setSlideDir(null);
       setDragOffset(0);
       setIsDragging(false);
+      setIsSettling(false);
+      setIsResetting(false);
       isDraggingRef.current = false;
       wasDragRef.current = false;
       document.body.style.overflow = 'hidden';
@@ -40,13 +45,21 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
       document.body.style.overflow = '';
       setDragOffset(0);
       setIsDragging(false);
+      setIsSettling(false);
+      setIsResetting(false);
       isDraggingRef.current = false;
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      window.clearTimeout(settleTimerRef.current);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, initialIndex]);
 
   const go = useCallback((dir) => {
+    window.clearTimeout(settleTimerRef.current);
     setDragOffset(0);
+    setIsSettling(false);
+    setIsResetting(false);
     setIsZoomed(false);
     setZoomOrigin({ x: 50, y: 50 });
     setSlideDir(dir > 0 ? 'slide-left' : 'slide-right');
@@ -73,13 +86,13 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
     return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, go, onClose, isZoomed]);
 
-  const nextSlide = useCallback(() => go(1), [go]);
-  const prevSlide = useCallback(() => go(-1), [go]);
-
   // ImageBanner bilan bir xil: start → move (offset) → end (threshold + velocity)
   const handleDragStart = (clientX) => {
     if (images.length <= 1 || isZoomed) return;
+    window.clearTimeout(settleTimerRef.current);
     wasDragRef.current = false;
+    setIsSettling(false);
+    setIsResetting(false);
     isDraggingRef.current = true;
     setIsDragging(true);
     startXRef.current = clientX;
@@ -103,28 +116,67 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
     if (!isDraggingRef.current) return;
 
     const diff = currentXRef.current - startXRef.current;
+    const isClickOnly = Math.abs(diff) < 4 && !wasDragRef.current;
+
+    if (isClickOnly) {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      setIsSettling(false);
+      setIsResetting(false);
+      setDragOffset(0);
+      return;
+    }
+
     const dragDuration = Date.now() - dragStartTimeRef.current;
     const vw = dragViewportRef.current?.offsetWidth || 400;
     const clamped = Math.max(-vw, Math.min(vw, diff));
 
     // Kenglik bo‘yicha: surish ko‘rinishi uchun juda past threshold + velocity faqat yetarli masofa bo‘lsa
-    const threshold = Math.max(56, vw * 0.14);
+    const threshold = Math.min(Math.max(vw * 0.22, 60), 150);
     const velocity = Math.abs(clamped) / Math.max(dragDuration, 1);
     const velocitySwipe =
-      Math.abs(clamped) > threshold * 0.45 && velocity > 0.65;
-
-    if (Math.abs(clamped) > threshold || velocitySwipe) {
-      if (clamped > 0) prevSlide();
-      else nextSlide();
-    } else {
-      setDragOffset(0);
-    }
+      Math.abs(clamped) > 12 && velocity > 0.45;
 
     isDraggingRef.current = false;
     setIsDragging(false);
+    setIsSettling(true);
+    window.clearTimeout(settleTimerRef.current);
+
+    if (Math.abs(clamped) > threshold || velocitySwipe) {
+      const dir = clamped > 0 ? -1 : 1;
+      setDragOffset(dir > 0 ? -vw : vw);
+
+      settleTimerRef.current = window.setTimeout(() => {
+        setIsResetting(true);
+        setIsZoomed(false);
+        setZoomOrigin({ x: 50, y: 50 });
+        setSlideDir(null);
+        setAnimKey(k => k + 1);
+        setIndex(prev => {
+          const n = prev + dir;
+          if (n < 0) return images.length - 1;
+          if (n >= images.length) return 0;
+          return n;
+        });
+        setDragOffset(0);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsResetting(false);
+            setIsSettling(false);
+          });
+        });
+      }, 260);
+    } else {
+      setDragOffset(0);
+      settleTimerRef.current = window.setTimeout(() => {
+        setIsSettling(false);
+      }, 260);
+    }
+
     window.setTimeout(() => {
       wasDragRef.current = false;
-    }, 150);
+    }, 320);
   };
 
   const handleMouseDown = (e) => {
@@ -194,7 +246,10 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
 
   const jumpTo = (i) => {
     if (i === index) return;
+    window.clearTimeout(settleTimerRef.current);
     setDragOffset(0);
+    setIsSettling(false);
+    setIsResetting(false);
     setIsZoomed(false);
     setZoomOrigin({ x: 50, y: 50 });
     setSlideDir(i > index ? 'slide-left' : 'slide-right');
@@ -203,7 +258,7 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
   };
 
   const handleImageClick = (e) => {
-    if (wasDragRef.current) return;
+    if (wasDragRef.current || isSettling || isResetting) return;
     if (isZoomed) {
       setIsZoomed(false);
       setZoomOrigin({ x: 50, y: 50 });
@@ -247,9 +302,9 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
   const trackStyle = {
     transform: `translateX(${(dragLayout.slideW ? dragLayout.baseX : 0) + dragOffset}px)`,
     gap: dragLayout.slideW ? `${dragLayout.gap}px` : undefined,
-    transition: isDragging
+    transition: isDragging || isResetting
       ? 'none'
-      : 'transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 1)',
+      : 'transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1)',
   };
 
   const slideFrameStyle = dragLayout.slideW
@@ -298,6 +353,8 @@ const ImageModal = ({ images = [], initialIndex = 0, isOpen, onClose }) => {
             'im-img-wrap ' +
             wrapSlideClass +
             (isDragging && !isZoomed ? ' is-img-dragging' : '') +
+            (isSettling && !isZoomed ? ' is-img-settling' : '') +
+            (isResetting && !isZoomed ? ' is-img-resetting' : '') +
             (multi && !isZoomed ? ' im-img-wrap--carousel' : '')
           }
         >

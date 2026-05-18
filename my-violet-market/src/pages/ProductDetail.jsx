@@ -20,6 +20,7 @@ import CommentsModal from '../components/CommentsModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
+import { useMainImageDrag } from '../components/mainImageDrag';
 import SizeChartUpperBodyDiagram from '../components/SizeChartUpperBodyDiagram/SizeChartUpperBodyDiagram';
 import SizeChartFootwearDiagram from '../components/SizeChartFootwearDiagram/SizeChartFootwearDiagram';
 import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChartPantsDiagram';
@@ -70,14 +71,6 @@ const ProductDetail = () => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
 
-  // Carousel uchun state'lar
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const startXRef = useRef(0);
-  const currentXRef = useRef(0);
-  const dragStartTimeRef = useRef(0);
-  const mainImageWrapperRef = useRef(null);
-  const hasMovedDuringDragRef = useRef(false);
   const shareSheetStartYRef = useRef(0);
   const shareSheetCurrentYRef = useRef(0);
 
@@ -445,120 +438,41 @@ const ProductDetail = () => {
   const nextImageSlide = useCallback(() => {
     if (allImages.length > 0) {
       setCurrentImageIndex(prev => (prev + 1) % allImages.length);
-      setDragOffset(0);
     }
   }, [allImages.length]);
 
   const prevImageSlide = useCallback(() => {
     if (allImages.length > 0) {
       setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
-      setDragOffset(0);
     }
   }, [allImages.length]);
 
-  // Drag boshlanishi
-  const handleImageDragStart = useCallback((clientX) => {
-    if (allImages.length <= 1) return;
-    setIsDraggingImage(true);
-    startXRef.current = clientX;
-    currentXRef.current = clientX;
-    dragStartTimeRef.current = Date.now();
-    hasMovedDuringDragRef.current = false;
-  }, [allImages.length]);
+  const mainImageDrag = useMainImageDrag({
+    imageCount: allImages.length,
+    disabled: showDetailSkeleton,
+    onPrev: prevImageSlide,
+    onNext: nextImageSlide,
+    resetKey: currentImageIndex,
+  });
 
-  // Drag harakati
-  const handleImageDragMove = useCallback((clientX) => {
-    if (!isDraggingImage || allImages.length <= 1) return;
-    currentXRef.current = clientX;
-    const diff = clientX - startXRef.current;
-    
-    // Agar 3px dan ko'p harakat bo'lsa, drag deb hisobla
-    if (Math.abs(diff) > 3) {
-      hasMovedDuringDragRef.current = true;
+  const mainImageSlides = useMemo(() => {
+    if (allImages.length === 0) {
+      return [{ src: normalizeImagePath('/img/no-image.png'), index: 0 }];
     }
-    
-    setDragOffset(diff);
-  }, [isDraggingImage, allImages.length]);
 
-  // Drag tugashi
-  const handleImageDragEnd = useCallback(() => {
-    if (!isDraggingImage || allImages.length <= 1) return;
-    
-    const diff = currentXRef.current - startXRef.current;
-    const dragDuration = Date.now() - dragStartTimeRef.current;
-    const velocity = Math.abs(diff) / Math.max(dragDuration, 1);
-    
-    const threshold = 50;
-    const velocityThreshold = 0.3;
-    
-    if (Math.abs(diff) > threshold || velocity > velocityThreshold) {
-      if (diff > 0) {
-        prevImageSlide();
-      } else {
-        nextImageSlide();
-      }
-    } else {
-      setDragOffset(0);
+    if (allImages.length === 1) {
+      return [{ src: allImages[0], index: 0 }];
     }
-    
-    setIsDraggingImage(false);
-    
-    // Reset flag after a small delay to allow onClick to check it first
-    setTimeout(() => {
-      hasMovedDuringDragRef.current = false;
-    }, 150);
-  }, [isDraggingImage, allImages.length, prevImageSlide, nextImageSlide]);
 
-  // Mouse drag handlers
-  const handleImageMouseDown = useCallback((e) => {
-    if (showDetailSkeleton || allImages.length <= 1) return;
-    e.preventDefault();
-    handleImageDragStart(e.pageX);
-  }, [showDetailSkeleton, allImages.length, handleImageDragStart]);
+    const previousIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+    const nextIndex = (currentImageIndex + 1) % allImages.length;
 
-  // Touch events
-  const handleImageTouchStart = useCallback((e) => {
-    if (showDetailSkeleton || allImages.length <= 1) return;
-    handleImageDragStart(e.touches[0].clientX);
-  }, [showDetailSkeleton, allImages.length, handleImageDragStart]);
-
-  const handleImageTouchMove = useCallback((e) => {
-    if (showDetailSkeleton || allImages.length <= 1) return;
-    handleImageDragMove(e.touches[0].clientX);
-  }, [showDetailSkeleton, allImages.length, handleImageDragMove]);
-
-  const handleImageTouchEnd = useCallback(() => {
-    if (showDetailSkeleton || allImages.length <= 1) return;
-    handleImageDragEnd();
-  }, [showDetailSkeleton, allImages.length, handleImageDragEnd]);
-
-  // Document event listeners for drag
-  useEffect(() => {
-    if (!isDraggingImage) return;
-
-    const handleDocumentMouseMove = (e) => {
-      handleImageDragMove(e.pageX);
-    };
-
-    const handleDocumentMouseUp = () => {
-      handleImageDragEnd();
-    };
-
-    document.addEventListener('mousemove', handleDocumentMouseMove);
-    document.addEventListener('mouseup', handleDocumentMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleDocumentMouseMove);
-      document.removeEventListener('mouseup', handleDocumentMouseUp);
-    };
-  }, [isDraggingImage, handleImageDragMove, handleImageDragEnd]);
-
-  // Current image o'zgarganda dragOffset'ni tozalash
-  useEffect(() => {
-    if (!isDraggingImage) {
-      setDragOffset(0);
-    }
-  }, [currentImageIndex, isDraggingImage]);
+    return [
+      { src: allImages[previousIndex], index: previousIndex },
+      { src: allImages[currentImageIndex], index: currentImageIndex },
+      { src: allImages[nextIndex], index: nextIndex },
+    ];
+  }, [allImages, currentImageIndex]);
 
   // Mahsulot cart da bor-yo'qligini tekshirish (variant kombinatsiyasi bilan) (must be before early return)
   const isProductInCart = useMemo(() => {
@@ -834,13 +748,10 @@ const ProductDetail = () => {
       <div className="container">
         <div className="product-detail-grid">
           <div className="product-images">
-            <div 
-              className={`main-image-wrapper ${allImages.length > 1 && !showDetailSkeleton ? 'main-image-draggable' : ''} ${isDraggingImage ? 'is-dragging' : ''}`}
-              ref={mainImageWrapperRef}
-              onMouseDown={handleImageMouseDown}
-              onTouchStart={handleImageTouchStart}
-              onTouchMove={handleImageTouchMove}
-              onTouchEnd={handleImageTouchEnd}
+            <div
+              className={mainImageDrag.wrapperClassName}
+              ref={mainImageDrag.wrapperRef}
+              {...mainImageDrag.wrapperHandlers}
             >
               <button
                 className="product-detail-mobile-back-btn"
@@ -908,9 +819,9 @@ const ProductDetail = () => {
                 </>
               )}
 
-              <div 
-                className={`main-image-container ${isDraggingImage ? 'is-dragging' : ''}`}
-                style={{ '--drag-offset': `${dragOffset}px` }}
+              <div
+                className={`${mainImageDrag.containerClassName} ${allImages.length <= 1 ? 'main-image-container--single' : ''}`}
+                style={mainImageDrag.containerStyle}
                 aria-busy={showDetailSkeleton}
               >
                 {showDetailSkeleton ? (
@@ -919,30 +830,30 @@ const ProductDetail = () => {
                     aria-hidden
                   />
                 ) : (
-                  <img 
-                    src={allImages[currentImageIndex] || '/img/no-image.png'} 
-                    alt={getLocalizedText(productData.title, lang)}
-                    className="main-image"
-                    onClick={(e) => {
-                      // Faqat haqiqiy click bo'lsa modal och (drag emas)
-                      if (
-                        !isDraggingImage && 
-                        !hasMovedDuringDragRef.current &&
-                        Math.abs(dragOffset) < 3 && 
-                        allImages.length > 0
-                      ) {
-                        e.preventDefault();
-                        setIsImageModalOpen(true);
-                      }
-                    }}
-                    draggable={false}
-                    onError={(e) => {
-                      if (!imageErrors.has(currentImageIndex)) {
-                        setImageErrors(prev => new Set([...prev, currentImageIndex]));
-                        e.target.src = '/img/no-image.png';
-                      }
-                    }}
-                  />
+                  <div className="main-image-track">
+                    {mainImageSlides.map((slide, slidePosition) => (
+                      <div className="main-image-slide" key={`${slide.index}-${slidePosition}`}>
+                        <img
+                          src={slide.src || '/img/no-image.png'}
+                          alt={getLocalizedText(productData.title, lang)}
+                          className="main-image"
+                          onClick={(e) => {
+                            if (slide.index === currentImageIndex && mainImageDrag.canOpenImageModal(allImages.length > 0)) {
+                              e.preventDefault();
+                              setIsImageModalOpen(true);
+                            }
+                          }}
+                          draggable={false}
+                          onError={(e) => {
+                            if (!imageErrors.has(slide.index)) {
+                              setImageErrors(prev => new Set([...prev, slide.index]));
+                              e.target.src = '/img/no-image.png';
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
               {productData.video && (
@@ -1685,4 +1596,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-

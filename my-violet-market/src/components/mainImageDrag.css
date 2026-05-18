@@ -1,0 +1,47 @@
+/* Main image — sichqoncha / touch drag */
+.main-image-wrapper.main-image-draggable {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.main-image-wrapper.main-image-draggable.is-dragging {
+  cursor: grabbing;
+}
+
+.main-image-container {
+  overflow: hidden;
+}
+
+.main-image-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  transform: translate3d(calc(-100% + var(--drag-offset, 0px)), 0, 0);
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.main-image-container.is-dragging .main-image-track {
+  transition: none;
+  will-change: transform;
+}
+
+.main-image-container.is-resetting .main-image-track {
+  transition: none;
+}
+
+.main-image-slide {
+  width: 100%;
+  height: 100%;
+  flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.main-image-container--single .main-image-track {
+  transform: translate3d(var(--drag-offset, 0px), 0, 0);
+}
