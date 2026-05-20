@@ -47,6 +47,13 @@ export function removeCartItem(token, itemId) {
   }).then(parseJsonResponse);
 }
 
+export function dismissCartUrgency(token, itemId) {
+  return fetch(apiUrl(`/api/cart/items/${itemId}/urgency-dismiss`), {
+    method: 'POST',
+    headers: authHeaders(token),
+  }).then(parseJsonResponse);
+}
+
 export function clearCartApi(token) {
   return fetch(apiUrl('/api/cart'), {
     method: 'DELETE',

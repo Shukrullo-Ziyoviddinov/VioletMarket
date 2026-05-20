@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 
+function randomUrgencyStock() {
+  return Math.floor(Math.random() * 4) + 3; // 3..6
+}
+
 const cartItemSchema = new mongoose.Schema(
   {
     userId: {
@@ -28,6 +32,10 @@ const cartItemSchema = new mongoose.Schema(
     image: { type: String, default: "/img/no-image.png" },
     countries: { type: [String], default: [] },
     weight: { type: Number, default: 300 },
+    urgencyStockLeft: { type: Number, default: randomUrgencyStock, min: 1 },
+    urgencyNextShowAt: { type: Date, default: null },
+    urgencyEndsAt: { type: Date, default: null },
+    urgencyDurationMs: { type: Number, default: null },
   },
   { timestamps: true, collection: "cart" },
 );

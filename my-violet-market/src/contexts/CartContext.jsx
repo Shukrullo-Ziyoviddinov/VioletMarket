@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -16,10 +17,17 @@ import {
   addCartItem,
   updateCartItemQuantity,
   removeCartItem,
+  dismissCartUrgency,
   clearCartApi,
 } from '../api/cartApi';
 
 const CartContext = createContext();
+
+function parseUrgencyMs(value) {
+  if (!value) return NaN;
+  const ms = new Date(value).getTime();
+  return Number.isFinite(ms) ? ms : NaN;
+}
 
 export const useCart = () => {
   const context = useContext(CartContext);
@@ -79,6 +87,7 @@ export const CartProvider = ({ children }) => {
   const { authToken, userData } = useUser();
   const [cart, setCart] = useState([]);
   const [cartLoading, setCartLoading] = useState(false);
+  const [cartReady, setCartReady] = useState(false);
   const [selectedDeliveryType, setSelectedDeliveryType] = useState(
     localStorage.getItem('selectedDeliveryType') || 'toshkent',
   );
@@ -94,6 +103,7 @@ export const CartProvider = ({ children }) => {
     if (!authToken) {
       setCart([]);
       setCartLoading(false);
+      setCartReady(true);
       return;
     }
     setCartLoading(true);
@@ -104,6 +114,7 @@ export const CartProvider = ({ children }) => {
       console.error('Savat yuklanmadi:', err);
     } finally {
       setCartLoading(false);
+      setCartReady(true);
     }
   }, [authToken, syncFromResponse]);
 
@@ -213,9 +224,35 @@ export const CartProvider = ({ children }) => {
     }));
   };
 
+  const urgencyItems = useMemo(() => {
+    const withUrgency = cart.filter((item) => Number.isFinite(parseUrgencyMs(item?.urgencyNextShowAt)));
+    if (withUrgency.length === 0) return [];
+    return withUrgency.sort(
+      (a, b) => parseUrgencyMs(a.urgencyNextShowAt) - parseUrgencyMs(b.urgencyNextShowAt),
+    );
+  }, [cart]);
+
+  const dismissUrgencyBanner = useCallback(
+    async (cartItem) => {
+      if (!cartItem) return;
+
+      if (authToken && cartItem.cartItemId) {
+        try {
+          const data = await dismissCartUrgency(authToken, cartItem.cartItemId);
+          syncFromResponse(data);
+        } catch (err) {
+          console.error('Urgency holati yangilanmadi:', err);
+        }
+      }
+
+    },
+    [authToken, syncFromResponse],
+  );
+
   const value = {
     cart,
     cartLoading,
+    cartReady,
     addToCart,
     updateQuantity,
     removeFromCart,
@@ -226,6 +263,8 @@ export const CartProvider = ({ children }) => {
     changeDeliveryType,
     selectedCargoOptions,
     updateCargoSelection,
+    urgencyItems,
+    dismissUrgencyBanner,
     refreshCart: loadCart,
   };
 

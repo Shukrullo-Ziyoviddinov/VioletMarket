@@ -7,6 +7,7 @@ import ImageBanner from '../components/ImageBanner';
 import VideoBanner from '../components/VideoBanner';
 import Scrollable from '../components/Scrollable';
 import UzWarehouse from '../components/UzWarehouse';
+import CartUrgencyBanner from '../components/CartUrgencyBanner/CartUrgencyBanner';
 import SectionTitleWithMore from '../components/SectionTitleWithMore';
 import HomeCollectionGrid from '../components/HomeCollectionGrid/HomeCollectionGrid';
 import RealTimeClock from '../components/RealTimeClock/RealTimeClock';
@@ -141,6 +142,8 @@ const Home = () => {
           type="brand"
           isLoading={appLoading}
         />
+
+        <CartUrgencyBanner />
 
         {(bigDiscountCollection.length > 0 || appLoading) && (
           <div className="big-discount-section">
