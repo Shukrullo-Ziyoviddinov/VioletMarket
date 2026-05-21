@@ -16,6 +16,7 @@ const { User } = require("./user");
 const { Wishlist } = require("./wishlist");
 const { SellerSubscription } = require("./sellerSubscription");
 const { Comment } = require("./comment");
+const { SellerRatingSummary } = require("./sellerRatingSummary");
 
 module.exports = {
   Product,
@@ -36,4 +37,5 @@ module.exports = {
   Wishlist,
   SellerSubscription,
   Comment,
+  SellerRatingSummary,
 };

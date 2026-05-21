@@ -2,6 +2,7 @@ const { Comment } = require("../../models/comment");
 const { Product } = require("../../models/product");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
+const { applyNewSellerRating } = require("../seller/sellerRatingOptimizationService");
 
 const MAX_IMAGE_LENGTH = 2_000_000;
 
@@ -85,6 +86,13 @@ async function createComment(userId, payload) {
     image,
     isTest: payload.isTest === true,
   });
+
+  if (product?.sellerId) {
+    await applyNewSellerRating({
+      sellerId: String(product.sellerId),
+      rating: doc.rating,
+    });
+  }
 
   return { comment: mapCommentToClient(doc) };
 }

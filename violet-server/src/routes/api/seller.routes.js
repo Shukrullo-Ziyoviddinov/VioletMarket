@@ -11,5 +11,6 @@ router.get(
   sellerController.getProfile,
 );
 router.get("/sellers/:sellerId/products", sellerController.getProducts);
+router.get("/sellers/:sellerId/rating-summary", sellerController.getRatingSummary);
 
 module.exports = router;

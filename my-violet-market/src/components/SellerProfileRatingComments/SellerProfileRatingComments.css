@@ -1,0 +1,122 @@
+.seller-rating-comments {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.seller-rating-comments__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ece9f6;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.seller-rating-comments__product {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  background-color: #ece9f6;
+  padding: 5px 5px;
+  border-radius: 7px;
+  gap: 10px;
+  align-items: start;
+  cursor: pointer;
+}
+
+.seller-rating-comments__product:focus-visible {
+  outline: 2px solid #6d28d9;
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+.seller-rating-comments__img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f2f2f2;
+}
+
+.seller-rating-comments__meta {
+  min-width: 0;
+}
+
+.seller-rating-comments__title {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-rating-comments__price {
+  font-size: 0.9rem;
+  color: #0a8f52;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.seller-rating-comments__stars {
+  color: #f59e0b;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.seller-rating-comments__stars span {
+  color: #c4c4c4;
+}
+
+.seller-rating-comments__text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.seller-rating-comments__empty {
+  margin: 12px 0 0;
+  font-size: 0.93rem;
+  color: #6b7280;
+}
+
+.seller-rating-comments__img-skeleton {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+}
+
+.seller-rating-comments__title-skeleton {
+  width: 78%;
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 7px;
+}
+
+.seller-rating-comments__price-skeleton {
+  width: 48%;
+  height: 13px;
+  border-radius: 6px;
+  margin-bottom: 7px;
+}
+
+.seller-rating-comments__stars-skeleton {
+  width: 42%;
+  height: 13px;
+  border-radius: 6px;
+}
+
+.seller-rating-comments__text-skeleton {
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+}
+
+.seller-rating-comments__text-skeleton--short {
+  width: 72%;
+  margin-bottom: 0;
+}

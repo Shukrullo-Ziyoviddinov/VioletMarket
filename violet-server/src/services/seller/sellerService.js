@@ -3,6 +3,7 @@ const { SellerAccount } = require("../../models/sellerAccount");
 const { SellerSubscription } = require("../../models/sellerSubscription");
 const { HttpError } = require("../../utils/httpError");
 const { getProductDisplayPrice } = require("../viewedAt/viewedAtHelpers");
+const { getSellerRatingSummary } = require("./sellerRatingService");
 const {
   parseSellerId,
   parsePagination,
@@ -90,4 +91,5 @@ async function getSellerProducts(sellerIdRaw, query) {
 module.exports = {
   getSellerProfile,
   getSellerProducts,
+  getSellerRatingSummary,
 };

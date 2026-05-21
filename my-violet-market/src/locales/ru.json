@@ -15,6 +15,7 @@
     "remove": "Удалить",
     "recommendedTitle": "Рекомендуем",
     "recommendedEmpty": "Нет рекомендаций",
+    "openProduct": "Открыть товар",
     "loginRequired": "Войдите, чтобы сохранять историю поиска",
     "saveError": "Не удалось сохранить историю поиска"
   },
@@ -338,6 +339,10 @@
     "notFound": "Продавец не найден.",
     "backHome": "На главную",
     "aboutTitle": "О продавце",
+    "ratingReviewsTitle": "Рейтинг и отзывы",
+    "ratingReviews": "отзывов",
+    "noReviewsYet": "Пока нет отзывов",
+    "ratingLoadError": "Не удалось загрузить рейтинг продавца",
     "productsTitle": "Товары",
     "noProducts": "Пока нет товаров.",
     "readFullDescription": "Прочитать полностью",

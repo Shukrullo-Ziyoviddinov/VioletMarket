@@ -81,17 +81,55 @@
 }
 
 .seller-profile__section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 600;
   margin: 0 0 5px;
   color: #333;
   font-family: Tahoma, sans-serif;
 }
 
 .seller-profile__about {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   width: 100%;
   min-width: 0;
+}
+
+.seller-profile__rating {
+  margin-bottom: 0;
+}
+
+.seller-profile__rating-trigger {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seller-profile__rating-trigger:hover {
+  color: #5b21b6;
+}
+
+.seller-profile__rating-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #444;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.seller-profile__rating-preview i {
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.seller-profile__rating-error {
+  margin: 8px 0;
+  color: #b42318;
+  font-size: 0.95rem;
 }
 
 .seller-profile__description {
@@ -107,6 +145,13 @@
 
 .seller-profile__products {
   margin-bottom: 40px;
+}
+
+.seller-profile__products-head {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 5px;
 }
 
 .seller-profile__back-home {

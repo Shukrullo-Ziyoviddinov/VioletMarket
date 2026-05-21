@@ -11,7 +11,13 @@ const getProducts = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
+const getRatingSummary = asyncHandler(async (req, res) => {
+  const data = await sellerService.getSellerRatingSummary(req.params.sellerId);
+  res.json({ ok: true, ...data });
+});
+
 module.exports = {
   getProfile,
   getProducts,
+  getRatingSummary,
 };

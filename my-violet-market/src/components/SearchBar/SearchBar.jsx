@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
 import { useSearchHistory } from '../../contexts/SearchHistoryContext';
 import { useUser } from '../../contexts/UserContext';
-import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import { normalizeImagePath, getLocalizedText, formatPrice } from '../../utils/utils';
+import CartModal from '../CartModal/CartModal';
 import {
   fetchSearchRecommended,
   fetchSearchRecommendedDefault,
@@ -51,6 +52,7 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [recommended, setRecommended] = useState([]);
   const [recommendedLoading, setRecommendedLoading] = useState(false);
+  const [cartModalProduct, setCartModalProduct] = useState(null);
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -283,7 +285,9 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
                         </div>
                         <div className="search-bar__recommended-info">
                           <SkeletonPulse className="search-bar__recommended-name-skeleton" />
-                          <SkeletonPulse className="search-bar__recommended-price-skeleton" />
+                          <div className="search-bar__recommended-bottom">
+                            <SkeletonPulse className="search-bar__recommended-price-skeleton" />
+                          </div>
                         </div>
                       </div>
                     ))
@@ -294,6 +298,7 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
                       const firstColor = product.colors?.[0];
                       const price = firstColor?.price || product.price || '';
                       const originalPrice = firstColor?.originalPrice || product.originalPrice || null;
+                      const productTitle = getLocalizedText(product.title, lang);
                       return (
                         <div
                           key={product.id}
@@ -312,14 +317,47 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
                                 e.target.src = normalizeImagePath('/img/no-image.png');
                               }}
                             />
+                            <button
+                              type="button"
+                              className="search-bar__recommended-cart-btn"
+                              aria-label={i18n.t('productCard.addToCart')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCartModalProduct(product);
+                              }}
+                            >
+                              <i className="fas fa-shopping-cart" aria-hidden="true" />
+                            </button>
                           </div>
                           <div className="search-bar__recommended-info">
-                            <span className="search-bar__recommended-name">{getLocalizedText(product.title, lang)}</span>
-                            <div className="search-bar__recommended-prices">
-                              <span className="search-bar__recommended-price">{price}</span>
-                              {originalPrice && (
-                                <span className="search-bar__recommended-original">{originalPrice}</span>
-                              )}
+                            <span
+                              className="search-bar__recommended-name"
+                              title={productTitle}
+                            >
+                              {productTitle}
+                            </span>
+                            <div className="search-bar__recommended-bottom">
+                              <div className="search-bar__recommended-prices">
+                                <span className="search-bar__recommended-price">
+                                  {formatPrice(price)}
+                                </span>
+                                {originalPrice && (
+                                  <span className="search-bar__recommended-original">
+                                    {formatPrice(originalPrice)}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                className="search-bar__recommended-link-btn"
+                                aria-label={i18n.t('search.openProduct')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRecommendedClick(product);
+                                }}
+                              >
+                                <i className="bx bx-link-external" aria-hidden="true" />
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -333,6 +371,11 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
           </div>
         </div>
       )}
+      <CartModal
+        product={cartModalProduct}
+        isOpen={Boolean(cartModalProduct)}
+        onClose={() => setCartModalProduct(null)}
+      />
     </div>
   );
 };

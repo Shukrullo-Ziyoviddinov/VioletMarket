@@ -35,3 +35,10 @@ export function fetchSellerProducts(sellerId, { page = 1, limit = 8, sort = 'def
     headers: optionalAuthHeaders(token),
   }).then(parseJsonResponse);
 }
+
+export function fetchSellerRatingSummary(sellerId, token) {
+  const id = encodeURIComponent(String(sellerId ?? '').trim());
+  return fetch(apiUrl(`/api/sellers/${id}/rating-summary`), {
+    headers: optionalAuthHeaders(token),
+  }).then(parseJsonResponse);
+}

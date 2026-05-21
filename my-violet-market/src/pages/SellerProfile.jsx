@@ -3,9 +3,15 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../contexts/UserContext';
 import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
-import { fetchSellerProfile, fetchSellerProducts } from '../api/sellerApi';
+import {
+  fetchSellerProfile,
+  fetchSellerProducts,
+  fetchSellerRatingSummary,
+} from '../api/sellerApi';
 import ProductCard from '../components/ProductCard';
 import GlobalMore from '../components/GlobalMore';
+import GlobalModal from '../components/GlobalModal';
+import SellerProfileReyting from '../components/SellerProfileReyting/SellerProfileReyting';
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
 import SellerSubscribeButton from '../components/SellerSubscribeButton';
 import LoadMore from '../components/LoadMore';
@@ -38,6 +44,10 @@ const SellerProfile = () => {
   const [profileLoading, setProfileLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const [profileError, setProfileError] = useState(null);
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [ratingSummary, setRatingSummary] = useState(null);
+  const [ratingError, setRatingError] = useState(null);
 
   const loadProfile = useCallback(async () => {
     if (!sellerId) return;
@@ -107,6 +117,35 @@ const SellerProfile = () => {
     loadProductsPage(page + 1, false);
   }, [hasMore, productsLoading, loadProductsPage, page]);
 
+  const loadRatingSummary = useCallback(async () => {
+    if (!sellerId) return;
+    setRatingLoading(true);
+    setRatingError(null);
+    try {
+      const data = await fetchSellerRatingSummary(sellerId, authToken);
+      setRatingSummary({
+        averageRating: Number(data.averageRating) || 0,
+        totalReviews: Number(data.totalReviews) || 0,
+        distribution: Array.isArray(data.distribution) ? data.distribution : [],
+        comments: Array.isArray(data.comments) ? data.comments : [],
+      });
+    } catch (err) {
+      setRatingSummary(null);
+      setRatingError(err?.message || t('seller.ratingLoadError'));
+    } finally {
+      setRatingLoading(false);
+    }
+  }, [sellerId, authToken, t]);
+
+  useEffect(() => {
+    if (!ratingModalOpen) return;
+    loadRatingSummary();
+  }, [ratingModalOpen, loadRatingSummary]);
+
+  useEffect(() => {
+    loadRatingSummary();
+  }, [loadRatingSummary]);
+
   const showProfileSkeleton = profileLoading;
   const showProductsSkeleton = productsLoading && products.length === 0;
   const showError = !profileLoading && (profileError || !seller);
@@ -125,6 +164,9 @@ const SellerProfile = () => {
   }
 
   const logoSrc = seller ? normalizeImagePath(seller.logo) : '';
+  const ratingAveragePreview = Number.isFinite(Number(ratingSummary?.averageRating))
+    ? Number(ratingSummary.averageRating).toFixed(1)
+    : '--';
 
   return (
     <div className="product-page seller-profile-page">
@@ -192,9 +234,24 @@ const SellerProfile = () => {
             </>
           ) : (
             <>
-              <h2 id="seller-products-heading" className="seller-profile__section-title">
-                {t('seller.productsTitle')}
-              </h2>
+              <div className="seller-profile__products-head">
+                <h2 id="seller-products-heading" className="seller-profile__section-title">
+                  {t('seller.productsTitle')}
+                </h2>
+                <div className="seller-profile__rating">
+                  <button
+                    type="button"
+                    className="seller-profile__section-title seller-profile__rating-trigger"
+                    onClick={() => setRatingModalOpen(true)}
+                  >
+                    <span>{t('seller.ratingReviewsTitle')}</span>
+                    <span className="seller-profile__rating-preview" aria-hidden>
+                      <i className="bx bxs-star" />
+                      <span className="seller-profile__rating-preview-value">{ratingAveragePreview}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
               {products.length === 0 ? (
                 <p className="product-page__empty">{t('seller.noProducts')}</p>
               ) : (
@@ -209,6 +266,22 @@ const SellerProfile = () => {
           )}
         </section>
       </div>
+      <GlobalModal
+        isOpen={ratingModalOpen}
+        onClose={() => setRatingModalOpen(false)}
+        title={t('seller.ratingReviewsTitle')}
+      >
+        {ratingError ? (
+          <p className="seller-profile__rating-error">{ratingError}</p>
+        ) : (
+          <SellerProfileReyting
+            summary={ratingSummary}
+            loading={ratingLoading}
+            t={t}
+            locale={lang === 'ru' ? 'ru-RU' : 'uz-UZ'}
+          />
+        )}
+      </GlobalModal>
     </div>
   );
 };

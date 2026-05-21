@@ -93,11 +93,21 @@
 .global-modal__body {
   padding: 12px 16px 22px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   min-height: 0;
   font-size: 1rem;
   line-height: 1.6;
   color: #333;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+
+.global-modal__body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* Mobile bottom sheet */
@@ -112,7 +122,7 @@
   .global-modal--sheet {
     max-width: none;
     width: 100%;
-    max-height: min(88vh, 720px);
+    max-height: min(75vh, 720px);
     border-radius: 20px 20px 0 0;
     animation: global-modal-sheet-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     margin: 0;

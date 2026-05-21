@@ -15,6 +15,7 @@
     "remove": "O'chirish",
     "recommendedTitle": "Tavsiya etamiz",
     "recommendedEmpty": "Tavsiyalar yo'q",
+    "openProduct": "Mahsulotni ochish",
     "loginRequired": "Qidiruv tarixini saqlash uchun tizimga kiring",
     "saveError": "Qidiruv tarixini saqlab bo'lmadi"
   },
@@ -338,6 +339,10 @@
     "notFound": "Sotuvchi topilmadi.",
     "backHome": "Bosh sahifaga",
     "aboutTitle": "Sotuvchi haqida",
+    "ratingReviewsTitle": "Reyting va sharh",
+    "ratingReviews": "sharhlar",
+    "noReviewsYet": "Hozircha sharhlar yo'q",
+    "ratingLoadError": "Reyting ma'lumotlarini yuklab bo'lmadi",
     "productsTitle": "Mahsulotlar",
     "noProducts": "Hozircha mahsulotlar yo'q.",
     "readFullDescription": "To'liq matnni o'qish",
