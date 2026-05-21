@@ -47,11 +47,23 @@
 }
 
 /* UZ ombor banner */
-.uz-warehouse-banner__img--skeleton {
-  min-height: 140px;
+.uz-warehouse-banner__row .uz-warehouse-banner__img--skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.uz-warehouse-banner--skeleton .uz-warehouse-banner__link {
+  position: relative;
+  aspect-ratio: 5 / 2;
   border-radius: 10px;
   border: 1px solid #b8b8b8;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 /* Savat sahifasidagi kargo skeleton — .cargo-summary o‘lchamlari Cart.css da */

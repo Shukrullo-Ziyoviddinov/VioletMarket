@@ -3,9 +3,23 @@
   margin: 16px 0 28px;
 }
 
-.uz-warehouse-banner__link {
-  display: block;
+.uz-warehouse-banner__row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
   width: 100%;
+  margin: 12px 0;
+}
+
+.uz-warehouse-banner__link {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 5 / 2;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #ccc;
   line-height: 0;
 }
 
@@ -15,18 +29,24 @@
 }
 
 .uz-warehouse-banner__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  object-fit: cover;
-  vertical-align: bottom;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+  object-position: center;
+  border: none;
+  border-radius: 0;
 }
 
 @media (max-width: 576px) {
   .uz-warehouse-banner {
     width: 100%;
     margin: 5px 0 10px;
-}
+  }
+
+  .uz-warehouse-banner__row {
+    gap: 8px;
+    margin: 8px 0;
+  }
 }

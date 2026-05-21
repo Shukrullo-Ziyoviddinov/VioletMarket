@@ -150,13 +150,14 @@ async function seedSellersMany() {
 }
 
 async function seedUzWarehouseMany() {
-  const { uzWarehouseData } = require("./seedUzWarehouseData");
+  const { uzWarehouseData, chinaWarehouseData } = require("./seedUzWarehouseData");
   await UzWarehouseLocale.syncIndexes();
   await UzWarehouseLocale.deleteMany({});
-  if (uzWarehouseData?.src) {
-    await UzWarehouseLocale.insertMany([{ slot: 1, src: uzWarehouseData.src }]);
-  }
-  console.log("UZ warehouse: uz_warehouse_locales=1");
+  const docs = [];
+  if (uzWarehouseData?.src) docs.push({ slot: 1, src: uzWarehouseData.src });
+  if (chinaWarehouseData?.src) docs.push({ slot: 2, src: chinaWarehouseData.src });
+  if (docs.length) await UzWarehouseLocale.insertMany(docs);
+  console.log(`Warehouse banners: uz_warehouse_locales=${docs.length}`);
 }
 
 async function seedProductPolicyMany() {
@@ -210,6 +211,7 @@ async function seedProducts() {
     seenIds.add(p.id);
     uniqueProducts.push(p);
   }
+
   if (duplicateIds) {
     console.warn(`Ogohlantirish: takroriy id — ${duplicateIds} yozuv tashlandi (bir id bir marta).`);
   }
@@ -230,7 +232,11 @@ async function seedProducts() {
       throw e;
     }
   }
+  const chinaSellerCount = uniqueProducts.filter(
+    (p) => String(p.sellerCountry || "").trim().toLowerCase() === "china"
+  ).length;
   console.log(`Products inserted: ${uniqueProducts.length} (JSON jami: ${raw.length}, takrorlar chiqarildi)`);
+  console.log(`sellerCountry=China: ${chinaSellerCount} ta mahsulot`);
 }
 
 async function logDbSummary() {

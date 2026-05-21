@@ -1,8 +1,15 @@
 const uzWarehouseData = {
-    src: {
-      uz: 'img/uzbproductuz.jpg',
-      ru: 'img/uzbproductru.jpg',
-    },
-  };
+  src: {
+    uz: 'img/uzbproductuz.jpg',
+    ru: 'img/uzbproductru.jpg',
+  },
+};
 
-module.exports = { uzWarehouseData };
+const chinaWarehouseData = {
+  src: {
+    uz: 'img/sellerCountryimguz.jpg',
+    ru: 'img/sellerCountryimgru.jpg',
+  },
+};
+
+module.exports = { uzWarehouseData, chinaWarehouseData };

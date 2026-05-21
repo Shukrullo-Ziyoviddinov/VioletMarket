@@ -27,6 +27,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import OrderHistory from './pages/OrderHistory';
 import UzWarehousePage from './pages/UzWarehousePage';
+import ChinaWarehousePage from './pages/ChinaWarehousePage';
 import SellerProfile from './pages/SellerProfile';
 import './App.css';
 
@@ -79,6 +80,7 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/uzWarehousePage" element={<UzWarehousePage />} />
+          <Route path="/chinaWarehousePage" element={<ChinaWarehousePage />} />
           <Route path="/seller/:sellerId" element={<SellerProfile />} />
         </Routes>
       </main>

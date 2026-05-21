@@ -94,10 +94,21 @@ async function getSellers() {
 }
 
 async function getUzWarehouse() {
-  const row = await UzWarehouseLocale.findOne().sort({ slot: 1 }).lean();
-  if (!row) return null;
-  const { src } = stripMongoMeta(row);
-  return { uzWarehouseData: { src } };
+  const rows = await UzWarehouseLocale.find().sort({ slot: 1 }).lean();
+  if (!rows.length) return null;
+
+  const result = {};
+  const uzRow = rows.find((r) => r.slot === 1);
+  const chinaRow = rows.find((r) => r.slot === 2);
+
+  if (uzRow?.src) {
+    result.uzWarehouseData = { src: stripMongoMeta(uzRow).src };
+  }
+  if (chinaRow?.src) {
+    result.chinaWarehouseData = { src: stripMongoMeta(chinaRow).src };
+  }
+
+  return Object.keys(result).length ? result : null;
 }
 
 /** Frontend to'g'ridan-to'g'ri massiv kutadi */

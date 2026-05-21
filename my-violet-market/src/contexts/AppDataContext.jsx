@@ -89,6 +89,7 @@ export function AppDataProvider({ children }) {
         sellers: [],
         getSellerById: () => undefined,
         uzWarehouseData: null,
+        chinaWarehouseData: null,
         defaultProductPolicy: [],
         ...buildProductCollections([]),
       };
@@ -114,7 +115,8 @@ export function AppDataProvider({ children }) {
       deliveryPrices: payload.cargo.deliveryPrices || {},
       sellers,
       getSellerById,
-      uzWarehouseData: payload.uzWarehouse.uzWarehouseData || null,
+      uzWarehouseData: payload.uzWarehouse?.uzWarehouseData || null,
+      chinaWarehouseData: payload.uzWarehouse?.chinaWarehouseData || null,
       defaultProductPolicy: payload.defaultProductPolicy,
       ...cols,
     };

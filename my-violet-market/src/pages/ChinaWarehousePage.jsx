@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard';
 import Filters from '../components/Filters';
 import { SkeletonPulse } from '../components/SkeletonLoader';
 import { getProductPriceNumber } from '../utils/utils';
-import { isUzWarehouseProduct } from '../utils/warehouseProduct';
+import { isChinaWarehouseProduct } from '../utils/warehouseProduct';
 import './ProductPage.css';
 
 const filterByBrand = (list, brands) => {
@@ -44,7 +44,7 @@ const filterByGenre = (list, genres) => {
   });
 };
 
-const UzWarehousePage = () => {
+const ChinaWarehousePage = () => {
   const { t } = useTranslation();
   const { allProducts, loading, error } = useAppData();
   const catalog = allProducts || [];
@@ -56,7 +56,10 @@ const UzWarehousePage = () => {
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
 
-  const categoryProducts = useMemo(() => catalog.filter(isUzWarehouseProduct), [catalog]);
+  const categoryProducts = useMemo(
+    () => catalog.filter(isChinaWarehouseProduct),
+    [catalog]
+  );
 
   const isBooksCategory = useMemo(
     () => categoryProducts.some((p) => (p.category || '').trim() === 'Kitoblar'),
@@ -163,11 +166,11 @@ const UzWarehousePage = () => {
 
   const emptyMessage =
     categoryProducts.length === 0
-      ? t('uzWarehouse.empty')
-      : t('uzWarehouse.filterEmpty');
+      ? t('chinaWarehouse.empty')
+      : t('chinaWarehouse.filterEmpty');
 
   return (
-    <div className="product-page uz-warehouse-page">
+    <div className="product-page china-warehouse-page">
       <div className="container">
         <Filters
           categoryProducts={categoryProducts}
@@ -204,7 +207,7 @@ const UzWarehousePage = () => {
           <div className="products-grid">
             {Array.from({ length: 10 }, (_, i) => (
               <SkeletonPulse
-                key={`uz-warehouse-sk-${i}`}
+                key={`china-warehouse-sk-${i}`}
                 className="product-card product-card--skeleton"
                 aria-hidden
               />
@@ -224,4 +227,4 @@ const UzWarehousePage = () => {
   );
 };
 
-export default UzWarehousePage;
+export default ChinaWarehousePage;

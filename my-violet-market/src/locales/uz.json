@@ -354,10 +354,18 @@
     "loginRequired": "Obuna bo‘lish uchun tizimga kiring"
   },
   "uzWarehouse": {
+    "bannersSectionAria": "Ombor bannerlari",
     "bannerAria": "Mahalliy ombordan tez yetkazish",
     "bannerAlt": "O'zbekiston omboridan tez yetkazish — batafsil",
     "pageTitle": "Mahalliy ombordagi mahsulotlar",
     "empty": "Hozircha bu bo'limda mahsulot yo'q.",
+    "filterEmpty": "Filtrlarga mos mahsulot topilmadi."
+  },
+  "chinaWarehouse": {
+    "bannerAria": "Xitoy omboridan yetkazish",
+    "bannerAlt": "Xitoy omboridan yetkazish — batafsil",
+    "pageTitle": "Xitoy omboridagi mahsulotlar",
+    "empty": "Hozircha Xitoy omborida mahsulot yo'q.",
     "filterEmpty": "Filtrlarga mos mahsulot topilmadi."
   }
 }

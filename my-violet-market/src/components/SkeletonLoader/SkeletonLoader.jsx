@@ -40,7 +40,14 @@ export function SkeletonUzWarehouseBanner() {
       aria-busy="true"
       aria-label="Banner yuklanmoqda"
     >
-      <div className="uz-warehouse-banner__img uz-warehouse-banner__img--skeleton skeleton-pulse" />
+      <div className="uz-warehouse-banner__row">
+        <div className="uz-warehouse-banner__link">
+          <div className="uz-warehouse-banner__img uz-warehouse-banner__img--skeleton skeleton-pulse" />
+        </div>
+        <div className="uz-warehouse-banner__link">
+          <div className="uz-warehouse-banner__img uz-warehouse-banner__img--skeleton skeleton-pulse" />
+        </div>
+      </div>
     </section>
   );
 }
