@@ -89,7 +89,7 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 16px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -1246,7 +1246,7 @@
 }
 
 .profile-language-modal--bottom .profile-language-modal__body {
-  padding: 0 24px 24px;
+  padding: 0 16px 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -1405,7 +1405,7 @@
 
 .profile-social-modal--bottom .profile-social-modal__body,
 .profile-contact-modal--bottom .profile-contact-modal__body {
-  padding: 0 24px 24px;
+  padding: 16px 20px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   flex: 1;
 }
@@ -1471,7 +1471,7 @@
   width: 76px;
   height: 76px;
   border-radius: 12px;
-  background: #f8f9fa;
+  background: #f0f1f1;
   transition: background 0.2s, transform 0.2s;
   touch-action: manipulation;
 }
@@ -1636,7 +1636,7 @@
 }
 
 .profile-about-modal__body {
-  padding: 24px;
+  padding: 16px;
   overflow-y: auto;
   flex: 1;
 }

@@ -109,6 +109,7 @@
     "sizeLabel": "Размер:",
     "storageLabel": "Память:",
     "modelLabel": "Модель:",
+    "quantityLeft": "Осталось {{count}} шт.",
     "sizeChartLabel": "Таблица размеров",
     "sizeChartKind": {
       "footwear": "Размерная сетка обуви",

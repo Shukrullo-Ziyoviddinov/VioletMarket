@@ -951,6 +951,19 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            {productData.quantity != null &&
+              Number.isFinite(Number(productData.quantity)) &&
+              Number(productData.quantity) > 0 && (
+              <div className="product-detail-quantity" aria-live="polite">
+                <i className="bx bx-package" aria-hidden="true" />
+                <span>
+                  {i18n.t('productDetail.quantityLeft', {
+                    count: Number(productData.quantity),
+                  })}
+                </span>
+              </div>
+            )}
+
             {productData.colors && productData.colors.length > 0 && (
               <div className="color-selection">
                 <h3>{i18n.t('productDetail.colorLabel')} {selectedColor !== null ? getLocalizedText(selectedColor?.name, lang) : getLocalizedText(productData.colors[0]?.name, lang)}</h3>

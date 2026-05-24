@@ -109,6 +109,7 @@
     "sizeLabel": "O'lcham:",
     "storageLabel": "Xotira:",
     "modelLabel": "Model:",
+    "quantityLeft": "{{count}} dona qoldi",
     "sizeChartLabel": "O'lchamlar jadvali",
     "sizeChartKind": {
       "footwear": "Oyoq kiyimi o'lchami",

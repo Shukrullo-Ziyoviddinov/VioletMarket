@@ -22,6 +22,7 @@
       "productCountry": "USA",
       "brandCategories": "nike",
       "countriesCategories": "usa",
+      "quantity": 10,
       "weight": 200,
       "labels": [
         {

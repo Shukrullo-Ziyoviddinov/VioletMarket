@@ -281,6 +281,25 @@
   font-size: 1.1rem;
 }
 
+.product-detail-quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #f3f0ff;
+  color: #5b21b6;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.product-detail-quantity i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
 .colors-container {
   display: flex;
   gap: 10px;

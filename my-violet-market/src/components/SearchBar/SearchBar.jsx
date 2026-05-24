@@ -15,7 +15,22 @@ import './SearchBar.css';
 
 const MAX_SUGGESTIONS = 5;
 /** Server searchAlgorithm.js — SEARCH_RECOMMENDED_LIMIT bilan bir xil */
-const SEARCH_RECOMMENDED_SKELETON_COUNT = 12;
+const SEARCH_RECOMMENDED_LIMIT = 12;
+const SEARCH_RECOMMENDED_SKELETON_COUNT = SEARCH_RECOMMENDED_LIMIT;
+
+function padRecommendedProducts(products, catalog, limit = SEARCH_RECOMMENDED_LIMIT) {
+  const list = Array.isArray(products) ? products : [];
+  if (list.length >= limit) return list.slice(0, limit);
+  const seen = new Set(list.map((p) => p.id));
+  const extra = [];
+  for (const p of catalog || []) {
+    if (extra.length + list.length >= limit) break;
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+    extra.push(p);
+  }
+  return [...list, ...extra];
+}
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
 
 function normalizeForSearch(str) {
@@ -85,7 +100,9 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
     fetchRecommended
       .then((data) => {
         if (!cancelled) {
-          setRecommended(Array.isArray(data.products) ? data.products : []);
+          setRecommended(
+            padRecommendedProducts(data.products, catalog, SEARCH_RECOMMENDED_LIMIT),
+          );
         }
       })
       .catch(() => {
@@ -98,7 +115,7 @@ const SearchBar = ({ isMobile = false, className = '' }) => {
     return () => {
       cancelled = true;
     };
-  }, [showRecommendations, authToken, recentSearchQueries]);
+  }, [showRecommendations, authToken, recentSearchQueries, catalog]);
 
   useEffect(() => {
     if (!isPanelOpen) return;

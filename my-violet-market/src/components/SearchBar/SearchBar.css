@@ -238,14 +238,14 @@
   font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 14px 0;
+  margin: 0 0 5px 0;
   padding: 0;
   border-bottom: none;
 }
 
 .search-bar__recommended-list {
   display: grid;
-  gap: 10px;
+  gap: 7px;
   grid-template-columns: repeat(3, 1fr);
 }
 

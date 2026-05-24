@@ -140,6 +140,13 @@ const ProductPage = () => {
   const paramCountry = searchParams.get('country') || '';
   const paramBrand = searchParams.get('brand') || '';
 
+  const hasCountryBrandFilter = Boolean(
+    paramCountry ||
+      paramBrand ||
+      selectedCountries.length > 0 ||
+      selectedBrands.length > 0,
+  );
+
   const categoryProducts = useMemo(() => {
     if (isNewCollectionPage) return newCollection;
     if (isWomenCollectionPage) return womensCollection;
@@ -167,7 +174,22 @@ const ProductPage = () => {
         return (product.brandCategories || '').toLowerCase() === brandValue;
       }
       if (navbarCategoryNameStr) {
-        return (product.category || '').trim() === navbarCategoryNameStr;
+        const inNavbarCategory =
+          (product.category || '').trim() === navbarCategoryNameStr;
+        if (product.categoryName === 'bigDiscountCollection' && hasCountryBrandFilter) {
+          const c = (product.countriesCategories || '').toLowerCase();
+          const b = (product.brandCategories || '').toLowerCase();
+          if (paramCountry && c !== paramCountry.toLowerCase()) return false;
+          if (paramBrand && b !== paramBrand.toLowerCase()) return false;
+          if (selectedCountries.length > 0 && !selectedCountries.includes(c)) {
+            return false;
+          }
+          if (selectedBrands.length > 0 && !selectedBrands.includes(b)) {
+            return false;
+          }
+          return true;
+        }
+        return inNavbarCategory;
       }
       return false;
     });
@@ -205,6 +227,9 @@ const ProductPage = () => {
     navbarCategoryNameStr,
     paramCountry,
     paramBrand,
+    hasCountryBrandFilter,
+    selectedCountries,
+    selectedBrands,
     allProducts,
     newCollection,
     womensCollection,
@@ -421,7 +446,9 @@ const ProductPage = () => {
                   key={`${product.id}-${index}`}
                   product={product}
                   hideAddToCart={isBigDiscountPage}
-                  flashDurationHours={product.flashDurationHours}
+                  flashDurationHours={
+                    isBigDiscountPage ? product.flashDurationHours : undefined
+                  }
                 />
               ))}
         </div>

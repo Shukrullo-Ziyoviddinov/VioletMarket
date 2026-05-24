@@ -123,38 +123,44 @@ function getDefaultRecommended(allProducts, count = SEARCH_RECOMMENDED_LIMIT) {
 
 /**
  * Search tavsiya — faqat qidiruv tarixi (viewedAt ishlatilmaydi).
- * So'rov sarlavhada bo'lsa +3 ball, eng yuqorisi 12 ta.
+ * Mos mahsulotlar + reyting/sotuv bo‘yicha to‘ldirish — har doim 12 tagacha.
  */
 function getSimilarRecommended(allProducts, recentSearchQueries) {
   const scores = new Map();
-
-  const getTitleString = (p) => {
-    const t = p.title;
-    if (t == null) return "";
-    if (typeof t === "string") return t;
-    return (t.uz || t.ru || "").toString();
-  };
+  const list = Array.isArray(allProducts) ? allProducts : [];
 
   (recentSearchQueries || []).forEach((q) => {
-    const qLower = (q || "").trim().toLowerCase();
-    if (qLower.length < 2) return;
-    allProducts.forEach((p) => {
-      const title = getTitleString(p).toLowerCase();
-      if (title.includes(qLower)) {
-        const cur = scores.get(p.id);
-        scores.set(p.id, { product: p, score: (cur?.score ?? 0) + 3 });
-      }
+    const trimmed = (q || "").trim();
+    if (trimmed.length < 2) return;
+    list.forEach((p) => {
+      if (!productMatchesSearchFlexible(p, trimmed)) return;
+      const cur = scores.get(p.id);
+      scores.set(p.id, { product: p, score: (cur?.score ?? 0) + 3 });
     });
   });
 
+  let result = [];
   if (scores.size > 0) {
-    return [...scores.values()]
+    result = [...scores.values()]
       .sort((a, b) => b.score - a.score)
       .slice(0, SEARCH_RECOMMENDED_LIMIT)
       .map((x) => x.product);
   }
 
-  return getDefaultRecommended(allProducts, SEARCH_RECOMMENDED_LIMIT);
+  if (result.length < SEARCH_RECOMMENDED_LIMIT) {
+    const seen = new Set(result.map((p) => p.id));
+    const filler = getDefaultRecommended(
+      list.filter((p) => !seen.has(p.id)),
+      SEARCH_RECOMMENDED_LIMIT - result.length,
+    );
+    result = [...result, ...filler];
+  }
+
+  if (result.length === 0) {
+    return getDefaultRecommended(list, SEARCH_RECOMMENDED_LIMIT);
+  }
+
+  return result;
 }
 
 module.exports = {
