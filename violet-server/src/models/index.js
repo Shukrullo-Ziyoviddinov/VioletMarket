@@ -12,6 +12,7 @@ const { VideoBannerItem } = require("./videoBannerItem");
 const { SellerAccount } = require("./sellerAccount");
 const { UzWarehouseLocale } = require("./uzWarehouseLocale");
 const { ProductPolicyBlock } = require("./productPolicyBlock");
+const { FlashSaleRuleConfig } = require("./flashSaleRuleConfig");
 const { User } = require("./user");
 const { Wishlist } = require("./wishlist");
 const { SellerSubscription } = require("./sellerSubscription");
@@ -33,6 +34,7 @@ module.exports = {
   SellerAccount,
   UzWarehouseLocale,
   ProductPolicyBlock,
+  FlashSaleRuleConfig,
   User,
   Wishlist,
   SellerSubscription,

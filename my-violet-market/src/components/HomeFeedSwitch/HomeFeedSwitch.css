@@ -1,0 +1,51 @@
+.home-feed-switch {
+  display: inline-flex;
+  gap: 18px;
+}
+
+.home-feed-switch__btn {
+  position: relative;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  padding: 0 35px;
+  font-weight: 600;
+  color: #4b5563;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.home-feed-switch__btn.is-active {
+  color: #7c3aed;
+}
+
+.home-feed-switch__btn.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 2px;
+  border-radius: 2px;
+  background: #7c3aed;
+}
+
+@media (max-width: 500px) {
+  .home-feed-switch {
+    display: block;
+    gap: 18px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .home-feed-switch__btn {
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-feed-switch__btn {
+    padding: 0 30px;
+  }
+}

@@ -9,6 +9,7 @@ function errorHandler(err, req, res, next) {
     message: err.message || "Server xatosi",
   };
   if (err.code) body.code = err.code;
+  if (err.details !== undefined) body.details = err.details;
 
   if (status >= 500) {
     console.error(err);

@@ -37,8 +37,8 @@ const HomeCollectionGrid = ({
                 aria-hidden
               />
             ))
-          : products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          : products.map((product, index) => (
+              <ProductCard key={`${String(product.id)}-${index}`} product={product} />
             ))}
       </div>
       {hasMore && products.length > 0 && <LoadMore onLoadMore={loadMore} />}

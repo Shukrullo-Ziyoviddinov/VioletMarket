@@ -24,6 +24,7 @@ const {
   SellerAccount,
   UzWarehouseLocale,
   ProductPolicyBlock,
+  FlashSaleRuleConfig,
 } = require("../models");
 
 const SEED_DIR = __dirname;
@@ -171,6 +172,22 @@ async function seedProductPolicyMany() {
   console.log(`Default product policy: product_policy_blocks=${Array.isArray(blocks) ? blocks.length : 0}`);
 }
 
+async function seedFlashSaleRules() {
+  const config = require("./seedFlashSaleRules");
+  await FlashSaleRuleConfig.syncIndexes();
+  await FlashSaleRuleConfig.deleteMany({});
+  await FlashSaleRuleConfig.create({
+    key: "default",
+    minSoldCount: Number(config?.minSoldCount),
+    minCartUsers: Number(config?.minCartUsers),
+    lowStockThreshold: Number(config?.lowStockThreshold),
+    highStockThreshold: Number(config?.highStockThreshold),
+    rotateEveryMs: Number(config?.rotateEveryMs),
+    active: config?.active !== false,
+  });
+  console.log("Flash sale rules: flash_sale_rule_configs=1");
+}
+
 async function seedSiteCollections() {
   await dropLegacySingletonSiteCollections();
   await seedCategoriesMany();
@@ -182,6 +199,7 @@ async function seedSiteCollections() {
   await seedSellersMany();
   await seedUzWarehouseMany();
   await seedProductPolicyMany();
+  await seedFlashSaleRules();
 }
 
 async function dropLegacyAppContents() {
@@ -255,6 +273,7 @@ async function logDbSummary() {
     seller_accounts: await SellerAccount.countDocuments(),
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),
     product_policy_blocks: await ProductPolicyBlock.countDocuments(),
+    flash_sale_rule_configs: await FlashSaleRuleConfig.countDocuments(),
     products: await Product.countDocuments(),
   };
   console.log("--- DB tekshiruv ---");

@@ -17,7 +17,7 @@
 }
 
 .product-collection {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .products-grid {
@@ -35,14 +35,14 @@
 }
 
 .new-collection {
-  margin: 40px 0;
+  margin: 20px 0;
   padding: 17px 11px;
   border-radius: 20px;
   background: rgb(186, 162, 251);
 }
 
 .womens-collection {
-  margin: 40px 0;
+  margin: 20px 0;
   padding: 17px 11px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e074fe 0%, #f581eb 50%, #b581f5 100% );
@@ -57,7 +57,7 @@
 }
 
 .mens-collection {
-  margin: 40px 0;
+  margin: 20px 0;
   padding: 17px 11px;
   border-radius: 20px;
   background: linear-gradient(135deg, #b4b5f8 0%, #a499fa 50%, #9a8ff4 100%);
@@ -70,23 +70,23 @@
 }
 
 .eng-arzonlare {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .trending-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .electronics-section {
-  margin: 40px 0;
+  margin: 42px 0;
 }
 
 .stationery-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .beauty-care-section {
-  margin: 40px 0;
+  margin: 20px 0;
   padding-top: 10px;
   padding: 17px 11px;
   border-radius: 20px;
@@ -98,11 +98,11 @@
 }
 
 .accessories-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .gifts-toys-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .gifts-toys-scrollable .scrollable-container {
@@ -110,7 +110,7 @@
 }
 
 .vitamins-health-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .active-lifestyle-section {
@@ -126,11 +126,11 @@
 }
 
 .travel-gear-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .household-appliances-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 .household-appliances-scrollable .scrollable-container {
@@ -138,12 +138,12 @@
 }
 
 .all-kinds-products-section {
-  margin: 40px 0;
+  margin: 20px 0;
 }
 
 /* ——— Katta chegirma (rasmdagi ko‘rinish) ——— */
 .big-discount-section {
-  margin: 40px 0;
+  margin: 20px 0;
   padding: 17px 11px;
   border-radius: 28px;
 

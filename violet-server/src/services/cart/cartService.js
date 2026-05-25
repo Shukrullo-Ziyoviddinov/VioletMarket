@@ -17,6 +17,216 @@ function parseProductId(raw) {
   return num;
 }
 
+function normalizeLabel(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getProductTitleText(title, fallback) {
+  if (typeof title === "string" && title.trim()) return title;
+  if (title && typeof title === "object") {
+    if (typeof title.uz === "string" && title.uz.trim()) return title.uz;
+    if (typeof title.ru === "string" && title.ru.trim()) return title.ru;
+  }
+  return String(fallback || "Mahsulot");
+}
+
+function optionNameMatches(name, label) {
+  const target = normalizeLabel(label);
+  if (!target) return false;
+  if (typeof name === "string") return normalizeLabel(name) === target;
+  if (name && typeof name === "object") {
+    return [name.uz, name.ru].some((n) => normalizeLabel(n) === target);
+  }
+  return false;
+}
+
+function getMatchedColors(product, colorLabel) {
+  const colors = Array.isArray(product?.colors) ? product.colors : [];
+  const normalizedColor = normalizeLabel(colorLabel);
+  if (!normalizedColor) return colors;
+  return colors.filter((color) => optionNameMatches(color?.name, normalizedColor));
+}
+
+function toNonNegativeInt(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  return Math.max(0, Math.floor(num));
+}
+
+function findMapKeyByLabel(mapObj, label) {
+  if (!mapObj || typeof mapObj !== "object") return null;
+  const target = normalizeLabel(label);
+  if (!target) return null;
+  const keys = Object.keys(mapObj);
+  for (const key of keys) {
+    if (normalizeLabel(key) === target) return key;
+  }
+  return null;
+}
+
+function getOptionLabel(option, labelField) {
+  if (labelField && option && typeof option === "object") {
+    return option[labelField];
+  }
+  if (option && typeof option === "object") {
+    return option.name ?? option.size ?? "";
+  }
+  return option;
+}
+
+function scopedListAvailability(matchedColors, listField, labelField, variantValue) {
+  if (!variantValue) return null;
+  let total = 0;
+  let found = false;
+
+  for (const color of matchedColors) {
+    const list = Array.isArray(color?.[listField]) ? color[listField] : [];
+    for (const option of list) {
+      const optionLabel = getOptionLabel(option, labelField);
+      if (!optionNameMatches(optionLabel, variantValue)) continue;
+      const quantity = Number(option?.quantity);
+      if (!Number.isFinite(quantity)) continue;
+      found = true;
+      total += toNonNegativeInt(quantity);
+    }
+  }
+
+  return found ? total : null;
+}
+
+function hasListQuantity(matchedColors, listField, labelField, variantValue) {
+  return scopedListAvailability(matchedColors, listField, labelField, variantValue) != null;
+}
+
+function resolveVariantAvailability(product, variant) {
+  const matchedColors = getMatchedColors(product, variant.color);
+  if (matchedColors.length === 0) return null;
+
+  const candidateAvailabilities = [];
+
+  const colorQuantities = matchedColors
+    .map((color) => Number(color?.quantity))
+    .filter((n) => Number.isFinite(n));
+  if (colorQuantities.length > 0) {
+    candidateAvailabilities.push(
+      colorQuantities.reduce((sum, current) => sum + toNonNegativeInt(current), 0),
+    );
+  }
+
+  const scopedMapAvailability = (fieldName, variantValue) => {
+    if (!variantValue) return null;
+    let total = 0;
+    let found = false;
+    for (const color of matchedColors) {
+      const key = findMapKeyByLabel(color?.[fieldName], variantValue);
+      if (key == null) continue;
+      found = true;
+      total += toNonNegativeInt(color[fieldName][key]);
+    }
+    return found ? total : null;
+  };
+
+  const sizeAvailability = scopedMapAvailability("sizeStock", variant.size);
+  if (sizeAvailability != null) candidateAvailabilities.push(sizeAvailability);
+  const storageAvailability =
+    scopedListAvailability(matchedColors, "storage", "size", variant.storage) ??
+    scopedMapAvailability("storageStock", variant.storage);
+  if (storageAvailability != null) candidateAvailabilities.push(storageAvailability);
+  const modelAvailability =
+    scopedListAvailability(matchedColors, "models", "name", variant.model) ??
+    scopedMapAvailability("modelStock", variant.model);
+  if (modelAvailability != null) candidateAvailabilities.push(modelAvailability);
+
+  if (candidateAvailabilities.length === 0) return null;
+  return Math.min(...candidateAvailabilities);
+}
+
+function consumeFromColorQuantities(matchedColors, requestedQty) {
+  let remaining = Math.max(0, requestedQty);
+  for (const color of matchedColors) {
+    if (remaining <= 0) break;
+    const available = Number(color?.quantity);
+    if (!Number.isFinite(available)) continue;
+    const safeAvailable = toNonNegativeInt(available);
+    const take = Math.min(safeAvailable, remaining);
+    color.quantity = safeAvailable - take;
+    remaining -= take;
+  }
+}
+
+function consumeFromStockMap(matchedColors, fieldName, variantValue, requestedQty) {
+  if (!variantValue) return;
+  let remaining = Math.max(0, requestedQty);
+  for (const color of matchedColors) {
+    if (remaining <= 0) break;
+    const mapObj = color?.[fieldName];
+    const key = findMapKeyByLabel(mapObj, variantValue);
+    if (key == null) continue;
+    const available = toNonNegativeInt(mapObj[key]);
+    const take = Math.min(available, remaining);
+    mapObj[key] = available - take;
+    remaining -= take;
+  }
+}
+
+function consumeFromOptionList(
+  matchedColors,
+  listField,
+  labelField,
+  variantValue,
+  requestedQty,
+) {
+  if (!variantValue) return;
+  let remaining = Math.max(0, requestedQty);
+
+  for (const color of matchedColors) {
+    if (remaining <= 0) break;
+    const list = Array.isArray(color?.[listField]) ? color[listField] : [];
+    for (const option of list) {
+      if (remaining <= 0) break;
+      const optionLabel = getOptionLabel(option, labelField);
+      if (!optionNameMatches(optionLabel, variantValue)) continue;
+      const quantity = Number(option?.quantity);
+      if (!Number.isFinite(quantity)) continue;
+      const available = toNonNegativeInt(quantity);
+      const take = Math.min(available, remaining);
+      option.quantity = available - take;
+      remaining -= take;
+    }
+  }
+}
+
+function applyVariantDecrement(product, variant, requestedQty) {
+  const matchedColors = getMatchedColors(product, variant.color);
+  if (matchedColors.length === 0) return;
+  consumeFromColorQuantities(matchedColors, requestedQty);
+  consumeFromStockMap(matchedColors, "sizeStock", variant.size, requestedQty);
+  if (hasListQuantity(matchedColors, "storage", "size", variant.storage)) {
+    consumeFromOptionList(matchedColors, "storage", "size", variant.storage, requestedQty);
+  } else {
+    consumeFromStockMap(matchedColors, "storageStock", variant.storage, requestedQty);
+  }
+  if (hasListQuantity(matchedColors, "models", "name", variant.model)) {
+    consumeFromOptionList(matchedColors, "models", "name", variant.model, requestedQty);
+  } else {
+    consumeFromStockMap(matchedColors, "modelStock", variant.model, requestedQty);
+  }
+}
+
+function hasVariantStockData(product) {
+  const colors = Array.isArray(product?.colors) ? product.colors : [];
+  for (const color of colors) {
+    if (!color || typeof color !== "object") continue;
+    if (Array.isArray(color.models) && color.models.length > 0) return true;
+    if (Array.isArray(color.storage) && color.storage.length > 0) return true;
+    if (color.modelStock && typeof color.modelStock === "object") return true;
+    if (color.storageStock && typeof color.storageStock === "object") return true;
+    if (color.sizeStock && typeof color.sizeStock === "object") return true;
+    if (Number.isFinite(Number(color.quantity))) return true;
+  }
+  return false;
+}
+
 async function pickDistinctUrgencyStock(userId, excludeItemId = null) {
   const query = { userId };
   if (excludeItemId) {
@@ -194,6 +404,158 @@ async function clearCartForUser(userId) {
   return getCartForUser(userId);
 }
 
+async function checkoutCartForUser(userId) {
+  const items = await CartItem.find({ userId }).sort({ createdAt: -1 });
+  if (items.length === 0) {
+    return { items: [] };
+  }
+
+  const requestedByProductId = new Map();
+  const variantRequestsByProductId = new Map();
+  for (const item of items) {
+    const productId = Number(item.productId);
+    const orderedQty = Math.max(1, Number(item.quantity) || 1);
+    const prev = requestedByProductId.get(productId) || 0;
+    requestedByProductId.set(productId, prev + orderedQty);
+
+    const variant = {
+      color: String(item.color || ""),
+      size: String(item.size || ""),
+      storage: String(item.storage || ""),
+      model: String(item.model || ""),
+    };
+    const variantKey = JSON.stringify(variant);
+    let perProductMap = variantRequestsByProductId.get(productId);
+    if (!perProductMap) {
+      perProductMap = new Map();
+      variantRequestsByProductId.set(productId, perProductMap);
+    }
+    const existingVariant = perProductMap.get(variantKey);
+    if (existingVariant) {
+      existingVariant.requestedQty += orderedQty;
+    } else {
+      perProductMap.set(variantKey, { variant, requestedQty: orderedQty });
+    }
+  }
+
+  const productIds = [...requestedByProductId.keys()].filter(Number.isFinite);
+  const products = await Product.find({ id: { $in: productIds } })
+    .select("id title quantity colors");
+  const productMap = new Map(products.map((product) => [Number(product.id), product]));
+
+  const insufficient = [];
+  const hasVariantStockByProductId = new Map();
+
+  for (const [productId, perProductVariantMap] of variantRequestsByProductId.entries()) {
+    const product = productMap.get(productId);
+    if (!product) continue;
+    const productTitle = getProductTitleText(product.title, productId);
+    const hasVariantStock = hasVariantStockData(product);
+    hasVariantStockByProductId.set(productId, hasVariantStock);
+
+    // Variant tekshiruvini ketma-ket "simulyatsiya" qilamiz:
+    // bir variant sarflangandan keyin keyingisiga qolgan stok hisoblanadi.
+    const workingProduct = product.toObject ? product.toObject() : JSON.parse(JSON.stringify(product));
+
+    for (const entry of perProductVariantMap.values()) {
+      const available = resolveVariantAvailability(workingProduct, entry.variant);
+      if (available == null) continue; // Faqat umumiy quantity bilan yuradigan product bo'lishi mumkin.
+      if (available < entry.requestedQty) {
+        insufficient.push({
+          productId,
+          title: productTitle,
+          requestedQty: entry.requestedQty,
+          availableQty: available,
+          variant: entry.variant,
+        });
+        continue;
+      }
+      applyVariantDecrement(workingProduct, entry.variant, entry.requestedQty);
+    }
+  }
+
+  for (const [productId, requestedQty] of requestedByProductId.entries()) {
+    const product = productMap.get(productId);
+    if (!product) {
+      throw new HttpError(404, `Mahsulot topilmadi: ${productId}`, "PRODUCT_NOT_FOUND");
+    }
+    const hasVariantStock = hasVariantStockByProductId.get(productId) === true;
+    if (hasVariantStock) continue;
+
+    const availableQty = Math.max(0, Number(product.quantity) || 0);
+    if (availableQty < requestedQty) {
+      insufficient.push({
+        productId,
+        title: getProductTitleText(product.title, productId),
+        requestedQty,
+        availableQty,
+      });
+    }
+  }
+
+  if (insufficient.length > 0) {
+    const first = insufficient[0];
+    const variantHint = first?.variant
+      ? ` [rang: ${first.variant.color || "-"}, size: ${first.variant.size || "-"}, storage: ${first.variant.storage || "-"}, model: ${first.variant.model || "-"}]`
+      : "";
+    throw new HttpError(
+      409,
+      `Mahsulot yetarli emas: ${first.title}${variantHint} (so'ralgan ${first.requestedQty}, qolgan ${first.availableQty})`,
+      "INSUFFICIENT_STOCK",
+      insufficient,
+    );
+  }
+
+  for (const [productId, requestedQty] of requestedByProductId.entries()) {
+    const hasVariantStock = hasVariantStockByProductId.get(productId) === true;
+    let result;
+
+    if (hasVariantStock) {
+      result = await Product.updateOne(
+        { id: productId },
+        { $inc: { flashSaleSoldCount: requestedQty } },
+      );
+    } else {
+      // Variant stoki bo'lmasa oldingi umumiy quantity algoritmi ishlaydi.
+      result = await Product.updateOne(
+        { id: productId, quantity: { $gte: requestedQty } },
+        { $inc: { quantity: -requestedQty, flashSaleSoldCount: requestedQty } },
+      );
+    }
+
+    if (result.modifiedCount !== 1) {
+      throw new HttpError(
+        409,
+        `Mahsulot qoldig'i yangilash vaqtida o'zgardi: ${productId}`,
+        "INSUFFICIENT_STOCK",
+        [
+          {
+            productId,
+            requestedQty,
+          },
+        ],
+      );
+    }
+  }
+
+  for (const [productId, perProductVariantMap] of variantRequestsByProductId.entries()) {
+    const product = productMap.get(productId);
+    if (!product) continue;
+    const hasVariantStock = hasVariantStockByProductId.get(productId) === true;
+    if (!hasVariantStock) continue;
+    for (const entry of perProductVariantMap.values()) {
+      applyVariantDecrement(product, entry.variant, entry.requestedQty);
+    }
+    await Product.updateOne(
+      { id: productId },
+      { $set: { colors: Array.isArray(product.colors) ? product.colors : [] } },
+    );
+  }
+
+  await CartItem.deleteMany({ userId });
+  return { items: [] };
+}
+
 async function dismissCartUrgency(userId, itemId) {
   const item = await CartItem.findOne({ _id: itemId, userId });
   if (!item) {
@@ -223,5 +585,6 @@ module.exports = {
   updateCartItemQuantity,
   removeCartItem,
   clearCartForUser,
+  checkoutCartForUser,
   dismissCartUrgency,
 };

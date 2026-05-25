@@ -31,6 +31,11 @@ const clearCart = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
+const checkout = asyncHandler(async (req, res) => {
+  const data = await cartService.checkoutCartForUser(req.userId);
+  res.json({ ok: true, ...data });
+});
+
 const dismissUrgency = asyncHandler(async (req, res) => {
   const data = await cartService.dismissCartUrgency(req.userId, req.params.itemId);
   res.json({ ok: true, ...data });
@@ -42,5 +47,6 @@ module.exports = {
   updateQuantity,
   removeItem,
   clearCart,
+  checkout,
   dismissUrgency,
 };

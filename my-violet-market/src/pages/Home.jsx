@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../contexts/AppDataContext';
 import { SECTION_HOME_DISPLAY_LIMIT } from '../config/sectionLimits';
@@ -12,6 +12,9 @@ import SectionTitleWithMore from '../components/SectionTitleWithMore';
 import HomeCollectionGrid from '../components/HomeCollectionGrid/HomeCollectionGrid';
 import RealTimeClock from '../components/RealTimeClock/RealTimeClock';
 import { SkeletonPulse } from '../components/SkeletonLoader';
+import HomeFeedSwitch from '../components/HomeFeedSwitch/HomeFeedSwitch';
+import FlashSaleSection from '../components/FlashSaleSection/FlashSaleSection';
+import FlashSaleStatsRow from '../components/FlashSaleSection/FlashSaleStatsRow';
 import './Home.css';
 
 const getNavbarCategoryId = (categoryName, navbarItems) => {
@@ -58,6 +61,7 @@ const Home = () => {
     loading,
     error,
     reload,
+    allProducts,
     navbarItems,
     categoriyCountries,
     categoriesBrend,
@@ -84,6 +88,14 @@ const Home = () => {
           link: getBannerLink(banner, navbarItems, categoriyCountries, categoriesBrend),
         })),
     [homeBannerData, navbarItems, categoriyCountries, categoriesBrend]
+  );
+  const [activeHomeFeed, setActiveHomeFeed] = useState('recommended');
+  const flashSaleProducts = useMemo(
+    () =>
+      (allProducts || []).filter(
+        (product) => product?.flashSaleMeta?.flashSaleActive === true,
+      ),
+    [allProducts],
   );
 
   if (error) {
@@ -175,100 +187,112 @@ const Home = () => {
           </div>
         )}
 
-        <HomeCollectionGrid
-          categoryName="products"
-          title={i18n.t('home.sectionBest')}
-          className="product-collection"
-          skeletonPrefix="home-best"
-          alwaysShow
-        />
+        <div className="home-feed-switch-wrap">
+          <HomeFeedSwitch activeTab={activeHomeFeed} onChange={setActiveHomeFeed} />
+        </div>
 
-        {((appLoading && videoBannerData.length === 0) || videoBannerData.length > 0) && (
-          <VideoBanner
-            videos={videoBannerData}
-            isLoading={appLoading && videoBannerData.length === 0}
-          />
-        )}
-
-        {(newCollection.length > 0 || appLoading) && (
-          <div className="new-collection">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionNewCollection')}
-              moreLink="/new-collection"
-              showMore={newCollection.length > SECTION_HOME_DISPLAY_LIMIT}
+        {activeHomeFeed === 'discount' ? (
+          <>
+            <FlashSaleStatsRow flashCount={flashSaleProducts.length} />
+            <FlashSaleSection products={flashSaleProducts} isLoading={appLoading} />
+          </>
+        ) : (
+          <div className="home-recommended-feed">
+            <HomeCollectionGrid
+              categoryName="products"
+              title={i18n.t('home.sectionBest')}
+              className="product-collection"
+              skeletonPrefix="home-best"
+              alwaysShow
             />
-            <Scrollable type="product" className="new-collection-scrollable">
-              {appLoading && newCollection.length === 0
-                ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-new')
-                : newCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
-                    <div key={`home-new-${String(product.id)}-${index}`} className="new-collection-product-item">
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-            </Scrollable>
-          </div>
-        )}
 
-        <HomeCollectionGrid
-          categoryName="engArzonlare"
-          title={i18n.t('home.sectionEngArzonlare')}
-          className="eng-arzonlare"
-          skeletonPrefix="home-cheap"
-        />
+            {((appLoading && videoBannerData.length === 0) || videoBannerData.length > 0) && (
+              <VideoBanner
+                videos={videoBannerData}
+                isLoading={appLoading && videoBannerData.length === 0}
+              />
+            )}
 
-        {(womensCollection.length > 0 || appLoading) && (
-          <div className="womens-collection">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionWomensCollection')}
-              moreLink="/women-collection"
-              showMore={womensCollection.length > 0}
+            {(newCollection.length > 0 || appLoading) && (
+              <div className="new-collection">
+                <SectionTitleWithMore
+                  title={i18n.t('home.sectionNewCollection')}
+                  moreLink="/new-collection"
+                  showMore={newCollection.length > SECTION_HOME_DISPLAY_LIMIT}
+                />
+                <Scrollable type="product" className="new-collection-scrollable">
+                  {appLoading && newCollection.length === 0
+                    ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-new')
+                    : newCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
+                        <div key={`home-new-${String(product.id)}-${index}`} className="new-collection-product-item">
+                          <ProductCard product={product} />
+                        </div>
+                      ))}
+                </Scrollable>
+              </div>
+            )}
+
+            <HomeCollectionGrid
+              categoryName="engArzonlare"
+              title={i18n.t('home.sectionEngArzonlare')}
+              className="eng-arzonlare"
+              skeletonPrefix="home-cheap"
             />
-            <Scrollable type="product" className="womens-collection-scrollable">
-              {appLoading && womensCollection.length === 0
-                ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-womens')
-                : womensCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
-                    <div key={`home-womens-${String(product.id)}-${index}`} className="new-collection-product-item">
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-            </Scrollable>
-          </div>
-        )}
 
-        <HomeCollectionGrid
-          categoryName="trendingItems"
-          title={i18n.t('home.sectionTrending')}
-          moreLink="/trending"
-          showMore
-          className="trending-section"
-          skeletonPrefix="home-trend"
-        />
+            {(womensCollection.length > 0 || appLoading) && (
+              <div className="womens-collection">
+                <SectionTitleWithMore
+                  title={i18n.t('home.sectionWomensCollection')}
+                  moreLink="/women-collection"
+                  showMore={womensCollection.length > 0}
+                />
+                <Scrollable type="product" className="womens-collection-scrollable">
+                  {appLoading && womensCollection.length === 0
+                    ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-womens')
+                    : womensCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
+                        <div key={`home-womens-${String(product.id)}-${index}`} className="new-collection-product-item">
+                          <ProductCard product={product} />
+                        </div>
+                      ))}
+                </Scrollable>
+              </div>
+            )}
 
-        {(mensCollection.length > 0 || appLoading) && (
-          <div className="mens-collection">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionMensCollection')}
-              moreLink="/men-collection"
-              showMore={mensCollection.length > 0}
+            <HomeCollectionGrid
+              categoryName="trendingItems"
+              title={i18n.t('home.sectionTrending')}
+              moreLink="/trending"
+              showMore
+              className="trending-section"
+              skeletonPrefix="home-trend"
+              alwaysShow
             />
-            <Scrollable type="product" className="mens-collection-scrollable">
-              {appLoading && mensCollection.length === 0
-                ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-mens')
-                : mensCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
-                    <div key={`home-mens-${String(product.id)}-${index}`} className="new-collection-product-item">
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-            </Scrollable>
-          </div>
-        )}
 
-        <HomeCollectionGrid
-          categoryName="electronicsCollection"
-          title={i18n.t('home.sectionElectronics')}
-          className="electronics-section"
-          skeletonPrefix="home-electronics"
-        />
+            {(mensCollection.length > 0 || appLoading) && (
+              <div className="mens-collection">
+                <SectionTitleWithMore
+                  title={i18n.t('home.sectionMensCollection')}
+                  moreLink="/men-collection"
+                  showMore={mensCollection.length > 0}
+                />
+                <Scrollable type="product" className="mens-collection-scrollable">
+                  {appLoading && mensCollection.length === 0
+                    ? renderSkeletonProductCardsInScrollRow(SECTION_HOME_DISPLAY_LIMIT, 'home-mens')
+                    : mensCollection.slice(0, SECTION_HOME_DISPLAY_LIMIT).map((product, index) => (
+                        <div key={`home-mens-${String(product.id)}-${index}`} className="new-collection-product-item">
+                          <ProductCard product={product} />
+                        </div>
+                      ))}
+                </Scrollable>
+              </div>
+            )}
+
+            <HomeCollectionGrid
+              categoryName="electronicsCollection"
+              title={i18n.t('home.sectionElectronics')}
+              className="electronics-section"
+              skeletonPrefix="home-electronics"
+            />
 
         {(booksCollection.length > 0 || appLoading) && (
           <div className="books-section">
@@ -393,20 +417,22 @@ const Home = () => {
           </div>
         )}
 
-        {(allKindsProductsCollection.length > 0 || appLoading) && (
-          <div className="all-kinds-products-section">
-            <SectionTitleWithMore
-              title={i18n.t('home.sectionAllKindsProducts')}
-              moreLink=""
-              showMore={false}
-            />
-            <div className="products-grid">
-              {appLoading && allKindsProductsCollection.length === 0
-                ? renderSkeletonProductCardsInGrid(SECTION_HOME_DISPLAY_LIMIT, 'home-all-kinds')
-                : allKindsProductsCollection.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-            </div>
+            {(allKindsProductsCollection.length > 0 || appLoading) && (
+              <div className="all-kinds-products-section">
+                <SectionTitleWithMore
+                  title={i18n.t('home.sectionAllKindsProducts')}
+                  moreLink=""
+                  showMore={false}
+                />
+                <div className="products-grid">
+                  {appLoading && allKindsProductsCollection.length === 0
+                    ? renderSkeletonProductCardsInGrid(SECTION_HOME_DISPLAY_LIMIT, 'home-all-kinds')
+                    : allKindsProductsCollection.map((product, index) => (
+                        <ProductCard key={`home-all-kinds-${String(product.id)}-${index}`} product={product} />
+                      ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

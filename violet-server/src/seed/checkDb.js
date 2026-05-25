@@ -17,6 +17,7 @@ const {
   SellerAccount,
   UzWarehouseLocale,
   ProductPolicyBlock,
+  FlashSaleRuleConfig,
 } = require("../models");
 
 async function main() {
@@ -48,6 +49,7 @@ async function main() {
     seller_accounts: await SellerAccount.countDocuments(),
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),
     product_policy_blocks: await ProductPolicyBlock.countDocuments(),
+    flash_sale_rule_configs: await FlashSaleRuleConfig.countDocuments(),
     products: await Product.countDocuments(),
   };
 

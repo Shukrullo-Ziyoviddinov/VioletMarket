@@ -6,6 +6,7 @@ async function parseJsonResponse(res) {
     const err = new Error(data.message || res.statusText || 'So‘rov xatosi');
     err.status = res.status;
     err.code = data.code;
+    err.details = data.details;
     throw err;
   }
   return data;
@@ -57,6 +58,13 @@ export function dismissCartUrgency(token, itemId) {
 export function clearCartApi(token) {
   return fetch(apiUrl('/api/cart'), {
     method: 'DELETE',
+    headers: authHeaders(token),
+  }).then(parseJsonResponse);
+}
+
+export function checkoutCartApi(token) {
+  return fetch(apiUrl('/api/cart/checkout'), {
+    method: 'POST',
     headers: authHeaders(token),
   }).then(parseJsonResponse);
 }

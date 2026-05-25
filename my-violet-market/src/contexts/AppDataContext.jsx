@@ -70,6 +70,14 @@ export function AppDataProvider({ children }) {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      load();
+    };
+    window.addEventListener('appDataRefreshRequested', handleRefresh);
+    return () => window.removeEventListener('appDataRefreshRequested', handleRefresh);
+  }, [load]);
+
   const value = useMemo(() => {
     if (!payload) {
       return {

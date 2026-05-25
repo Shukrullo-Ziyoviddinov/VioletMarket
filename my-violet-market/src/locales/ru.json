@@ -196,6 +196,17 @@
     "sectionAllKindsProducts": "Товары всех видов",
     "sectionBigDiscount": "Большая скидка",
     "sectionBigDiscountSubtitle": "До конца акции осталось мало времени!",
+    "feedSwitchAria": "Режим потока товаров на главной",
+    "feedRecommended": "Рекомендуем",
+    "feedDiscount": "Скидка",
+    "flashSaleTopTitle": "Сегодня цены на минимуме!",
+    "flashSaleTopSubtitle": "Успейте купить до повышения цены",
+    "flashSaleTopRight": "Повышение цены началось",
+    "flashSaleStatsLeft": "Сегодня в акции:",
+    "flashSaleProductCount": "{{count}} товаров",
+    "flashSaleWatching": "Сейчас 342 человека смотрят товары",
+    "flashSaleTopSelling": "Самые продаваемые сегодня",
+    "flashSaleSold": "продано",
     "more": "Больше"
   },
   "common": {

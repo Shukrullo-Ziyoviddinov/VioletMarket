@@ -31,6 +31,8 @@ import ChinaWarehousePage from './pages/ChinaWarehousePage';
 import SellerProfile from './pages/SellerProfile';
 import './App.css';
 
+const TEST_ORDER_MODAL_PENDING_KEY = 'pendingTestOrderModal';
+
 const AppContent = () => {
   const location = useLocation();
   const isCheckout = location.pathname === '/checkout';
@@ -38,14 +40,36 @@ const AppContent = () => {
   const { isOpen, closeModal, cartSnapshot, pendingOpenOnHome, openModal, clearPendingOpenOnHome } = useTestOrderModal();
 
   useEffect(() => {
-    if (location.pathname === '/' && pendingOpenOnHome) {
+    if (location.pathname !== '/') return;
+
+    if (pendingOpenOnHome) {
       openModal({
         cartSnapshot: pendingOpenOnHome.cartSnapshot,
         onCloseExtra: pendingOpenOnHome.onCloseExtra,
       });
       clearPendingOpenOnHome();
+      try {
+        sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
+      } catch (storageError) {
+        console.error('Pending test order modal state o\'chirilmadi:', storageError);
+      }
+      return;
     }
-  }, [location.pathname, pendingOpenOnHome]);
+
+    try {
+      const raw = sessionStorage.getItem(TEST_ORDER_MODAL_PENDING_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      openModal({
+        cartSnapshot: parsed?.cartSnapshot || null,
+        onCloseExtra: null,
+      });
+      sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
+    } catch (storageError) {
+      console.error('Pending test order modal state o\'qilmadi:', storageError);
+      sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
+    }
+  }, [location.pathname, pendingOpenOnHome, openModal, clearPendingOpenOnHome]);
 
   return (
     <div className="App">

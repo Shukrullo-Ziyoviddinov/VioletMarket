@@ -2,8 +2,25 @@ const { Product } = require("../../models/product");
 const { HttpError } = require("../../utils/httpError");
 const { getRelatedByTypeAndCountry } = require("../../utils/recommendationAlgorithm");
 
+function keepNewestProductPerId(products) {
+  const sortedByNewest = [...(Array.isArray(products) ? products : [])].sort((a, b) =>
+    String(b?._id || "").localeCompare(String(a?._id || "")),
+  );
+  const seen = new Set();
+  const unique = [];
+
+  for (const product of sortedByNewest) {
+    const key = String(product?.id ?? "");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(product);
+  }
+
+  return unique;
+}
+
 async function loadAllProducts() {
-  return Product.find().lean();
+  return keepNewestProductPerId(await Product.find().lean());
 }
 
 async function findProductById(rawId) {
@@ -11,7 +28,7 @@ async function findProductById(rawId) {
   if (!Number.isFinite(productId)) {
     throw new HttpError(400, "Mahsulot ID noto'g'ri", "INVALID_PRODUCT_ID");
   }
-  const product = await Product.findOne({ id: productId }).lean();
+  const product = await Product.findOne({ id: productId }).sort({ _id: -1 }).lean();
   if (!product) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }

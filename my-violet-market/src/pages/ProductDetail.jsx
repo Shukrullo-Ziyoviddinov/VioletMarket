@@ -36,9 +36,158 @@ import {
   resolveSizeChartGuideSrc,
   typeSizeI18nKey,
 } from '../constants/sizeChartKind';
+import { apiUrl } from '../config/api';
 import './ProductDetail.css';
 
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
+
+const normalizeStockLabel = (value) => String(value ?? '').trim().toLowerCase();
+
+const toStockNumber = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.floor(n));
+};
+
+const sumStockNumbers = (items) => {
+  if (!Array.isArray(items)) return null;
+  let total = 0;
+  let found = false;
+
+  for (const item of items) {
+    const qty = toStockNumber(item?.quantity);
+    if (qty === null) continue;
+    total += qty;
+    found = true;
+  }
+
+  return found ? total : null;
+};
+
+const sumStockMapValues = (stockMap) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const values = Object.values(stockMap);
+  let total = 0;
+  let found = false;
+
+  for (const value of values) {
+    const qty = toStockNumber(value);
+    if (qty === null) continue;
+    total += qty;
+    found = true;
+  }
+
+  return found ? total : null;
+};
+
+const getProductVariantQuantityTotal = (product) => {
+  const colors = Array.isArray(product?.colors) ? product.colors : [];
+
+  if (colors.length > 0) {
+    let total = 0;
+    let found = false;
+
+    for (const color of colors) {
+      const colorModelsQty = sumStockNumbers(color?.models);
+      if (colorModelsQty !== null) {
+        total += colorModelsQty;
+        found = true;
+        continue;
+      }
+
+      const colorStorageQty = sumStockNumbers(color?.storage);
+      if (colorStorageQty !== null) {
+        total += colorStorageQty;
+        found = true;
+        continue;
+      }
+
+      const modelStockQty = sumStockMapValues(color?.modelStock);
+      if (modelStockQty !== null) {
+        total += modelStockQty;
+        found = true;
+        continue;
+      }
+
+      const storageStockQty = sumStockMapValues(color?.storageStock);
+      if (storageStockQty !== null) {
+        total += storageStockQty;
+        found = true;
+        continue;
+      }
+
+      const sizeStockQty = sumStockMapValues(color?.sizeStock);
+      if (sizeStockQty !== null) {
+        total += sizeStockQty;
+        found = true;
+        continue;
+      }
+
+      const colorQty = toStockNumber(color?.quantity);
+      if (colorQty !== null) {
+        total += colorQty;
+        found = true;
+      }
+    }
+
+    if (found) return total;
+  }
+
+  const productModelsQty = sumStockNumbers(product?.models);
+  if (productModelsQty !== null) return productModelsQty;
+
+  const productStorageQty = sumStockNumbers(product?.storage);
+  if (productStorageQty !== null) return productStorageQty;
+
+  return null;
+};
+
+const findStockValue = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeStockLabel(label);
+  if (!target) return null;
+  const matchedKey = Object.keys(stockMap).find((key) => normalizeStockLabel(key) === target);
+  if (!matchedKey) return null;
+  return toStockNumber(stockMap[matchedKey]);
+};
+
+const getSizesFromColor = (color) => {
+  if (!color || typeof color !== 'object') return [];
+  const stock = color.sizeStock;
+  if (stock && typeof stock === 'object' && !Array.isArray(stock)) {
+    return Object.keys(stock);
+  }
+  if (Array.isArray(color.sizes)) {
+    return color.sizes;
+  }
+  return [];
+};
+
+const normalizeVariantLabel = (value) => String(value || '').trim().toLowerCase();
+
+const getStockQuantityByLabel = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object') return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  const quantity = Number(stockMap[key]);
+  if (!Number.isFinite(quantity)) return null;
+  return quantity;
+};
+
+const getStorageValue = (storage) =>
+  typeof storage === 'object' && storage?.size ? storage.size : storage;
+
+const getModelValue = (model) =>
+  typeof model === 'object' && model?.name ? model.name : model;
+
+const getStockAwareOptions = (fallbackList, stockMap) => {
+  if (stockMap && typeof stockMap === 'object' && !Array.isArray(stockMap)) {
+    return Object.keys(stockMap);
+  }
+  return Array.isArray(fallbackList) ? fallbackList : [];
+};
 
 const ProductDetail = () => {
   const navigate = useNavigate();
@@ -70,12 +219,14 @@ const ProductDetail = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
+  const [serverProductQty, setServerProductQty] = useState(null);
 
   const shareSheetStartYRef = useRef(0);
   const shareSheetCurrentYRef = useRef(0);
 
   // Mahsulot ma'lumotlarini yuklash va yangilash
   const loadProductData = useCallback(() => {
+    setServerProductQty(null);
     const savedProduct = sessionStorage.getItem('selectedProduct');
     if (savedProduct) {
       try {
@@ -93,10 +244,23 @@ const ProductDetail = () => {
           hasDeliveryInfo: !!latestProduct.deliveryInfo
         });
         setProductData(latestProduct);
-        setSelectedColor(latestProduct.colors?.[0] || null);
-        setSelectedSize(latestProduct.colors?.[0]?.sizes?.[0] || null);
-        setSelectedStorage(latestProduct.colors?.[0]?.storage?.[0] || null);
-        setSelectedModel(latestProduct.colors?.[0]?.models?.[0] || null);
+        const colorList = Array.isArray(latestProduct.colors) ? latestProduct.colors : [];
+        // Media doim ko'rinishi uchun stokdan qat'i nazar birinchi rangni tanlaymiz.
+        const firstAvailableColor = colorList[0] || null;
+        const initialSizes = getSizesFromColor(firstAvailableColor);
+        const initialStorageOptions = getStockAwareOptions(
+          firstAvailableColor?.storage,
+          firstAvailableColor?.storageStock,
+        );
+        const initialModelOptions = getStockAwareOptions(
+          firstAvailableColor?.models,
+          firstAvailableColor?.modelStock,
+        );
+
+        setSelectedColor(firstAvailableColor);
+        setSelectedSize(initialSizes[0] || null);
+        setSelectedStorage(initialStorageOptions[0] || null);
+        setSelectedModel(initialModelOptions[0] || null);
         setCurrentImageIndex(0);
         setImageErrors(new Set());
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -112,6 +276,40 @@ const ProductDetail = () => {
   useEffect(() => {
     loadProductData();
   }, [loadProductData]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const currentId = productData?.id;
+    if (currentId == null) return undefined;
+
+    (async () => {
+      try {
+        const res = await fetch(apiUrl(`/api/products/${encodeURIComponent(currentId)}`));
+        if (!res.ok) return;
+        const fresh = await res.json();
+        if (!fresh || cancelled) return;
+        const computedQty =
+          toStockNumber(fresh?.effectiveQuantity) ??
+          getProductVariantQuantityTotal(fresh);
+        setProductData((prev) => {
+          if (!prev || String(prev.id) !== String(currentId)) return prev;
+          return fresh;
+        });
+        setServerProductQty(computedQty ?? 0);
+        try {
+          sessionStorage.setItem('selectedProduct', JSON.stringify(fresh));
+        } catch {
+          // sessionStorage cheklangan bo'lsa ham sahifa ishlashi kerak.
+        }
+      } catch {
+        // Silent fallback: selectedProduct ishlamasa ham sahifa ochiq qoladi.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [productData?.id]);
 
   useEffect(() => {
     if (authLoading || !authToken || !productData?.id) return;
@@ -474,6 +672,191 @@ const ProductDetail = () => {
     ];
   }, [allImages, currentImageIndex]);
 
+  const colorOptions = useMemo(() => {
+    const colors = Array.isArray(productData?.colors) ? productData.colors : [];
+    return colors.map((color, index) => {
+      const rawQty = Number(color?.quantity);
+      const available = Number.isFinite(rawQty) ? rawQty > 0 : true;
+      return {
+        key: `${color?.colorFilter || ''}-${color?.mainImage || ''}-${index}`,
+        color,
+        available,
+      };
+    });
+  }, [productData?.colors]);
+
+  const sizeOptions = useMemo(() => {
+    if (!selectedColor) return [];
+    const stock = selectedColor.sizeStock;
+    const stockKeys =
+      stock && typeof stock === 'object' && !Array.isArray(stock)
+        ? Object.keys(stock)
+        : [];
+    if (stockKeys.length > 0) {
+      return stockKeys.map((label) => ({
+        value: label,
+        label,
+        available: (Number(stock[label]) || 0) > 0,
+      }));
+    }
+    return getSizesFromColor(selectedColor).map((label) => ({
+      value: label,
+      label,
+      available: true,
+    }));
+  }, [selectedColor]);
+
+  const storageOptions = useMemo(() => {
+    if (!selectedColor) return [];
+    const optionsFromData = Array.isArray(selectedColor.storage) ? selectedColor.storage : [];
+    const stockMap = selectedColor.storageStock;
+    if (optionsFromData.length > 0) {
+      return optionsFromData.map((option, index) => {
+        const label = getLabelFromOption(option, lang) || String(index);
+        const ownQty = Number(option?.quantity);
+        const stockQty =
+          Number.isFinite(ownQty) ? ownQty : getStockQuantityByLabel(stockMap, label);
+        return {
+          option,
+          label,
+          available: stockQty == null ? true : stockQty > 0,
+        };
+      });
+    }
+    if (stockMap && typeof stockMap === 'object') {
+      return Object.keys(stockMap).map((label) => ({
+        option: label,
+        label,
+        available: (Number(stockMap[label]) || 0) > 0,
+      }));
+    }
+    return [];
+  }, [selectedColor, lang]);
+
+  const modelOptions = useMemo(() => {
+    if (!selectedColor) return [];
+    const optionsFromData = Array.isArray(selectedColor.models) ? selectedColor.models : [];
+    const stockMap = selectedColor.modelStock;
+    if (optionsFromData.length > 0) {
+      return optionsFromData.map((option, index) => {
+        const label = getLabelFromOption(option, lang) || String(index);
+        const ownQty = Number(option?.quantity);
+        const stockQty =
+          Number.isFinite(ownQty) ? ownQty : getStockQuantityByLabel(stockMap, label);
+        return {
+          option,
+          label,
+          available: stockQty == null ? true : stockQty > 0,
+        };
+      });
+    }
+    if (stockMap && typeof stockMap === 'object') {
+      return Object.keys(stockMap).map((label) => ({
+        option: label,
+        label,
+        available: (Number(stockMap[label]) || 0) > 0,
+      }));
+    }
+    return [];
+  }, [selectedColor, lang]);
+
+  useEffect(() => {
+    if (sizeOptions.length === 0) {
+      setSelectedSize(null);
+      return;
+    }
+    const current = selectedSize;
+    const existsAndAvailable = sizeOptions.some((opt) => opt.value === current && opt.available);
+    if (!existsAndAvailable) {
+      const fallback = sizeOptions.find((opt) => opt.available) || sizeOptions[0];
+      setSelectedSize(fallback.value);
+    }
+  }, [sizeOptions, selectedSize]);
+
+  useEffect(() => {
+    if (storageOptions.length === 0) {
+      setSelectedStorage(null);
+      return;
+    }
+    const currentLabel = getLabelFromOption(selectedStorage, lang);
+    const existsAndAvailable = storageOptions.some(
+      (opt) => normalizeVariantLabel(opt.label) === normalizeVariantLabel(currentLabel) && opt.available,
+    );
+    if (!existsAndAvailable) {
+      const fallback = storageOptions.find((opt) => opt.available) || storageOptions[0];
+      setSelectedStorage(fallback.option);
+    }
+  }, [storageOptions, selectedStorage, lang]);
+
+  useEffect(() => {
+    if (modelOptions.length === 0) {
+      setSelectedModel(null);
+      return;
+    }
+    const currentLabel = getLabelFromOption(selectedModel, lang);
+    const existsAndAvailable = modelOptions.some(
+      (opt) => normalizeVariantLabel(opt.label) === normalizeVariantLabel(currentLabel) && opt.available,
+    );
+    if (!existsAndAvailable) {
+      const fallback = modelOptions.find((opt) => opt.available) || modelOptions[0];
+      setSelectedModel(fallback.option);
+    }
+  }, [modelOptions, selectedModel, lang]);
+
+  const totalProductQty = getProductVariantQuantityTotal(productData);
+  const selectedVariantQty = (() => {
+    const modelOwnQty = toStockNumber(selectedModel?.quantity);
+    if (modelOwnQty !== null) return modelOwnQty;
+
+    const modelStockQty = findStockValue(
+      selectedColor?.modelStock,
+      getModelValue(selectedModel),
+    );
+    if (modelStockQty !== null) return modelStockQty;
+
+    const storageOwnQty = toStockNumber(selectedStorage?.quantity);
+    if (storageOwnQty !== null) return storageOwnQty;
+
+    const storageStockQty = findStockValue(
+      selectedColor?.storageStock,
+      getStorageValue(selectedStorage),
+    );
+    if (storageStockQty !== null) return storageStockQty;
+
+    const sizeStockQty = findStockValue(selectedColor?.sizeStock, selectedSize);
+    if (sizeStockQty !== null) return sizeStockQty;
+
+    const colorQty = toStockNumber(selectedColor?.quantity);
+    if (colorQty !== null) return colorQty;
+
+    return null;
+  })();
+  const effectiveStockQty = selectedVariantQty !== null ? selectedVariantQty : totalProductQty;
+  const selectedSizeAvailable =
+    sizeOptions.length === 0 ||
+    sizeOptions.some(
+      (opt) => opt.value === selectedSize && opt.available,
+    );
+  const selectedStorageAvailable =
+    storageOptions.length === 0 ||
+    storageOptions.some(
+      (opt) => normalizeVariantLabel(opt.label) === normalizeVariantLabel(getLabelFromOption(selectedStorage, lang)) && opt.available,
+    );
+  const selectedModelAvailable =
+    modelOptions.length === 0 ||
+    modelOptions.some(
+      (opt) => normalizeVariantLabel(opt.label) === normalizeVariantLabel(getLabelFromOption(selectedModel, lang)) && opt.available,
+    );
+  const selectedColorQty = toStockNumber(selectedColor?.quantity);
+  const selectedColorAvailable =
+    !selectedColor || selectedColorQty === null || selectedColorQty > 0;
+  const isCurrentVariantAvailable =
+    (effectiveStockQty === null || effectiveStockQty > 0) &&
+    selectedColorAvailable &&
+    selectedSizeAvailable &&
+    selectedStorageAvailable &&
+    selectedModelAvailable;
+
   // Mahsulot cart da bor-yo'qligini tekshirish (variant kombinatsiyasi bilan) (must be before early return)
   const isProductInCart = useMemo(() => {
     if (!productData) return false;
@@ -612,6 +995,46 @@ const ProductDetail = () => {
                       getNumberPrice(productData) ?? 0;
 
   const handleAddToCart = async () => {
+    if (selectedVariantQty !== null && selectedVariantQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
+    if (selectedVariantQty === null && totalProductQty !== null && totalProductQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
+    const colorQty = toStockNumber(selectedColor?.quantity);
+    if (colorQty !== null && colorQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
+    const sizeQty = findStockValue(selectedColor?.sizeStock, selectedSize);
+    if (sizeQty !== null && sizeQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
+    const storageQty = findStockValue(
+      selectedColor?.storageStock,
+      getStorageValue(selectedStorage),
+    );
+    if (storageQty !== null && storageQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
+    const modelQty = findStockValue(
+      selectedColor?.modelStock,
+      getModelValue(selectedModel),
+    );
+    if (modelQty !== null && modelQty <= 0) {
+      showToast(i18n.t('cart.updateError'), 'error');
+      return;
+    }
+
     if (isProductInCart || isAddedToCart) {
       navigate('/cart');
       return;
@@ -629,12 +1052,55 @@ const ProductDetail = () => {
     }
   };
 
+  const isColorAvailable = (color) => {
+    const qty = toStockNumber(color?.quantity);
+    return qty === null || qty > 0;
+  };
+
+  const isSizeAvailable = (color, size) => {
+    const colorQty = toStockNumber(color?.quantity);
+    if (colorQty !== null && colorQty <= 0) return false;
+    const sizeQty = findStockValue(color?.sizeStock, size);
+    return sizeQty === null || sizeQty > 0;
+  };
+
+  const isStorageAvailable = (color, storageOption) => {
+    const colorQty = toStockNumber(color?.quantity);
+    if (colorQty !== null && colorQty <= 0) return false;
+    const storageQty = findStockValue(
+      color?.storageStock,
+      getStorageValue(storageOption),
+    );
+    return storageQty === null || storageQty > 0;
+  };
+
+  const isModelAvailable = (color, modelOption) => {
+    const colorQty = toStockNumber(color?.quantity);
+    if (colorQty !== null && colorQty <= 0) return false;
+    const modelQty = findStockValue(color?.modelStock, getModelValue(modelOption));
+    return modelQty === null || modelQty > 0;
+  };
+
+  const pickFirstAvailable = (list, checker) => {
+    if (!Array.isArray(list) || list.length === 0) return null;
+    const found = list.find((item) => checker(item));
+    return found ?? list[0];
+  };
+
   const handleColorChange = (color) => {
     if (!color) return;
+    if (!isColorAvailable(color)) return;
+    const sizeOptions = getSizesFromColor(color);
+    const storageOptions = getStockAwareOptions(color?.storage, color?.storageStock);
+    const modelOptions = getStockAwareOptions(color?.models, color?.modelStock);
     setSelectedColor(color);
-    setSelectedSize(color.sizes?.[0] || null);
-    setSelectedStorage(color.storage?.[0] || null);
-    setSelectedModel(color.models?.[0] || null);
+    setSelectedSize(pickFirstAvailable(sizeOptions, (option) => isSizeAvailable(color, option)) || null);
+    setSelectedStorage(
+      pickFirstAvailable(storageOptions, (option) => isStorageAvailable(color, option)) || null,
+    );
+    setSelectedModel(
+      pickFirstAvailable(modelOptions, (option) => isModelAvailable(color, option)) || null,
+    );
     setCurrentImageIndex(0);
   };
 
@@ -741,6 +1207,13 @@ const ProductDetail = () => {
     shouldCollapseMainFeatures ||
     hasDescriptionImages ||
     (!hasStructuredDescription && descriptionText.length > 200);
+  const displayQuantity = (() => {
+    if (serverProductQty !== null) return serverProductQty;
+    const fallbackQty = getProductVariantQuantityTotal(productData);
+    if (fallbackQty !== null) return fallbackQty;
+    return 0;
+  })();
+  const addToCartDisabled = isAddingToCart || !isCurrentVariantAvailable;
 
 
   return (
@@ -951,18 +1424,14 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {productData.quantity != null &&
-              Number.isFinite(Number(productData.quantity)) &&
-              Number(productData.quantity) > 0 && (
-              <div className="product-detail-quantity" aria-live="polite">
-                <i className="bx bx-package" aria-hidden="true" />
-                <span>
-                  {i18n.t('productDetail.quantityLeft', {
-                    count: Number(productData.quantity),
-                  })}
-                </span>
-              </div>
-            )}
+            <div className="product-detail-quantity" aria-live="polite">
+              <i className="bx bx-package" aria-hidden="true" />
+              <span>
+                {i18n.t('productDetail.quantityLeft', {
+                  count: displayQuantity,
+                })}
+              </span>
+            </div>
 
             {productData.colors && productData.colors.length > 0 && (
               <div className="color-selection">
@@ -982,50 +1451,60 @@ const ProductDetail = () => {
                           (currentColor.colorFilter && color.colorFilter && currentColor.colorFilter === color.colorFilter) ||
                           (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage)
                         );
+                        const unavailable = !isColorAvailable(color);
                         return (
-                          <img
+                          <button
                             key={`color-${index}-${getLocalizedText(color.name, lang) || index}`}
-                            src={normalizeImagePath(color.mainImage)}
-                            alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
-                            className={`color-option ${isSelected ? 'selected' : ''}`}
+                            type="button"
+                            aria-label={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                            className={`color-option-wrap ${unavailable ? 'color-option-wrap--unavailable' : ''}`}
+                            disabled={unavailable}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleColorChange(color);
                             }}
-                            onError={(e) => {
-                              e.target.src = normalizeImagePath('/img/no-image.png');
-                            }}
-                          />
+                          >
+                            <img
+                              src={normalizeImagePath(color.mainImage)}
+                              alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                              className={`color-option ${isSelected ? 'selected' : ''}`}
+                              onError={(e) => {
+                                e.target.src = normalizeImagePath('/img/no-image.png');
+                              }}
+                            />
+                          </button>
                         );
                       })}
                 </div>
               </div>
             )}
 
-            {selectedColor?.sizes && selectedColor.sizes.length > 0 && (
+            {sizeOptions.length > 0 && (
               <div className="size-selection">
-                <h3>{i18n.t('productDetail.sizeLabel')} {selectedSize !== null ? selectedSize : (selectedColor.sizes[0] || '')}</h3>
+                <h3>{i18n.t('productDetail.sizeLabel')} {selectedSize !== null ? selectedSize : (sizeOptions[0]?.label || '')}</h3>
                 <div className="sizes-container">
                   {showDetailSkeleton
-                    ? Array.from({ length: Math.min(selectedColor.sizes.length, 10) }, (_, index) => (
+                    ? Array.from({ length: Math.min(sizeOptions.length, 10) }, (_, index) => (
                         <SkeletonPulse
                           key={`size-sk-${index}`}
                           className={`size-option size-option--skeleton size-option--skeleton-${(index % 4) + 1}`}
                           aria-hidden
                         />
                       ))
-                    : selectedColor.sizes.map((size, index) => {
-                        const currentSize = selectedSize !== null ? selectedSize : selectedColor.sizes[0];
-                        const isSelected = size === currentSize;
+                    : sizeOptions.map((sizeOption, index) => {
+                        const currentSize = selectedSize !== null ? selectedSize : sizeOptions[0]?.value;
+                        const isSelected = sizeOption.value === currentSize;
+                        const unavailable = !sizeOption.available;
                         return (
                           <button
                             key={`size-${index}`}
-                            className={`size-option ${isSelected ? 'selected' : ''}`}
+                            className={`size-option ${isSelected ? 'selected' : ''} ${unavailable ? 'size-option--unavailable' : ''}`}
+                            disabled={unavailable}
                             onClick={() => {
-                              setSelectedSize(size);
+                              setSelectedSize(sizeOption.value);
                             }}
                           >
-                            {size}
+                            {sizeOption.label}
                           </button>
                         );
                       })}
@@ -1046,36 +1525,40 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {selectedColor?.storage && selectedColor.storage.length > 0 && (
+            {storageOptions.length > 0 && (
               <div className="storage-selection">
                 <h3>{i18n.t('productDetail.storageLabel')} {
                   selectedStorage !== null
                     ? (typeof selectedStorage === 'object' && selectedStorage.size ? selectedStorage.size : (typeof selectedStorage === 'string' ? selectedStorage : ''))
-                    : (selectedColor.storage[0] ? (typeof selectedColor.storage[0] === 'object' && selectedColor.storage[0].size ? selectedColor.storage[0].size : selectedColor.storage[0]) : '')
+                    : (storageOptions[0]?.label || '')
                 }</h3>
                 <div className="storage-container">
                   {showDetailSkeleton
-                    ? Array.from({ length: Math.min(selectedColor.storage.length, 6) }, (_, index) => (
+                    ? Array.from({ length: Math.min(storageOptions.length, 6) }, (_, index) => (
                         <SkeletonPulse
                           key={`storage-sk-${index}`}
                           className={`storage-option storage-option--skeleton storage-option--skeleton-${(index % 3) + 1}`}
                           aria-hidden
                         />
                       ))
-                    : selectedColor.storage.map((storage, index) => {
-                        const storageValue = typeof storage === 'object' && storage.size ? storage.size : storage;
-                        const currentStorage = selectedStorage !== null ? selectedStorage : selectedColor.storage[0];
-                        const currentStorageValue = currentStorage ? (typeof currentStorage === 'object' && currentStorage.size ? currentStorage.size : currentStorage) : null;
-                        const isSelected = storageValue === currentStorageValue;
+                    : storageOptions.map((storageOption, index) => {
+                        const currentStorageValue =
+                          selectedStorage != null
+                            ? normalizeVariantLabel(getLabelFromOption(selectedStorage, lang))
+                            : normalizeVariantLabel(storageOptions[0]?.label);
+                        const isSelected =
+                          normalizeVariantLabel(storageOption.label) === currentStorageValue;
+                        const unavailable = !storageOption.available;
                         return (
                           <button
                             key={`storage-${index}`}
-                            className={`storage-option ${isSelected ? 'selected' : ''}`}
+                            className={`storage-option ${isSelected ? 'selected' : ''} ${unavailable ? 'storage-option--unavailable' : ''}`}
+                            disabled={unavailable}
                             onClick={() => {
-                              setSelectedStorage(storage);
+                              setSelectedStorage(storageOption.option);
                             }}
                           >
-                            {storageValue}
+                            {storageOption.label}
                           </button>
                         );
                       })}
@@ -1083,36 +1566,40 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {selectedColor?.models && selectedColor.models.length > 0 && (
+            {modelOptions.length > 0 && (
               <div className="model-selection">
                 <h3>{i18n.t('productDetail.modelLabel')} {
                   selectedModel !== null
                     ? (typeof selectedModel === 'object' && selectedModel.name ? selectedModel.name : (typeof selectedModel === 'string' ? selectedModel : ''))
-                    : (selectedColor.models[0] ? (typeof selectedColor.models[0] === 'object' && selectedColor.models[0].name ? selectedColor.models[0].name : selectedColor.models[0]) : '')
+                    : (modelOptions[0]?.label || '')
                 }</h3>
                 <div className="models-container">
                   {showDetailSkeleton
-                    ? Array.from({ length: Math.min(selectedColor.models.length, 6) }, (_, index) => (
+                    ? Array.from({ length: Math.min(modelOptions.length, 6) }, (_, index) => (
                         <SkeletonPulse
                           key={`model-sk-${index}`}
                           className={`model-option model-option--skeleton model-option--skeleton-${(index % 3) + 1}`}
                           aria-hidden
                         />
                       ))
-                    : selectedColor.models.map((model, index) => {
-                        const modelName = typeof model === 'object' && model.name ? model.name : model;
-                        const currentModel = selectedModel !== null ? selectedModel : selectedColor.models[0];
-                        const currentModelName = currentModel ? (typeof currentModel === 'object' && currentModel.name ? currentModel.name : currentModel) : null;
-                        const isSelected = modelName === currentModelName;
+                    : modelOptions.map((modelOption, index) => {
+                        const currentModelValue =
+                          selectedModel != null
+                            ? normalizeVariantLabel(getLabelFromOption(selectedModel, lang))
+                            : normalizeVariantLabel(modelOptions[0]?.label);
+                        const isSelected =
+                          normalizeVariantLabel(modelOption.label) === currentModelValue;
+                        const unavailable = !modelOption.available;
                         return (
                           <button
                             key={`model-${index}`}
-                            className={`model-option ${isSelected ? 'selected' : ''}`}
+                            className={`model-option ${isSelected ? 'selected' : ''} ${unavailable ? 'model-option--unavailable' : ''}`}
+                            disabled={unavailable}
                             onClick={() => {
-                              setSelectedModel(model);
+                              setSelectedModel(modelOption.option);
                             }}
                           >
-                            {modelName}
+                            {modelOption.label}
                           </button>
                         );
                       })}
@@ -1124,7 +1611,7 @@ const ProductDetail = () => {
               <button
                 className="add-to-cart-btn-detail"
                 onClick={handleAddToCart}
-                disabled={isAddingToCart}
+                disabled={addToCartDisabled}
               >
                 <ButtonLoader isLoading={isAddingToCart}>
                   {isAddedToCart || isProductInCart ? (

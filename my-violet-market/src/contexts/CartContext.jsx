@@ -19,6 +19,7 @@ import {
   removeCartItem,
   dismissCartUrgency,
   clearCartApi,
+  checkoutCartApi,
 } from '../api/cartApi';
 
 const CartContext = createContext();
@@ -201,6 +202,15 @@ export const CartProvider = ({ children }) => {
     }
   }, [authToken, showToast, syncFromResponse, t]);
 
+  const checkoutCart = useCallback(async () => {
+    if (!authToken) {
+      throw new Error('UNAUTHORIZED');
+    }
+    const data = await checkoutCartApi(authToken);
+    syncFromResponse(data);
+    return data;
+  }, [authToken, syncFromResponse]);
+
   const getTotal = useCallback(() => {
     return cart.reduce((sum, item) => {
       const price = Number(item.price) || 0;
@@ -257,6 +267,7 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     removeFromCart,
     clearCart,
+    checkoutCart,
     getTotal,
     getTotalItems,
     selectedDeliveryType,

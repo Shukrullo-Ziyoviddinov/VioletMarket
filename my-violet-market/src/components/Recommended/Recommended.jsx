@@ -75,9 +75,9 @@ const Recommended = ({ currentProduct, skeleton = false }) => {
         className="recommended-section__header"
       />
       <Scrollable type="product" className="recommended-scrollable">
-        {recommendedProducts.map((product) => (
+        {recommendedProducts.map((product, index) => (
           <div
-            key={product.id}
+            key={`recommended-${String(product.id)}-${index}`}
             className="recommended-product-item"
             data-product-id={product.id}
           >

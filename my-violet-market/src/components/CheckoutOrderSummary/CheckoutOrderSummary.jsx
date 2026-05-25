@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { formatPrice, formatCargoPrice } from '../../utils/utils';
 import { useCart } from '../../contexts/CartContext';
 import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
+import { useToast } from '../../contexts/ToastContext';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './CheckoutOrderSummary.css';
+
+const TEST_ORDER_MODAL_PENDING_KEY = 'pendingTestOrderModal';
 
 const CheckoutOrderSummary = ({
   productTypesCount,
@@ -18,21 +21,35 @@ const CheckoutOrderSummary = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { cart, clearCart } = useCart();
+  const { cart, checkoutCart, refreshCart } = useCart();
   const { scheduleOpenOnHome } = useTestOrderModal();
+  const { showToast } = useToast();
   const [isPayLoading, setIsPayLoading] = useState(false);
 
   const handlePayClick = async () => {
     if (!hasAddress) return;
     setIsPayLoading(true);
     try {
+      const cartSnapshot = [...cart];
+      await checkoutCart();
+      window.dispatchEvent(new Event('appDataRefreshRequested'));
       scheduleOpenOnHome({
-        cartSnapshot: [...cart],
-        onCloseExtra: async () => {
-          await clearCart();
-        },
+        cartSnapshot,
       });
+      try {
+        sessionStorage.setItem(
+          TEST_ORDER_MODAL_PENDING_KEY,
+          JSON.stringify({ cartSnapshot }),
+        );
+      } catch (storageError) {
+        console.error('Pending test order modal state saqlanmadi:', storageError);
+      }
       navigate('/', { replace: true });
+    } catch (error) {
+      if (error?.status === 409) {
+        await refreshCart();
+      }
+      showToast(error?.message || t('cart.updateError'), 'error');
     } finally {
       setIsPayLoading(false);
     }

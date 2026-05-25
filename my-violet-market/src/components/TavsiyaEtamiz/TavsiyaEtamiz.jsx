@@ -69,13 +69,17 @@ const TavsiyaEtamiz = ({ currentProduct, useScrollable = false }) => {
           />
         ),
       )
-    : recommendedProducts.map((product) =>
+    : recommendedProducts.map((product, index) =>
         useScrollable ? (
-          <div key={product.id} className="tavsiya-etamiz-product-item" data-product-id={product.id}>
+          <div
+            key={`tavsiya-etamiz-${String(product.id)}-${index}`}
+            className="tavsiya-etamiz-product-item"
+            data-product-id={product.id}
+          >
             <ProductCard product={product} />
           </div>
         ) : (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={`tavsiya-etamiz-${String(product.id)}-${index}`} product={product} />
         ),
       );
 
