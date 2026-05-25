@@ -19,6 +19,7 @@ import CommentsSection from '../components/CommentsSection';
 import CommentsModal from '../components/CommentsModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
+import FlashSaleProgressBar from '../components/FlashSaleSection/FlashSaleProgressBar';
 import DragScroll from '../components/DragScroll';
 import { useMainImageDrag } from '../components/mainImageDrag';
 import SizeChartUpperBodyDiagram from '../components/SizeChartUpperBodyDiagram/SizeChartUpperBodyDiagram';
@@ -37,6 +38,7 @@ import {
   typeSizeI18nKey,
 } from '../constants/sizeChartKind';
 import { apiUrl } from '../config/api';
+import '../components/FlashSaleSection/FlashSaleSection.css';
 import './ProductDetail.css';
 
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
@@ -1213,6 +1215,17 @@ const ProductDetail = () => {
     if (fallbackQty !== null) return fallbackQty;
     return 0;
   })();
+  const detailPercent = Math.max(0, Math.min(100, Math.round(Number(productData?.flashSaleMeta?.soldPercent) || 0)));
+  const detailProgressTone = productData?.flashSaleMeta?.tone || 'normal';
+  const detailDiscountToneClass =
+    detailProgressTone === 'danger'
+      ? 'flash-sale-card__discount--danger'
+      : detailProgressTone === 'warning'
+        ? 'flash-sale-card__discount--warning'
+        : detailProgressTone === 'info'
+          ? 'flash-sale-card__discount--info'
+          : 'flash-sale-card__discount--normal';
+  const detailSoldText = `${detailPercent}% ${i18n.t('home.flashSaleSold')}`;
   const addToCartDisabled = isAddingToCart || !isCurrentVariantAvailable;
 
 
@@ -1424,13 +1437,23 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="product-detail-quantity" aria-live="polite">
-              <i className="bx bx-package" aria-hidden="true" />
-              <span>
-                {i18n.t('productDetail.quantityLeft', {
-                  count: displayQuantity,
-                })}
-              </span>
+            <div className="product-detail-quantity-row">
+              <div className="product-detail-quantity" aria-live="polite">
+                <i className="bx bx-package" aria-hidden="true" />
+                <span>
+                  {i18n.t('productDetail.quantityLeft', {
+                    count: displayQuantity,
+                  })}
+                </span>
+              </div>
+              {productData?.flashSaleMeta ? (
+                <div className="flash-sale-card__footer product-detail-quantity-footer">
+                  <p className={`flash-sale-card__discount ${detailDiscountToneClass}`}>
+                    {detailSoldText}
+                  </p>
+                  <FlashSaleProgressBar percent={detailPercent} tone={detailProgressTone} />
+                </div>
+              ) : null}
             </div>
 
             {productData.colors && productData.colors.length > 0 && (
