@@ -10,4 +10,5 @@ export {
   SellerProfileAboutSkeleton,
   SellerProfileProductsTitleSkeleton,
   SellerProfileProductsGridSkeleton,
+  ProfilePendingReviewsSkeleton,
 } from './SkeletonLoader';

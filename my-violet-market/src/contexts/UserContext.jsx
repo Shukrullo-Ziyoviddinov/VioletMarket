@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { fetchProfile } from '../api/profileApi';
-import { mapApiUserToClient } from '../api/mapApiUser';
+import { mapApiUserToClient, mergeApiUserWithClient } from '../api/mapApiUser';
 
 const UserContext = createContext();
 
@@ -66,13 +66,14 @@ export const UserProvider = ({ children }) => {
     if (parsed) setUserData(parsed);
     fetchProfile(savedToken)
       .then((res) => {
-        const mapped = mapApiUserToClient(res.user);
-        if (mapped) setUserData(mapped);
+        setUserData((prev) => mergeApiUserWithClient(prev, res.user));
       })
-      .catch(() => {
-        localStorage.removeItem('authToken');
-        setAuthToken(null);
-        setUserData(defaultUserData);
+      .catch((err) => {
+        if (err?.status === 401) {
+          localStorage.removeItem('authToken');
+          setAuthToken(null);
+          setUserData(defaultUserData);
+        }
       })
       .finally(() => setAuthLoading(false));
   }, []);

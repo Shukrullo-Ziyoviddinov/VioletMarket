@@ -55,6 +55,9 @@ async function start() {
     console.log(
       "Seller subscriptions: GET /api/seller-subscriptions/seller/:sellerId, POST /api/seller-subscriptions/toggle",
     );
+    console.log(
+      "Pending reviews API: GET/POST /api/pending-reviews (yozilmagan sharhlar)",
+    );
   });
 }
 

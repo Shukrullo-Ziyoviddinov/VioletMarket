@@ -23,6 +23,7 @@ const flashSaleLiveStatsRoutes = require("./flashSaleLiveStats.routes");
 const flashSaleRuleConfigRoutes = require("./flashSaleRuleConfig.routes");
 const sellerSubscriptionRoutes = require("./sellerSubscription.routes");
 const commentRoutes = require("./comment.routes");
+const pendingReviewRoutes = require("./pendingReview.routes");
 
 const router = express.Router();
 
@@ -50,5 +51,6 @@ router.use(flashSaleCountdownRoutes);
 router.use(flashSaleRuleConfigRoutes);
 router.use(sellerSubscriptionRoutes);
 router.use(commentRoutes);
+router.use(pendingReviewRoutes);
 
 module.exports = router;

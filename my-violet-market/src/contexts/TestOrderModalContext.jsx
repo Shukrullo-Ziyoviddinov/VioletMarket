@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 
 const TestOrderModalContext = createContext();
 
@@ -15,6 +15,7 @@ export const TestOrderModalProvider = ({ children }) => {
   const [onCloseExtra, setOnCloseExtra] = useState(null);
   const [cartSnapshot, setCartSnapshot] = useState(null);
   const [pendingOpenOnHome, setPendingOpenOnHome] = useState(null);
+  const beforeCloseRef = useRef(null);
 
   const openModal = (options = {}) => {
     setOnCloseExtra(options.onCloseExtra || null);
@@ -33,7 +34,20 @@ export const TestOrderModalProvider = ({ children }) => {
     setPendingOpenOnHome(null);
   };
 
-  const closeModal = () => {
+  const registerBeforeClose = useCallback((fn) => {
+    beforeCloseRef.current = typeof fn === 'function' ? fn : null;
+  }, []);
+
+  const closeModal = useCallback(async () => {
+    const beforeClose = beforeCloseRef.current;
+    beforeCloseRef.current = null;
+    if (beforeClose) {
+      try {
+        await beforeClose();
+      } catch (err) {
+        console.error('Test order modal beforeClose:', err);
+      }
+    }
     const extra = onCloseExtra;
     setOnCloseExtra(null);
     setCartSnapshot(null);
@@ -41,12 +55,13 @@ export const TestOrderModalProvider = ({ children }) => {
     if (extra && typeof extra === 'function') {
       queueMicrotask(() => extra());
     }
-  };
+  }, [onCloseExtra]);
 
   const value = {
     isOpen,
     openModal,
     closeModal,
+    registerBeforeClose,
     cartSnapshot,
     pendingOpenOnHome,
     scheduleOpenOnHome,

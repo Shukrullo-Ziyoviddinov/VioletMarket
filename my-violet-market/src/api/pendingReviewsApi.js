@@ -18,24 +18,16 @@ function authHeaders(token) {
   };
 }
 
-export function fetchProductComments(productId) {
-  return fetch(apiUrl(`/api/products/${productId}/comments`)).then(parseJsonResponse);
+export function fetchPendingReviews(token) {
+  return fetch(apiUrl('/api/pending-reviews'), {
+    headers: authHeaders(token),
+  }).then(parseJsonResponse);
 }
 
-export function createComment(token, payload) {
-  const body = {
-    productId: payload.productId,
-    rating: payload.rating,
-    text: payload.text,
-    image: payload.image ?? null,
-    isTest: payload.isTest === true,
-  };
-  if (payload.pendingReviewId) {
-    body.pendingReviewId = payload.pendingReviewId;
-  }
-  return fetch(apiUrl('/api/comments'), {
+export function createPendingReviewsBatch(token, items) {
+  return fetch(apiUrl('/api/pending-reviews'), {
     method: 'POST',
     headers: authHeaders(token),
-    body: JSON.stringify(body),
+    body: JSON.stringify({ items }),
   }).then(parseJsonResponse);
 }

@@ -95,3 +95,60 @@
     min-height: 180px;
   }
 }
+
+/* Profil → Sharhlarim skeleton (ProfilePendingReviewsList.css dan ajratilgan) */
+.profile-pending-reviews-list--skeleton {
+  pointer-events: none;
+}
+
+.profile-pending-reviews-item--skeleton {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-pending-reviews-item--skeleton:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.profile-pending-reviews-item__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-pending-reviews-item__img--skeleton {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+.profile-pending-reviews-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-pending-reviews-item__title--skeleton {
+  display: block;
+  width: 100%;
+  height: 40px;
+  margin: 0 0 6px;
+  border-radius: 8px;
+}
+
+.profile-pending-reviews-item__date--skeleton {
+  display: block;
+  width: 55%;
+  height: 14px;
+  border-radius: 6px;
+}
+
+.profile-pending-reviews-item__btn--skeleton {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  border-radius: 10px;
+}

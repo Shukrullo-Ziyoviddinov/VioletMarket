@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../contexts/CartContext';
@@ -31,6 +31,7 @@ const Checkout = () => {
   const { userData } = useUser();
   const {
     cart,
+    cartReady,
     getTotal,
     getTotalItems,
     selectedDeliveryType,
@@ -58,8 +59,14 @@ const Checkout = () => {
     }
   };
 
-  if (cart.length === 0) {
-    navigate('/cart', { replace: true });
+  useEffect(() => {
+    if (!cartReady) return;
+    if (cart.length === 0) {
+      navigate('/cart', { replace: true });
+    }
+  }, [cartReady, cart.length, navigate]);
+
+  if (!cartReady || cart.length === 0) {
     return null;
   }
 

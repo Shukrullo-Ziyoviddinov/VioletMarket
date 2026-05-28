@@ -3,6 +3,8 @@ const { Product } = require("../../models/product");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const { applyNewSellerRating } = require("../seller/sellerRatingOptimizationService");
+const { PendingReview } = require("../../models/pendingReview");
+const { completePendingReview } = require("../pendingReview/pendingReviewService");
 
 const MAX_IMAGE_LENGTH = 2_000_000;
 
@@ -92,6 +94,15 @@ async function createComment(userId, payload) {
       sellerId: String(product.sellerId),
       rating: doc.rating,
     });
+  }
+
+  if (payload.pendingReviewId) {
+    await completePendingReview(userId, payload.pendingReviewId);
+  } else {
+    await PendingReview.updateMany(
+      { userId, productId, status: "pending" },
+      { $set: { status: "completed" } },
+    );
   }
 
   return { comment: mapCommentToClient(doc) };

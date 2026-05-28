@@ -1,0 +1,180 @@
+.profile-exit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10060;
+}
+
+.profile-exit-overlay.open {
+  animation: profileExitFadeIn 0.3s ease forwards;
+}
+
+.profile-exit-overlay.close {
+  animation: profileExitFadeOut 0.3s ease forwards;
+}
+
+.profile-exit-content {
+  background: white;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.profile-exit-content.open {
+  animation: profileExitSlideUp 0.3s ease forwards;
+}
+
+.profile-exit-content.close {
+  animation: profileExitSlideDown 0.3s ease forwards;
+}
+
+.profile-exit-body {
+  padding: 30px 25px;
+  text-align: center;
+}
+
+.profile-exit-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: profileExitIconPulse 0.5s ease;
+}
+
+.profile-exit-icon i {
+  font-size: 35px;
+  color: white;
+}
+
+.profile-exit-body h3 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.profile-exit-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 15px;
+  padding: 0 25px 25px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.profile-exit-btn-no,
+.profile-exit-btn-yes {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-exit-btn-no {
+  background: #022ff9;
+  color: white;
+}
+
+.profile-exit-btn-no:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.profile-exit-btn-yes {
+  background: #9b4fe7;
+  color: white;
+}
+
+.profile-exit-btn-yes:hover {
+  background: #8a3fd4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(155, 79, 231, 0.4);
+}
+
+@keyframes profileExitFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes profileExitFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes profileExitSlideUp {
+  from {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes profileExitSlideDown {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9) translateY(30px);
+    opacity: 0;
+  }
+}
+
+@keyframes profileExitIconPulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-exit-content {
+    width: 95%;
+  }
+
+  .profile-exit-body {
+    padding: 25px 20px;
+  }
+
+  .profile-exit-body h3 {
+    font-size: 1.1rem;
+  }
+
+  .profile-exit-actions {
+    padding: 0 20px 20px;
+    gap: 12px;
+  }
+}

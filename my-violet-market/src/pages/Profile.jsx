@@ -9,6 +9,11 @@ import { useAppData } from '../contexts/AppDataContext';
 import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
 import GlobalModal from '../components/GlobalModal';
+import { ProfilePendingReviewsList } from '../components/ProfilePendingReviews';
+import { ProfilePendingReviewsSkeleton } from '../components/SkeletonLoader';
+import CommentFormModal from '../components/CommentFormModal';
+import ProfileExit from '../components/ProfileExit';
+import { fetchPendingReviews } from '../api/pendingReviewsApi';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 
@@ -71,6 +76,12 @@ const Profile = () => {
   const [subscriptionsModalOpen, setSubscriptionsModalOpen] = useState(false);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [aboutModalClosing, setAboutModalClosing] = useState(false);
+  const [pendingReviewsModalOpen, setPendingReviewsModalOpen] = useState(false);
+  const [pendingReviews, setPendingReviews] = useState([]);
+  const [pendingReviewsLoading, setPendingReviewsLoading] = useState(false);
+  const [pendingCommentFormOpen, setPendingCommentFormOpen] = useState(false);
+  const [selectedPendingReview, setSelectedPendingReview] = useState(null);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [openAboutSections, setOpenAboutSections] = useState({});
   const [subscribedSellers, setSubscribedSellers] = useState([]);
   const [tempLanguage, setTempLanguage] = useState(i18n.language || 'uz');
@@ -279,6 +290,48 @@ const Profile = () => {
       loadMySubscriptions();
     }
   }, [subscriptionsModalOpen, loadMySubscriptions]);
+
+  const loadPendingReviews = useCallback(async () => {
+    if (!authToken) {
+      setPendingReviews([]);
+      return;
+    }
+    setPendingReviewsLoading(true);
+    try {
+      const data = await fetchPendingReviews(authToken);
+      setPendingReviews(Array.isArray(data.items) ? data.items : []);
+    } catch {
+      setPendingReviews([]);
+    } finally {
+      setPendingReviewsLoading(false);
+    }
+  }, [authToken]);
+
+  useEffect(() => {
+    if (!userData.isAuthenticated || !authToken) {
+      setPendingReviews([]);
+      return;
+    }
+    loadPendingReviews();
+  }, [userData.isAuthenticated, authToken, loadPendingReviews]);
+
+  useEffect(() => {
+    const onUpdate = () => {
+      loadPendingReviews();
+    };
+    window.addEventListener('pendingReviewsUpdated', onUpdate);
+    return () => window.removeEventListener('pendingReviewsUpdated', onUpdate);
+  }, [loadPendingReviews]);
+
+  const openPendingReviewsModal = () => {
+    loadPendingReviews();
+    setPendingReviewsModalOpen(true);
+  };
+
+  const handleLeaveFeedback = (item) => {
+    setSelectedPendingReview(item);
+    setPendingCommentFormOpen(true);
+  };
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
@@ -741,9 +794,74 @@ const Profile = () => {
             <span className="profile-about-label">{getLocalizedText({ uz: "Biz haqimizda", ru: "О нас" }, lang)}</span>
           </div>
 
+          {userData.isAuthenticated && (
+            <div
+              className="profile-reviews-row"
+              onClick={openPendingReviewsModal}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openPendingReviewsModal();
+                }
+              }}
+              aria-label={t('profile.myReviews')}
+              aria-haspopup="dialog"
+              aria-expanded={pendingReviewsModalOpen}
+            >
+              <i className="bx bx-star profile-reviews-icon" aria-hidden="true" />
+              <span className="profile-reviews-label">{t('profile.myReviews')}</span>
+              {pendingReviews.length > 0 && (
+                <span className="profile-reviews-badge" aria-hidden="true">
+                  {pendingReviews.length}
+                </span>
+              )}
+              <i className="bx bx-chevron-right profile-reviews-chevron" aria-hidden="true" />
+            </div>
+          )}
+
+          <GlobalModal
+            isOpen={pendingReviewsModalOpen}
+            onClose={() => setPendingReviewsModalOpen(false)}
+            title={t('profile.myReviews')}
+          >
+            {pendingReviewsLoading ? (
+              <ProfilePendingReviewsSkeleton count={3} />
+            ) : (
+              <ProfilePendingReviewsList
+                items={pendingReviews}
+                onLeaveFeedback={handleLeaveFeedback}
+              />
+            )}
+          </GlobalModal>
+
+          {selectedPendingReview && (
+            <CommentFormModal
+              isOpen={pendingCommentFormOpen}
+              onClose={() => {
+                setPendingCommentFormOpen(false);
+                setSelectedPendingReview(null);
+              }}
+              onSubmit={() => {
+                setPendingCommentFormOpen(false);
+                setSelectedPendingReview(null);
+                loadPendingReviews();
+              }}
+              productId={selectedPendingReview.productId}
+              productName={selectedPendingReview.productTitle}
+              productImage={selectedPendingReview.productImage}
+              pendingReviewId={selectedPendingReview.id}
+            />
+          )}
+
           <div className="profile-card-auth">
             {userData.isAuthenticated ? (
-              <button type="button" className="profile-card-auth__btn profile-card-auth__btn--logout" onClick={() => logout()}>
+              <button
+                type="button"
+                className="profile-card-auth__btn profile-card-auth__btn--logout"
+                onClick={() => setLogoutModalOpen(true)}
+              >
                 {t('profile.logout')}
               </button>
             ) : (
@@ -752,6 +870,12 @@ const Profile = () => {
               </Link>
             )}
           </div>
+
+          <ProfileExit
+            isOpen={logoutModalOpen}
+            onClose={() => setLogoutModalOpen(false)}
+            onConfirm={logout}
+          />
 
           {editModalOpen && (
             <>

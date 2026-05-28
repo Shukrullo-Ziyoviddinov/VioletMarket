@@ -1,12 +1,8 @@
 const express = require("express");
-const commentController = require("../../controllers/comment/commentController");
 const pendingReviewController = require("../../controllers/pendingReview/pendingReviewController");
 const { authMiddleware } = require("../../middleware/authMiddleware");
 
 const router = express.Router();
-
-router.get("/products/:productId/comments", commentController.listByProduct);
-router.post("/comments", authMiddleware, commentController.create);
 
 router.get("/pending-reviews", authMiddleware, pendingReviewController.listMine);
 router.post("/pending-reviews", authMiddleware, pendingReviewController.createBatch);

@@ -1145,6 +1145,57 @@
   color: #333;
 }
 
+.profile-reviews-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 26px;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.profile-reviews-row:hover {
+  background: #eee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.profile-reviews-icon {
+  font-size: 1.4rem;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.profile-reviews-label {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.profile-reviews-badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: #764ba2;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-reviews-chevron {
+  color: #999;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .profile-card-auth {
   margin-top: 4px;
   padding: 0 26px 22px;

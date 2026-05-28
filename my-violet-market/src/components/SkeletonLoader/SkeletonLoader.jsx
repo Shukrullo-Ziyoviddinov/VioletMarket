@@ -198,4 +198,34 @@ export function SellerProfileProductsGridSkeleton({ count = 8 }) {
   );
 }
 
+function ProfilePendingReviewItemSkeleton() {
+  return (
+    <li className="profile-pending-reviews-item profile-pending-reviews-item--skeleton" aria-hidden>
+      <div className="profile-pending-reviews-item__row">
+        <SkeletonPulse className="profile-pending-reviews-item__img profile-pending-reviews-item__img--skeleton" />
+        <div className="profile-pending-reviews-item__info">
+          <SkeletonPulse className="profile-pending-reviews-item__title--skeleton" />
+          <SkeletonPulse className="profile-pending-reviews-item__date--skeleton" />
+        </div>
+      </div>
+      <SkeletonPulse className="profile-pending-reviews-item__btn profile-pending-reviews-item__btn--skeleton" />
+    </li>
+  );
+}
+
+/** Profil → Sharhlarim: API javobi kutilganda */
+export function ProfilePendingReviewsSkeleton({ count = 3 }) {
+  return (
+    <ul
+      className="profile-pending-reviews-list profile-pending-reviews-list--skeleton"
+      aria-busy="true"
+      aria-label="Sharhlar yuklanmoqda"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <ProfilePendingReviewItemSkeleton key={`pending-review-sk-${i}`} />
+      ))}
+    </ul>
+  );
+}
+
 export default SkeletonPulse;

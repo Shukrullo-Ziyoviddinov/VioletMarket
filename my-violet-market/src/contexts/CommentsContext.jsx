@@ -76,6 +76,9 @@ export const CommentsProvider = ({ children }) => {
         image: comment.image || null,
         isTest: comment.isTest === true,
       };
+      if (comment.pendingReviewId) {
+        payload.pendingReviewId = String(comment.pendingReviewId);
+      }
 
       const data = await createCommentApi(authToken, payload);
       const saved = data.comment;

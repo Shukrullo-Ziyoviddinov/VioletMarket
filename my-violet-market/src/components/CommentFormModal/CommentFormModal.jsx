@@ -14,7 +14,15 @@ function getProfileDisplayName(userData) {
   return [userData?.firstName, userData?.lastName].filter(Boolean).join(' ').trim();
 }
 
-const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, productImage }) => {
+const CommentFormModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  productId,
+  productName,
+  productImage,
+  pendingReviewId = null,
+}) => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
@@ -197,9 +205,15 @@ const CommentFormModal = ({ isOpen, onClose, onSubmit, productId, productName, p
       image: formData.imagePreview || null,
       isTest: true,
     };
+    if (pendingReviewId) {
+      commentData.pendingReviewId = String(pendingReviewId);
+    }
 
     try {
       await addComment(commentData);
+      if (pendingReviewId) {
+        window.dispatchEvent(new Event('pendingReviewsUpdated'));
+      }
       showToast(i18n.t('commentForm.success'), 'success');
       
       // Reset form immediately to prevent double submission

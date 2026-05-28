@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { getPortalContainer } from '../../utils/utils';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
+import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
+import { useUser } from '../../contexts/UserContext';
 import { normalizeImagePath, getLocalizedText } from '../../utils/utils';
+import { createPendingReviewsBatch } from '../../api/pendingReviewsApi';
+import { getCartItemProductId } from '../../utils/cartItemProductId';
+import { useToast } from '../../contexts/ToastContext';
 import CommentFormModal from '../CommentFormModal';
 import './TestOrderModal.css';
 
@@ -11,15 +16,28 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
   const { cart } = useCart();
+  const { registerBeforeClose } = useTestOrderModal();
+  const { authToken } = useUser();
+  const { showToast } = useToast();
   const displayCart = (cartSnapshot && cartSnapshot.length > 0) ? cartSnapshot : cart;
   const [isCommentFormOpen, setIsCommentFormOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   // Har bir buyurtmada izoh yozilgan mahsulotlar (global comments emas)
   const [commentedInThisOrder, setCommentedInThisOrder] = useState(new Set());
+  const commentedRef = useRef(commentedInThisOrder);
+  const displayCartRef = useRef(displayCart);
+
+  useEffect(() => {
+    commentedRef.current = commentedInThisOrder;
+  }, [commentedInThisOrder]);
+
+  useEffect(() => {
+    displayCartRef.current = displayCart;
+  }, [displayCart]);
   
   // Get selected product from cart by ID
-  const selectedProduct = selectedProductId 
-    ? displayCart.find(item => item.id === selectedProductId) || null
+  const selectedProduct = selectedProductId
+    ? displayCart.find((item) => getCartItemProductId(item) === selectedProductId) || null
     : null;
 
   useEffect(() => {
@@ -33,27 +51,16 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyPress = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isOpen, onClose]);
-
   const handleProductClick = (product) => {
     // Faqat shu buyurtmada izoh yozilganini tekshiramiz (har bir buyurtma uchun yangi izoh mumkin)
-    const hasCommentInThisOrder = commentedInThisOrder.has(String(product.id));
+    const pid = getCartItemProductId(product);
+    if (pid == null) return;
+    const hasCommentInThisOrder = commentedInThisOrder.has(String(pid));
     if (hasCommentInThisOrder) {
       return;
     }
-    
-    setSelectedProductId(product.id);
+
+    setSelectedProductId(pid);
     setIsCommentFormOpen(true);
   };
 
@@ -61,7 +68,64 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
     setCommentedInThisOrder(prev => new Set([...prev, String(productId)]));
     setSelectedProductId(null);
     setIsCommentFormOpen(false);
+    window.dispatchEvent(new Event('pendingReviewsUpdated'));
   };
+
+  const saveUnwrittenReviews = useCallback(async () => {
+    const token = authToken || localStorage.getItem('authToken');
+    if (!token) return;
+
+    const cartItems = displayCartRef.current || [];
+    const commented = commentedRef.current;
+    const pendingItems = cartItems
+      .map((item) => {
+        const productId = getCartItemProductId(item);
+        if (productId == null || commented.has(String(productId))) return null;
+        return { productId };
+      })
+      .filter(Boolean);
+
+    if (pendingItems.length === 0) return;
+
+    try {
+      await createPendingReviewsBatch(token, pendingItems);
+      window.dispatchEvent(new Event('pendingReviewsUpdated'));
+    } catch (err) {
+      console.error('Kutilmagan sharhlarni saqlashda xatolik:', err);
+      if (err?.status === 404) {
+        showToast(
+          i18n.t('profile.errorApiNotFound'),
+          'error',
+        );
+      }
+    }
+  }, [authToken, i18n, showToast]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      registerBeforeClose(null);
+      return;
+    }
+    registerBeforeClose(() => saveUnwrittenReviews());
+    return () => registerBeforeClose(null);
+  }, [isOpen, registerBeforeClose, saveUnwrittenReviews]);
+
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyPress = (e) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isOpen, handleClose]);
 
   // Reset when modal closes
   useEffect(() => {
@@ -75,9 +139,9 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="test-order-modal-overlay" onClick={onClose}>
+    <div className="test-order-modal-overlay" onClick={handleClose}>
       <div className="test-order-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="test-order-modal-close" onClick={onClose}>
+        <button type="button" className="test-order-modal-close" onClick={handleClose}>
           <i className="bx bx-x"></i>
         </button>
         
@@ -93,7 +157,9 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
             <p className="no-products">{i18n.t('testOrder.noProducts')}</p>
           ) : (
             displayCart.map((item, index) => {
-              const hasCommentInThisOrder = commentedInThisOrder.has(String(item.id));
+              const itemProductId = getCartItemProductId(item);
+              const hasCommentInThisOrder =
+                itemProductId != null && commentedInThisOrder.has(String(itemProductId));
               return (
                 <div
                   key={index}
@@ -135,8 +201,8 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
             setIsCommentFormOpen(false);
             setSelectedProductId(null);
           }}
-          onSubmit={() => handleCommentSubmit(selectedProduct.id)}
-          productId={selectedProduct.id}
+          onSubmit={() => handleCommentSubmit(getCartItemProductId(selectedProduct))}
+          productId={getCartItemProductId(selectedProduct)}
           productName={getLocalizedText(selectedProduct.title, lang)}
           productImage={selectedProduct.image}
         />
