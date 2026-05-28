@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const footerAppStoreSchema = new mongoose.Schema(
   {
@@ -14,6 +15,10 @@ const footerAppStoreSchema = new mongoose.Schema(
     id: false,
   }
 );
+
+footerAppStoreSchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "footer_app_store_id");
+});
 
 const FooterAppStore = mongoose.model("FooterAppStore", footerAppStoreSchema);
 

@@ -35,6 +35,32 @@ const formatPriceSafe = (value) => {
   return String(value);
 };
 
+const resolveImageSignalMeta = (activeSignal) => {
+  const type = activeSignal?.type;
+  if (type === 'low_stock_critical') {
+    return {
+      tone: 'danger',
+      icon: 'bx bxs-time-five',
+      text: "Faqat bugun",
+    };
+  }
+  if (type === 'low_stock_notice') {
+    return {
+      tone: 'warning',
+      icon: 'bx bxs-hot',
+      text: "Talab yuqori",
+    };
+  }
+  if (type === 'in_cart_popular') {
+    return {
+      tone: 'popular',
+      icon: 'bx bxs-star',
+      text: "Ko'p tanlanmoqda",
+    };
+  }
+  return null;
+};
+
 const FlashSaleProductCard = ({ product }) => {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
@@ -94,6 +120,7 @@ const FlashSaleProductCard = ({ product }) => {
   }, [rotateEveryMs, shouldRotate, signals.length]);
 
   const activeSignal = signals[signalIndex] || null;
+  const imageSignalMeta = resolveImageSignalMeta(activeSignal);
   const progressTone = activeSignal?.tone || product?.flashSaleMeta?.tone || 'normal';
   const discountToneClass =
     progressTone === 'danger'
@@ -140,6 +167,14 @@ const FlashSaleProductCard = ({ product }) => {
             e.currentTarget.src = normalizeImagePath('/img/no-image.png');
           }}
         />
+        {imageSignalMeta ? (
+          <div
+            className={`flash-sale-card__image-signal flash-sale-card__image-signal--${imageSignalMeta.tone}`}
+          >
+            <i className={imageSignalMeta.icon} aria-hidden="true" />
+            <span>{imageSignalMeta.text}</span>
+          </div>
+        ) : null}
       </div>
       <h4 className="flash-sale-card__title">{title}</h4>
       <div className="flash-sale-card__prices">

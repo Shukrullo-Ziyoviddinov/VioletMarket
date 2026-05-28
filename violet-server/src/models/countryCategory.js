@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const nameI18nSchema = new mongoose.Schema(
   {
@@ -28,6 +29,10 @@ const countryCategorySchema = new mongoose.Schema(
     versionKey: false,
   }
 );
+
+countryCategorySchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "country_category_id");
+});
 
 const CountryCategory = mongoose.model("CountryCategory", countryCategorySchema);
 

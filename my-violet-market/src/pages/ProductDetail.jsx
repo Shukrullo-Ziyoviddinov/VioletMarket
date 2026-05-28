@@ -19,8 +19,8 @@ import CommentsSection from '../components/CommentsSection';
 import CommentsModal from '../components/CommentsModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
-import FlashSaleProgressBar from '../components/FlashSaleSection/FlashSaleProgressBar';
 import DragScroll from '../components/DragScroll';
+import ProductDetailSalesFooter from '../components/ProductDetailSalesFooter/ProductDetailSalesFooter';
 import { useMainImageDrag } from '../components/mainImageDrag';
 import SizeChartUpperBodyDiagram from '../components/SizeChartUpperBodyDiagram/SizeChartUpperBodyDiagram';
 import SizeChartFootwearDiagram from '../components/SizeChartFootwearDiagram/SizeChartFootwearDiagram';
@@ -51,6 +51,13 @@ const toStockNumber = (value) => {
   return Math.max(0, Math.floor(n));
 };
 
+const getStockEntryQuantity = (value) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return toStockNumber(value.quantity);
+  }
+  return toStockNumber(value);
+};
+
 const sumStockNumbers = (items) => {
   if (!Array.isArray(items)) return null;
   let total = 0;
@@ -73,7 +80,7 @@ const sumStockMapValues = (stockMap) => {
   let found = false;
 
   for (const value of values) {
-    const qty = toStockNumber(value);
+    const qty = getStockEntryQuantity(value);
     if (qty === null) continue;
     total += qty;
     found = true;
@@ -82,7 +89,29 @@ const sumStockMapValues = (stockMap) => {
   return found ? total : null;
 };
 
+const pickBestStockCandidate = (candidates) => {
+  const values = (Array.isArray(candidates) ? candidates : [])
+    .map((value) => {
+      if (value == null || value === '') return null;
+      const num = Number(value);
+      if (!Number.isFinite(num)) return null;
+      return Math.max(0, num);
+    })
+    .filter((value) => value != null);
+  if (values.length === 0) return null;
+  return Math.max(...values);
+};
+
 const getProductVariantQuantityTotal = (product) => {
+  const rootVariantCandidate = pickBestStockCandidate([
+    sumStockNumbers(product?.models),
+    sumStockNumbers(product?.storage),
+    sumStockMapValues(product?.modelStock),
+    sumStockMapValues(product?.storageStock),
+    sumStockMapValues(product?.sizeStock),
+    sumStockMapValues(product?.colorStock),
+  ]);
+
   const colors = Array.isArray(product?.colors) ? product.colors : [];
 
   if (colors.length > 0) {
@@ -90,41 +119,18 @@ const getProductVariantQuantityTotal = (product) => {
     let found = false;
 
     for (const color of colors) {
-      const colorModelsQty = sumStockNumbers(color?.models);
-      if (colorModelsQty !== null) {
-        total += colorModelsQty;
+      const colorVariantCandidate = pickBestStockCandidate([
+        sumStockNumbers(color?.models),
+        sumStockNumbers(color?.storage),
+        sumStockMapValues(color?.modelStock),
+        sumStockMapValues(color?.storageStock),
+        sumStockMapValues(color?.sizeStock),
+      ]);
+      if (colorVariantCandidate !== null) {
+        total += colorVariantCandidate;
         found = true;
         continue;
       }
-
-      const colorStorageQty = sumStockNumbers(color?.storage);
-      if (colorStorageQty !== null) {
-        total += colorStorageQty;
-        found = true;
-        continue;
-      }
-
-      const modelStockQty = sumStockMapValues(color?.modelStock);
-      if (modelStockQty !== null) {
-        total += modelStockQty;
-        found = true;
-        continue;
-      }
-
-      const storageStockQty = sumStockMapValues(color?.storageStock);
-      if (storageStockQty !== null) {
-        total += storageStockQty;
-        found = true;
-        continue;
-      }
-
-      const sizeStockQty = sumStockMapValues(color?.sizeStock);
-      if (sizeStockQty !== null) {
-        total += sizeStockQty;
-        found = true;
-        continue;
-      }
-
       const colorQty = toStockNumber(color?.quantity);
       if (colorQty !== null) {
         total += colorQty;
@@ -135,13 +141,11 @@ const getProductVariantQuantityTotal = (product) => {
     if (found) return total;
   }
 
-  const productModelsQty = sumStockNumbers(product?.models);
-  if (productModelsQty !== null) return productModelsQty;
+  const effectiveQty = toStockNumber(product?.effectiveQuantity);
+  const finalVariantCandidate = pickBestStockCandidate([effectiveQty, rootVariantCandidate]);
+  if (finalVariantCandidate !== null) return finalVariantCandidate;
 
-  const productStorageQty = sumStockNumbers(product?.storage);
-  if (productStorageQty !== null) return productStorageQty;
-
-  return null;
+  return toStockNumber(product?.quantity);
 };
 
 const findStockValue = (stockMap, label) => {
@@ -150,7 +154,7 @@ const findStockValue = (stockMap, label) => {
   if (!target) return null;
   const matchedKey = Object.keys(stockMap).find((key) => normalizeStockLabel(key) === target);
   if (!matchedKey) return null;
-  return toStockNumber(stockMap[matchedKey]);
+  return getStockEntryQuantity(stockMap[matchedKey]);
 };
 
 const getSizesFromColor = (color) => {
@@ -174,8 +178,30 @@ const getStockQuantityByLabel = (stockMap, label) => {
   const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
   if (!key) return null;
   const quantity = Number(stockMap[key]);
-  if (!Number.isFinite(quantity)) return null;
-  return quantity;
+  if (Number.isFinite(quantity)) return quantity;
+  return getStockEntryQuantity(stockMap[key]);
+};
+
+const getStockPriceByLabel = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  const entry = stockMap[key];
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+  return getNumberPrice(entry.price);
+};
+
+const getStockOriginalPriceByLabel = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  const entry = stockMap[key];
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+  return getNumberPrice(entry.originalPrice);
 };
 
 const getStorageValue = (storage) =>
@@ -189,6 +215,16 @@ const getStockAwareOptions = (fallbackList, stockMap) => {
     return Object.keys(stockMap);
   }
   return Array.isArray(fallbackList) ? fallbackList : [];
+};
+
+const getProductMainImage = (product) =>
+  product?.image || product?.mainImage || product?.colors?.[0]?.mainImage || '/img/no-image.png';
+
+const resolveCommentPreviewLimit = () => {
+  if (typeof window === 'undefined') return 3;
+  const width = Number(window.innerWidth) || 0;
+  if (width >= 385 && width <= 450) return 4;
+  return 3;
 };
 
 const ProductDetail = () => {
@@ -222,6 +258,11 @@ const ProductDetail = () => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
   const [serverProductQty, setServerProductQty] = useState(null);
+  const [commentPreviewLimit, setCommentPreviewLimit] = useState(resolveCommentPreviewLimit);
+  const [commentsPreviewMode, setCommentsPreviewMode] = useState('spread');
+  const commentsDisplayRef = useRef(null);
+  const commentsIconRef = useRef(null);
+  const commentsCountRef = useRef(null);
 
   const shareSheetStartYRef = useRef(0);
   const shareSheetCurrentYRef = useRef(0);
@@ -247,16 +288,24 @@ const ProductDetail = () => {
         });
         setProductData(latestProduct);
         const colorList = Array.isArray(latestProduct.colors) ? latestProduct.colors : [];
+        const colorStock = latestProduct?.colorStock;
+        const stockColorList =
+          colorList.length === 0 && colorStock && typeof colorStock === 'object'
+            ? Object.keys(colorStock).map((label) => ({ name: label, colorFilter: label }))
+            : [];
         // Media doim ko'rinishi uchun stokdan qat'i nazar birinchi rangni tanlaymiz.
-        const firstAvailableColor = colorList[0] || null;
-        const initialSizes = getSizesFromColor(firstAvailableColor);
+        const firstAvailableColor = colorList[0] || stockColorList[0] || null;
+        const initialSizes = getStockAwareOptions(
+          firstAvailableColor?.sizes,
+          firstAvailableColor?.sizeStock || latestProduct?.sizeStock,
+        );
         const initialStorageOptions = getStockAwareOptions(
-          firstAvailableColor?.storage,
-          firstAvailableColor?.storageStock,
+          firstAvailableColor?.storage || latestProduct?.storage,
+          firstAvailableColor?.storageStock || latestProduct?.storageStock,
         );
         const initialModelOptions = getStockAwareOptions(
-          firstAvailableColor?.models,
-          firstAvailableColor?.modelStock,
+          firstAvailableColor?.models || latestProduct?.models,
+          firstAvailableColor?.modelStock || latestProduct?.modelStock,
         );
 
         setSelectedColor(firstAvailableColor);
@@ -317,6 +366,15 @@ const ProductDetail = () => {
     if (authLoading || !authToken || !productData?.id) return;
     recordView(productData.id);
   }, [authLoading, authToken, productData?.id, recordView]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCommentPreviewLimit(resolveCommentPreviewLimit());
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!productData) return;
@@ -605,6 +663,72 @@ const ProductDetail = () => {
       commentCount: count
     };
   }, [productData, comments, getCommentsByProductId]);
+  const detailStarFillLevels = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, index) => {
+        const raw = Number(averageRating) - index;
+        return Math.max(0, Math.min(1, raw));
+      }),
+    [averageRating],
+  );
+  const commentImageList = useMemo(
+    () =>
+      allComments
+        .map((comment) =>
+          typeof comment?.image === 'string' ? comment.image.trim() : '',
+        )
+        .filter(Boolean),
+    [allComments],
+  );
+  const commentPreviewImages = useMemo(
+    () => commentImageList.slice(0, commentPreviewLimit),
+    [commentImageList, commentPreviewLimit],
+  );
+  const remainingCommentImageCount = Math.max(0, commentImageList.length - commentPreviewImages.length);
+
+  useEffect(() => {
+    if (commentPreviewImages.length === 0) {
+      setCommentsPreviewMode('spread');
+      return undefined;
+    }
+
+    const measureMode = () => {
+      const rowNode = commentsDisplayRef.current;
+      const iconNode = commentsIconRef.current;
+      const countNode = commentsCountRef.current;
+      if (!rowNode || !iconNode || !countNode) return;
+
+      const imageCount = commentPreviewImages.length;
+      const hasMore = remainingCommentImageCount > 0;
+      const bubbleSize = 30;
+      const spreadGap = 4;
+      const previewLeftGap = 2;
+      const leadingGap = 7;
+      const internalPadding = 24; // left + right padding (12px + 12px)
+
+      const spreadWidth =
+        previewLeftGap +
+        imageCount * bubbleSize +
+        Math.max(0, imageCount - 1) * spreadGap +
+        (hasMore ? bubbleSize + spreadGap : 0);
+
+      const occupiedWithoutPreview =
+        iconNode.offsetWidth +
+        countNode.offsetWidth +
+        leadingGap +
+        internalPadding;
+
+      const freeWidth = Math.max(0, rowNode.clientWidth - occupiedWithoutPreview);
+      const shouldCompact = spreadWidth > freeWidth;
+      setCommentsPreviewMode(shouldCompact ? 'compact' : 'spread');
+    };
+
+    measureMode();
+    window.addEventListener('resize', measureMode);
+    return () => {
+      window.removeEventListener('resize', measureMode);
+    };
+  }, [commentPreviewImages.length, remainingCommentImageCount]);
 
   const detailSellerId = productData?.sellerId;
   const detailSeller = useMemo(
@@ -627,12 +751,31 @@ const ProductDetail = () => {
 
   // All images calculation - must be before early return for hooks
   const allImages = useMemo(() => {
-    if (!selectedColor) return [];
+    const colorList = Array.isArray(productData?.colors) ? productData.colors : [];
+    const selectedLabel = normalizeVariantLabel(getLabelFromOption(selectedColor, lang));
+    const resolvedColor =
+      colorList.find((color) => {
+        const colorLabel = normalizeVariantLabel(getLabelFromOption(color, lang));
+        return (
+          (selectedLabel && colorLabel && selectedLabel === colorLabel) ||
+          (selectedColor?.colorFilter && color?.colorFilter && selectedColor.colorFilter === color.colorFilter) ||
+          (selectedColor?.mainImage && color?.mainImage && selectedColor.mainImage === color.mainImage)
+        );
+      }) || selectedColor;
+
+    const mainImage = resolvedColor?.mainImage || getProductMainImage(productData);
+    const hasColorVariants = Array.isArray(productData?.colors) && productData.colors.length > 0;
+    const colorThumbnails = Array.isArray(resolvedColor?.thumbnails) ? resolvedColor.thumbnails : [];
+    const productThumbnails =
+      Array.isArray(productData?.thumbnails) && productData.thumbnails.length > 0
+        ? productData.thumbnails
+        : [];
+    const thumbnails = hasColorVariants ? colorThumbnails : productThumbnails;
     return [
-      normalizeImagePath(selectedColor.mainImage),
-      ...(selectedColor.thumbnails || []).map(normalizeImagePath)
+      normalizeImagePath(mainImage),
+      ...thumbnails.map(normalizeImagePath)
     ];
-  }, [selectedColor]);
+  }, [productData, selectedColor, lang]);
 
   // Carousel funksiyalari - ImageBanner kabi (must be before early return)
   const nextImageSlide = useCallback(() => {
@@ -676,8 +819,17 @@ const ProductDetail = () => {
 
   const colorOptions = useMemo(() => {
     const colors = Array.isArray(productData?.colors) ? productData.colors : [];
+    const colorStock = productData?.colorStock;
+    if (colors.length === 0 && colorStock && typeof colorStock === 'object') {
+      return Object.keys(colorStock).map((label, index) => ({
+        key: `color-stock-${label}-${index}`,
+        color: { name: label, colorFilter: label },
+        available: (getStockEntryQuantity(colorStock[label]) || 0) > 0,
+      }));
+    }
     return colors.map((color, index) => {
-      const rawQty = Number(color?.quantity);
+      const stockQty = findStockValue(productData?.colorStock, getLabelFromOption(color, lang));
+      const rawQty = stockQty ?? Number(color?.quantity);
       const available = Number.isFinite(rawQty) ? rawQty > 0 : true;
       return {
         key: `${color?.colorFilter || ''}-${color?.mainImage || ''}-${index}`,
@@ -685,11 +837,10 @@ const ProductDetail = () => {
         available,
       };
     });
-  }, [productData?.colors]);
+  }, [productData?.colors, productData?.colorStock, lang]);
 
   const sizeOptions = useMemo(() => {
-    if (!selectedColor) return [];
-    const stock = selectedColor.sizeStock;
+    const stock = selectedColor?.sizeStock || productData?.sizeStock;
     const stockKeys =
       stock && typeof stock === 'object' && !Array.isArray(stock)
         ? Object.keys(stock)
@@ -698,7 +849,7 @@ const ProductDetail = () => {
       return stockKeys.map((label) => ({
         value: label,
         label,
-        available: (Number(stock[label]) || 0) > 0,
+        available: (getStockEntryQuantity(stock[label]) || 0) > 0,
       }));
     }
     return getSizesFromColor(selectedColor).map((label) => ({
@@ -706,12 +857,15 @@ const ProductDetail = () => {
       label,
       available: true,
     }));
-  }, [selectedColor]);
+  }, [productData?.sizeStock, selectedColor]);
 
   const storageOptions = useMemo(() => {
-    if (!selectedColor) return [];
-    const optionsFromData = Array.isArray(selectedColor.storage) ? selectedColor.storage : [];
-    const stockMap = selectedColor.storageStock;
+    const optionsFromData = Array.isArray(selectedColor?.storage)
+      ? selectedColor.storage
+      : Array.isArray(productData?.storage)
+        ? productData.storage
+        : [];
+    const stockMap = selectedColor?.storageStock || productData?.storageStock;
     if (optionsFromData.length > 0) {
       return optionsFromData.map((option, index) => {
         const label = getLabelFromOption(option, lang) || String(index);
@@ -729,16 +883,19 @@ const ProductDetail = () => {
       return Object.keys(stockMap).map((label) => ({
         option: label,
         label,
-        available: (Number(stockMap[label]) || 0) > 0,
+        available: (getStockEntryQuantity(stockMap[label]) || 0) > 0,
       }));
     }
     return [];
-  }, [selectedColor, lang]);
+  }, [productData?.storage, productData?.storageStock, selectedColor, lang]);
 
   const modelOptions = useMemo(() => {
-    if (!selectedColor) return [];
-    const optionsFromData = Array.isArray(selectedColor.models) ? selectedColor.models : [];
-    const stockMap = selectedColor.modelStock;
+    const optionsFromData = Array.isArray(selectedColor?.models)
+      ? selectedColor.models
+      : Array.isArray(productData?.models)
+        ? productData.models
+        : [];
+    const stockMap = selectedColor?.modelStock || productData?.modelStock;
     if (optionsFromData.length > 0) {
       return optionsFromData.map((option, index) => {
         const label = getLabelFromOption(option, lang) || String(index);
@@ -756,11 +913,11 @@ const ProductDetail = () => {
       return Object.keys(stockMap).map((label) => ({
         option: label,
         label,
-        available: (Number(stockMap[label]) || 0) > 0,
+        available: (getStockEntryQuantity(stockMap[label]) || 0) > 0,
       }));
     }
     return [];
-  }, [selectedColor, lang]);
+  }, [productData?.models, productData?.modelStock, selectedColor, lang]);
 
   useEffect(() => {
     if (sizeOptions.length === 0) {
@@ -811,7 +968,7 @@ const ProductDetail = () => {
     if (modelOwnQty !== null) return modelOwnQty;
 
     const modelStockQty = findStockValue(
-      selectedColor?.modelStock,
+      selectedColor?.modelStock || productData?.modelStock,
       getModelValue(selectedModel),
     );
     if (modelStockQty !== null) return modelStockQty;
@@ -820,15 +977,20 @@ const ProductDetail = () => {
     if (storageOwnQty !== null) return storageOwnQty;
 
     const storageStockQty = findStockValue(
-      selectedColor?.storageStock,
+      selectedColor?.storageStock || productData?.storageStock,
       getStorageValue(selectedStorage),
     );
     if (storageStockQty !== null) return storageStockQty;
 
-    const sizeStockQty = findStockValue(selectedColor?.sizeStock, selectedSize);
+    const sizeStockQty = findStockValue(selectedColor?.sizeStock || productData?.sizeStock, selectedSize);
     if (sizeStockQty !== null) return sizeStockQty;
 
-    const colorQty = toStockNumber(selectedColor?.quantity);
+    const colorStockQty = findStockValue(productData?.colorStock, getLabelFromOption(selectedColor, lang));
+    if (colorStockQty !== null) return colorStockQty;
+
+    const colorQty =
+      findStockValue(productData?.colorStock, getLabelFromOption(selectedColor, lang)) ??
+      toStockNumber(selectedColor?.quantity);
     if (colorQty !== null) return colorQty;
 
     return null;
@@ -849,11 +1011,14 @@ const ProductDetail = () => {
     modelOptions.some(
       (opt) => normalizeVariantLabel(opt.label) === normalizeVariantLabel(getLabelFromOption(selectedModel, lang)) && opt.available,
     );
-  const selectedColorQty = toStockNumber(selectedColor?.quantity);
+  const selectedColorQty =
+    findStockValue(productData?.colorStock, getLabelFromOption(selectedColor, lang)) ??
+    toStockNumber(selectedColor?.quantity);
   const selectedColorAvailable =
     !selectedColor || selectedColorQty === null || selectedColorQty > 0;
   const isCurrentVariantAvailable =
-    (effectiveStockQty === null || effectiveStockQty > 0) &&
+    effectiveStockQty !== null &&
+    effectiveStockQty > 0 &&
     selectedColorAvailable &&
     selectedSizeAvailable &&
     selectedStorageAvailable &&
@@ -992,9 +1157,29 @@ const ProductDetail = () => {
   if (!productData) return null;
 
   const currentPrice = getNumberPrice(selectedModel) ?? 
+                      getStockPriceByLabel(
+                        selectedColor?.modelStock || productData?.modelStock,
+                        getModelValue(selectedModel),
+                      ) ??
                       getNumberPrice(selectedStorage) ?? 
+                      getStockPriceByLabel(
+                        selectedColor?.storageStock || productData?.storageStock,
+                        getStorageValue(selectedStorage),
+                      ) ??
                       getNumberPrice(selectedColor) ?? 
                       getNumberPrice(productData) ?? 0;
+  const currentOriginalPrice = getNumberPrice(selectedModel?.originalPrice) ??
+                      getStockOriginalPriceByLabel(
+                        selectedColor?.modelStock || productData?.modelStock,
+                        getModelValue(selectedModel),
+                      ) ??
+                      getNumberPrice(selectedStorage?.originalPrice) ??
+                      getStockOriginalPriceByLabel(
+                        selectedColor?.storageStock || productData?.storageStock,
+                        getStorageValue(selectedStorage),
+                      ) ??
+                      getNumberPrice(selectedColor?.originalPrice) ??
+                      getNumberPrice(productData?.originalPrice);
 
   const handleAddToCart = async () => {
     if (selectedVariantQty !== null && selectedVariantQty <= 0) {
@@ -1013,14 +1198,14 @@ const ProductDetail = () => {
       return;
     }
 
-    const sizeQty = findStockValue(selectedColor?.sizeStock, selectedSize);
+    const sizeQty = findStockValue(selectedColor?.sizeStock || productData?.sizeStock, selectedSize);
     if (sizeQty !== null && sizeQty <= 0) {
       showToast(i18n.t('cart.updateError'), 'error');
       return;
     }
 
     const storageQty = findStockValue(
-      selectedColor?.storageStock,
+      selectedColor?.storageStock || productData?.storageStock,
       getStorageValue(selectedStorage),
     );
     if (storageQty !== null && storageQty <= 0) {
@@ -1029,7 +1214,7 @@ const ProductDetail = () => {
     }
 
     const modelQty = findStockValue(
-      selectedColor?.modelStock,
+      selectedColor?.modelStock || productData?.modelStock,
       getModelValue(selectedModel),
     );
     if (modelQty !== null && modelQty <= 0) {
@@ -1055,31 +1240,39 @@ const ProductDetail = () => {
   };
 
   const isColorAvailable = (color) => {
-    const qty = toStockNumber(color?.quantity);
+    const qty =
+      findStockValue(productData?.colorStock, getLabelFromOption(color, lang)) ??
+      toStockNumber(color?.quantity);
     return qty === null || qty > 0;
   };
 
   const isSizeAvailable = (color, size) => {
-    const colorQty = toStockNumber(color?.quantity);
+    const colorQty =
+      findStockValue(productData?.colorStock, getLabelFromOption(color, lang)) ??
+      toStockNumber(color?.quantity);
     if (colorQty !== null && colorQty <= 0) return false;
-    const sizeQty = findStockValue(color?.sizeStock, size);
+    const sizeQty = findStockValue(color?.sizeStock || productData?.sizeStock, size);
     return sizeQty === null || sizeQty > 0;
   };
 
   const isStorageAvailable = (color, storageOption) => {
-    const colorQty = toStockNumber(color?.quantity);
+    const colorQty =
+      findStockValue(productData?.colorStock, getLabelFromOption(color, lang)) ??
+      toStockNumber(color?.quantity);
     if (colorQty !== null && colorQty <= 0) return false;
     const storageQty = findStockValue(
-      color?.storageStock,
+      color?.storageStock || productData?.storageStock,
       getStorageValue(storageOption),
     );
     return storageQty === null || storageQty > 0;
   };
 
   const isModelAvailable = (color, modelOption) => {
-    const colorQty = toStockNumber(color?.quantity);
+    const colorQty =
+      findStockValue(productData?.colorStock, getLabelFromOption(color, lang)) ??
+      toStockNumber(color?.quantity);
     if (colorQty !== null && colorQty <= 0) return false;
-    const modelQty = findStockValue(color?.modelStock, getModelValue(modelOption));
+    const modelQty = findStockValue(color?.modelStock || productData?.modelStock, getModelValue(modelOption));
     return modelQty === null || modelQty > 0;
   };
 
@@ -1092,9 +1285,15 @@ const ProductDetail = () => {
   const handleColorChange = (color) => {
     if (!color) return;
     if (!isColorAvailable(color)) return;
-    const sizeOptions = getSizesFromColor(color);
-    const storageOptions = getStockAwareOptions(color?.storage, color?.storageStock);
-    const modelOptions = getStockAwareOptions(color?.models, color?.modelStock);
+    const sizeOptions = getStockAwareOptions(color?.sizes, color?.sizeStock || productData?.sizeStock);
+    const storageOptions = getStockAwareOptions(
+      color?.storage || productData?.storage,
+      color?.storageStock || productData?.storageStock,
+    );
+    const modelOptions = getStockAwareOptions(
+      color?.models || productData?.models,
+      color?.modelStock || productData?.modelStock,
+    );
     setSelectedColor(color);
     setSelectedSize(pickFirstAvailable(sizeOptions, (option) => isSizeAvailable(color, option)) || null);
     setSelectedStorage(
@@ -1215,17 +1414,6 @@ const ProductDetail = () => {
     if (fallbackQty !== null) return fallbackQty;
     return 0;
   })();
-  const detailPercent = Math.max(0, Math.min(100, Math.round(Number(productData?.flashSaleMeta?.soldPercent) || 0)));
-  const detailProgressTone = productData?.flashSaleMeta?.tone || 'normal';
-  const detailDiscountToneClass =
-    detailProgressTone === 'danger'
-      ? 'flash-sale-card__discount--danger'
-      : detailProgressTone === 'warning'
-        ? 'flash-sale-card__discount--warning'
-        : detailProgressTone === 'info'
-          ? 'flash-sale-card__discount--info'
-          : 'flash-sale-card__discount--normal';
-  const detailSoldText = `${detailPercent}% ${i18n.t('home.flashSaleSold')}`;
   const addToCartDisabled = isAddingToCart || !isCurrentVariantAvailable;
 
 
@@ -1351,7 +1539,6 @@ const ProductDetail = () => {
                   }}
                 >
                   <i className="bx bx-play"></i>
-                  <span>VIDEO</span>
                 </div>
               )}
             </div>
@@ -1404,8 +1591,8 @@ const ProductDetail = () => {
               ) : (
                 <>
                   <span className="price">{formatPrice(currentPrice)}</span>
-                  {productData.originalPrice && (
-                    <span className="original-price">{productData.originalPrice}</span>
+                  {currentOriginalPrice != null && (
+                    <span className="original-price">{formatPrice(currentOriginalPrice)}</span>
                   )}
                   {productData.discount && (
                     <span className="discount">{getLocalizedText(productData.discount, lang)}</span>
@@ -1425,61 +1612,78 @@ const ProductDetail = () => {
 
             <div className="product-rating-comments-detail">
               <div className="rating-display-detail">
-                <span className="star-icon-detail">⭐</span>
+                <div className="star-icons-detail" aria-label={`Rating ${averageRating} out of 5`}>
+                  {detailStarFillLevels.map((fill, index) => (
+                    <span
+                      key={`detail-star-${index}`}
+                      className="star-icon-detail"
+                      style={{ '--star-fill': `${Math.round(fill * 100)}%` }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
                 <span className="rating-value-detail">{averageRating}</span>
               </div>
               <div 
                 className="comments-display-detail"
+                ref={commentsDisplayRef}
                 onClick={() => setIsCommentsModalOpen(true)}
               >
-                <i className="bx bxs-message-rounded"></i>
-                <span className="comments-count-detail">{commentCount} ta sharh</span>
+                <i ref={commentsIconRef} className="bx bxs-message-rounded"></i>
+                <span ref={commentsCountRef} className="comments-count-detail">{commentCount} ta sharh</span>
+                {commentPreviewImages.length > 0 ? (
+                  <div
+                    className={`comments-preview-images ${
+                      commentsPreviewMode === 'compact' ? 'comments-preview-images--compact' : ''
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {commentPreviewImages.map((imageSrc, index) => (
+                      <img
+                        key={`comment-preview-${index}`}
+                        src={normalizeImagePath(imageSrc)}
+                        alt=""
+                        className="comments-preview-image"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ))}
+                    {remainingCommentImageCount > 0 ? (
+                      <span className="comments-preview-more">+{remainingCommentImageCount}</span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            <div className="product-detail-quantity-row">
-              <div className="product-detail-quantity" aria-live="polite">
-                <i className="bx bx-package" aria-hidden="true" />
-                <span>
-                  {i18n.t('productDetail.quantityLeft', {
-                    count: displayQuantity,
-                  })}
-                </span>
-              </div>
-              {productData?.flashSaleMeta ? (
-                <div className="flash-sale-card__footer product-detail-quantity-footer">
-                  <p className={`flash-sale-card__discount ${detailDiscountToneClass}`}>
-                    {detailSoldText}
-                  </p>
-                  <FlashSaleProgressBar percent={detailPercent} tone={detailProgressTone} />
-                </div>
-              ) : null}
-            </div>
-
-            {productData.colors && productData.colors.length > 0 && (
+            {colorOptions.length > 0 && (
               <div className="color-selection">
-                <h3>{i18n.t('productDetail.colorLabel')} {selectedColor !== null ? getLocalizedText(selectedColor?.name, lang) : getLocalizedText(productData.colors[0]?.name, lang)}</h3>
+                <h3>{i18n.t('productDetail.colorLabel')} {selectedColor !== null ? getLabelFromOption(selectedColor, lang) : colorOptions[0]?.label}</h3>
                 <div className="colors-container">
                   {showDetailSkeleton
-                    ? Array.from({ length: Math.min(productData.colors.length, 8) }, (_, index) => (
+                    ? Array.from({ length: Math.min(colorOptions.length, 8) }, (_, index) => (
                         <SkeletonPulse
                           key={`color-sk-${index}`}
                           className="color-option color-option--skeleton"
                           aria-hidden
                         />
                       ))
-                    : productData.colors.map((color, index) => {
-                        const currentColor = selectedColor !== null ? selectedColor : productData.colors[0];
+                    : colorOptions.map(({ color, available }, index) => {
+                        const currentColor = selectedColor !== null ? selectedColor : colorOptions[0]?.color;
+                        const colorLabel = getLabelFromOption(color, lang);
                         const isSelected = currentColor && color && (
                           (currentColor.colorFilter && color.colorFilter && currentColor.colorFilter === color.colorFilter) ||
-                          (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage)
+                          (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage) ||
+                          (getLabelFromOption(currentColor, lang) && colorLabel && getLabelFromOption(currentColor, lang) === colorLabel)
                         );
-                        const unavailable = !isColorAvailable(color);
+                        const unavailable = !available || !isColorAvailable(color);
                         return (
                           <button
-                            key={`color-${index}-${getLocalizedText(color.name, lang) || index}`}
+                            key={`color-${index}-${colorLabel || index}`}
                             type="button"
-                            aria-label={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                            aria-label={colorLabel || `Color ${index + 1}`}
                             className={`color-option-wrap ${unavailable ? 'color-option-wrap--unavailable' : ''}`}
                             disabled={unavailable}
                             onClick={(e) => {
@@ -1488,8 +1692,8 @@ const ProductDetail = () => {
                             }}
                           >
                             <img
-                              src={normalizeImagePath(color.mainImage)}
-                              alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                              src={normalizeImagePath(color.mainImage || getProductMainImage(productData))}
+                              alt={colorLabel || `Color ${index + 1}`}
                               className={`color-option ${isSelected ? 'selected' : ''}`}
                               onError={(e) => {
                                 e.target.src = normalizeImagePath('/img/no-image.png');
@@ -1547,6 +1751,22 @@ const ProductDetail = () => {
                 )}
               </div>
             )}
+
+            <div className="product-detail-quantity-row">
+              <div className="product-detail-quantity" aria-live="polite">
+                <i className="bx bx-package" aria-hidden="true" />
+                <span>
+                  {i18n.t('productDetail.quantityLeft', {
+                    count: displayQuantity,
+                  })}
+                </span>
+              </div>
+              <ProductDetailSalesFooter
+                meta={productData?.productDetailSalesMeta}
+                remainingQuantity={displayQuantity}
+                soldCount={productData?.flashSaleSoldCount}
+              />
+            </div>
 
             {storageOptions.length > 0 && (
               <div className="storage-selection">
@@ -1631,6 +1851,24 @@ const ProductDetail = () => {
             )}
 
             <div className='addo-btn__detail'>
+              <button
+                type="button"
+                className="product-detail-action-icon product-detail-action-icon--support"
+                aria-label="Aloqa"
+              >
+                <i className="bx bx-headphone" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="product-detail-action-icon product-detail-action-icon--cart"
+                onClick={() => navigate('/cart')}
+                aria-label={i18n.t('productDetail.goToCart')}
+              >
+                <i className="fas fa-shopping-cart" aria-hidden="true" />
+                {cart.length > 0 ? (
+                  <span className="cart-badge">{cart.length > 99 ? '99+' : cart.length}</span>
+                ) : null}
+              </button>
               <button
                 className="add-to-cart-btn-detail"
                 onClick={handleAddToCart}

@@ -9,6 +9,17 @@ const DEFAULT_RULES = Object.freeze({
   highStockThreshold: 20,
   rotateEveryMs: 5000,
   active: true,
+  liveMinViewers: 50,
+  liveMaxViewers: 1000,
+  liveUpdateEveryMs: 1000,
+  liveModeRotateEveryMs: 7000,
+  liveNormalStepMin: 5,
+  liveNormalStepMax: 40,
+  liveSurgeStepMin: 35,
+  liveSurgeStepMax: 140,
+  liveCooldownStepMin: 35,
+  liveCooldownStepMax: 140,
+  liveSpikeChancePercent: 18,
 });
 
 const CACHE_TTL_MS = 10000;
@@ -40,6 +51,44 @@ function normalizeRules(raw) {
     ),
     rotateEveryMs: Math.max(1000, toNonNegativeInt(rules.rotateEveryMs, DEFAULT_RULES.rotateEveryMs)),
     active: rules.active !== false,
+    liveMinViewers: Math.max(1, toNonNegativeInt(rules.liveMinViewers, DEFAULT_RULES.liveMinViewers)),
+    liveMaxViewers: Math.max(1, toNonNegativeInt(rules.liveMaxViewers, DEFAULT_RULES.liveMaxViewers)),
+    liveUpdateEveryMs: Math.max(
+      250,
+      toNonNegativeInt(rules.liveUpdateEveryMs, DEFAULT_RULES.liveUpdateEveryMs),
+    ),
+    liveModeRotateEveryMs: Math.max(
+      1000,
+      toNonNegativeInt(rules.liveModeRotateEveryMs, DEFAULT_RULES.liveModeRotateEveryMs),
+    ),
+    liveNormalStepMin: Math.max(
+      1,
+      toNonNegativeInt(rules.liveNormalStepMin, DEFAULT_RULES.liveNormalStepMin),
+    ),
+    liveNormalStepMax: Math.max(
+      1,
+      toNonNegativeInt(rules.liveNormalStepMax, DEFAULT_RULES.liveNormalStepMax),
+    ),
+    liveSurgeStepMin: Math.max(
+      1,
+      toNonNegativeInt(rules.liveSurgeStepMin, DEFAULT_RULES.liveSurgeStepMin),
+    ),
+    liveSurgeStepMax: Math.max(
+      1,
+      toNonNegativeInt(rules.liveSurgeStepMax, DEFAULT_RULES.liveSurgeStepMax),
+    ),
+    liveCooldownStepMin: Math.max(
+      1,
+      toNonNegativeInt(rules.liveCooldownStepMin, DEFAULT_RULES.liveCooldownStepMin),
+    ),
+    liveCooldownStepMax: Math.max(
+      1,
+      toNonNegativeInt(rules.liveCooldownStepMax, DEFAULT_RULES.liveCooldownStepMax),
+    ),
+    liveSpikeChancePercent: Math.max(
+      0,
+      Math.min(100, toNonNegativeInt(rules.liveSpikeChancePercent, DEFAULT_RULES.liveSpikeChancePercent)),
+    ),
   };
 }
 
@@ -51,6 +100,17 @@ function validateRules(rules) {
     "lowStockThreshold",
     "highStockThreshold",
     "rotateEveryMs",
+    "liveMinViewers",
+    "liveMaxViewers",
+    "liveUpdateEveryMs",
+    "liveModeRotateEveryMs",
+    "liveNormalStepMin",
+    "liveNormalStepMax",
+    "liveSurgeStepMin",
+    "liveSurgeStepMax",
+    "liveCooldownStepMin",
+    "liveCooldownStepMax",
+    "liveSpikeChancePercent",
   ];
   for (const key of checks) {
     const n = Number(rules[key]);
@@ -61,6 +121,18 @@ function validateRules(rules) {
 
   if (Number(rules.rotateEveryMs) < 1000) {
     errors.push("rotateEveryMs kamida 1000 bo'lishi kerak");
+  }
+  if (Number(rules.liveMinViewers) > Number(rules.liveMaxViewers)) {
+    errors.push("liveMinViewers liveMaxViewers dan kichik yoki teng bo'lishi kerak");
+  }
+  if (Number(rules.liveNormalStepMin) > Number(rules.liveNormalStepMax)) {
+    errors.push("liveNormalStepMin liveNormalStepMax dan kichik yoki teng bo'lishi kerak");
+  }
+  if (Number(rules.liveSurgeStepMin) > Number(rules.liveSurgeStepMax)) {
+    errors.push("liveSurgeStepMin liveSurgeStepMax dan kichik yoki teng bo'lishi kerak");
+  }
+  if (Number(rules.liveCooldownStepMin) > Number(rules.liveCooldownStepMax)) {
+    errors.push("liveCooldownStepMin liveCooldownStepMax dan kichik yoki teng bo'lishi kerak");
   }
   return errors;
 }

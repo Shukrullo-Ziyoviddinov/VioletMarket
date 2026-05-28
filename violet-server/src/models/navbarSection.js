@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const i18nPairSchema = new mongoose.Schema(
   { uz: { type: String, required: true, trim: true }, ru: { type: String, required: true, trim: true } },
@@ -28,6 +29,15 @@ const navbarSectionSchema = new mongoose.Schema(
     id: false,
   }
 );
+
+navbarSectionSchema.pre("validate", async function autoAssignIds() {
+  await assignAutoNumberId(this, "navbar_section_id");
+
+  if (!Array.isArray(this.items)) return;
+  for (const item of this.items) {
+    await assignAutoNumberId(item, "navbar_item_id");
+  }
+});
 
 const NavbarSection = mongoose.model("NavbarSection", navbarSectionSchema);
 

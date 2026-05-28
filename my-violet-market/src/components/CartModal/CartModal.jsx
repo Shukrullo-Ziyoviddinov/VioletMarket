@@ -13,6 +13,69 @@ import './CartModal.css';
 const MOBILE_SHEET_MQ = '(max-width: 768px)';
 const SHEET_CLOSE_DRAG_RATIO = 0.3;
 
+const getStockKeys = (stockMap) =>
+  stockMap && typeof stockMap === 'object' && !Array.isArray(stockMap)
+    ? Object.keys(stockMap)
+    : [];
+
+const getOptionList = (list, stockMap) => {
+  const keys = getStockKeys(stockMap);
+  if (keys.length > 0) return keys;
+  return Array.isArray(list) ? list : [];
+};
+
+const normalizeVariantLabel = (value) => String(value || '').trim().toLowerCase();
+
+const toStockNumber = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.floor(n));
+};
+
+const getStockEntryQuantity = (value) => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return toStockNumber(value.quantity);
+  }
+  return toStockNumber(value);
+};
+
+const findStockValue = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  return getStockEntryQuantity(stockMap[key]);
+};
+
+const getStockPriceByLabel = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  const entry = stockMap[key];
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+  return getNumberPrice(entry.price);
+};
+
+const getStockOriginalPriceByLabel = (stockMap, label) => {
+  if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+  const target = normalizeVariantLabel(label);
+  if (!target) return null;
+  const key = Object.keys(stockMap).find((k) => normalizeVariantLabel(k) === target);
+  if (!key) return null;
+  const entry = stockMap[key];
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+  return getNumberPrice(entry.originalPrice);
+};
+
+const getStorageValue = (storage) =>
+  typeof storage === 'object' && storage?.size ? storage.size : storage;
+
+const getModelValue = (model) =>
+  typeof model === 'object' && model?.name ? model.name : model;
+
 const CartModal = ({ product, isOpen, onClose, onAdd }) => {
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
@@ -40,25 +103,145 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
     []
   );
 
+  const getColorLabel = useCallback(
+    (color) => getLocalizedText(color?.name, lang) || color?.colorFilter || '',
+    [lang],
+  );
+
+  const isColorAvailable = useCallback(
+    (color) => {
+      if (!product) return true;
+      const qty =
+        findStockValue(product?.colorStock, getColorLabel(color)) ??
+        toStockNumber(color?.quantity);
+      return qty === null || qty > 0;
+    },
+    [getColorLabel, product],
+  );
+
+  const isSizeAvailable = useCallback(
+    (color, sizeOption) => {
+      if (!product) return true;
+      const colorQty =
+        findStockValue(product?.colorStock, getColorLabel(color)) ??
+        toStockNumber(color?.quantity);
+      if (colorQty !== null && colorQty <= 0) return false;
+      const sizeQty = findStockValue(color?.sizeStock || product?.sizeStock, sizeOption);
+      return sizeQty === null || sizeQty > 0;
+    },
+    [getColorLabel, product],
+  );
+
+  const isStorageAvailable = useCallback(
+    (color, storageOption) => {
+      if (!product) return true;
+      const colorQty =
+        findStockValue(product?.colorStock, getColorLabel(color)) ??
+        toStockNumber(color?.quantity);
+      if (colorQty !== null && colorQty <= 0) return false;
+
+      const ownQty = toStockNumber(storageOption?.quantity);
+      if (ownQty !== null) return ownQty > 0;
+
+      const storageQty = findStockValue(
+        color?.storageStock || product?.storageStock,
+        getStorageValue(storageOption),
+      );
+      return storageQty === null || storageQty > 0;
+    },
+    [getColorLabel, product],
+  );
+
+  const isModelAvailable = useCallback(
+    (color, modelOption) => {
+      if (!product) return true;
+      const colorQty =
+        findStockValue(product?.colorStock, getColorLabel(color)) ??
+        toStockNumber(color?.quantity);
+      if (colorQty !== null && colorQty <= 0) return false;
+
+      const ownQty = toStockNumber(modelOption?.quantity);
+      if (ownQty !== null) return ownQty > 0;
+
+      const modelQty = findStockValue(
+        color?.modelStock || product?.modelStock,
+        getModelValue(modelOption),
+      );
+      return modelQty === null || modelQty > 0;
+    },
+    [getColorLabel, product],
+  );
+
+  const pickFirstAvailable = useCallback((list, checker) => {
+    if (!Array.isArray(list) || list.length === 0) return null;
+    const found = list.find((item) => checker(item));
+    return found ?? list[0];
+  }, []);
+
+  const applyColorSelection = useCallback((color) => {
+    if (!product) return;
+    if (color && !isColorAvailable(color)) return;
+
+    const sizeChoicesForColor = getOptionList(color?.sizes, color?.sizeStock || product.sizeStock);
+    const storageChoicesForColor = getOptionList(
+      color?.storage || product.storage,
+      color?.storageStock || product.storageStock,
+    );
+    const modelChoicesForColor = getOptionList(
+      color?.models || product.models,
+      color?.modelStock || product.modelStock,
+    );
+
+    setSelectedColor(color || null);
+    setSelectedSize(pickFirstAvailable(sizeChoicesForColor, (option) => isSizeAvailable(color, option)));
+    setSelectedStorage(
+      pickFirstAvailable(storageChoicesForColor, (option) => isStorageAvailable(color, option)),
+    );
+    setSelectedModel(
+      pickFirstAvailable(modelChoicesForColor, (option) => isModelAvailable(color, option)),
+    );
+  }, [isColorAvailable, isModelAvailable, isSizeAvailable, isStorageAvailable, pickFirstAvailable, product]);
+
   useEffect(() => {
     if (product) {
-      const firstColor = product.colors?.[0];
-      setSelectedColor(firstColor || null);
-      setSelectedSize(firstColor?.sizes?.[0] || null);
-      setSelectedStorage(firstColor?.storage?.[0] || null);
-      setSelectedModel(firstColor?.models?.[0] || null);
+      const colors = Array.isArray(product.colors) ? product.colors : [];
+      const firstColor = pickFirstAvailable(colors, isColorAvailable) || colors[0] || null;
+      applyColorSelection(firstColor);
     }
-  }, [product]);
+  }, [applyColorSelection, isColorAvailable, pickFirstAvailable, product]);
 
-  // Narxni hisoblash (priority: model > storage > color > product)
+  const modelLabel = getModelValue(selectedModel);
+  const storageLabel = getStorageValue(selectedStorage);
+  const modelStockPrice = getStockPriceByLabel(
+    selectedColor?.modelStock || product?.modelStock,
+    modelLabel,
+  );
+  const modelStockOriginalPrice = getStockOriginalPriceByLabel(
+    selectedColor?.modelStock || product?.modelStock,
+    modelLabel,
+  );
+  const storageStockPrice = getStockPriceByLabel(
+    selectedColor?.storageStock || product?.storageStock,
+    storageLabel,
+  );
+  const storageStockOriginalPrice = getStockOriginalPriceByLabel(
+    selectedColor?.storageStock || product?.storageStock,
+    storageLabel,
+  );
+
+  // Narxni hisoblash (priority: model > modelStock > storage > storageStock > color > product)
   const currentPrice = getNumberPrice(selectedModel) ?? 
+                       modelStockPrice ??
                        getNumberPrice(selectedStorage) ?? 
+                       storageStockPrice ??
                        getNumberPrice(selectedColor) ?? 
                        getNumberPrice(product) ?? 0;
 
   // OriginalPrice hisoblash (xuddi shu priority)
   const originalPriceValue = selectedModel?.originalPrice ?? 
+                             modelStockOriginalPrice ??
                              selectedStorage?.originalPrice ?? 
+                             storageStockOriginalPrice ??
                              selectedColor?.originalPrice ?? 
                              product?.originalPrice ?? null;
   
@@ -78,6 +261,10 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
                    selectedColor?.discount ?? 
                    product?.discount ?? null;
 
+  const sizeChoices = getOptionList(selectedColor?.sizes, selectedColor?.sizeStock || product?.sizeStock);
+  const storageChoices = getOptionList(selectedColor?.storage || product?.storage, selectedColor?.storageStock || product?.storageStock);
+  const modelChoices = getOptionList(selectedColor?.models || product?.models, selectedColor?.modelStock || product?.modelStock);
+
   const handleAddToCart = async () => {
     setIsAddLoading(true);
     try {
@@ -93,10 +280,7 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
   };
 
   const handleColorChange = (color) => {
-    setSelectedColor(color);
-    setSelectedSize(color.sizes?.[0] || null);
-    setSelectedStorage(color.storage?.[0] || null);
-    setSelectedModel(color.models?.[0] || null);
+    applyColorSelection(color);
   };
 
   useEffect(() => {
@@ -233,7 +417,7 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
         
         <div className="cart-modal-header">
           <img 
-            src={normalizeImagePath(selectedColor?.mainImage || product.colors?.[0]?.mainImage || '/img/no-image.png')} 
+            src={normalizeImagePath(selectedColor?.mainImage || product.image || product.mainImage || product.colors?.[0]?.mainImage || '/img/no-image.png')} 
             alt={getLocalizedText(product?.title, lang)}
             className="cart-modal-image"
             onError={(e) => {
@@ -266,17 +450,24 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
                       (currentColor.colorFilter && color.colorFilter && currentColor.colorFilter === color.colorFilter) ||
                       (currentColor.mainImage && color.mainImage && currentColor.mainImage === color.mainImage)
                     );
+                    const unavailable = !isColorAvailable(color);
                     return (
-                      <img
+                      <button
                         key={index}
-                        src={normalizeImagePath(color.mainImage)}
-                        alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
-                        className={`color-option ${isSelected ? 'selected' : ''}`}
+                        type="button"
+                        className={`color-option-wrap ${unavailable ? 'color-option-wrap--unavailable' : ''}`}
+                        disabled={unavailable}
                         onClick={() => handleColorChange(color)}
-                        onError={(e) => {
-                          e.target.src = normalizeImagePath('/img/no-image.png');
-                        }}
-                      />
+                      >
+                        <img
+                          src={normalizeImagePath(color.mainImage)}
+                          alt={getLocalizedText(color.name, lang) || `Color ${index + 1}`}
+                          className={`color-option ${isSelected ? 'selected' : ''}`}
+                          onError={(e) => {
+                            e.target.src = normalizeImagePath('/img/no-image.png');
+                          }}
+                        />
+                      </button>
                     );
                   })}
                 </div>
@@ -284,19 +475,23 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
             </div>
           )}
 
-          {selectedColor?.sizes && selectedColor.sizes.length > 0 && (
+          {sizeChoices.length > 0 && (
             <div className="cart-modal-option-group">
-              <label>{i18n.t('productDetail.sizeLabel')} {selectedSize !== null ? selectedSize : (selectedColor.sizes[0] || '')}</label>
+              <label>{i18n.t('productDetail.sizeLabel')} {selectedSize !== null ? selectedSize : (sizeChoices[0] || '')}</label>
               <Scrollable type="product" className="cart-modal-options-scroll" skipInteractiveTouchHandling>
                 <div className="size-options" style={{ display: 'contents' }}>
-                  {selectedColor.sizes.map((size, index) => {
-                    const currentSize = selectedSize !== null ? selectedSize : selectedColor.sizes[0];
+                  {sizeChoices.map((size, index) => {
+                    const currentSize = selectedSize !== null ? selectedSize : sizeChoices[0];
                     const isSelected = size === currentSize;
+                    const unavailable = !isSizeAvailable(selectedColor, size);
                     return (
                       <button
                         key={index}
                         type="button"
-                        className={`size-option ${isSelected ? 'selected' : ''}`}
+                        className={`size-option ${isSelected ? 'selected' : ''} ${
+                          unavailable ? 'size-option--unavailable' : ''
+                        }`}
+                        disabled={unavailable}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedSize(size);
@@ -326,21 +521,25 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
             </div>
           )}
 
-          {selectedColor?.storage && selectedColor.storage.length > 0 && (
+          {storageChoices.length > 0 && (
             <div className="cart-modal-option-group">
-              <label>{i18n.t('productDetail.storageLabel')} {selectedStorage ? (typeof selectedStorage === 'object' ? selectedStorage.size : selectedStorage) : (typeof selectedColor.storage[0] === 'object' ? selectedColor.storage[0].size : selectedColor.storage[0])}</label>
+              <label>{i18n.t('productDetail.storageLabel')} {selectedStorage ? (typeof selectedStorage === 'object' ? selectedStorage.size : selectedStorage) : (typeof storageChoices[0] === 'object' ? storageChoices[0].size : storageChoices[0])}</label>
               <Scrollable type="product" className="cart-modal-options-scroll" skipInteractiveTouchHandling>
                 <div className="storage-options" style={{ display: 'contents' }}>
-                  {selectedColor.storage.map((storage, index) => {
+                  {storageChoices.map((storage, index) => {
                     const storageValue = typeof storage === 'object' ? storage.size : storage;
-                    const defaultStorage = typeof selectedColor.storage[0] === 'object' ? selectedColor.storage[0].size : selectedColor.storage[0];
+                    const defaultStorage = typeof storageChoices[0] === 'object' ? storageChoices[0].size : storageChoices[0];
                     const selectedValue = selectedStorage !== null ? (typeof selectedStorage === 'object' ? selectedStorage.size : selectedStorage) : defaultStorage;
                     const isSelected = storageValue === selectedValue;
+                    const unavailable = !isStorageAvailable(selectedColor, storage);
                     return (
                       <button
                         key={index}
                         type="button"
-                        className={`storage-option ${isSelected ? 'selected' : ''}`}
+                        className={`storage-option ${isSelected ? 'selected' : ''} ${
+                          unavailable ? 'storage-option--unavailable' : ''
+                        }`}
+                        disabled={unavailable}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedStorage(storage);
@@ -355,21 +554,25 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
             </div>
           )}
 
-          {selectedColor?.models && selectedColor.models.length > 0 && (
+          {modelChoices.length > 0 && (
             <div className="cart-modal-option-group">
-              <label>{i18n.t('productDetail.modelLabel')} {selectedModel ? (typeof selectedModel === 'object' ? selectedModel.name : selectedModel) : (typeof selectedColor.models[0] === 'object' ? selectedColor.models[0].name : selectedColor.models[0])}</label>
+              <label>{i18n.t('productDetail.modelLabel')} {selectedModel ? (typeof selectedModel === 'object' ? selectedModel.name : selectedModel) : (typeof modelChoices[0] === 'object' ? modelChoices[0].name : modelChoices[0])}</label>
               <Scrollable type="product" className="cart-modal-options-scroll" skipInteractiveTouchHandling>
                 <div className="model-options" style={{ display: 'contents' }}>
-                  {selectedColor.models.map((model, index) => {
+                  {modelChoices.map((model, index) => {
                     const modelName = typeof model === 'object' ? model.name : model;
-                    const defaultModel = typeof selectedColor.models[0] === 'object' ? selectedColor.models[0].name : selectedColor.models[0];
+                    const defaultModel = typeof modelChoices[0] === 'object' ? modelChoices[0].name : modelChoices[0];
                     const selectedName = selectedModel ? (typeof selectedModel === 'object' ? selectedModel.name : selectedModel) : defaultModel;
                     const isSelected = modelName === selectedName;
+                    const unavailable = !isModelAvailable(selectedColor, model);
                     return (
                       <button
                         key={index}
                         type="button"
-                        className={`model-option ${isSelected ? 'selected' : ''}`}
+                        className={`model-option ${isSelected ? 'selected' : ''} ${
+                          unavailable ? 'model-option--unavailable' : ''
+                        }`}
+                        disabled={unavailable}
                         onClick={() => setSelectedModel(model)}
                       >
                         {modelName}

@@ -14,6 +14,7 @@
   background: transparent;
   cursor: pointer;
   transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
 .home-feed-switch__btn.is-active {
@@ -33,14 +34,15 @@
 
 @media (max-width: 500px) {
   .home-feed-switch {
-    display: block;
+    display: inline-flex;
+    flex-wrap: nowrap;
     gap: 18px;
     text-align: center;
     justify-content: center;
   }
 
   .home-feed-switch__btn {
-    padding: 0 40px;
+    padding: 0 33px;
   }
 }
 

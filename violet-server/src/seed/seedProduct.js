@@ -316,14 +316,25 @@
           "ru": "Зелёный"
         },
         "colorFilter": "Green",
-        "quantity": 1,
         "sizeStock": {
-          "S": 1,
-          "M": 0,
-          "L": 0,
-          "XL": 0,
-          "XXL": 0,
-          "Standart": 1
+          "S": {
+            "quantity": 1
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          },
+          "Standart": {
+            "quantity": 1
+          }
         },
         "price": "110 so'm",
         "originalPrice": "$200",
@@ -333,14 +344,7 @@
         },
         "mainImage": "img/yashilkeyim-1.jfif",
         "thumbnails": [
-          "img/yashilkeyim-2.jfif",
-          "img/yashilkeyim-3.jfif",
-          "img/newcollection1.jpg",
-          "img/qizililkeyim-3.jfif",
-          "img/yashilkeyim-2.jfif",
-          "img/yashilkeyim-3.jfif",
-          "img/yashilkeyim-2.jfif",
-          "img/yashilkeyim-3.jfif",
+          "img/yashilkeyim-1.jfif",
           "img/yashilkeyim-2.jfif",
           "img/yashilkeyim-3.jfif"
         ]
@@ -351,13 +355,22 @@
           "ru": "Жёлтый"
         },
         "colorFilter": "Yellow",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 1,
-          "L": 0,
-          "XL": 0,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 1
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$156 so'm",
         "originalPrice": "400 000",
@@ -367,6 +380,7 @@
         },
         "mainImage": "img/sariqkeyim-1.webp",
         "thumbnails": [
+          "img/sariqkeyim-1.webp",
           "img/sariqkeyim-2.jfif",
           "img/sariqkeyim-3.jfif"
         ]
@@ -377,13 +391,22 @@
           "ru": "Красный"
         },
         "colorFilter": "Red",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 1,
-          "XL": 0,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 1
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$111 so'm",
         "originalPrice": "$200",
@@ -393,8 +416,9 @@
         },
         "mainImage": "img/qizililkeyim-1.jfif",
         "thumbnails": [
-          "img/qizililkeyim-2.jfif",
-          "img/qizililkeyim-3.jfif"
+          "img/qizililkeyim-1.jfif",
+          "img/qizililkeyim-3.jfif",
+          "img/qizililkeyim-2.jfif"
         ]
       },
       {
@@ -403,17 +427,27 @@
           "ru": "Белый"
         },
         "colorFilter": "White",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 0,
-          "XL": 1,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 1
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$180 so'm",
         "mainImage": "img/oqkeyim-1.jpg",
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
         ]
@@ -424,13 +458,22 @@
           "ru": "Тёмно-красный"
         },
         "colorFilter": "Maroon",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 0,
-          "XL": 0,
-          "XXL": 1
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 1
+          }
         },
         "price": "$100 so'm",
         "originalPrice": "$2100",
@@ -440,6 +483,7 @@
         },
         "mainImage": "img/Maroon-keyim-1.jpg",
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
         ]
@@ -450,13 +494,22 @@
           "ru": "Тёмно-красный"
         },
         "colorFilter": "Maroon",
-        "quantity": 1,
         "sizeStock": {
-          "S": 1,
-          "M": 0,
-          "L": 0,
-          "XL": 0,
-          "XXL": 0
+          "S": {
+            "quantity": 1
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$100 so'm",
         "originalPrice": "$2100",
@@ -466,6 +519,7 @@
         },
         "mainImage": "img/Maroon-keyim-1.jpg",
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
         ]
@@ -476,13 +530,22 @@
           "ru": "Тёмно-красный"
         },
         "colorFilter": "Maroon",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 1,
-          "L": 0,
-          "XL": 0,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 1
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$100 so'm",
         "originalPrice": "$2100",
@@ -492,6 +555,7 @@
         },
         "mainImage": "img/Maroon-keyim-1.jpg",
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
         ]
@@ -502,17 +566,27 @@
           "ru": "Белый"
         },
         "colorFilter": "White",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 1,
-          "XL": 0,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 1
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$180 so'm",
         "mainImage": "img/oqkeyim-1.jpg",
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
         ]
@@ -523,17 +597,27 @@
           "ru": "Белый"
         },
         "colorFilter": "White",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 0,
-          "XL": 1,
-          "XXL": 0
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 1
+          },
+          "XXL": {
+            "quantity": 0
+          }
         },
         "price": "$180 so'm",
         "mainImage": "img/oqkeyim-1.jpg",
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
         ]
@@ -544,22 +628,33 @@
           "ru": "Белый"
         },
         "colorFilter": "White",
-        "quantity": 1,
         "sizeStock": {
-          "S": 0,
-          "M": 0,
-          "L": 0,
-          "XL": 0,
-          "XXL": 1
+          "S": {
+            "quantity": 0
+          },
+          "M": {
+            "quantity": 0
+          },
+          "L": {
+            "quantity": 0
+          },
+          "XL": {
+            "quantity": 0
+          },
+          "XXL": {
+            "quantity": 1
+          }
         },
         "price": "$180 so'm",
         "mainImage": "img/oqkeyim-1.jpg",
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
         ]
       }
-    ]
+    ],
+    "thumbnails": []
   },
   {
     "id": 2364,
@@ -584,7 +679,6 @@
     "brandCategories": "adidas",
     "countriesCategories": "usa",
     "flashSale": true,
-    "quantity": 10,
     "weight": 700,
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
@@ -674,24 +768,29 @@
         }
       ]
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [
-          "img/newcollection2.jpg",
-          "img/newcollection2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "thumbnails": [
+      "img/newcollection2.jpg",
+      "img/newcollection2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 3465,
@@ -715,7 +814,6 @@
     "brandCategories": "zara",
     "countriesCategories": "yevropa",
     "flashSale": false,
-    "quantity": 5,
     "category": "Erkaklar kiyimi",
     "weight": 600,
     "deliveryInfo": {
@@ -765,25 +863,30 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 455,
@@ -889,24 +992,29 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 5577,
@@ -978,22 +1086,57 @@
         "color": "#13BE4C"
       }
     ],
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "thumbnails": [],
     "colors": [
       {
-        "name": "Black",
+        "name": {
+          "uz": "Qora",
+          "ru": "Черный"
+        },
         "colorFilter": "Black",
         "mainImage": "img/black-keyim-1.jfif",
         "thumbnails": [
+          "img/black-keyim-1.jfif",
           "img/black-keyim-2.jpg",
           "img/black-keyim-3.jpg"
         ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+        "price": "20 000UZS",
+        "originalPrice": "50 000UZS",
+        "quantity": 2
+      },
+      {
+        "name": {
+          "uz": "Kulrang",
+          "ru": "Серый"
+        },
+        "colorFilter": "Gray",
+        "mainImage": "img/black-keyim-2.jpg",
+        "thumbnails": [
+          "img/black-keyim-2.jpg",
+          "img/black-keyim-1.jfif",
+          "img/black-keyim-3.jpg"
+        ],
+        "price": "22 000UZS",
+        "originalPrice": "50 000UZS",
+        "quantity": 2
+      },
+      {
+        "name": {
+          "uz": "To'q kulrang",
+          "ru": "Тёмно-серый"
+        },
+        "colorFilter": "DarkGray",
+        "mainImage": "img/black-keyim-3.jpg",
+        "thumbnails": [
+          "img/black-keyim-3.jpg",
+          "img/black-keyim-1.jfif",
+          "img/black-keyim-2.jpg"
+        ],
+        "price": "24 000UZS",
+        "originalPrice": "50 000UZS",
+        "quantity": 1
       }
     ]
   },
@@ -1052,24 +1195,13 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif",
-          "img/oqkeyim-3.webp"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
-      }
-    ]
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif",
+      "img/oqkeyim-3.webp"
+    ],
+    "quantity": 5
   },
   {
     "id": 757,
@@ -1113,24 +1245,29 @@
         "color": "#ff3333"
       }
     ],
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 85667,
@@ -1164,24 +1301,29 @@
         "color": "#ff3333"
       }
     ],
-    "colors": [
-      {
-        "name": "",
-        "colorFilter": "Rangsiz",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 9675,
@@ -1204,31 +1346,39 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
-      }
-    ],
     "modelStock": {
-      "S20": 1,
-      "A30": 1,
-      "S24 ULTRA": 1,
-      "A10": 1,
-      "S25 ULTRA": 1
-    }
+      "S20": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      },
+      "A30": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      },
+      "S24 ULTRA": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      },
+      "A10": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      },
+      "S25 ULTRA": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      }
+    },
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ]
   },
   {
     "id": 10575,
@@ -1251,21 +1401,24 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "storageStock": {
+      "12/256": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
+      },
+      "12/512": {
+        "quantity": 1,
+        "price": "$10",
+        "originalPrice": "$10"
       }
-    ]
+    }
   },
   {
     "id": 15651,
@@ -1297,68 +1450,94 @@
         "name": "Green",
         "colorFilter": "Green",
         "mainImage": "img/yashilkeyim-1.jfif",
+        "storageStock": {
+          "12/256": {
+            "quantity": 1
+          },
+          "12/512": {
+            "quantity": 1
+          }
+        },
         "thumbnails": [
+          "img/yashilkeyim-1.jfif",
           "img/yashilkeyim-2.jfif",
           "img/yashilkeyim-3.jfif"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+        ]
       },
       {
         "name": "Yellow",
         "colorFilter": "Yellow",
         "mainImage": "img/sariqkeyim-1.webp",
+        "storageStock": {
+          "12/256": {
+            "quantity": 1
+          },
+          "12/512": {
+            "quantity": 1
+          }
+        },
         "thumbnails": [
+          "img/sariqkeyim-1.webp",
           "img/sariqkeyim-2.jfif",
           "img/sariqkeyim-3.jfif"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+        ]
       },
       {
         "name": "Red",
         "colorFilter": "Red",
         "mainImage": "img/qizililkeyim-1.jfif",
+        "storageStock": {
+          "12/256": {
+            "quantity": 1
+          },
+          "12/512": {
+            "quantity": 1
+          }
+        },
         "thumbnails": [
+          "img/qizililkeyim-1.jfif",
           "img/qizililkeyim-2.jfif",
           "img/qizililkeyim-3.jfif"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+        ]
       },
       {
         "name": "White",
         "colorFilter": "White",
         "mainImage": "img/oqkeyim-1.jpg",
+        "storageStock": {
+          "12/256": {
+            "quantity": 1
+          },
+          "12/512": {
+            "quantity": 1
+          }
+        },
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+        ]
       },
       {
         "name": "Maroon",
         "colorFilter": "Maroon",
         "mainImage": "img/Maroon-keyim-1.jpg",
+        "storageStock": {
+          "12/256": {
+            "quantity": 1
+          },
+          "12/512": {
+            "quantity": 1
+          }
+        },
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
-        ],
-        "storageStock": {
-          "12/256": 1,
-          "12/512": 1
-        }
+        ]
       }
-    ]
+    ],
+    "thumbnails": []
   },
   {
     "id": 157672,
@@ -1417,31 +1596,30 @@
         "color": "#ff9800"
       }
     ],
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "price": "190 000UZS",
-        "mainImage": "img/grey-keyim-1.webp",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 13577,
@@ -1492,33 +1670,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "150 000UZS",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg",
-          "img/ayollaryupkasi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg",
+      "img/ayollaryupkasi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 145768,
@@ -1569,32 +1748,33 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg",
-          "img/erkaklaruchun-xudi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg",
+      "img/erkaklaruchun-xudi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 15675,
@@ -1626,83 +1806,189 @@
         "name": "Green",
         "colorFilter": "Green",
         "mainImage": "img/yashilkeyim-1.jfif",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/yashilkeyim-1.jfif",
           "img/yashilkeyim-2.jfif",
           "img/yashilkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Yellow",
         "colorFilter": "Yellow",
         "mainImage": "img/sariqkeyim-1.webp",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/sariqkeyim-1.webp",
           "img/sariqkeyim-2.jfif",
           "img/sariqkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Red",
         "colorFilter": "Red",
         "mainImage": "img/qizililkeyim-1.jfif",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/qizililkeyim-1.jfif",
           "img/qizililkeyim-2.jfif",
           "img/qizililkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "White",
         "colorFilter": "White",
         "mainImage": "img/oqkeyim-1.jpg",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Maroon",
         "colorFilter": "Maroon",
         "mainImage": "img/Maroon-keyim-1.jpg",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       }
-    ]
+    ],
+    "thumbnails": []
   },
   {
     "id": 1678,
@@ -1734,83 +2020,189 @@
         "name": "Green",
         "colorFilter": "Green",
         "mainImage": "img/yashilkeyim-1.jfif",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/yashilkeyim-1.jfif",
           "img/yashilkeyim-2.jfif",
           "img/yashilkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Yellow",
         "colorFilter": "Yellow",
         "mainImage": "img/sariqkeyim-1.webp",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/sariqkeyim-1.webp",
           "img/sariqkeyim-2.jfif",
           "img/sariqkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Red",
         "colorFilter": "Red",
         "mainImage": "img/qizililkeyim-1.jfif",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/qizililkeyim-1.jfif",
           "img/qizililkeyim-2.jfif",
           "img/qizililkeyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "White",
         "colorFilter": "White",
         "mainImage": "img/oqkeyim-1.jpg",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/oqkeyim-1.jpg",
           "img/oqkeyim-2.jfif",
           "img/oqkeyim-3.webp"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       },
       {
         "name": "Maroon",
         "colorFilter": "Maroon",
         "mainImage": "img/Maroon-keyim-1.jpg",
+        "modelStock": {
+          "S20": {
+            "quantity": 1,
+            "price": "70000UZS",
+            "originalPrice": "70000UZS"
+          },
+          "A30": {
+            "quantity": 1,
+            "price": "73000UZS",
+            "originalPrice": "73000UZS"
+          },
+          "S24 ULTRA": {
+            "quantity": 1,
+            "price": "76000UZS",
+            "originalPrice": "76000UZS"
+          },
+          "A10": {
+            "quantity": 1,
+            "price": "79000UZS",
+            "originalPrice": "79000UZS"
+          },
+          "S25 ULTRA": {
+            "quantity": 1,
+            "price": "82000UZS",
+            "originalPrice": "82000UZS"
+          }
+        },
         "thumbnails": [
+          "img/Maroon-keyim-1.jpg",
           "img/Maroon-keyim-2.jpg",
           "img/Maroon-keyim-3.jpg"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+        ]
       }
-    ]
+    ],
+    "thumbnails": []
   },
   {
     "id": 15767,
@@ -1860,33 +2252,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "150 000UZS",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg",
-          "img/ayollaryupkasi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg",
+      "img/ayollaryupkasi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 18757,
@@ -1948,24 +2341,29 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 19578,
@@ -2027,24 +2425,29 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 20875,
@@ -2094,33 +2497,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "150 000UZS",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg",
-          "img/ayollaryupkasi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg",
+      "img/ayollaryupkasi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 21676,
@@ -2170,33 +2574,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "150 000UZS",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg",
-          "img/ayollaryupkasi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg",
+      "img/ayollaryupkasi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 22678,
@@ -2234,31 +2639,32 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg",
-          "img/erkaklaruchun-xudi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg",
+      "img/erkaklaruchun-xudi-oq.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23685,
@@ -2273,7 +2679,6 @@
     "brandCategories": "huawe",
     "countriesCategories": "usa",
     "flashSale": true,
-    "quantity": 7,
     "category": "Erkaklar kiyimi",
     "video": "video/video-1.mp4",
     "description": {
@@ -2298,33 +2703,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "img/product1.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "img/product1.jpg",
+    "mainImage": "img/product1.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23686,
@@ -2362,41 +2768,42 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "600 000UZS",
-        "mainImage": "img/product1.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg",
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg",
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "img/product1.jpg",
+    "mainImage": "img/product1.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg",
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg",
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57001,
@@ -2420,17 +2827,13 @@
       "uz": "Quloqchin, soat, audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/Aksessuarlar1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/Aksessuarlar1.jpg",
+    "mainImage": "img/Aksessuarlar1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57002,
@@ -2450,17 +2853,13 @@
       "uz": "Soat, audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57003,
@@ -2479,17 +2878,13 @@
       "uz": "Audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57004,
@@ -2513,17 +2908,13 @@
       "uz": "Soat.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Silver",
-        "colorFilter": "Silver",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57005,
@@ -2542,17 +2933,13 @@
       "uz": "Audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57006,
@@ -2572,17 +2959,13 @@
       "uz": "Quloqchin.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57007,
@@ -2601,17 +2984,13 @@
       "uz": "Aksessuarlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57008,
@@ -2630,17 +3009,13 @@
       "uz": "Audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 57009,
@@ -2659,17 +3034,13 @@
       "uz": "Audio texnikalar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60001,
@@ -2693,17 +3064,13 @@
       "uz": "Sport va fitness uchun sumka.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60002,
@@ -2722,17 +3089,13 @@
       "uz": "Yugurish va sport.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60003,
@@ -2752,17 +3115,13 @@
       "uz": "Sport qo'lqoplari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60004,
@@ -2781,17 +3140,13 @@
       "uz": "Yoga va fitness.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60005,
@@ -2811,17 +3166,13 @@
       "uz": "Puls, qadamlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60006,
@@ -2840,17 +3191,13 @@
       "uz": "Sport suv shishasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60007,
@@ -2869,17 +3216,13 @@
       "uz": "Nafas oladigan mato.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Orange",
-        "colorFilter": "Orange",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60008,
@@ -2899,17 +3242,13 @@
       "uz": "Uy mashqlari uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Multi",
-        "colorFilter": "Multi",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63001,
@@ -2933,17 +3272,13 @@
       "uz": "Barcha turdagi mahsulotlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Silver",
-        "colorFilter": "Silver",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63002,
@@ -2962,17 +3297,13 @@
       "uz": "Zargarlik.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Gold",
-        "colorFilter": "Gold",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63003,
@@ -2992,17 +3323,13 @@
       "uz": "Uy bezaklari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63004,
@@ -3021,17 +3348,13 @@
       "uz": "Sport.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63005,
@@ -3051,17 +3374,13 @@
       "uz": "Hobi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63006,
@@ -3080,17 +3399,13 @@
       "uz": "Ofis.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63007,
@@ -3109,17 +3424,13 @@
       "uz": "Avtomobil.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63008,
@@ -3139,17 +3450,13 @@
       "uz": "Bog'chilik.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 63009,
@@ -3169,17 +3476,13 @@
       "uz": "Bog'chilik.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56001,
@@ -3203,17 +3506,13 @@
       "uz": "Makyaj, yuz parvarishi, korea kosmetikasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56002,
@@ -3233,17 +3532,13 @@
       "uz": "Makyaj, yuz parvarishi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Pink",
-        "colorFilter": "Pink",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56003,
@@ -3262,17 +3557,13 @@
       "uz": "Yuz parvarishi, korea kosmetikasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56004,
@@ -3296,17 +3587,13 @@
       "uz": "Korea kosmetikasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56005,
@@ -3325,17 +3612,13 @@
       "uz": "Makyaj.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56006,
@@ -3355,17 +3638,13 @@
       "uz": "Makyaj, yuz parvarishi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56007,
@@ -3384,17 +3663,13 @@
       "uz": "Makyaj, korea kosmetikasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Beige",
-        "colorFilter": "Beige",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 56008,
@@ -3413,17 +3688,13 @@
       "uz": "Go'zallik va parvarish.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/kasmetika.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/kasmetika.webp",
+    "mainImage": "img/kasmetika.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64001,
@@ -3448,17 +3719,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64002,
@@ -3483,17 +3750,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64003,
@@ -3514,17 +3777,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64004,
@@ -3549,17 +3808,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Silver",
-        "colorFilter": "Silver",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64005,
@@ -3580,17 +3835,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64006,
@@ -3615,17 +3866,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64007,
@@ -3650,17 +3897,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 64008,
@@ -3685,17 +3928,13 @@
       "uz": "Katta chegirma.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50001,
@@ -3721,17 +3960,13 @@
       "uz": "Diniy kitoblar, badiiy kitoblar, sovg'a nashrlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50002,
@@ -3753,17 +3988,13 @@
       "uz": "Diniy kitoblar, badiiy kitoblar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50003,
@@ -3784,17 +4015,13 @@
       "uz": "Sheriy, adabiy.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50004,
@@ -3820,17 +4047,13 @@
       "uz": "Sarguzasht, badiiy.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50005,
@@ -3856,17 +4079,13 @@
       "uz": "Diniy kitoblar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50006,
@@ -3887,17 +4106,13 @@
       "uz": "Badiiy kitoblar, sovg'a nashrlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50007,
@@ -3918,17 +4133,13 @@
       "uz": "Badiiy kitoblar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50008,
@@ -3950,17 +4161,13 @@
       "uz": "Diniy kitoblar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60001,
@@ -3984,17 +4191,13 @@
       "uz": "Batariya, kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60002,
@@ -4018,17 +4221,13 @@
       "uz": "Tez zaryadlash va ma'lumot uzatish uchun.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60003,
@@ -4052,17 +4251,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60004,
@@ -4086,17 +4281,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60005,
@@ -4120,17 +4311,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60006,
@@ -4154,17 +4341,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60007,
@@ -4188,17 +4371,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/newcollection1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection1.jpg",
+    "mainImage": "img/newcollection1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60008,
@@ -4222,17 +4401,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60009,
@@ -4256,17 +4431,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/newcollection1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection1.jpg",
+    "mainImage": "img/newcollection1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60010,
@@ -4290,17 +4461,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60011,
@@ -4324,17 +4491,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60012,
@@ -4358,17 +4521,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60013,
@@ -4392,17 +4551,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60014,
@@ -4426,17 +4581,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60015,
@@ -4460,17 +4611,13 @@
       "uz": "Batariya kabel va zaryad beruvchi qurilmalar.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58001,
@@ -4494,17 +4641,13 @@
       "uz": "O'yinchoqlar, bolalar xonasi, sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/uyinchoqlar.png",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/uyinchoqlar.png",
+    "mainImage": "img/uyinchoqlar.png",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58002,
@@ -4523,17 +4666,13 @@
       "uz": "Sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58003,
@@ -4553,17 +4692,13 @@
       "uz": "O'yinchoqlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58004,
@@ -4582,17 +4717,13 @@
       "uz": "Sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58005,
@@ -4611,17 +4742,13 @@
       "uz": "O'yinchoqlar, sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Multi",
-        "colorFilter": "Multi",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58006,
@@ -4641,17 +4768,13 @@
       "uz": "Bolalar xonasi, sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Pink",
-        "colorFilter": "Pink",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58007,
@@ -4670,17 +4793,13 @@
       "uz": "O'yinchoqlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 58008,
@@ -4699,17 +4818,13 @@
       "uz": "Sovg'alar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Gold",
-        "colorFilter": "Gold",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62001,
@@ -4733,17 +4848,13 @@
       "uz": "Maishiy texnika.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62002,
@@ -4762,17 +4873,13 @@
       "uz": "Oshxona uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62003,
@@ -4792,17 +4899,13 @@
       "uz": "Iqlim texnikasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62004,
@@ -4821,17 +4924,13 @@
       "uz": "Kiyim yuvish.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62005,
@@ -4851,17 +4950,13 @@
       "uz": "Oshxona.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Silver",
-        "colorFilter": "Silver",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62006,
@@ -4880,17 +4975,13 @@
       "uz": "Suv qaynatish.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62007,
@@ -4909,17 +5000,13 @@
       "uz": "Havo sirkulyatsiyasi.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 62008,
@@ -4939,17 +5026,13 @@
       "uz": "Tozalash.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50001,
@@ -4976,23 +5059,28 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50002,
@@ -5024,22 +5112,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50003,
@@ -5066,22 +5157,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50004,
@@ -5103,18 +5197,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50005,
@@ -5141,23 +5233,28 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [
-          "img/black-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "40": 1,
-          "41": 1,
-          "42": 1,
-          "43": 1,
-          "44": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "thumbnails": [
+      "img/black-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "40": {
+        "quantity": 1
+      },
+      "41": {
+        "quantity": 1
+      },
+      "42": {
+        "quantity": 1
+      },
+      "43": {
+        "quantity": 1
+      },
+      "44": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50006,
@@ -5179,22 +5276,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [
-          "img/yashilkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "thumbnails": [
+      "img/yashilkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50007,
@@ -5216,23 +5316,28 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50008,
@@ -5254,17 +5359,13 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50009,
@@ -5286,18 +5387,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 50010,
@@ -5324,20 +5423,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "40": 1,
-          "41": 1,
-          "42": 1,
-          "43": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "40": {
+        "quantity": 1
+      },
+      "41": {
+        "quantity": 1
+      },
+      "42": {
+        "quantity": 1
+      },
+      "43": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 90001,
@@ -5383,28 +5484,29 @@
     "sizeChart": [
       "img/ayollaryupkasi-oq.jpg"
     ],
-    "colors": [
-      {
-        "name": {
-          "uz": "Yashil",
-          "ru": "Зелёный"
-        },
-        "colorFilter": "Green",
-        "price": "127 000UZS",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [
-          "img/yashilkeyim-2.jfif",
-          "img/yashilkeyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "thumbnails": [
+      "img/yashilkeyim-2.jfif",
+      "img/yashilkeyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 90002,
@@ -5440,23 +5542,28 @@
     "sizeChart": [
       "img/blue-keyim-3.webp"
     ],
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [
-          "img/newcollection2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "thumbnails": [
+      "img/newcollection2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 90003,
@@ -5495,25 +5602,30 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 90004,
@@ -5563,33 +5675,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "150 000UZS",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg",
-          "img/ayollaryupkasi-oq.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
-      }
+    "sellerId": "violet",
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg",
+      "img/ayollaryupkasi-oq.jpg"
     ],
-    "sellerId": "violet"
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
+      }
+    }
   },
   {
     "id": 2365,
@@ -5627,33 +5740,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "img/product1.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "img/product1.jpg",
+    "mainImage": "img/product1.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 2365485,
@@ -5691,33 +5805,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection1-0.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection1-0.jpg",
+    "mainImage": "/img/newcollection1-0.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 2354685,
@@ -5755,33 +5870,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection2.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection2.jpg",
+    "mainImage": "/img/newcollection2.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236385,
@@ -5819,33 +5935,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection4.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection4.jpg",
+    "mainImage": "/img/newcollection4.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 223685,
@@ -5883,33 +6000,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection1-0.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection1-0.jpg",
+    "mainImage": "/img/newcollection1-0.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23687,
@@ -5947,33 +6065,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection11.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection11.jpg",
+    "mainImage": "/img/newcollection11.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23688,
@@ -6011,33 +6130,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection9.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection9.jpg",
+    "mainImage": "/img/newcollection9.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23689,
@@ -6075,33 +6195,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection15.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection15.jpg",
+    "mainImage": "/img/newcollection15.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23690,
@@ -6139,33 +6260,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection19.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection19.jpg",
+    "mainImage": "/img/newcollection19.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236855,
@@ -6203,33 +6325,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection17.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection17.jpg",
+    "mainImage": "/img/newcollection17.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236815,
@@ -6267,37 +6390,38 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection22.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg",
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection22.jpg",
+    "mainImage": "/img/newcollection22.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg",
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236825,
@@ -6335,33 +6459,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection25.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection25.jpg",
+    "mainImage": "/img/newcollection25.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236865,
@@ -6399,33 +6524,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection23.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection23.jpg",
+    "mainImage": "/img/newcollection23.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236895,
@@ -6463,33 +6589,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection18.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection18.jpg",
+    "mainImage": "/img/newcollection18.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236485,
@@ -6527,33 +6654,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection15.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection15.jpg",
+    "mainImage": "/img/newcollection15.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 236185,
@@ -6591,33 +6719,34 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection21.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection21.jpg",
+    "mainImage": "/img/newcollection21.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 2368895,
@@ -6690,33 +6819,34 @@
         ]
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection17.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection17.jpg",
+    "mainImage": "/img/newcollection17.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23685445,
@@ -6787,33 +6917,34 @@
         ]
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "200 000UZS",
-        "mainImage": "/img/newcollection13.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection13.jpg",
+    "mainImage": "/img/newcollection13.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 23655,
@@ -6884,37 +7015,38 @@
         ]
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "price": "300 000UZS",
-        "mainImage": "/img/newcollection414.jpg",
-        "discount": {
-          "uz": "70% chegirma",
-          "ru": "70% скидка"
-        },
-        "originalPrice": "900 000",
-        "thumbnails": [
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg",
-          "img/product2.jpg",
-          "img/product3.jpg",
-          "img/product4.jpg",
-          "img/product5.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "/img/newcollection414.jpg",
+    "mainImage": "/img/newcollection414.jpg",
+    "thumbnails": [
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg",
+      "img/product2.jpg",
+      "img/product3.jpg",
+      "img/product4.jpg",
+      "img/product5.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55001,
@@ -6938,17 +7070,13 @@
       "uz": "Yozuv qurollari, qog'oz mahsulotlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55002,
@@ -6967,17 +7095,13 @@
       "uz": "Qog'oz mahsulotlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55003,
@@ -6997,17 +7121,13 @@
       "uz": "Chizmachilik qurollari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55004,
@@ -7026,17 +7146,13 @@
       "uz": "Yozuv qurollari, qog'oz mahsulotlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55005,
@@ -7056,17 +7172,13 @@
       "uz": "Qog'oz mahsulotlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55006,
@@ -7085,17 +7197,13 @@
       "uz": "Yozuv qurollari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55007,
@@ -7114,17 +7222,13 @@
       "uz": "Qog'oz mahsulotlari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55008,
@@ -7143,17 +7247,13 @@
       "uz": "Chizmachilik qurollari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55009,
@@ -7172,17 +7272,13 @@
       "uz": "Chizmachilik qurollari.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 55010,
@@ -7205,24 +7301,39 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg",
-          "img/grey-keyim-3.jfif"
-        ],
-        "modelStock": {
-          "S20": 1,
-          "A30": 1,
-          "S24 ULTRA": 1,
-          "A10": 1,
-          "S25 ULTRA": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg",
+      "img/grey-keyim-3.jfif"
+    ],
+    "modelStock": {
+      "S20": {
+        "quantity": 1,
+        "price": "500 000UZS",
+        "originalPrice": "500 000UZS"
+      },
+      "A30": {
+        "quantity": 1,
+        "price": "500 000UZS",
+        "originalPrice": "500 000UZS"
+      },
+      "S24 ULTRA": {
+        "quantity": 1,
+        "price": "500 000UZS",
+        "originalPrice": "500 000UZS"
+      },
+      "A10": {
+        "quantity": 1,
+        "price": "500 000UZS",
+        "originalPrice": "500 000UZS"
+      },
+      "S25 ULTRA": {
+        "quantity": 1,
+        "price": "500 000UZS",
+        "originalPrice": "500 000UZS"
       }
-    ]
+    }
   },
   {
     "id": 61001,
@@ -7246,17 +7357,13 @@
       "uz": "Sayoxat uchun asboblar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61002,
@@ -7275,17 +7382,13 @@
       "uz": "Sayoxat hujjatlari uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61003,
@@ -7305,17 +7408,13 @@
       "uz": "Uyqu uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61004,
@@ -7334,17 +7433,13 @@
       "uz": "Qo'lda tashish uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61005,
@@ -7364,17 +7459,13 @@
       "uz": "Kosmetika va gigiyena.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61006,
@@ -7393,17 +7484,13 @@
       "uz": "Zaryadlash uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61007,
@@ -7422,17 +7509,13 @@
       "uz": "Samolyot va avtobus uchun.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61008,
@@ -7452,17 +7535,13 @@
       "uz": "Noutbuk va hujjatlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 61009,
@@ -7482,17 +7561,13 @@
       "uz": "Noutbuk va hujjatlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60001,
@@ -7516,22 +7591,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60002,
@@ -7550,22 +7628,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60003,
@@ -7589,19 +7670,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60004,
@@ -7620,17 +7698,13 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Maroon",
-        "colorFilter": "Maroon",
-        "mainImage": "img/Maroon-keyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/Maroon-keyim-1.jpg",
+    "mainImage": "img/Maroon-keyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60005,
@@ -7654,22 +7728,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60006,
@@ -7688,19 +7765,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [
-          "img/yashilkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "thumbnails": [
+      "img/yashilkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60007,
@@ -7719,18 +7793,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60008,
@@ -7749,22 +7821,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [
-          "img/qizililkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "thumbnails": [
+      "img/qizililkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60009,
@@ -7788,22 +7863,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "40": 1,
-          "41": 1,
-          "42": 1,
-          "43": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "40": {
+        "quantity": 1
+      },
+      "41": {
+        "quantity": 1
+      },
+      "42": {
+        "quantity": 1
+      },
+      "43": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60010,
@@ -7822,18 +7900,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60011,
@@ -7852,22 +7928,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [
-          "img/sariqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "thumbnails": [
+      "img/sariqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60012,
@@ -7886,22 +7965,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60013,
@@ -7920,17 +8002,13 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60014,
@@ -7949,21 +8027,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60015,
@@ -7982,20 +8061,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60016,
@@ -8019,19 +8100,16 @@
       "uz": "Shovqinni pasaytiruvchi zamonaviy simsiz quloqchin.",
       "ru": "Современные беспроводные наушники с шумоподавлением."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 60017,
@@ -8055,19 +8133,16 @@
       "uz": "Kundalik va sport uchun qulay, keng sig'imli sumka.",
       "ru": "Удобная вместительная сумка для спорта и повседневного использования."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg"
-        ],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg"
+    ],
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59001,
@@ -8091,17 +8166,13 @@
       "uz": "Vitaminlar va sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Orange",
-        "colorFilter": "Orange",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59002,
@@ -8120,17 +8191,13 @@
       "uz": "Vitaminlar va sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59003,
@@ -8150,17 +8217,13 @@
       "uz": "Sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59004,
@@ -8179,17 +8242,13 @@
       "uz": "Vitaminlar va sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59005,
@@ -8209,17 +8268,13 @@
       "uz": "Sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59006,
@@ -8238,17 +8293,13 @@
       "uz": "Vitaminlar va sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59007,
@@ -8267,17 +8318,13 @@
       "uz": "Tabiiy sog'liq.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Brown",
-        "colorFilter": "Brown",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59008,
@@ -8297,17 +8344,13 @@
       "uz": "Vitaminlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Orange",
-        "colorFilter": "Orange",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 59009,
@@ -8327,17 +8370,13 @@
       "uz": "Vitaminlar.",
       "ru": "Описание."
     },
-    "colors": [
-      {
-        "name": "Orange",
-        "colorFilter": "Orange",
-        "mainImage": "img/categoriyaktoblar.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/categoriyaktoblar.jpg",
+    "mainImage": "img/categoriyaktoblar.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70001,
@@ -8364,27 +8403,29 @@
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": {
-          "uz": "Yashil",
-          "ru": "Зелёный"
-        },
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [
-          "img/yashilkeyim-2.jfif",
-          "img/yashilkeyim-3.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "thumbnails": [
+      "img/yashilkeyim-2.jfif",
+      "img/yashilkeyim-3.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70002,
@@ -8408,22 +8449,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [
-          "img/newcollection2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "thumbnails": [
+      "img/newcollection2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70003,
@@ -8452,25 +8496,32 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg",
-          "img/ayollaryupkasi-qizl.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1,
-          "XXXL": 1
-        }
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg",
+      "img/ayollaryupkasi-qizl.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
+      },
+      "XXXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70004,
@@ -8494,22 +8545,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [
-          "img/qizililkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "thumbnails": [
+      "img/qizililkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70005,
@@ -8528,22 +8582,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [
-          "img/sariqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "thumbnails": [
+      "img/sariqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70006,
@@ -8567,22 +8624,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70007,
@@ -8601,23 +8661,28 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70008,
@@ -8636,22 +8701,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Maroon",
-        "colorFilter": "Maroon",
-        "mainImage": "img/Maroon-keyim-1.jpg",
-        "thumbnails": [
-          "img/Maroon-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/Maroon-keyim-1.jpg",
+    "mainImage": "img/Maroon-keyim-1.jpg",
+    "thumbnails": [
+      "img/Maroon-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70009,
@@ -8675,22 +8743,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [
-          "img/black-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "thumbnails": [
+      "img/black-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 70010,
@@ -8709,23 +8780,28 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1,
-          "XXL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
+      },
+      "XXL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80001,
@@ -8784,22 +8860,25 @@
         ]
       }
     ],
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80002,
@@ -8823,21 +8902,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [
-          "img/black-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "thumbnails": [
+      "img/black-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80003,
@@ -8856,22 +8936,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80004,
@@ -8895,20 +8978,19 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80005,
@@ -8927,20 +9009,19 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Blue",
-        "colorFilter": "Blue",
-        "mainImage": "img/newcollection2.jpg",
-        "thumbnails": [
-          "img/newcollection2.jpg"
-        ],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/newcollection2.jpg",
+    "mainImage": "img/newcollection2.jpg",
+    "thumbnails": [
+      "img/newcollection2.jpg"
+    ],
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80006,
@@ -8964,18 +9045,16 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80007,
@@ -8999,22 +9078,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
-        "thumbnails": [
-          "img/erkaklaruchun-xudi-qora.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "mainImage": "img/erkaklaruchun-xudi-tiyomni.jpg",
+    "thumbnails": [
+      "img/erkaklaruchun-xudi-qora.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80008,
@@ -9033,21 +9115,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Yellow",
-        "colorFilter": "Yellow",
-        "mainImage": "img/sariqkeyim-1.webp",
-        "thumbnails": [
-          "img/sariqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/sariqkeyim-1.webp",
+    "mainImage": "img/sariqkeyim-1.webp",
+    "thumbnails": [
+      "img/sariqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80009,
@@ -9071,22 +9154,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Grey",
-        "colorFilter": "Grey",
-        "mainImage": "img/grey-keyim-1.webp",
-        "thumbnails": [
-          "img/grey-keyim-2.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/grey-keyim-1.webp",
+    "mainImage": "img/grey-keyim-1.webp",
+    "thumbnails": [
+      "img/grey-keyim-2.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80010,
@@ -9105,21 +9191,22 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/ayollaryupkasi-qora.jpg",
-        "thumbnails": [
-          "img/ayollaryupkasi-oqish.jpg"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/ayollaryupkasi-qora.jpg",
+    "mainImage": "img/ayollaryupkasi-qora.jpg",
+    "thumbnails": [
+      "img/ayollaryupkasi-oqish.jpg"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80011,
@@ -9148,17 +9235,13 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Red",
-        "colorFilter": "Red",
-        "mainImage": "img/qizililkeyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/qizililkeyim-1.jfif",
+    "mainImage": "img/qizililkeyim-1.jfif",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80012,
@@ -9217,22 +9300,25 @@
         ]
       }
     ],
-    "colors": [
-      {
-        "name": "Green",
-        "colorFilter": "Green",
-        "mainImage": "img/yashilkeyim-1.jfif",
-        "thumbnails": [
-          "img/yashilkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/yashilkeyim-1.jfif",
+    "mainImage": "img/yashilkeyim-1.jfif",
+    "thumbnails": [
+      "img/yashilkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80013,
@@ -9251,22 +9337,25 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [
-          "img/oqkeyim-2.jfif"
-        ],
-        "sizeStock": {
-          "S": 1,
-          "M": 1,
-          "L": 1,
-          "XL": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "thumbnails": [
+      "img/oqkeyim-2.jfif"
+    ],
+    "sizeStock": {
+      "S": {
+        "quantity": 1
+      },
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
+      },
+      "XL": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80014,
@@ -9290,17 +9379,13 @@
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
     },
-    "colors": [
-      {
-        "name": "Maroon",
-        "colorFilter": "Maroon",
-        "mainImage": "img/Maroon-keyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "Standart": 1
-        }
+    "image": "img/Maroon-keyim-1.jpg",
+    "mainImage": "img/Maroon-keyim-1.jpg",
+    "sizeStock": {
+      "Standart": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80015,
@@ -9329,18 +9414,16 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "colorFilter": "Black",
-        "mainImage": "img/black-keyim-1.jfif",
-        "thumbnails": [],
-        "sizeStock": {
-          "M": 1,
-          "L": 1
-        }
+    "image": "img/black-keyim-1.jfif",
+    "mainImage": "img/black-keyim-1.jfif",
+    "sizeStock": {
+      "M": {
+        "quantity": 1
+      },
+      "L": {
+        "quantity": 1
       }
-    ]
+    }
   },
   {
     "id": 80016,
@@ -9374,20 +9457,24 @@
         "color": "#13BE4C"
       }
     ],
-    "colors": [
-      {
-        "name": "White",
-        "colorFilter": "White",
-        "mainImage": "img/oqkeyim-1.jpg",
-        "thumbnails": [],
-        "sizeStock": {
-          "38": 1,
-          "39": 1,
-          "40": 1,
-          "41": 1,
-          "42": 1
-        }
+    "image": "img/oqkeyim-1.jpg",
+    "mainImage": "img/oqkeyim-1.jpg",
+    "sizeStock": {
+      "38": {
+        "quantity": 1
+      },
+      "39": {
+        "quantity": 1
+      },
+      "40": {
+        "quantity": 1
+      },
+      "41": {
+        "quantity": 1
+      },
+      "42": {
+        "quantity": 1
       }
-    ]
+    }
   }
 ]

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const brandCategorySchema = new mongoose.Schema(
   {
@@ -19,6 +20,10 @@ const brandCategorySchema = new mongoose.Schema(
     versionKey: false,
   }
 );
+
+brandCategorySchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "brand_category_id");
+});
 
 const BrandCategory = mongoose.model("BrandCategory", brandCategorySchema);
 

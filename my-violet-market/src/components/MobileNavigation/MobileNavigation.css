@@ -2,6 +2,10 @@
   display: none;
 }
 
+body.product-detail-page-active .mobile-navigation {
+  display: none !important;
+}
+
 .mobile-bottom-nav {
   position: fixed;
   bottom: 0;
@@ -72,6 +76,10 @@
 @media (max-width: 1000px) {
   .mobile-navigation {
     display: block;
+  }
+
+  body.product-detail-page-active .mobile-navigation {
+    display: none !important;
   }
 }
 

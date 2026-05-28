@@ -1,6 +1,7 @@
 const { CartItem } = require("../../models/cart");
 const { Product } = require("../../models/product");
 const { HttpError } = require("../../utils/httpError");
+const { recordCheckoutSales } = require("../recommendation/recommendationRankingService");
 const {
   generateInitialUrgencyStock,
   buildNextShowAt,
@@ -53,6 +54,15 @@ function toNonNegativeInt(value) {
   return Math.max(0, Math.floor(num));
 }
 
+function getMapEntryQuantity(entryValue) {
+  if (entryValue && typeof entryValue === "object" && !Array.isArray(entryValue)) {
+    const qty = Number(entryValue.quantity);
+    if (!Number.isFinite(qty)) return 0;
+    return Math.max(0, Math.floor(qty));
+  }
+  return toNonNegativeInt(entryValue);
+}
+
 function findMapKeyByLabel(mapObj, label) {
   if (!mapObj || typeof mapObj !== "object") return null;
   const target = normalizeLabel(label);
@@ -100,41 +110,45 @@ function hasListQuantity(matchedColors, listField, labelField, variantValue) {
 
 function resolveVariantAvailability(product, variant) {
   const matchedColors = getMatchedColors(product, variant.color);
-  if (matchedColors.length === 0) return null;
-
   const candidateAvailabilities = [];
 
-  const colorQuantities = matchedColors
-    .map((color) => Number(color?.quantity))
-    .filter((n) => Number.isFinite(n));
-  if (colorQuantities.length > 0) {
-    candidateAvailabilities.push(
-      colorQuantities.reduce((sum, current) => sum + toNonNegativeInt(current), 0),
-    );
-  }
-
-  const scopedMapAvailability = (fieldName, variantValue) => {
+  const scopedMapAvailability = (sourceList, fieldName, variantValue) => {
     if (!variantValue) return null;
     let total = 0;
     let found = false;
-    for (const color of matchedColors) {
-      const key = findMapKeyByLabel(color?.[fieldName], variantValue);
+    for (const source of sourceList) {
+      const key = findMapKeyByLabel(source?.[fieldName], variantValue);
       if (key == null) continue;
       found = true;
-      total += toNonNegativeInt(color[fieldName][key]);
+      total += getMapEntryQuantity(source[fieldName][key]);
     }
     return found ? total : null;
   };
 
-  const sizeAvailability = scopedMapAvailability("sizeStock", variant.size);
+  if (matchedColors.length > 0) {
+    const colorQuantities = matchedColors
+      .map((color) => Number(color?.quantity))
+      .filter((n) => Number.isFinite(n));
+    if (colorQuantities.length > 0) {
+      candidateAvailabilities.push(
+        colorQuantities.reduce((sum, current) => sum + toNonNegativeInt(current), 0),
+      );
+    }
+  }
+
+  const productSources = matchedColors.length > 0 ? matchedColors : [product];
+
+  const colorAvailability = scopedMapAvailability([product], "colorStock", variant.color);
+  if (colorAvailability != null) candidateAvailabilities.push(colorAvailability);
+  const sizeAvailability = scopedMapAvailability(productSources, "sizeStock", variant.size);
   if (sizeAvailability != null) candidateAvailabilities.push(sizeAvailability);
   const storageAvailability =
     scopedListAvailability(matchedColors, "storage", "size", variant.storage) ??
-    scopedMapAvailability("storageStock", variant.storage);
+    scopedMapAvailability(productSources, "storageStock", variant.storage);
   if (storageAvailability != null) candidateAvailabilities.push(storageAvailability);
   const modelAvailability =
     scopedListAvailability(matchedColors, "models", "name", variant.model) ??
-    scopedMapAvailability("modelStock", variant.model);
+    scopedMapAvailability(productSources, "modelStock", variant.model);
   if (modelAvailability != null) candidateAvailabilities.push(modelAvailability);
 
   if (candidateAvailabilities.length === 0) return null;
@@ -162,10 +176,28 @@ function consumeFromStockMap(matchedColors, fieldName, variantValue, requestedQt
     const mapObj = color?.[fieldName];
     const key = findMapKeyByLabel(mapObj, variantValue);
     if (key == null) continue;
-    const available = toNonNegativeInt(mapObj[key]);
+    const available = getMapEntryQuantity(mapObj[key]);
     const take = Math.min(available, remaining);
-    mapObj[key] = available - take;
+    if (mapObj[key] && typeof mapObj[key] === "object" && !Array.isArray(mapObj[key])) {
+      mapObj[key].quantity = available - take;
+    } else {
+      mapObj[key] = available - take;
+    }
     remaining -= take;
+  }
+}
+
+function consumeFromProductStockMap(product, fieldName, variantValue, requestedQty) {
+  if (!variantValue) return;
+  const mapObj = product?.[fieldName];
+  const key = findMapKeyByLabel(mapObj, variantValue);
+  if (key == null) return;
+  const available = getMapEntryQuantity(mapObj[key]);
+  const next = Math.max(0, available - Math.max(0, requestedQty));
+  if (mapObj[key] && typeof mapObj[key] === "object" && !Array.isArray(mapObj[key])) {
+    mapObj[key].quantity = next;
+  } else {
+    mapObj[key] = next;
   }
 }
 
@@ -198,7 +230,13 @@ function consumeFromOptionList(
 
 function applyVariantDecrement(product, variant, requestedQty) {
   const matchedColors = getMatchedColors(product, variant.color);
-  if (matchedColors.length === 0) return;
+  if (matchedColors.length === 0) {
+    consumeFromProductStockMap(product, "colorStock", variant.color, requestedQty);
+    consumeFromProductStockMap(product, "sizeStock", variant.size, requestedQty);
+    consumeFromProductStockMap(product, "storageStock", variant.storage, requestedQty);
+    consumeFromProductStockMap(product, "modelStock", variant.model, requestedQty);
+    return;
+  }
   consumeFromColorQuantities(matchedColors, requestedQty);
   consumeFromStockMap(matchedColors, "sizeStock", variant.size, requestedQty);
   if (hasListQuantity(matchedColors, "storage", "size", variant.storage)) {
@@ -214,6 +252,13 @@ function applyVariantDecrement(product, variant, requestedQty) {
 }
 
 function hasVariantStockData(product) {
+  if (Array.isArray(product?.models) && product.models.length > 0) return true;
+  if (Array.isArray(product?.storage) && product.storage.length > 0) return true;
+  if (product?.colorStock && typeof product.colorStock === "object") return true;
+  if (product?.modelStock && typeof product.modelStock === "object") return true;
+  if (product?.storageStock && typeof product.storageStock === "object") return true;
+  if (product?.sizeStock && typeof product.sizeStock === "object") return true;
+
   const colors = Array.isArray(product?.colors) ? product.colors : [];
   for (const color of colors) {
     if (!color || typeof color !== "object") continue;
@@ -309,6 +354,8 @@ async function addCartItem(userId, payload) {
   const size = String(payload.size || "");
   const storage = String(payload.storage || "");
   const model = String(payload.model || "");
+  const incomingQty = Math.max(1, Number(payload.quantity) || 1);
+  const variant = { color, size, storage, model };
 
   const existing = await CartItem.findOne({
     userId,
@@ -319,8 +366,39 @@ async function addCartItem(userId, payload) {
     model,
   });
 
+  const hasVariantStock = hasVariantStockData(product);
+  const variantAvailableQty = resolveVariantAvailability(product, variant);
+  const nextRequestedQty = (existing?.quantity || 0) + incomingQty;
+
+  if (variantAvailableQty != null && nextRequestedQty > variantAvailableQty) {
+    throw new HttpError(
+      409,
+      `Mahsulot yetarli emas (so'ralgan ${nextRequestedQty}, qolgan ${variantAvailableQty})`,
+      "INSUFFICIENT_STOCK",
+    );
+  }
+
+  if (variantAvailableQty == null && hasVariantStock) {
+    throw new HttpError(
+      409,
+      "Tanlangan variant hozircha mavjud emas",
+      "INSUFFICIENT_STOCK",
+    );
+  }
+
+  if (!hasVariantStock) {
+    const availableQty = Math.max(0, Number(product?.quantity) || 0);
+    if (nextRequestedQty > availableQty) {
+      throw new HttpError(
+        409,
+        `Mahsulot yetarli emas (so'ralgan ${nextRequestedQty}, qolgan ${availableQty})`,
+        "INSUFFICIENT_STOCK",
+      );
+    }
+  }
+
   if (existing) {
-    existing.quantity = (existing.quantity || 1) + (Number(payload.quantity) || 1);
+    existing.quantity = nextRequestedQty;
     if (payload.title !== undefined) existing.title = payload.title;
     if (payload.price !== undefined) existing.price = Number(payload.price) || 0;
     if (payload.originalPrice !== undefined) {
@@ -345,7 +423,7 @@ async function addCartItem(userId, payload) {
   const doc = new CartItem({
     userId,
     productId,
-    quantity: Math.max(1, Number(payload.quantity) || 1),
+    quantity: incomingQty,
     color,
     size,
     storage,
@@ -440,7 +518,7 @@ async function checkoutCartForUser(userId) {
 
   const productIds = [...requestedByProductId.keys()].filter(Number.isFinite);
   const products = await Product.find({ id: { $in: productIds } })
-    .select("id title quantity colors");
+    .select("id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName");
   const productMap = new Map(products.map((product) => [Number(product.id), product]));
 
   const insufficient = [];
@@ -548,9 +626,31 @@ async function checkoutCartForUser(userId) {
     }
     await Product.updateOne(
       { id: productId },
-      { $set: { colors: Array.isArray(product.colors) ? product.colors : [] } },
+      {
+        $set: {
+          colors: Array.isArray(product.colors) ? product.colors : [],
+          colorStock: product.colorStock,
+          sizeStock: product.sizeStock,
+          storageStock: product.storageStock,
+          modelStock: product.modelStock,
+        },
+      },
     );
   }
+
+  const rankingMetrics = [];
+  for (const [productId, requestedQty] of requestedByProductId.entries()) {
+    const product = productMap.get(productId);
+    if (!product) continue;
+    const sectionKey = String(product.categoryName || "").trim();
+    if (!sectionKey) continue;
+    rankingMetrics.push({
+      productId,
+      sectionKey,
+      soldQty: requestedQty,
+    });
+  }
+  await recordCheckoutSales(rankingMetrics);
 
   await CartItem.deleteMany({ userId });
   return { items: [] };

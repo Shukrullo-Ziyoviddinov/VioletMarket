@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const footerSocialLinkSchema = new mongoose.Schema(
   {
@@ -14,6 +15,10 @@ const footerSocialLinkSchema = new mongoose.Schema(
     id: false,
   }
 );
+
+footerSocialLinkSchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "footer_social_link_id");
+});
 
 const FooterSocialLink = mongoose.model("FooterSocialLink", footerSocialLinkSchema);
 

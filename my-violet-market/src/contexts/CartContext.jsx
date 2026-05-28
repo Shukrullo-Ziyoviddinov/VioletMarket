@@ -45,16 +45,58 @@ function buildCartPayload(product, color, size, storage, model) {
   const storageLabel = getLabelFromOption(storage, lang);
   const modelLabel = getLabelFromOption(model, lang);
 
+  const getStockPriceByLabel = (stockMap, label) => {
+    if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+    const target = String(label || '').trim().toLowerCase();
+    if (!target) return null;
+    const key = Object.keys(stockMap).find((k) => String(k || '').trim().toLowerCase() === target);
+    if (!key) return null;
+    const entry = stockMap[key];
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+    return getNumberPrice(entry.price);
+  };
+  const getStockOriginalPriceByLabel = (stockMap, label) => {
+    if (!stockMap || typeof stockMap !== 'object' || Array.isArray(stockMap)) return null;
+    const target = String(label || '').trim().toLowerCase();
+    if (!target) return null;
+    const key = Object.keys(stockMap).find((k) => String(k || '').trim().toLowerCase() === target);
+    if (!key) return null;
+    const entry = stockMap[key];
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+    return getNumberPrice(entry.originalPrice);
+  };
+
+  const modelStockPrice = getStockPriceByLabel(
+    color?.modelStock || product?.modelStock,
+    modelLabel,
+  );
+  const modelStockOriginalPrice = getStockOriginalPriceByLabel(
+    color?.modelStock || product?.modelStock,
+    modelLabel,
+  );
+  const storageStockPrice = getStockPriceByLabel(
+    color?.storageStock || product?.storageStock,
+    storageLabel,
+  );
+  const storageStockOriginalPrice = getStockOriginalPriceByLabel(
+    color?.storageStock || product?.storageStock,
+    storageLabel,
+  );
+
   const price =
     getNumberPrice(model) ??
+    modelStockPrice ??
     getNumberPrice(storage) ??
+    storageStockPrice ??
     getNumberPrice(color) ??
     getNumberPrice(product) ??
     0;
 
   const originalPrice =
     getNumberPrice(model?.originalPrice) ??
+    modelStockOriginalPrice ??
     getNumberPrice(storage?.originalPrice) ??
+    storageStockOriginalPrice ??
     getNumberPrice(color?.originalPrice) ??
     getNumberPrice(product?.originalPrice) ??
     price;
@@ -63,6 +105,7 @@ function buildCartPayload(product, color, size, storage, model) {
   if (model?.image) image = model.image;
   else if (storage?.image) image = storage.image;
   else if (color?.mainImage) image = color.mainImage;
+  else if (product?.mainImage) image = product.mainImage;
   else if (product?.image) image = product.image;
 
   return {

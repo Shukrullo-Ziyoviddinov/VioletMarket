@@ -18,6 +18,8 @@ const { Wishlist } = require("./wishlist");
 const { SellerSubscription } = require("./sellerSubscription");
 const { Comment } = require("./comment");
 const { SellerRatingSummary } = require("./sellerRatingSummary");
+const { ProductSectionMetric } = require("./productSectionMetric");
+const { Counter } = require("./counter");
 
 module.exports = {
   Product,
@@ -40,4 +42,6 @@ module.exports = {
   SellerSubscription,
   Comment,
   SellerRatingSummary,
+  ProductSectionMetric,
+  Counter,
 };

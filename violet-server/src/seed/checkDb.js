@@ -18,6 +18,8 @@ const {
   UzWarehouseLocale,
   ProductPolicyBlock,
   FlashSaleRuleConfig,
+  ProductSectionMetric,
+  Counter,
 } = require("../models");
 
 async function main() {
@@ -50,6 +52,8 @@ async function main() {
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),
     product_policy_blocks: await ProductPolicyBlock.countDocuments(),
     flash_sale_rule_configs: await FlashSaleRuleConfig.countDocuments(),
+    product_section_metrics: await ProductSectionMetric.countDocuments(),
+    counters: await Counter.countDocuments(),
     products: await Product.countDocuments(),
   };
 

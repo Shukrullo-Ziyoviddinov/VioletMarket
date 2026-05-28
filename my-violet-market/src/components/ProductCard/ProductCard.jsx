@@ -25,7 +25,7 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
   }, [product?.id, loadCommentsForProduct]);
 
   const firstColor = product.colors?.[0];
-  const imageSrc = firstColor?.mainImage || '/img/no-image.png';
+  const imageSrc = product.image || product.mainImage || firstColor?.mainImage || '/img/no-image.png';
   const price = firstColor?.price || product.price || 'Noma\'lum';
   const originalPrice = firstColor?.originalPrice || product.originalPrice || null;
 
@@ -197,4 +197,3 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
 };
 
 export default ProductCard;
-

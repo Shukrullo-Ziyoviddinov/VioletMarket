@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const videoBannerItemSchema = new mongoose.Schema(
   {
@@ -14,6 +15,10 @@ const videoBannerItemSchema = new mongoose.Schema(
     id: false,
   }
 );
+
+videoBannerItemSchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "video_banner_item_id");
+});
 
 const VideoBannerItem = mongoose.model("VideoBannerItem", videoBannerItemSchema);
 

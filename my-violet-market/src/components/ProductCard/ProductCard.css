@@ -66,19 +66,29 @@
 }
 
 .product-label {
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 2px 7px;
+  font-size: 10px;
   font-weight: 600;
   color: #fff;
   border-radius: 10px;
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  white-space: nowrap;
   background-color: var(--label-bg, #666);
 }
 
 .product-label i {
   font-size: 14px;
+  line-height: 1;
+}
+
+.product-label > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 /* Animated Hourglass */
@@ -94,7 +104,7 @@
 .animated-hourglass::before {
   content: '⏳';
   display: block;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 1;
   animation: hourglass-flip 4s ease-in-out infinite;
   transform-origin: center;

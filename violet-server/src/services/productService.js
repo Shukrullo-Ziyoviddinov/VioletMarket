@@ -3,6 +3,14 @@ const {
   decorateProductsWithFlashSaleMeta,
   decorateSingleProductWithFlashSaleMeta,
 } = require("./flashSale/flashSaleSignalsService");
+const {
+  getSectionMetricsByProductIds,
+  sortProductsBySectionRanking,
+} = require("./recommendation/recommendationRankingService");
+const {
+  buildProductDetailSalesProgressMeta,
+  decorateWithProductDetailSalesProgressMeta,
+} = require("./productDetail/productDetailSalesProgressService");
 
 function toNonNegativeInt(value) {
   const n = Number(value);
@@ -28,7 +36,9 @@ function sumStockMapValues(stockMap) {
   let total = 0;
   let found = false;
   for (const value of Object.values(stockMap)) {
-    const qty = toNonNegativeInt(value);
+    const qty = toNonNegativeInt(
+      value && typeof value === "object" && !Array.isArray(value) ? value.quantity : value,
+    );
     if (qty == null) continue;
     total += qty;
     found = true;
@@ -36,56 +46,59 @@ function sumStockMapValues(stockMap) {
   return found ? total : null;
 }
 
+function pickBestCandidate(candidates) {
+  const values = (Array.isArray(candidates) ? candidates : [])
+    .map((value) => {
+      if (value == null || value === "") return null;
+      const num = Number(value);
+      if (!Number.isFinite(num)) return null;
+      return Math.max(0, num);
+    })
+    .filter((value) => value != null);
+  if (values.length === 0) return null;
+  return Math.max(...values);
+}
+
 function computeEffectiveQuantity(product) {
+  const rootVariantCandidate = pickBestCandidate([
+    sumListQuantity(product?.models),
+    sumListQuantity(product?.storage),
+    sumStockMapValues(product?.modelStock),
+    sumStockMapValues(product?.storageStock),
+    sumStockMapValues(product?.sizeStock),
+    sumStockMapValues(product?.colorStock),
+  ]);
+
   const colors = Array.isArray(product?.colors) ? product.colors : [];
   if (colors.length > 0) {
     let total = 0;
     let found = false;
     for (const color of colors) {
-      const fromColorModels = sumListQuantity(color?.models);
-      if (fromColorModels != null) {
-        total += fromColorModels;
+      const colorVariantCandidate = pickBestCandidate([
+        sumListQuantity(color?.models),
+        sumListQuantity(color?.storage),
+        sumStockMapValues(color?.modelStock),
+        sumStockMapValues(color?.storageStock),
+        sumStockMapValues(color?.sizeStock),
+      ]);
+      if (colorVariantCandidate != null) {
+        total += colorVariantCandidate;
         found = true;
         continue;
       }
-      const fromColorStorage = sumListQuantity(color?.storage);
-      if (fromColorStorage != null) {
-        total += fromColorStorage;
-        found = true;
-        continue;
-      }
-      const fromModelStock = sumStockMapValues(color?.modelStock);
-      if (fromModelStock != null) {
-        total += fromModelStock;
-        found = true;
-        continue;
-      }
-      const fromStorageStock = sumStockMapValues(color?.storageStock);
-      if (fromStorageStock != null) {
-        total += fromStorageStock;
-        found = true;
-        continue;
-      }
-      const fromSizeStock = sumStockMapValues(color?.sizeStock);
-      if (fromSizeStock != null) {
-        total += fromSizeStock;
-        found = true;
-        continue;
-      }
-      const fromColorQuantity = toNonNegativeInt(color?.quantity);
-      if (fromColorQuantity != null) {
-        total += fromColorQuantity;
+      const colorQty = toNonNegativeInt(color?.quantity);
+      if (colorQty != null) {
+        total += colorQty;
         found = true;
       }
     }
     if (found) return total;
   }
 
-  const fromModels = sumListQuantity(product?.models);
-  if (fromModels != null) return fromModels;
+  if (rootVariantCandidate != null) return rootVariantCandidate;
 
-  const fromStorage = sumListQuantity(product?.storage);
-  if (fromStorage != null) return fromStorage;
+  const fromQuantity = toNonNegativeInt(product?.quantity);
+  if (fromQuantity != null) return fromQuantity;
 
   return 0;
 }
@@ -115,7 +128,10 @@ async function findAll() {
   const products = await Product.find().sort({ _id: -1 }).lean();
   const uniqueProducts = keepNewestProductPerId(products);
   const decorated = await decorateProductsWithFlashSaleMeta(uniqueProducts);
-  return decorateWithEffectiveQuantity(decorated);
+  const withEffectiveQty = decorateWithEffectiveQuantity(decorated);
+  const withDetailSalesMeta = decorateWithProductDetailSalesProgressMeta(withEffectiveQty);
+  const metricRows = await getSectionMetricsByProductIds(withDetailSalesMeta.map((p) => p?.id));
+  return sortProductsBySectionRanking(withDetailSalesMeta, metricRows);
 }
 
 async function findByProductId(id) {
@@ -125,13 +141,39 @@ async function findByProductId(id) {
   const rows = await Product.find({ id: num }).sort({ _id: -1 }).limit(1).lean();
   const decorated = await decorateSingleProductWithFlashSaleMeta(rows[0] || null);
   if (!decorated) return null;
+  const effectiveQuantity = computeEffectiveQuantity(decorated);
   return {
     ...decorated,
-    effectiveQuantity: computeEffectiveQuantity(decorated),
+    effectiveQuantity,
+    productDetailSalesMeta: buildProductDetailSalesProgressMeta({
+      ...decorated,
+      effectiveQuantity,
+    }),
+  };
+}
+
+async function createProduct(input) {
+  const payload = { ...(input && typeof input === "object" ? input : {}) };
+  delete payload.id; // qat'iy rejim: id faqat DB tomonidan beriladi
+
+  const created = await Product.create(payload);
+  const doc = created.toObject ? created.toObject() : created;
+  const decorated = await decorateSingleProductWithFlashSaleMeta(doc);
+  if (!decorated) return null;
+  const effectiveQuantity = computeEffectiveQuantity(decorated);
+
+  return {
+    ...decorated,
+    effectiveQuantity,
+    productDetailSalesMeta: buildProductDetailSalesProgressMeta({
+      ...decorated,
+      effectiveQuantity,
+    }),
   };
 }
 
 module.exports = {
   findAll,
   findByProductId,
+  createProduct,
 };

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { assignAutoNumberId } = require("./autoIncrement");
 
 const bannerSrcSchema = new mongoose.Schema(
   { uz: { type: String, required: true, trim: true }, ru: { type: String, required: true, trim: true } },
@@ -22,6 +23,10 @@ const homeBannerSlideSchema = new mongoose.Schema(
     id: false,
   }
 );
+
+homeBannerSlideSchema.pre("validate", async function autoAssignId() {
+  await assignAutoNumberId(this, "home_banner_slide_id");
+});
 
 const HomeBannerSlide = mongoose.model("HomeBannerSlide", homeBannerSlideSchema);
 
