@@ -279,7 +279,16 @@
     "clear": "Очистить",
     "fillAllFieldsRequired": "Все поля обязательны для заполнения",
     "payButton": "Оплатить",
-    "payComingSoon": "Платёжная система скоро будет доступна"
+    "confirmOrderButton": "Оформить заказ",
+    "payComingSoon": "Платёжная система скоро будет доступна",
+    "paymentSelectTitle": "Выбор платёжной системы",
+    "paymentPayme": "Payme",
+    "paymentClick": "Click",
+    "paymentOnDelivery": "Оплата при получении заказа",
+    "orderConfirmedTitle": "Заказ принят",
+    "orderConfirmedDesc": "Статус и дата доставки будут отображаться в приложении",
+    "orderConfirmedDeliveryTitle": "Violet Market Бесплатная доставка до адреса",
+    "orderConfirmedClose": "Продолжить"
   },
   "profile": {
     "title": "Профиль",

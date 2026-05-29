@@ -279,7 +279,16 @@
     "clear": "Tozalash",
     "fillAllFieldsRequired": "Barcha maydonlarni to'ldirish shart",
     "payButton": "To'lov qilish",
-    "payComingSoon": "To'lov tizimi tez orada ishga tushadi"
+    "confirmOrderButton": "Buyurtmani rasmiylashtirish",
+    "payComingSoon": "To'lov tizimi tez orada ishga tushadi",
+    "paymentSelectTitle": "To'lov tizimini tanlash",
+    "paymentPayme": "Payme",
+    "paymentClick": "Click",
+    "paymentOnDelivery": "Buyurtmani olganda to'lov qilish",
+    "orderConfirmedTitle": "Buyurtma qabul qilindi",
+    "orderConfirmedDesc": "Yetkazib berish holati va kuni ilovada ko'rinadi",
+    "orderConfirmedDeliveryTitle": "Violet Market Bepul manzilgacha yetkazish",
+    "orderConfirmedClose": "Davom etish"
   },
   "profile": {
     "title": "Profil",

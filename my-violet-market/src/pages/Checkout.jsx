@@ -10,8 +10,11 @@ import {
 } from '../utils/utils';
 import CheckoutAddressBlock from '../components/CheckoutAddressBlock';
 import CheckoutProductRow from '../components/CheckoutProductRow';
+import CheckoutPaymentSelect from '../components/CheckoutPaymentSelect';
 import CheckoutOrderSummary from '../components/CheckoutOrderSummary';
+import { CheckoutPaymentProvider } from '../contexts/CheckoutPaymentContext';
 import AddressModal from '../components/AddressModal';
+import OrderConfirmedModal from '../components/OrderConfirmedModal';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -27,6 +30,8 @@ const Checkout = () => {
     }
   });
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isOrderConfirmedOpen, setIsOrderConfirmedOpen] = useState(false);
+  const [orderConfirmedPayload, setOrderConfirmedPayload] = useState(null);
 
   const { userData } = useUser();
   const {
@@ -61,12 +66,24 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!cartReady) return;
-    if (cart.length === 0) {
+    if (cart.length === 0 && !isOrderConfirmedOpen) {
       navigate('/cart', { replace: true });
     }
-  }, [cartReady, cart.length, navigate]);
+  }, [cartReady, cart.length, navigate, isOrderConfirmedOpen]);
 
-  if (!cartReady || cart.length === 0) {
+  const handleOrderConfirmed = (payload) => {
+    setOrderConfirmedPayload(payload);
+    setIsOrderConfirmedOpen(true);
+    window.dispatchEvent(new Event('appDataRefreshRequested'));
+  };
+
+  const handleOrderConfirmedClose = () => {
+    setIsOrderConfirmedOpen(false);
+    setOrderConfirmedPayload(null);
+    navigate('/', { replace: true });
+  };
+
+  if (!cartReady || (cart.length === 0 && !isOrderConfirmedOpen)) {
     return null;
   }
 
@@ -83,14 +100,32 @@ const Checkout = () => {
               <div className="checkout-profile-row__icon">
                 <i className="bx bx-user" aria-hidden="true" />
               </div>
-              <span className="checkout-profile-row__label">
-                {i18n.t('checkout.buyer')}
-              </span>
-              <span className="checkout-profile-row__text">
-                {[userData.firstName, userData.lastName, userData.phone]
-                  .filter(Boolean)
-                  .join(' · ') || '—'}
-              </span>
+              <div className="checkout-profile-row__content">
+                <span className="checkout-profile-row__label">
+                  {i18n.t('checkout.buyer')}
+                </span>
+                <div className="checkout-profile-row__text">
+                  <div className="checkout-profile-row__name">
+                    {userData.firstName?.trim() || userData.lastName?.trim() ? (
+                      <>
+                        {userData.firstName?.trim() && (
+                          <span>{userData.firstName.trim()}</span>
+                        )}
+                        {userData.lastName?.trim() && (
+                          <span>{userData.lastName.trim()}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </div>
+                  {userData.phone?.trim() && (
+                    <span className="checkout-profile-row__phone">
+                      {userData.phone.trim()}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -111,15 +146,20 @@ const Checkout = () => {
         </div>
 
         <aside className="checkout-sidebar">
-          <CheckoutOrderSummary
-            productTypesCount={cart.length}
-            totalItems={getTotalItems()}
-            productsSum={totalProductPrice}
-            deliveryPrice={deliveryPrice}
-            cargoPrice={cargoPrice}
-            totalSum={finalTotal}
-            hasAddress={!!(savedAddress && (savedAddress.addressLine || savedAddress.formatted))}
-          />
+          <CheckoutPaymentProvider>
+            <CheckoutPaymentSelect />
+            <CheckoutOrderSummary
+              productTypesCount={cart.length}
+              totalItems={getTotalItems()}
+              productsSum={totalProductPrice}
+              deliveryPrice={deliveryPrice}
+              cargoPrice={cargoPrice}
+              totalSum={finalTotal}
+              hasAddress={!!(savedAddress && (savedAddress.addressLine || savedAddress.formatted))}
+              address={savedAddress}
+              onOrderConfirmed={handleOrderConfirmed}
+            />
+          </CheckoutPaymentProvider>
         </aside>
       </div>
 
@@ -128,6 +168,13 @@ const Checkout = () => {
         onClose={() => setIsAddressModalOpen(false)}
         onSave={handleSaveAddress}
         initialAddress={savedAddress}
+      />
+
+      <OrderConfirmedModal
+        isOpen={isOrderConfirmedOpen}
+        onClose={handleOrderConfirmedClose}
+        addressText={orderConfirmedPayload?.addressText || ''}
+        cartItems={orderConfirmedPayload?.cartSnapshot || []}
       />
     </div>
   );

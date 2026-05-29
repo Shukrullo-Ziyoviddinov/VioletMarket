@@ -11,7 +11,7 @@
   padding: 24px 16px;
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 24px;
+  gap: 10px;
 }
 
 .checkout-main {
@@ -28,19 +28,19 @@
 }
 
 .checkout-section_address {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .checkout-profile-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
   margin-top: 12px;
-  padding: 16px 20px;
+  padding: 5px 10px;
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
+  flex-wrap: nowrap;
 }
 
 .checkout-profile-row__icon {
@@ -56,22 +56,51 @@
   flex-shrink: 0;
 }
 
+.checkout-profile-row__content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
 .checkout-profile-row__label {
   font-size: 0.9rem;
   color: #555;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .checkout-profile-row__text {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #2c3e50;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   flex: 1;
   min-width: 0;
 }
 
+.checkout-profile-row__name {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.checkout-profile-row__phone {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
 .checkout-section__title {
-  margin: 0 0 16px 0;
+  margin: 0 0 5px 0;
   font-size: 1.1rem;
   color: #2c3e50;
 }

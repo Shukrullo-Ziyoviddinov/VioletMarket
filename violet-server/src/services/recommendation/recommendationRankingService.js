@@ -24,6 +24,23 @@ function buildMetricIndex(rows) {
   return index;
 }
 
+/** Barcha bo'limlar bo'yicha yig'ilgan sotuv (Trenddagilar tab uchun). */
+function buildGlobalMetricIndex(rows) {
+  const index = new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const productId = Number(row?.productId);
+    if (!Number.isFinite(productId)) continue;
+    const soldCount = toNonNegativeInt(row?.soldCount, 0);
+    const lastSoldAtMs = new Date(row?.lastSoldAt || 0).getTime() || 0;
+    const prev = index.get(productId) || { soldCount: 0, lastSoldAtMs: 0 };
+    index.set(productId, {
+      soldCount: prev.soldCount + soldCount,
+      lastSoldAtMs: Math.max(prev.lastSoldAtMs, lastSoldAtMs),
+    });
+  }
+  return index;
+}
+
 function isOutOfStock(product) {
   const qty = Number(product?.effectiveQuantity);
   return Number.isFinite(qty) ? qty <= 0 : false;
@@ -104,6 +121,67 @@ function sortProductsBySectionRanking(products, metricsRows) {
   return out;
 }
 
+function compareProductsByGlobalRanking(a, b, aMetric, bMetric, aIdx, bIdx) {
+  const aOut = isOutOfStock(a);
+  const bOut = isOutOfStock(b);
+  if (aOut !== bOut) return aOut ? 1 : -1;
+
+  const aSold = toNonNegativeNumber(aMetric?.soldCount, 0);
+  const bSold = toNonNegativeNumber(bMetric?.soldCount, 0);
+  if (aSold !== bSold) return bSold - aSold;
+
+  const aScore = computeRankingScore(a, aMetric);
+  const bScore = computeRankingScore(b, bMetric);
+  if (aScore !== bScore) return bScore - aScore;
+
+  const aLast = aMetric?.lastSoldAtMs ?? 0;
+  const bLast = bMetric?.lastSoldAtMs ?? 0;
+  if (aLast !== bLast) return bLast - aLast;
+
+  return aIdx - bIdx;
+}
+
+function sortProductsByGlobalRanking(products, metricsRows) {
+  const list = Array.isArray(products) ? products : [];
+  if (list.length <= 1) return list;
+
+  const globalIndex = buildGlobalMetricIndex(metricsRows);
+  return [...list]
+    .map((product, idx) => ({ product, idx }))
+    .sort((a, b) => {
+      const aMetric = globalIndex.get(Number(a.product?.id)) || { soldCount: 0, lastSoldAtMs: 0 };
+      const bMetric = globalIndex.get(Number(b.product?.id)) || { soldCount: 0, lastSoldAtMs: 0 };
+      return compareProductsByGlobalRanking(
+        a.product,
+        b.product,
+        aMetric,
+        bMetric,
+        a.idx,
+        b.idx,
+      );
+    })
+    .map((entry) => entry.product);
+}
+
+function attachGlobalRankingMeta(products, metricsRows) {
+  const list = Array.isArray(products) ? products : [];
+  const globalIndex = buildGlobalMetricIndex(metricsRows);
+
+  return list.map((product, sortIndex) => {
+    const productId = Number(product?.id);
+    const metric = globalIndex.get(productId) || { soldCount: 0, lastSoldAtMs: 0 };
+    return {
+      ...product,
+      globalRankingMeta: {
+        soldCount: toNonNegativeNumber(metric.soldCount, 0),
+        lastSoldAtMs: metric.lastSoldAtMs || 0,
+        score: computeRankingScore(product, metric),
+        sortIndex,
+      },
+    };
+  });
+}
+
 async function getSectionMetricsByProductIds(productIds) {
   const ids = (Array.isArray(productIds) ? productIds : [])
     .map((id) => Number(id))
@@ -114,6 +192,11 @@ async function getSectionMetricsByProductIds(productIds) {
     .lean();
 }
 
+/**
+ * SOTILDI metrikalarini yozadi (soldCount, lastSoldAt).
+ * Hozir checkoutCartForUser ichidan chaqiriladi.
+ * Keyinchalik real to'lov tasdiqlanganda chaqirilishi kerak — checkout emas.
+ */
 async function recordCheckoutSales(metrics) {
   const list = Array.isArray(metrics) ? metrics : [];
   if (list.length === 0) return;
@@ -145,5 +228,7 @@ async function recordCheckoutSales(metrics) {
 module.exports = {
   getSectionMetricsByProductIds,
   sortProductsBySectionRanking,
+  sortProductsByGlobalRanking,
+  attachGlobalRankingMeta,
   recordCheckoutSales,
 };

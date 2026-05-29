@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../contexts/CartContext';
@@ -12,6 +12,7 @@ import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import { SkeletonCartCargoPanel, CartPageSkeleton } from '../components/SkeletonLoader';
 import { useUser } from '../contexts/UserContext';
 import { useToast } from '../contexts/ToastContext';
+import { getCartItemKey } from '../utils/cartItemProductId';
 import './Cart.css';
 
 const Cart = () => {
@@ -21,6 +22,7 @@ const Cart = () => {
   const [isDeliveryInfoModalOpen, setIsDeliveryInfoModalOpen] = useState(false);
   const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
   const [isClearLoading, setIsClearLoading] = useState(false);
+  const [highlightedCartIndex, setHighlightedCartIndex] = useState(null);
   const { showToast } = useToast();
   const { authToken, authLoading } = useUser();
   const {
@@ -58,6 +60,19 @@ const Cart = () => {
     return totalProductPrice + calculatedDeliveryPrice;
   }, [totalProductPrice, selectedDeliveryType, deliveryPrices]);
 
+  const handleCargoProductClick = useCallback((item) => {
+    const index = cart.findIndex((cartItem) => getCartItemKey(cartItem) === getCartItemKey(item));
+    if (index < 0) return;
+
+    const el = document.getElementById(`cart-item-${index}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    setHighlightedCartIndex(index);
+    window.setTimeout(() => setHighlightedCartIndex(null), 2200);
+  }, [cart]);
+
   const hasAuthToken =
     Boolean(authToken) || (authLoading && Boolean(localStorage.getItem('authToken')));
   const showCartSkeleton = hasAuthToken && (authLoading || cartLoading);
@@ -94,7 +109,11 @@ const Cart = () => {
       <div className="cart-container">
         <div className="cart-items-section">
           {cart.map((item, index) => (
-            <div key={item.cartItemId || `cart-${index}`} className="cart-item">
+            <div
+              key={item.cartItemId || `cart-${index}`}
+              id={`cart-item-${index}`}
+              className={`cart-item${highlightedCartIndex === index ? ' cart-item--highlight' : ''}`}
+            >
               <img src={item.image} alt={getLocalizedText(item.title, lang)} />
               <div className="cart-item-info">
                 <div className="cart-item-title">{getLocalizedText(item.title, lang)}</div>
@@ -210,7 +229,7 @@ const Cart = () => {
             </div>
           </div>
 
-          {appDataLoading ? <SkeletonCartCargoPanel /> : <CargoSummary />}
+          {appDataLoading ? <SkeletonCartCargoPanel /> : <CargoSummary onCargoProductClick={handleCargoProductClick} />}
 
           <div className="cart-actions">
             <button

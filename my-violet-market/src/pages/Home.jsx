@@ -15,6 +15,7 @@ import { SkeletonPulse } from '../components/SkeletonLoader';
 import HomeFeedSwitch from '../components/HomeFeedSwitch/HomeFeedSwitch';
 import FlashSaleSection from '../components/FlashSaleSection/FlashSaleSection';
 import FlashSaleStatsRow from '../components/FlashSaleSection/FlashSaleStatsRow';
+import { sortProductsByGlobalRanking } from '../utils/globalProductRanking';
 import './Home.css';
 
 const getNavbarCategoryId = (categoryName, navbarItems) => {
@@ -90,13 +91,12 @@ const Home = () => {
     [homeBannerData, navbarItems, categoriyCountries, categoriesBrend]
   );
   const [activeHomeFeed, setActiveHomeFeed] = useState('recommended');
-  const flashSaleProducts = useMemo(
-    () =>
-      (allProducts || []).filter(
-        (product) => product?.flashSaleMeta?.flashSaleActive === true,
-      ),
-    [allProducts],
-  );
+  const flashSaleProducts = useMemo(() => {
+    const active = (allProducts || []).filter(
+      (product) => product?.flashSaleMeta?.flashSaleActive === true,
+    );
+    return sortProductsByGlobalRanking(active);
+  }, [allProducts]);
 
   if (error) {
     return (

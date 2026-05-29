@@ -6,6 +6,7 @@ import Filters from '../components/Filters';
 import { SkeletonPulse } from '../components/SkeletonLoader';
 import { getProductPriceNumber } from '../utils/utils';
 import { isUzWarehouseProduct } from '../utils/warehouseProduct';
+import { sortProductsByGlobalRanking } from '../utils/globalProductRanking';
 import './ProductPage.css';
 
 const filterByBrand = (list, brands) => {
@@ -149,7 +150,7 @@ const UzWarehousePage = () => {
       list = filterByLanguage(list, selectedLanguages);
       list = filterByGenre(list, selectedGenres);
     }
-    return list;
+    return sortProductsByGlobalRanking(list);
   }, [productsAfterPrice, selectedBrands, selectedCountries, selectedColors, isBooksCategory, selectedLanguages, selectedGenres]);
 
   const productsAfterBrand = useMemo(

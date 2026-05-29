@@ -2,11 +2,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 5px 10px;
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .checkout-address-block__icon {

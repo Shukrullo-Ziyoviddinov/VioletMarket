@@ -6,6 +6,7 @@ const {
 const {
   getSectionMetricsByProductIds,
   sortProductsBySectionRanking,
+  attachGlobalRankingMeta,
 } = require("./recommendation/recommendationRankingService");
 const {
   buildProductDetailSalesProgressMeta,
@@ -131,7 +132,8 @@ async function findAll() {
   const withEffectiveQty = decorateWithEffectiveQuantity(decorated);
   const withDetailSalesMeta = decorateWithProductDetailSalesProgressMeta(withEffectiveQty);
   const metricRows = await getSectionMetricsByProductIds(withDetailSalesMeta.map((p) => p?.id));
-  return sortProductsBySectionRanking(withDetailSalesMeta, metricRows);
+  const withGlobalRankingMeta = attachGlobalRankingMeta(withDetailSalesMeta, metricRows);
+  return sortProductsBySectionRanking(withGlobalRankingMeta, metricRows);
 }
 
 async function findByProductId(id) {

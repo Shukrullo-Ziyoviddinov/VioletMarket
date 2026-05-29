@@ -6,3 +6,12 @@ export function getCartItemProductId(item) {
   const num = Number(raw);
   return Number.isFinite(num) ? num : null;
 }
+
+/** Savat elementini DOM / ro'yxatda bog'lash uchun kalit */
+export function getCartItemKey(item) {
+  if (!item) return '';
+  return (
+    item.cartItemId ||
+    `${item.id ?? item.productId ?? ''}-${item.color ?? ''}-${item.size ?? ''}-${item.storage ?? ''}-${item.model ?? ''}`
+  );
+}

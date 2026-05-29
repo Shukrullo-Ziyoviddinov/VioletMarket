@@ -42,6 +42,8 @@ const AppContent = () => {
   useEffect(() => {
     if (location.pathname !== '/') return;
 
+    // SOTILDI MODAL (.test-order-modal-content) — bosh sahifada ochish (checkout/navigate keyin).
+    // Keyinchalik real to'lov tasdiqlanganda shu oqim boshqa servisdan keladi.
     if (pendingOpenOnHome) {
       openModal({
         cartSnapshot: pendingOpenOnHome.cartSnapshot,
@@ -116,7 +118,7 @@ const AppContent = () => {
           onClose={() => {}}
         />
       )}
-      {/* Test Order Modal - Global, appears on any page */}
+      {/* SOTILDI MODAL (.test-order-modal-content) — UI bloki; keyin real to'lov joyiga ko'chiriladi */}
       <TestOrderModal
         isOpen={isOpen}
         onClose={closeModal}

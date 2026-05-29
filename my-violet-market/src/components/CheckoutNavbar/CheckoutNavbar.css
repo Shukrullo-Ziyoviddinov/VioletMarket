@@ -95,3 +95,10 @@
     font-size: 1.1rem;
   }
 }
+
+@media (max-width: 480px) {
+  .checkout-navbar__container {
+    padding: 5px 1px;
+    gap: 5px;
+  }
+}

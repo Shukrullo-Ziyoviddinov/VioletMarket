@@ -5,6 +5,7 @@ import { formatPrice, formatCargoPrice } from '../../utils/utils';
 import { useCart } from '../../contexts/CartContext';
 import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useCheckoutPayment } from '../../contexts/CheckoutPaymentContext';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './CheckoutOrderSummary.css';
 
@@ -18,9 +19,12 @@ const CheckoutOrderSummary = ({
   cargoPrice,
   totalSum,
   hasAddress,
+  address,
+  onOrderConfirmed,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isPayOnDelivery } = useCheckoutPayment();
   const { cart, checkoutCart, refreshCart } = useCart();
   const { scheduleOpenOnHome } = useTestOrderModal();
   const { showToast } = useToast();
@@ -31,8 +35,20 @@ const CheckoutOrderSummary = ({
     setIsPayLoading(true);
     try {
       const cartSnapshot = [...cart];
+
+      if (isPayOnDelivery) {
+        const addressText = address?.addressLine || address?.formatted || '';
+        await checkoutCart();
+        onOrderConfirmed?.({ cartSnapshot, addressText });
+        return;
+      }
+
       await checkoutCart();
       window.dispatchEvent(new Event('appDataRefreshRequested'));
+      // -------------------------------------------------------------------------
+      // SOTILDI MODAL (.test-order-modal-content) — hozir checkout dan keyin ochiladi.
+      // Keyinchalik real to'lov muvaffaqiyatli bo'lganda boshqa joydan chaqiriladi.
+      // -------------------------------------------------------------------------
       scheduleOpenOnHome({
         cartSnapshot,
       });
@@ -91,7 +107,7 @@ const CheckoutOrderSummary = ({
         disabled={!hasAddress || isPayLoading}
       >
         <ButtonLoader isLoading={isPayLoading}>
-          {t('checkout.payButton')}
+          {t(isPayOnDelivery ? 'checkout.confirmOrderButton' : 'checkout.payButton')}
         </ButtonLoader>
       </button>
     </div>

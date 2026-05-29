@@ -138,6 +138,11 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
 
   if (!isOpen) return null;
 
+  // -------------------------------------------------------------------------
+  // SOTILDI MODAL — .test-order-modal-content bloki.
+  // Hozir checkout tasdiqlanganda ko'rsatiladi (test/review oqimi).
+  // Keyinchalik real to'lov muvaffaqiyatli bo'lganda boshqa joydan ochiladi.
+  // -------------------------------------------------------------------------
   const modalContent = (
     <div className="test-order-modal-overlay" onClick={handleClose}>
       <div className="test-order-modal-content" onClick={(e) => e.stopPropagation()}>

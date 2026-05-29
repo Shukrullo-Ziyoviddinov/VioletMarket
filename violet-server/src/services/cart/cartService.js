@@ -405,6 +405,15 @@ async function addCartItem(userId, payload) {
       existing.originalPrice = Number(payload.originalPrice) || 0;
     }
     if (payload.image) existing.image = payload.image;
+    const nextCountries = Array.isArray(payload.countries)
+      ? payload.countries
+      : product.countries || [];
+    if (nextCountries.length > 0) {
+      existing.countries = nextCountries;
+    }
+    if (payload.weight !== undefined || product.weight !== undefined) {
+      existing.weight = Number(payload.weight) || product.weight || 300;
+    }
     if (!Number.isFinite(existing.urgencyStockLeft)) {
       existing.urgencyStockLeft = await pickDistinctUrgencyStock(userId, existing._id);
     }
@@ -584,6 +593,12 @@ async function checkoutCartForUser(userId) {
     );
   }
 
+  // -------------------------------------------------------------------------
+  // SOTILDI — hozir checkout tasdiqlanganda ishlaydi.
+  // Keyinchalik bu qism real to'lov muvaffaqiyatli bo'lganda chaqiriladi
+  // (Payme/Click webhook yoki to'lov tasdiqlash servisi). Checkout o'zi emas.
+  // flashSaleSoldCount va stok kamayishi shu yerda yangilanadi.
+  // -------------------------------------------------------------------------
   for (const [productId, requestedQty] of requestedByProductId.entries()) {
     const hasVariantStock = hasVariantStockByProductId.get(productId) === true;
     let result;
@@ -638,6 +653,8 @@ async function checkoutCartForUser(userId) {
     );
   }
 
+  // SOTILDI — ranking/tartiblash metrikalari (product_section_metrics).
+  // Hozir checkout bilan birga yoziladi; keyin real to'lov tasdiqlanganda ko'chiriladi.
   const rankingMetrics = [];
   for (const [productId, requestedQty] of requestedByProductId.entries()) {
     const product = productMap.get(productId);
