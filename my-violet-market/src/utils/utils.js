@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from '../config/api';
+
 export const getPortalContainer = () =>
   document.getElementById('modal-root') || document.body;
 
@@ -184,7 +186,15 @@ export const normalizeImagePath = (imagePath) => {
   
   // Agar http yoki https bo'lsa, qaytarish
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+
+  const isUploadPath = imagePath.startsWith('/uploads/') || imagePath.startsWith('uploads/');
   
+  // Admin orqali yuklangan rasmlar backend domenidan ochilishi kerak
+  if (isUploadPath) {
+    const normalizedUploadPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    return `${getApiBaseUrl()}${normalizedUploadPath}`;
+  }
+
   // Agar / bilan boshlansa, qaytarish
   if (imagePath.startsWith('/')) return imagePath;
   
