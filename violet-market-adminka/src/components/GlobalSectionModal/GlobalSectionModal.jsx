@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
 import {
+  createNavbarItem,
   createNavbarSection,
   deleteNavbarItem,
   deleteNavbarSection,
@@ -41,6 +42,19 @@ function buildDefaultNavbarItem(index = 1) {
     nameUz: '',
     nameRu: '',
     category: '',
+    image: '',
+    descriptionUz: '',
+    descriptionRu: '',
+  };
+}
+
+function buildEmptyItemDraft(sectionId) {
+  return {
+    sectionId,
+    itemId: null,
+    category: '',
+    nameUz: '',
+    nameRu: '',
     image: '',
     descriptionUz: '',
     descriptionRu: '',
@@ -94,6 +108,9 @@ function NavbarCategoryForm({ visible }) {
   const [updating, setUpdating] = useState(false);
   const [openCreateCategoryItemId, setOpenCreateCategoryItemId] = useState(null);
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [addingItemSectionId, setAddingItemSectionId] = useState(null);
+  const [addingItemDraft, setAddingItemDraft] = useState(null);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
 
   const handleUploadStateChange = (isUploading) => {
@@ -202,6 +219,11 @@ function NavbarCategoryForm({ visible }) {
     if (!ok) return;
     try {
       await deleteNavbarSection(sectionId);
+      if (addingItemSectionId === sectionId) {
+        setAddingItemSectionId(null);
+        setAddingItemDraft(null);
+        setIsAddCategoryOpen(false);
+      }
       await loadSections();
     } catch (err) {
       setError(err.message || 'Section o‘chmadi');
@@ -223,6 +245,9 @@ function NavbarCategoryForm({ visible }) {
     setEditingSectionId(section.id);
     setEditingTitleUz(section?.title?.uz || '');
     setEditingTitleRu(section?.title?.ru || '');
+    setAddingItemSectionId(null);
+    setAddingItemDraft(null);
+    setIsAddCategoryOpen(false);
   };
 
   const cancelSectionEdit = () => {
@@ -264,12 +289,69 @@ function NavbarCategoryForm({ visible }) {
       descriptionRu: item?.description?.ru || '',
     });
     setIsEditCategoryOpen(false);
+    setAddingItemSectionId(null);
+    setAddingItemDraft(null);
+    setIsAddCategoryOpen(false);
   };
 
   const cancelItemEdit = () => {
     setEditingItemKey('');
     setEditingItemDraft(null);
     setIsEditCategoryOpen(false);
+  };
+
+  const startAddItem = (sectionId) => {
+    setAddingItemSectionId(sectionId);
+    setAddingItemDraft(buildEmptyItemDraft(sectionId));
+    setIsAddCategoryOpen(false);
+    setEditingItemKey('');
+    setEditingItemDraft(null);
+    setIsEditCategoryOpen(false);
+    setError('');
+  };
+
+  const cancelAddItem = () => {
+    setAddingItemSectionId(null);
+    setAddingItemDraft(null);
+    setIsAddCategoryOpen(false);
+  };
+
+  const saveAddItem = async () => {
+    if (!addingItemDraft || !addingItemSectionId) return;
+
+    const payload = {
+      category: addingItemDraft.category.trim(),
+      name: {
+        uz: addingItemDraft.nameUz.trim(),
+        ru: addingItemDraft.nameRu.trim(),
+      },
+      image: addingItemDraft.image.trim(),
+      description: {
+        uz: addingItemDraft.descriptionUz.trim(),
+        ru: addingItemDraft.descriptionRu.trim(),
+      },
+    };
+
+    if (!payload.category || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
+      setError("Yangi itemda category, name va description maydonlari to'liq bo'lishi kerak");
+      return;
+    }
+    if (!payload.image) {
+      setError("Yangi itemda image yuklanishi shart");
+      return;
+    }
+
+    setUpdating(true);
+    setError('');
+    try {
+      await createNavbarItem(addingItemSectionId, payload);
+      await loadSections();
+      cancelAddItem();
+    } catch (err) {
+      setError(err.message || "Yangi item qo'shishda xatolik");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const saveItemEdit = async () => {
@@ -465,6 +547,15 @@ function NavbarCategoryForm({ visible }) {
                   </div>
                 </div>
                 <div className="global-section-modal__saved-actions">
+                  {editingSectionId !== section.id ? (
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startAddItem(section.id)}
+                    >
+                      Item qo'shish
+                    </button>
+                  ) : null}
                   {editingSectionId === section.id ? (
                     <>
                       <button
@@ -521,6 +612,107 @@ function NavbarCategoryForm({ visible }) {
                       onChange={(e) => setEditingTitleRu(e.target.value)}
                     />
                   </label>
+                </div>
+              ) : null}
+
+              {addingItemSectionId === section.id && addingItemDraft ? (
+                <div className="global-section-modal__saved-item-edit global-section-modal__edit-block">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field global-section-modal__field--full">
+                      <span className="global-section-modal__label">category</span>
+                      <CategoryPicker
+                        value={addingItemDraft.category}
+                        isOpen={isAddCategoryOpen}
+                        onToggle={() => setIsAddCategoryOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, category: selectedValue } : prev,
+                          );
+                          setIsAddCategoryOpen(false);
+                        }}
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.uz</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={addingItemDraft.nameUz}
+                        onChange={(e) =>
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, nameUz: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.ru</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={addingItemDraft.nameRu}
+                        onChange={(e) =>
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, nameRu: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field global-section-modal__field--full">
+                      <ImageUploadField
+                        label="image"
+                        value={addingItemDraft.image}
+                        onChange={(uploadedPath) =>
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, image: uploadedPath } : prev,
+                          )
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">description.uz</span>
+                      <textarea
+                        className="global-section-modal__textarea"
+                        rows={3}
+                        value={addingItemDraft.descriptionUz}
+                        onChange={(e) =>
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, descriptionUz: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">description.ru</span>
+                      <textarea
+                        className="global-section-modal__textarea"
+                        rows={3}
+                        value={addingItemDraft.descriptionRu}
+                        onChange={(e) =>
+                          setAddingItemDraft((prev) =>
+                            prev ? { ...prev, descriptionRu: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveAddItem}
+                      disabled={updating || activeUploads > 0}
+                    >
+                      {activeUploads > 0 ? 'Rasm yuklanmoqda...' : "Yangi itemni saqlash"}
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelAddItem}
+                    >
+                      Bekor
+                    </button>
+                  </div>
                 </div>
               ) : null}
 

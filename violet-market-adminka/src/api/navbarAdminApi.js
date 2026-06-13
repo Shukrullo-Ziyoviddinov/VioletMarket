@@ -63,6 +63,16 @@ export async function updateNavbarItem(sectionId, itemId, payload) {
   return data?.data;
 }
 
+export async function createNavbarItem(sectionId, payload) {
+  const res = await fetch(apiUrl(`/api/admin/navbar/${sectionId}/items`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
 export function toAbsoluteImageUrl(pathValue) {
   if (!pathValue) return '';
   if (/^https?:\/\//i.test(pathValue)) return pathValue;
