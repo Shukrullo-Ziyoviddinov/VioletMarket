@@ -38,10 +38,6 @@ function normalizeNavbarItem(raw, index) {
     throw new HttpError(400, `${itemLabel}.category to'ldirilishi shart`, "VALIDATION_ERROR");
   }
 
-  if (raw.id != null && String(raw.id).trim() !== "") {
-    normalized.id = toInt(raw.id, `${itemLabel}.id`);
-  }
-
   return normalized;
 }
 
@@ -113,13 +109,14 @@ async function updateItem(sectionId, itemId, payload) {
   }
   const existing = section.items[index];
   const merged = {
-    id: existing.id,
     name: payload?.name ?? existing.name,
     category: payload?.category ?? existing.category,
     image: payload?.image ?? existing.image,
     description: payload?.description ?? existing.description,
   };
-  section.items[index] = normalizeNavbarItem(merged, index);
+  const normalized = normalizeNavbarItem(merged, index);
+  normalized.id = existing.id;
+  section.items[index] = normalized;
   await section.save();
   return mapSection(section);
 }

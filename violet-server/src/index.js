@@ -1,5 +1,7 @@
 require("./config/loadEnv")();
 
+const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 const config = require("./config");
@@ -7,9 +9,14 @@ const routes = require("./routes");
 const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
+const uploadDir = path.resolve(__dirname, "../public/uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
+app.use("/uploads", express.static(uploadDir));
 app.use("/", routes);
 app.use((req, res) => {
   res.status(404).json({

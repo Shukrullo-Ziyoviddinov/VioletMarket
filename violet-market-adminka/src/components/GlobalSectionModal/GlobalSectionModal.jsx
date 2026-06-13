@@ -6,7 +6,10 @@ import {
   deleteNavbarItem,
   deleteNavbarSection,
   fetchNavbarSections,
+  updateNavbarItem,
+  updateNavbarSection,
 } from '../../api/navbarAdminApi';
+import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import './GlobalSectionModal.css';
 
 const NAVBAR_CATEGORY_OPTIONS = [
@@ -34,7 +37,6 @@ const NAVBAR_CATEGORY_OPTIONS = [
 function buildDefaultNavbarItem(index = 1) {
   return {
     localId: Date.now() + index,
-    itemId: '',
     nameUz: '',
     nameRu: '',
     category: '',
@@ -52,6 +54,12 @@ function NavbarCategoryForm({ visible }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [editingSectionId, setEditingSectionId] = useState(null);
+  const [editingTitleUz, setEditingTitleUz] = useState('');
+  const [editingTitleRu, setEditingTitleRu] = useState('');
+  const [editingItemKey, setEditingItemKey] = useState('');
+  const [editingItemDraft, setEditingItemDraft] = useState(null);
+  const [updating, setUpdating] = useState(false);
 
   const loadSections = async () => {
     setLoading(true);
@@ -107,7 +115,6 @@ function NavbarCategoryForm({ visible }) {
     const title = { uz: sectionTitleUz.trim(), ru: sectionTitleRu.trim() };
     const normalizedItems = items
       .map((item) => ({
-        id: item.itemId === '' ? undefined : Number(item.itemId),
         category: item.category.trim(),
         name: { uz: item.nameUz.trim(), ru: item.nameRu.trim() },
         image: item.image.trim(),
@@ -165,6 +172,90 @@ function NavbarCategoryForm({ visible }) {
     }
   };
 
+  const startSectionEdit = (section) => {
+    setEditingSectionId(section.id);
+    setEditingTitleUz(section?.title?.uz || '');
+    setEditingTitleRu(section?.title?.ru || '');
+  };
+
+  const cancelSectionEdit = () => {
+    setEditingSectionId(null);
+    setEditingTitleUz('');
+    setEditingTitleRu('');
+  };
+
+  const saveSectionEdit = async (sectionId) => {
+    const uz = editingTitleUz.trim();
+    const ru = editingTitleRu.trim();
+    if (!uz || !ru) {
+      setError("Section title.uz va title.ru bo'sh bo'lmasligi kerak");
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateNavbarSection(sectionId, { title: { uz, ru } });
+      await loadSections();
+      cancelSectionEdit();
+    } catch (err) {
+      setError(err.message || "Section tahrirlashda xatolik");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const startItemEdit = (sectionId, item) => {
+    setEditingItemKey(`${sectionId}-${item.id}`);
+    setEditingItemDraft({
+      sectionId,
+      itemId: item.id,
+      category: item.category || '',
+      nameUz: item?.name?.uz || '',
+      nameRu: item?.name?.ru || '',
+      image: item.image || '',
+      descriptionUz: item?.description?.uz || '',
+      descriptionRu: item?.description?.ru || '',
+    });
+  };
+
+  const cancelItemEdit = () => {
+    setEditingItemKey('');
+    setEditingItemDraft(null);
+  };
+
+  const saveItemEdit = async () => {
+    if (!editingItemDraft) return;
+    const payload = {
+      category: editingItemDraft.category.trim(),
+      name: {
+        uz: editingItemDraft.nameUz.trim(),
+        ru: editingItemDraft.nameRu.trim(),
+      },
+      image: editingItemDraft.image.trim(),
+      description: {
+        uz: editingItemDraft.descriptionUz.trim(),
+        ru: editingItemDraft.descriptionRu.trim(),
+      },
+    };
+
+    if (!payload.category || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
+      setError("Itemda category, name va description maydonlari to'liq bo'lishi kerak");
+      return;
+    }
+
+    setUpdating(true);
+    setError('');
+    try {
+      await updateNavbarItem(editingItemDraft.sectionId, editingItemDraft.itemId, payload);
+      await loadSections();
+      cancelItemEdit();
+    } catch (err) {
+      setError(err.message || "Item tahrirlashda xatolik");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div className="global-section-modal__form-stack">
       <div className="global-section-modal__card">
@@ -217,15 +308,6 @@ function NavbarCategoryForm({ visible }) {
               </div>
 
               <div className="global-section-modal__grid global-section-modal__grid--3">
-                <label className="global-section-modal__field">
-                  <span className="global-section-modal__label">id</span>
-                  <input
-                    className="global-section-modal__input"
-                    type="number"
-                    value={item.itemId}
-                    onChange={(e) => handleItemChange(item.localId, 'itemId', e.target.value)}
-                  />
-                </label>
                 <label className="global-section-modal__field global-section-modal__field--full">
                   <span className="global-section-modal__label">category</span>
                   <select
@@ -260,12 +342,12 @@ function NavbarCategoryForm({ visible }) {
                   />
                 </label>
                 <label className="global-section-modal__field global-section-modal__field--full">
-                  <span className="global-section-modal__label">image</span>
-                  <input
-                    className="global-section-modal__input"
+                  <ImageUploadField
+                    label="image"
                     value={item.image}
-                    onChange={(e) => handleItemChange(item.localId, 'image', e.target.value)}
-                    placeholder="/img/texnika.jpg"
+                    onChange={(uploadedPath) =>
+                      handleItemChange(item.localId, 'image', uploadedPath)
+                    }
                   />
                 </label>
                 <label className="global-section-modal__field">
@@ -298,7 +380,7 @@ function NavbarCategoryForm({ visible }) {
             onClick={handleCreateSection}
             disabled={saving}
           >
-            {saving ? 'Saqlanmoqda...' : 'DB ga saqlash'}
+            {saving ? 'Saqlanmoqda...' : 'Saqlash'}
           </button>
         </div>
       </div>
@@ -327,34 +409,200 @@ function NavbarCategoryForm({ visible }) {
                     id: {section.id} | ru: {section.title?.ru || '-'}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="global-section-modal__danger-btn"
-                  onClick={() => handleDeleteSection(section.id)}
-                >
-                  <DeleteOutlined />
-                  <span>Section o'chirish</span>
-                </button>
+                <div className="global-section-modal__saved-actions">
+                  {editingSectionId === section.id ? (
+                    <>
+                      <button
+                        type="button"
+                        className="global-section-modal__ghost-btn"
+                        onClick={() => saveSectionEdit(section.id)}
+                        disabled={updating}
+                      >
+                        Saqlash
+                      </button>
+                      <button
+                        type="button"
+                        className="global-section-modal__link-btn"
+                        onClick={cancelSectionEdit}
+                      >
+                        Bekor
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startSectionEdit(section)}
+                    >
+                      Tahrirlash
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="global-section-modal__danger-btn"
+                    onClick={() => handleDeleteSection(section.id)}
+                  >
+                    <DeleteOutlined />
+                    <span>Section o'chirish</span>
+                  </button>
+                </div>
               </div>
+
+              {editingSectionId === section.id ? (
+                <div className="global-section-modal__grid global-section-modal__grid--2 global-section-modal__edit-block">
+                  <label className="global-section-modal__field">
+                    <span className="global-section-modal__label">title.uz</span>
+                    <input
+                      className="global-section-modal__input"
+                      value={editingTitleUz}
+                      onChange={(e) => setEditingTitleUz(e.target.value)}
+                    />
+                  </label>
+                  <label className="global-section-modal__field">
+                    <span className="global-section-modal__label">title.ru</span>
+                    <input
+                      className="global-section-modal__input"
+                      value={editingTitleRu}
+                      onChange={(e) => setEditingTitleRu(e.target.value)}
+                    />
+                  </label>
+                </div>
+              ) : null}
 
               <div className="global-section-modal__saved-items">
                 {(section.items || []).map((item) => (
                   <div key={`${section.id}-${item.id}`} className="global-section-modal__saved-item">
-                    <div>
-                      <div className="global-section-modal__saved-name">
-                        {item.name?.uz || '-'} ({item.category || '-'})
+                    {editingItemKey === `${section.id}-${item.id}` && editingItemDraft ? (
+                      <div className="global-section-modal__saved-item-edit">
+                        <div className="global-section-modal__grid global-section-modal__grid--2">
+                          <label className="global-section-modal__field global-section-modal__field--full">
+                            <span className="global-section-modal__label">category</span>
+                            <select
+                              className="global-section-modal__select"
+                              value={editingItemDraft.category}
+                              onChange={(e) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, category: e.target.value } : prev,
+                                )
+                              }
+                            >
+                              <option value="">Category tanlang</option>
+                              {NAVBAR_CATEGORY_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.value}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="global-section-modal__field">
+                            <span className="global-section-modal__label">name.uz</span>
+                            <input
+                              className="global-section-modal__input"
+                              value={editingItemDraft.nameUz}
+                              onChange={(e) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, nameUz: e.target.value } : prev,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="global-section-modal__field">
+                            <span className="global-section-modal__label">name.ru</span>
+                            <input
+                              className="global-section-modal__input"
+                              value={editingItemDraft.nameRu}
+                              onChange={(e) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, nameRu: e.target.value } : prev,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="global-section-modal__field global-section-modal__field--full">
+                            <ImageUploadField
+                              label="image"
+                              value={editingItemDraft.image}
+                              onChange={(uploadedPath) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, image: uploadedPath } : prev,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="global-section-modal__field">
+                            <span className="global-section-modal__label">description.uz</span>
+                            <textarea
+                              className="global-section-modal__textarea"
+                              rows={3}
+                              value={editingItemDraft.descriptionUz}
+                              onChange={(e) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, descriptionUz: e.target.value } : prev,
+                                )
+                              }
+                            />
+                          </label>
+                          <label className="global-section-modal__field">
+                            <span className="global-section-modal__label">description.ru</span>
+                            <textarea
+                              className="global-section-modal__textarea"
+                              rows={3}
+                              value={editingItemDraft.descriptionRu}
+                              onChange={(e) =>
+                                setEditingItemDraft((prev) =>
+                                  prev ? { ...prev, descriptionRu: e.target.value } : prev,
+                                )
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                          <button
+                            type="button"
+                            className="global-section-modal__ghost-btn"
+                            onClick={saveItemEdit}
+                            disabled={updating}
+                          >
+                            Itemni saqlash
+                          </button>
+                          <button
+                            type="button"
+                            className="global-section-modal__link-btn"
+                            onClick={cancelItemEdit}
+                          >
+                            Bekor
+                          </button>
+                        </div>
                       </div>
-                      <div className="global-section-modal__meta">
-                        itemId: {item.id} | ru: {item.name?.ru || '-'}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="global-section-modal__danger-link"
-                      onClick={() => handleDeleteItem(section.id, item.id)}
-                    >
-                      O'chirish
-                    </button>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="global-section-modal__saved-name">
+                            {item.name?.uz || '-'} ({item.category || '-'})
+                          </div>
+                          <div className="global-section-modal__meta">
+                            itemId: {item.id} | ru: {item.name?.ru || '-'}
+                          </div>
+                        </div>
+                        <div className="global-section-modal__saved-actions">
+                          <button
+                            type="button"
+                            className="global-section-modal__ghost-btn"
+                            onClick={() => startItemEdit(section.id, item)}
+                          >
+                            Tahrirlash
+                          </button>
+                          <button
+                            type="button"
+                            className="global-section-modal__danger-link"
+                            onClick={() => handleDeleteItem(section.id, item.id)}
+                          >
+                            O'chirish
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -368,6 +616,8 @@ function NavbarCategoryForm({ visible }) {
 }
 
 function SimpleSectionForm({ sectionLabel }) {
+  const [imagePath, setImagePath] = useState('');
+
   return (
     <div className="global-section-modal__form-stack">
       <div className="global-section-modal__card">
@@ -382,8 +632,11 @@ function SimpleSectionForm({ sectionLabel }) {
             <input className="global-section-modal__input" placeholder="Название" />
           </label>
           <label className="global-section-modal__field global-section-modal__field--full">
-            <span className="global-section-modal__label">Image URL</span>
-            <input className="global-section-modal__input" placeholder="/img/example.jpg" />
+            <ImageUploadField
+              label="image"
+              value={imagePath}
+              onChange={(uploadedPath) => setImagePath(uploadedPath)}
+            />
           </label>
           <label className="global-section-modal__field">
             <span className="global-section-modal__label">Tavsif (uz)</span>
@@ -426,7 +679,7 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       onCancel={onClose}
       footer={null}
       closeIcon={null}
-      maskClosable
+      mask={{ closable: true }}
       centered={!isMobile}
       width={isMobile ? '100vw' : 920}
       className={`global-section-modal${isMobile ? ' global-section-modal--mobile' : ''}`}

@@ -13,6 +13,12 @@ export default function AdminLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSectionSelect = (section) => {
+    // Hozircha faqat Navbar category bo'limi real ishlaydi
+    if (section?.key !== 'navbar-category') {
+      setActiveSection(null);
+      setIsModalOpen(false);
+      return;
+    }
     setActiveSection(section);
     setIsModalOpen(true);
   };
@@ -37,7 +43,7 @@ export default function AdminLayout() {
           <Content className="admin-layout__content">
             <div className="admin-layout__placeholder">
               <h2>Bo'limni tanlang</h2>
-              <p>Sidebar dagi bo'limni bosing. Har bir bo'lim uchun global modal ochiladi.</p>
+              <p>Hozircha faqat Navbar category bo'limida modal va to'ldirish ishlaydi.</p>
             </div>
           </Content>
         </Layout>
