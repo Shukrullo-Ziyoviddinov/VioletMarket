@@ -46,6 +46,37 @@ function buildDefaultNavbarItem(index = 1) {
   };
 }
 
+function CategoryPicker({ value, onSelect, isOpen, onToggle }) {
+  return (
+    <div className="global-section-modal__category-picker">
+      <button
+        type="button"
+        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
+        onClick={onToggle}
+      >
+        <span>{value || 'Category tanlang'}</span>
+        <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="global-section-modal__category-options">
+          {NAVBAR_CATEGORY_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`global-section-modal__category-option${value === option.value ? ' global-section-modal__category-option--active' : ''}`}
+              onClick={() => onSelect(option.value)}
+            >
+              <span className="global-section-modal__category-main">{option.value}</span>
+              <span className="global-section-modal__category-sub">{option.ru}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function NavbarCategoryForm({ visible }) {
   const [sectionTitleUz, setSectionTitleUz] = useState('');
   const [sectionTitleRu, setSectionTitleRu] = useState('');
@@ -60,6 +91,8 @@ function NavbarCategoryForm({ visible }) {
   const [editingItemKey, setEditingItemKey] = useState('');
   const [editingItemDraft, setEditingItemDraft] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [openCreateCategoryItemId, setOpenCreateCategoryItemId] = useState(null);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
 
   const loadSections = async () => {
     setLoading(true);
@@ -84,6 +117,7 @@ function NavbarCategoryForm({ visible }) {
     setSectionTitleUz('');
     setSectionTitleRu('');
     setItems([buildDefaultNavbarItem(1)]);
+    setOpenCreateCategoryItemId(null);
   };
 
   const handleItemChange = (id, field, value) => {
@@ -216,11 +250,13 @@ function NavbarCategoryForm({ visible }) {
       descriptionUz: item?.description?.uz || '',
       descriptionRu: item?.description?.ru || '',
     });
+    setIsEditCategoryOpen(false);
   };
 
   const cancelItemEdit = () => {
     setEditingItemKey('');
     setEditingItemDraft(null);
+    setIsEditCategoryOpen(false);
   };
 
   const saveItemEdit = async () => {
@@ -310,18 +346,19 @@ function NavbarCategoryForm({ visible }) {
               <div className="global-section-modal__grid global-section-modal__grid--3">
                 <label className="global-section-modal__field global-section-modal__field--full">
                   <span className="global-section-modal__label">category</span>
-                  <select
-                    className="global-section-modal__select"
+                  <CategoryPicker
                     value={item.category}
-                    onChange={(e) => handleItemChange(item.localId, 'category', e.target.value)}
-                  >
-                    <option value="">Category tanlang</option>
-                    {NAVBAR_CATEGORY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.value}
-                      </option>
-                    ))}
-                  </select>
+                    isOpen={openCreateCategoryItemId === item.localId}
+                    onToggle={() =>
+                      setOpenCreateCategoryItemId((prev) =>
+                        prev === item.localId ? null : item.localId,
+                      )
+                    }
+                    onSelect={(selectedValue) => {
+                      handleItemChange(item.localId, 'category', selectedValue);
+                      setOpenCreateCategoryItemId(null);
+                    }}
+                  />
                 </label>
                 <label className="global-section-modal__field">
                   <span className="global-section-modal__label">name.uz</span>
@@ -477,22 +514,17 @@ function NavbarCategoryForm({ visible }) {
                         <div className="global-section-modal__grid global-section-modal__grid--2">
                           <label className="global-section-modal__field global-section-modal__field--full">
                             <span className="global-section-modal__label">category</span>
-                            <select
-                              className="global-section-modal__select"
+                            <CategoryPicker
                               value={editingItemDraft.category}
-                              onChange={(e) =>
+                              isOpen={isEditCategoryOpen}
+                              onToggle={() => setIsEditCategoryOpen((prev) => !prev)}
+                              onSelect={(selectedValue) => {
                                 setEditingItemDraft((prev) =>
-                                  prev ? { ...prev, category: e.target.value } : prev,
-                                )
-                              }
-                            >
-                              <option value="">Category tanlang</option>
-                              {NAVBAR_CATEGORY_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.value}
-                                </option>
-                              ))}
-                            </select>
+                                  prev ? { ...prev, category: selectedValue } : prev,
+                                );
+                                setIsEditCategoryOpen(false);
+                              }}
+                            />
                           </label>
                           <label className="global-section-modal__field">
                             <span className="global-section-modal__label">name.uz</span>
