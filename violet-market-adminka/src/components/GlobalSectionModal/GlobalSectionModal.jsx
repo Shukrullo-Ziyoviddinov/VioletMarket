@@ -6,6 +6,7 @@ import {
   deleteNavbarItem,
   deleteNavbarSection,
   fetchNavbarSections,
+  toAbsoluteImageUrl,
   updateNavbarItem,
   updateNavbarSection,
 } from '../../api/navbarAdminApi';
@@ -93,6 +94,14 @@ function NavbarCategoryForm({ visible }) {
   const [updating, setUpdating] = useState(false);
   const [openCreateCategoryItemId, setOpenCreateCategoryItemId] = useState(null);
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads((prev) => {
+      const next = prev + (isUploading ? 1 : -1);
+      return next < 0 ? 0 : next;
+    });
+  };
 
   const loadSections = async () => {
     setLoading(true);
@@ -167,6 +176,10 @@ function NavbarCategoryForm({ visible }) {
     for (const [idx, item] of normalizedItems.entries()) {
       if (!item.category || !item.name.uz || !item.name.ru || !item.description.uz || !item.description.ru) {
         setError(`Item #${idx + 1} da majburiy maydonlar bo'sh`);
+        return;
+      }
+      if (!item.image) {
+        setError(`Item #${idx + 1} da image yuklanishi shart`);
         return;
       }
     }
@@ -278,6 +291,10 @@ function NavbarCategoryForm({ visible }) {
       setError("Itemda category, name va description maydonlari to'liq bo'lishi kerak");
       return;
     }
+    if (!payload.image) {
+      setError("Itemda image yuklanishi shart");
+      return;
+    }
 
     setUpdating(true);
     setError('');
@@ -385,6 +402,7 @@ function NavbarCategoryForm({ visible }) {
                     onChange={(uploadedPath) =>
                       handleItemChange(item.localId, 'image', uploadedPath)
                     }
+                    onUploadStateChange={handleUploadStateChange}
                   />
                 </label>
                 <label className="global-section-modal__field">
@@ -415,9 +433,9 @@ function NavbarCategoryForm({ visible }) {
             type="button"
             className="global-section-modal__btn"
             onClick={handleCreateSection}
-            disabled={saving}
+            disabled={saving || activeUploads > 0}
           >
-            {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+            {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Rasm yuklanmoqda...' : 'Saqlash'}
           </button>
         </div>
       </div>
@@ -559,6 +577,7 @@ function NavbarCategoryForm({ visible }) {
                                   prev ? { ...prev, image: uploadedPath } : prev,
                                 )
                               }
+                              onUploadStateChange={handleUploadStateChange}
                             />
                           </label>
                           <label className="global-section-modal__field">
@@ -594,9 +613,9 @@ function NavbarCategoryForm({ visible }) {
                             type="button"
                             className="global-section-modal__ghost-btn"
                             onClick={saveItemEdit}
-                            disabled={updating}
+                            disabled={updating || activeUploads > 0}
                           >
-                            Itemni saqlash
+                            {activeUploads > 0 ? 'Rasm yuklanmoqda...' : 'Itemni saqlash'}
                           </button>
                           <button
                             type="button"
@@ -616,6 +635,18 @@ function NavbarCategoryForm({ visible }) {
                           <div className="global-section-modal__meta">
                             itemId: {item.id} | ru: {item.name?.ru || '-'}
                           </div>
+                          {item.image ? (
+                            <div className="global-section-modal__saved-thumb-wrap">
+                              <img
+                                src={toAbsoluteImageUrl(item.image)}
+                                alt={item.name?.uz || 'Navbar item image'}
+                                className="global-section-modal__saved-thumb"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          ) : null}
                         </div>
                         <div className="global-section-modal__saved-actions">
                           <button

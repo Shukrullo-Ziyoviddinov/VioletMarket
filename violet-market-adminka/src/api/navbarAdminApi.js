@@ -69,7 +69,42 @@ export function toAbsoluteImageUrl(pathValue) {
   return `${getApiBaseUrl()}${pathValue.startsWith('/') ? pathValue : `/${pathValue}`}`;
 }
 
-export function uploadNavbarImage(file, onProgress) {
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function isImageReachable(pathValue) {
+  const url = toAbsoluteImageUrl(pathValue);
+  try {
+    const headRes = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    if (headRes.ok) return true;
+    if (headRes.status !== 405) return false;
+  } catch (_error) {
+    // HEAD barcha platformalarda bir xil ishlamasligi mumkin
+  }
+
+  try {
+    const getRes = await fetch(url, { method: 'GET', cache: 'no-store' });
+    return getRes.ok;
+  } catch (_error) {
+    return false;
+  }
+}
+
+async function waitUntilImageReachable(pathValue, maxAttempts = 8, delayMs = 350) {
+  for (let i = 0; i < maxAttempts; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await isImageReachable(pathValue);
+    if (ok) return true;
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(delayMs);
+  }
+  return false;
+}
+
+export function uploadNavbarImage(file, onProgress, onPhaseChange) {
   return new Promise((resolve, reject) => {
     if (!file) {
       reject(new Error('Fayl topilmadi'));
@@ -79,9 +114,16 @@ export function uploadNavbarImage(file, onProgress) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', apiUrl('/api/admin/uploads/image'));
 
+    if (typeof onPhaseChange === 'function') {
+      onPhaseChange('uploading');
+    }
+
     xhr.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      const percent = Math.max(0, Math.min(100, Math.round((event.loaded / event.total) * 100)));
+      const totalBytes = event.total > 0 ? event.total : file.size;
+      if (!totalBytes) return;
+      const rawPercent = Math.round((event.loaded / totalBytes) * 100);
+      // 100% ni faqat server tasdiqlaganidan keyin ko'rsatamiz
+      const percent = Math.max(0, Math.min(99, rawPercent));
       if (typeof onProgress === 'function') {
         onProgress(percent);
       }
@@ -96,7 +138,29 @@ export function uploadNavbarImage(file, onProgress) {
       }
 
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(payload?.data?.path || '');
+        const uploadedPath = payload?.data?.path || '';
+        if (!uploadedPath) {
+          reject(new Error("Server image manzilini qaytarmadi"));
+          return;
+        }
+
+        (async () => {
+          if (typeof onPhaseChange === 'function') {
+            onPhaseChange('verifying');
+          }
+          const reachable = await waitUntilImageReachable(uploadedPath);
+          if (!reachable) {
+            reject(new Error("Rasm serverga to'liq saqlanmadi yoki ochilmadi"));
+            return;
+          }
+          if (typeof onProgress === 'function') {
+            onProgress(100);
+          }
+          if (typeof onPhaseChange === 'function') {
+            onPhaseChange('done');
+          }
+          resolve(uploadedPath);
+        })();
         return;
       }
 

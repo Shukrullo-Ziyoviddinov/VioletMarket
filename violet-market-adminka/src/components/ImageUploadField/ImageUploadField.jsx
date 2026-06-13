@@ -3,11 +3,17 @@ import { LoadingOutlined, PictureOutlined, UploadOutlined } from '@ant-design/ic
 import { toAbsoluteImageUrl, uploadNavbarImage } from '../../api/navbarAdminApi';
 import './ImageUploadField.css';
 
-export default function ImageUploadField({ label = 'image', value = '', onChange }) {
+export default function ImageUploadField({
+  label = 'image',
+  value = '',
+  onChange,
+  onUploadStateChange,
+}) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [uploadPhase, setUploadPhase] = useState('idle');
 
   const previewUrl = toAbsoluteImageUrl(value);
 
@@ -24,9 +30,17 @@ export default function ImageUploadField({ label = 'image', value = '', onChange
     setError('');
     setUploading(true);
     setProgress(0);
+    setUploadPhase('uploading');
+    if (typeof onUploadStateChange === 'function') {
+      onUploadStateChange(true);
+    }
 
     try {
-      const uploadedPath = await uploadNavbarImage(file, setProgress);
+      const uploadedPath = await uploadNavbarImage(
+        file,
+        (nextProgress) => setProgress(nextProgress),
+        (phase) => setUploadPhase(phase),
+      );
       if (!uploadedPath) {
         throw new Error("Server image manzilini qaytarmadi");
       }
@@ -37,8 +51,15 @@ export default function ImageUploadField({ label = 'image', value = '', onChange
       setError(err.message || 'Upload xatolik');
     } finally {
       setUploading(false);
+      setUploadPhase('idle');
+      if (typeof onUploadStateChange === 'function') {
+        onUploadStateChange(false);
+      }
     }
   };
+
+  const progressLabel =
+    uploadPhase === 'verifying' ? "Serverga saqlanmoqda..." : 'Yuklanmoqda...';
 
   return (
     <div className="image-upload-field">
@@ -65,7 +86,7 @@ export default function ImageUploadField({ label = 'image', value = '', onChange
       {uploading ? (
         <div className="image-upload-field__progress">
           <div className="image-upload-field__progress-head">
-            <span>Yuklanmoqda...</span>
+            <span>{progressLabel}</span>
             <span>{progress}%</span>
           </div>
           <div className="image-upload-field__progress-track">

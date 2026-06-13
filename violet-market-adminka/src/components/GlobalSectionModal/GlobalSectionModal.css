@@ -305,6 +305,19 @@
   color: #2b1a44;
 }
 
+.global-section-modal__saved-thumb-wrap {
+  margin-top: 8px;
+}
+
+.global-section-modal__saved-thumb {
+  width: 74px;
+  height: 74px;
+  border-radius: 8px;
+  border: 1px solid #e8ddf8;
+  object-fit: cover;
+  background: #f6f1fd;
+}
+
 .global-section-modal__meta {
   margin-top: 3px;
   font-size: 12px;
