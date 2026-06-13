@@ -10,6 +10,7 @@ const navbarItemSchema = new mongoose.Schema(
   {
     id: { type: Number, required: true },
     name: { type: i18nPairSchema, required: true },
+    category: { type: String, required: true, trim: true },
     image: { type: String, default: "", trim: true },
     description: { type: i18nPairSchema, required: true },
   },

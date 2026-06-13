@@ -194,10 +194,6 @@
   white-space: nowrap;
 }
 
-.cart-urgency-banner__cta:hover {
-  background: #202b40;
-}
-
 .cart-urgency-banner--skeleton {
   pointer-events: none;
 }

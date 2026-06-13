@@ -1,0 +1,100 @@
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #1a1225;
+}
+
+.admin-sidebar__logo {
+  flex-shrink: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-sidebar__logo-img {
+  max-width: 100%;
+  max-height: 44px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.admin-sidebar__logo-img--collapsed {
+  max-height: 36px;
+  max-width: 56px;
+}
+
+.admin-sidebar__scroll .scroll-area__viewport .admin-sidebar__menu,
+.admin-sidebar__scroll .scroll-area__viewport .ant-menu.ant-menu-css-var {
+  border-inline-end: none !important;
+  height: auto;
+  min-height: min-content;
+  --ant-menu-dark-item-selected-bg: #9b4fe7;
+  --ant-menu-dark-item-selected-color: #fff;
+}
+
+.admin-sidebar__menu .ant-menu-item {
+  margin-inline: 8px;
+  width: calc(100% - 16px);
+  border-radius: 8px;
+}
+
+.admin-sidebar__menu .ant-menu-item-selected {
+  background: #9b4fe7 !important;
+}
+
+.admin-sidebar__menu .ant-menu-item-selected .ant-menu-item-icon,
+.admin-sidebar__menu .ant-menu-item-selected .ant-menu-title-content {
+  color: #fff !important;
+}
+
+.admin-sidebar__account {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1a1225;
+}
+
+.admin-sidebar__logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-sidebar__logout:hover {
+  background: rgba(118, 75, 162, 0.35);
+  color: #fff;
+}
+
+.admin-sidebar__logout-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.admin-sidebar__logout-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__logout {
+  justify-content: center;
+  padding-inline: 8px;
+}

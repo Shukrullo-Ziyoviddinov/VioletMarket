@@ -1,0 +1,194 @@
+.global-section-modal .ant-modal-content {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.global-section-modal__shell {
+  display: flex;
+  flex-direction: column;
+  max-height: min(86vh, 860px);
+  background: #fff;
+}
+
+.global-section-modal__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  padding: 12px 56px;
+  border-bottom: 1px solid #ece7f3;
+}
+
+.global-section-modal__back-btn {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: #f5f0fb;
+  color: #5f2f94;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.global-section-modal__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #2a1842;
+  text-align: center;
+}
+
+.global-section-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+  background: #faf8fd;
+}
+
+.global-section-modal__form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.global-section-modal__card,
+.global-section-modal__sub-card {
+  background: #fff;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.global-section-modal__sub-card {
+  background: #fcfbfe;
+}
+
+.global-section-modal__block-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: #2a1842;
+}
+
+.global-section-modal__grid {
+  display: grid;
+  gap: 10px;
+}
+
+.global-section-modal__grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.global-section-modal__grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.global-section-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.global-section-modal__field--full {
+  grid-column: 1 / -1;
+}
+
+.global-section-modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f356f;
+}
+
+.global-section-modal__input,
+.global-section-modal__select,
+.global-section-modal__textarea {
+  width: 100%;
+  border: 1px solid #d7caea;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 14px;
+  color: #26173c;
+  background: #fff;
+}
+
+.global-section-modal__textarea {
+  resize: vertical;
+}
+
+.global-section-modal__input:focus,
+.global-section-modal__select:focus,
+.global-section-modal__textarea:focus {
+  outline: none;
+  border-color: #9b4fe7;
+  box-shadow: 0 0 0 3px rgba(155, 79, 231, 0.15);
+}
+
+.global-section-modal__row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.global-section-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  background: #9b4fe7;
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.global-section-modal__link-btn {
+  border: none;
+  background: transparent;
+  color: #9b4fe7;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.global-section-modal--mobile .ant-modal {
+  top: 0;
+  max-width: 100vw;
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.global-section-modal--mobile .global-section-modal__shell {
+  max-height: 100dvh;
+  min-height: 100dvh;
+}
+
+@media (max-width: 900px) {
+  .global-section-modal__grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .global-section-modal .ant-modal-content {
+    border-radius: 0;
+  }
+
+  .global-section-modal__body {
+    padding: 14px;
+  }
+
+  .global-section-modal__grid--2,
+  .global-section-modal__grid--3 {
+    grid-template-columns: 1fr;
+  }
+}

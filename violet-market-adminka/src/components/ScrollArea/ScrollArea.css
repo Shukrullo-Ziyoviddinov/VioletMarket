@@ -1,0 +1,39 @@
+.scroll-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scroll-area__viewport {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(118, 75, 162, 0.85) rgba(255, 255, 255, 0.08);
+}
+
+.scroll-area__viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-area__viewport::-webkit-scrollbar-track {
+  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.scroll-area__viewport::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  border-radius: 999px;
+  border: 2px solid rgba(26, 18, 37, 0.35);
+}
+
+.scroll-area__viewport::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #7b8ef0 0%, #8659ad 100%);
+}

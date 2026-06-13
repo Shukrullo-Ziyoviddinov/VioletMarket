@@ -16,7 +16,7 @@ const getNavbarCategoriesFlat = (navbarItems) => {
   const flat = [];
   (navbarItems || []).forEach((section) => {
     (section.items || []).forEach((item) => {
-      flat.push({ id: item.id, name: item.name });
+      flat.push({ id: item.id, name: item.name, category: item.category });
     });
   });
   return flat;
@@ -132,11 +132,15 @@ const ProductPage = () => {
 
   const countryValue = countryItem?.filterValue;
   const brandValue = brandItem?.filterValue;
-  // navbarItem.name — ob'ekt { uz, ru }, mahsulotlar category da o'zbekcha string; filtrlash uchun string olamiz
-  const navbarCategoryName = navbarItem?.name != null
-    ? (typeof navbarItem.name === 'object' ? (navbarItem.name.uz || navbarItem.name.ru || '') : String(navbarItem.name))
-    : null;
-  const navbarCategoryNameStr = (navbarCategoryName || '').trim() || null;
+  // Endi filtrlash `name` emas, `category` maydoni bo'yicha bo'ladi.
+  const navbarCategoryValue = navbarItem?.category != null
+    ? String(navbarItem.category)
+    : (navbarItem?.name != null
+        ? (typeof navbarItem.name === 'object'
+            ? (navbarItem.name.uz || navbarItem.name.ru || '')
+            : String(navbarItem.name))
+        : null);
+  const navbarCategoryValueStr = (navbarCategoryValue || '').trim() || null;
   const paramCountry = searchParams.get('country') || '';
   const paramBrand = searchParams.get('brand') || '';
 
@@ -173,9 +177,9 @@ const ProductPage = () => {
       if (brandValue) {
         return (product.brandCategories || '').toLowerCase() === brandValue;
       }
-      if (navbarCategoryNameStr) {
+      if (navbarCategoryValueStr) {
         const inNavbarCategory =
-          (product.category || '').trim() === navbarCategoryNameStr;
+          (product.category || '').trim() === navbarCategoryValueStr;
         if (product.categoryName === 'bigDiscountCollection' && hasCountryBrandFilter) {
           const c = (product.countriesCategories || '').toLowerCase();
           const b = (product.brandCategories || '').toLowerCase();
@@ -224,7 +228,7 @@ const ProductPage = () => {
     searchResults,
     countryValue,
     brandValue,
-    navbarCategoryNameStr,
+    navbarCategoryValueStr,
     paramCountry,
     paramBrand,
     hasCountryBrandFilter,
@@ -251,10 +255,10 @@ const ProductPage = () => {
   ]);
 
   const isBooksCategory = useMemo(() => {
-    if (isBooksPage || (isNavbarCategorySlug && slugNum === 301) || navbarCategoryNameStr === 'Kitoblar') return true;
+    if (isBooksPage || (isNavbarCategorySlug && slugNum === 301) || navbarCategoryValueStr === 'Kitoblar') return true;
     if (isSearchPage && categoryProducts.some((p) => (p.category || '').trim() === 'Kitoblar')) return true;
     return false;
-  }, [isBooksPage, isNavbarCategorySlug, slugNum, navbarCategoryNameStr, isSearchPage, categoryProducts]);
+  }, [isBooksPage, isNavbarCategorySlug, slugNum, navbarCategoryValueStr, isSearchPage, categoryProducts]);
 
   const productsAfterPrice = useMemo(() => {
     if (!priceRange) return categoryProducts;

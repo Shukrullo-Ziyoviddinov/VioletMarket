@@ -1,0 +1,48 @@
+.admin-layout__sider .ant-layout-sider-children {
+  height: 100%;
+}
+
+.admin-layout {
+  min-height: 100vh;
+}
+
+.admin-layout__sider {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  box-shadow: 2px 0 12px rgba(26, 18, 37, 0.15);
+}
+
+.admin-layout__content {
+  margin: 0;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+  background: #f4f2f8;
+}
+
+.admin-layout__placeholder {
+  max-width: 620px;
+  margin: 0 auto;
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: 14px;
+  border: 1px solid #e6dcf3;
+  background: #ffffff;
+  text-align: center;
+}
+
+.admin-layout__placeholder h2 {
+  margin: 0 0 8px;
+  color: #321d4e;
+}
+
+.admin-layout__placeholder p {
+  margin: 0;
+  color: #6c548d;
+}
+
+@media (max-width: 768px) {
+  .admin-layout__content {
+    padding: 16px;
+  }
+}

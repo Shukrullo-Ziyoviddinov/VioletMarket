@@ -1,0 +1,27 @@
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px !important;
+  border-bottom: 1px solid #ece7f3;
+  box-shadow: 0 1px 4px rgba(31, 18, 51, 0.04);
+}
+
+.admin-header__trigger {
+  font-size: 18px;
+}
+
+.admin-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header__user {
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.admin-header__avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}

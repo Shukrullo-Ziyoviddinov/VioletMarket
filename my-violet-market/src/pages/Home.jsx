@@ -22,8 +22,17 @@ const getNavbarCategoryId = (categoryName, navbarItems) => {
   const cat = (categoryName || '').trim();
   for (const section of navbarItems || []) {
     const item = (section.items || []).find((i) => {
-      const n = i.name;
-      const nameStr = typeof n === 'string' ? n : (n && (n.uz != null || n.ru != null)) ? (n.uz || n.ru || '') : '';
+      const categoryStr = (i?.category || '').toString().trim();
+      if (categoryStr === cat) return true;
+
+      // Oldingi ma'lumotlar uchun fallback (category yo'q bo'lsa)
+      const n = i?.name;
+      const nameStr =
+        typeof n === 'string'
+          ? n
+          : (n && (n.uz != null || n.ru != null))
+            ? (n.uz || n.ru || '')
+            : '';
       return (nameStr || '').trim() === cat;
     });
     if (item) return item.id;
