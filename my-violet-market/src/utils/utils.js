@@ -1,5 +1,19 @@
 import { getApiBaseUrl } from '../config/api';
 
+const FALLBACK_IMAGE_DATA_URL =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240">
+      <rect width="320" height="240" fill="#f3eef9"/>
+      <rect x="36" y="28" width="248" height="184" rx="14" fill="#ffffff" stroke="#e3d7f2"/>
+      <circle cx="112" cy="104" r="26" fill="#d8c7ef"/>
+      <path d="M72 178l52-50 34 32 26-24 64 42H72z" fill="#c6b1e7"/>
+      <text x="160" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#7b649e">
+        Image not available
+      </text>
+    </svg>`
+  );
+
 export const getPortalContainer = () =>
   document.getElementById('modal-root') || document.body;
 
@@ -179,13 +193,18 @@ export const getLocalizedText = (obj, lang = 'uz') => {
 
 // Rasm yo'lini normalizatsiya qilish
 export const normalizeImagePath = (imagePath) => {
-  if (!imagePath) return '/img/no-image.png';
+  if (!imagePath) return FALLBACK_IMAGE_DATA_URL;
   
   // Agar base64 yoki data URL bo'lsa, qaytarish
   if (imagePath.startsWith('data:')) return imagePath;
   
   // Agar http yoki https bo'lsa, qaytarish
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+
+  // Kodda ko'p joyda ishlatiladigan fallback path (fayl bo'lmasa ham bu SVG ishlaydi)
+  if (imagePath === '/img/no-image.png' || imagePath === 'img/no-image.png') {
+    return FALLBACK_IMAGE_DATA_URL;
+  }
 
   const isUploadPath = imagePath.startsWith('/uploads/') || imagePath.startsWith('uploads/');
   

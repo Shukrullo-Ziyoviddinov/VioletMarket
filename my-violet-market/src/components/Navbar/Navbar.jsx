@@ -167,7 +167,8 @@ const Navbar = () => {
                                     : item?.name || ''
                                 }
                                 onError={(e) => {
-                                  e.target.src = normalizeImagePath('/img/no-image.png');
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.src = normalizeImagePath('/img/no-image.png');
                                 }}
                               />
                             </div>

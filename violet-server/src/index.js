@@ -10,6 +10,7 @@ const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 const uploadDir = path.resolve(__dirname, "../public/uploads");
+const legacyUploadDir = path.resolve(__dirname, "public/uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -17,6 +18,8 @@ if (!fs.existsSync(uploadDir)) {
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use("/uploads", express.static(uploadDir));
+// Legacy support: old buildlarda fayllar src/public/uploads ga tushib qolgan bo'lishi mumkin.
+app.use("/uploads", express.static(legacyUploadDir));
 app.use("/", routes);
 app.use((req, res) => {
   res.status(404).json({

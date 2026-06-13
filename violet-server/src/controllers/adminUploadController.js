@@ -2,7 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 
-const uploadRoot = path.resolve(__dirname, "../public/uploads");
+// index.js dagi static yo'l bilan bir xil bo'lishi kerak: <projectRoot>/public/uploads
+const uploadRoot = path.resolve(__dirname, "../../public/uploads");
 if (!fs.existsSync(uploadRoot)) {
   fs.mkdirSync(uploadRoot, { recursive: true });
 }
