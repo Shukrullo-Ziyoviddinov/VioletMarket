@@ -1,34 +1,40 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
+import {
+  createNavbarSection,
+  deleteNavbarItem,
+  deleteNavbarSection,
+  fetchNavbarSections,
+} from '../../api/navbarAdminApi';
 import './GlobalSectionModal.css';
 
 const NAVBAR_CATEGORY_OPTIONS = [
-  'Sayoxat uchun asqotade',
-  'Sport va Faol turmush',
-  "Vitaminlar va sog'liq",
-  'Bolalar tovarlari',
-  "Go'zallik va parvarish",
-  'Kanselyariya tovarlari',
-  'Kitoblar',
-  'Qizlar kiyimi',
-  'Ayollar kiyimi',
-  'Ayollar poyabzali',
-  "O'g'il bollar kiyimlar",
-  'Erkaklar poyabzali',
-  'Erkaklar kiyimi',
-  'Iqlim texnikasi',
-  "Go'zallik uchun texnika",
-  'Smart gadjetlar',
-  'Aksessuarlar',
-  'Maishiy texnika',
-  'Elektronika',
+  { value: 'Sayoxat uchun asqotade', ru: 'Товары для путешествий' },
+  { value: 'Sport va Faol turmush', ru: 'Спорт и активный образ жизни' },
+  { value: "Vitaminlar va sog'liq", ru: 'Витамины и здоровье' },
+  { value: 'Bolalar tovarlari', ru: 'Товары для детей' },
+  { value: "Go'zallik va parvarish", ru: 'Красота и уход' },
+  { value: 'Kanselyariya tovarlari', ru: 'Канцелярия' },
+  { value: 'Kitoblar', ru: 'Книги' },
+  { value: 'Qizlar kiyimi', ru: 'Одежда для девочек' },
+  { value: 'Ayollar kiyimi', ru: 'Женская одежда' },
+  { value: 'Ayollar poyabzali', ru: 'Женская обувь' },
+  { value: "O'g'il bollar kiyimlar", ru: 'Одежда для мальчиков' },
+  { value: 'Erkaklar poyabzali', ru: 'Мужская обувь' },
+  { value: 'Erkaklar kiyimi', ru: 'Мужская одежда' },
+  { value: 'Iqlim texnikasi', ru: 'Климатическая техника' },
+  { value: "Go'zallik uchun texnika", ru: 'Техника для красоты' },
+  { value: 'Smart gadjetlar', ru: 'Смарт-гаджеты' },
+  { value: 'Aksessuarlar', ru: 'Аксессуары' },
+  { value: 'Maishiy texnika', ru: 'Бытовая техника' },
+  { value: 'Elektronika', ru: 'Электроника' },
 ];
 
 function buildDefaultNavbarItem(index = 1) {
   return {
-    id: Date.now() + index,
-    itemId: index,
+    localId: Date.now() + index,
+    itemId: '',
     nameUz: '',
     nameRu: '',
     category: '',
@@ -38,13 +44,55 @@ function buildDefaultNavbarItem(index = 1) {
   };
 }
 
-function NavbarCategoryForm() {
+function NavbarCategoryForm({ visible }) {
   const [sectionTitleUz, setSectionTitleUz] = useState('');
   const [sectionTitleRu, setSectionTitleRu] = useState('');
   const [items, setItems] = useState([buildDefaultNavbarItem(1)]);
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const loadSections = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchNavbarSections();
+      setSections(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || 'Navbar sectionlarni yuklab bo‘lmadi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      loadSections();
+    }
+  }, [visible]);
+
+  const resetDraft = () => {
+    setSectionTitleUz('');
+    setSectionTitleRu('');
+    setItems([buildDefaultNavbarItem(1)]);
+  };
 
   const handleItemChange = (id, field, value) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.localId !== id) return item;
+        if (field !== 'category') return { ...item, [field]: value };
+
+        const selected = NAVBAR_CATEGORY_OPTIONS.find((opt) => opt.value === value);
+        return {
+          ...item,
+          category: value,
+          nameUz: item.nameUz || value,
+          nameRu: item.nameRu || selected?.ru || value,
+        };
+      }),
+    );
   };
 
   const addItem = () => {
@@ -52,7 +100,69 @@ function NavbarCategoryForm() {
   };
 
   const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => item.localId !== id));
+  };
+
+  const handleCreateSection = async () => {
+    const title = { uz: sectionTitleUz.trim(), ru: sectionTitleRu.trim() };
+    const normalizedItems = items
+      .map((item) => ({
+        id: item.itemId === '' ? undefined : Number(item.itemId),
+        category: item.category.trim(),
+        name: { uz: item.nameUz.trim(), ru: item.nameRu.trim() },
+        image: item.image.trim(),
+        description: { uz: item.descriptionUz.trim(), ru: item.descriptionRu.trim() },
+      }))
+      .filter((item) => item.category || item.name.uz || item.name.ru || item.image || item.description.uz || item.description.ru);
+
+    if (!title.uz || !title.ru) {
+      setError("title.uz va title.ru to'ldirilishi shart");
+      return;
+    }
+    if (normalizedItems.length === 0) {
+      setError("Kamida bitta navbar item kiriting");
+      return;
+    }
+    for (const [idx, item] of normalizedItems.entries()) {
+      if (!item.category || !item.name.uz || !item.name.ru || !item.description.uz || !item.description.ru) {
+        setError(`Item #${idx + 1} da majburiy maydonlar bo'sh`);
+        return;
+      }
+    }
+
+    setSaving(true);
+    setError('');
+    try {
+      await createNavbarSection({ title, items: normalizedItems });
+      resetDraft();
+      await loadSections();
+    } catch (err) {
+      setError(err.message || 'Saqlashda xatolik');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteSection = async (sectionId) => {
+    const ok = window.confirm('Bu navbar section o‘chirilsinmi?');
+    if (!ok) return;
+    try {
+      await deleteNavbarSection(sectionId);
+      await loadSections();
+    } catch (err) {
+      setError(err.message || 'Section o‘chmadi');
+    }
+  };
+
+  const handleDeleteItem = async (sectionId, itemId) => {
+    const ok = window.confirm('Bu item o‘chirilsinmi?');
+    if (!ok) return;
+    try {
+      await deleteNavbarItem(sectionId, itemId);
+      await loadSections();
+    } catch (err) {
+      setError(err.message || 'Item o‘chmadi');
+    }
   };
 
   return (
@@ -92,14 +202,14 @@ function NavbarCategoryForm() {
 
         <div className="global-section-modal__form-stack">
           {items.map((item, idx) => (
-            <div key={item.id} className="global-section-modal__sub-card">
+            <div key={item.localId} className="global-section-modal__sub-card">
               <div className="global-section-modal__row-between">
                 <strong>Item #{idx + 1}</strong>
                 {items.length > 1 ? (
                   <button
                     type="button"
                     className="global-section-modal__link-btn"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.localId)}
                   >
                     O'chirish
                   </button>
@@ -113,7 +223,7 @@ function NavbarCategoryForm() {
                     className="global-section-modal__input"
                     type="number"
                     value={item.itemId}
-                    onChange={(e) => handleItemChange(item.id, 'itemId', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'itemId', e.target.value)}
                   />
                 </label>
                 <label className="global-section-modal__field global-section-modal__field--full">
@@ -121,12 +231,12 @@ function NavbarCategoryForm() {
                   <select
                     className="global-section-modal__select"
                     value={item.category}
-                    onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'category', e.target.value)}
                   >
                     <option value="">Category tanlang</option>
                     {NAVBAR_CATEGORY_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                      <option key={option.value} value={option.value}>
+                        {option.value}
                       </option>
                     ))}
                   </select>
@@ -136,7 +246,7 @@ function NavbarCategoryForm() {
                   <input
                     className="global-section-modal__input"
                     value={item.nameUz}
-                    onChange={(e) => handleItemChange(item.id, 'nameUz', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'nameUz', e.target.value)}
                     placeholder="Masalan: Elektronika"
                   />
                 </label>
@@ -145,7 +255,7 @@ function NavbarCategoryForm() {
                   <input
                     className="global-section-modal__input"
                     value={item.nameRu}
-                    onChange={(e) => handleItemChange(item.id, 'nameRu', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'nameRu', e.target.value)}
                     placeholder="Например: Электроника"
                   />
                 </label>
@@ -154,7 +264,7 @@ function NavbarCategoryForm() {
                   <input
                     className="global-section-modal__input"
                     value={item.image}
-                    onChange={(e) => handleItemChange(item.id, 'image', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'image', e.target.value)}
                     placeholder="/img/texnika.jpg"
                   />
                 </label>
@@ -163,7 +273,7 @@ function NavbarCategoryForm() {
                   <textarea
                     className="global-section-modal__textarea"
                     value={item.descriptionUz}
-                    onChange={(e) => handleItemChange(item.id, 'descriptionUz', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'descriptionUz', e.target.value)}
                     rows={3}
                   />
                 </label>
@@ -172,7 +282,7 @@ function NavbarCategoryForm() {
                   <textarea
                     className="global-section-modal__textarea"
                     value={item.descriptionRu}
-                    onChange={(e) => handleItemChange(item.id, 'descriptionRu', e.target.value)}
+                    onChange={(e) => handleItemChange(item.localId, 'descriptionRu', e.target.value)}
                     rows={3}
                   />
                 </label>
@@ -180,7 +290,79 @@ function NavbarCategoryForm() {
             </div>
           ))}
         </div>
+
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreateSection}
+            disabled={saving}
+          >
+            {saving ? 'Saqlanmoqda...' : 'DB ga saqlash'}
+          </button>
+        </div>
       </div>
+
+      <div className="global-section-modal__card">
+        <div className="global-section-modal__row-between">
+          <h3 className="global-section-modal__block-title">Saqlangan navbar sectionlar</h3>
+          <button type="button" className="global-section-modal__ghost-btn" onClick={loadSections}>
+            <ReloadOutlined />
+            <span>Yangilash</span>
+          </button>
+        </div>
+
+        {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
+        {!loading && sections.length === 0 ? (
+          <p className="global-section-modal__state">Hozircha section yo'q</p>
+        ) : null}
+
+        <div className="global-section-modal__list">
+          {sections.map((section) => (
+            <div key={section.id} className="global-section-modal__saved-card">
+              <div className="global-section-modal__row-between">
+                <div>
+                  <strong>{section.title?.uz || 'Nomsiz section'}</strong>
+                  <div className="global-section-modal__meta">
+                    id: {section.id} | ru: {section.title?.ru || '-'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="global-section-modal__danger-btn"
+                  onClick={() => handleDeleteSection(section.id)}
+                >
+                  <DeleteOutlined />
+                  <span>Section o'chirish</span>
+                </button>
+              </div>
+
+              <div className="global-section-modal__saved-items">
+                {(section.items || []).map((item) => (
+                  <div key={`${section.id}-${item.id}`} className="global-section-modal__saved-item">
+                    <div>
+                      <div className="global-section-modal__saved-name">
+                        {item.name?.uz || '-'} ({item.category || '-'})
+                      </div>
+                      <div className="global-section-modal__meta">
+                        itemId: {item.id} | ru: {item.name?.ru || '-'}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => handleDeleteItem(section.id, item.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {error ? <p className="global-section-modal__error">{error}</p> : null}
     </div>
   );
 }
@@ -231,10 +413,12 @@ export default function GlobalSectionModal({ open, section, onClose }) {
 
   const title = section?.label || 'Bo‘lim';
 
-  const content = useMemo(() => {
-    if (section?.key === 'navbar-category') return <NavbarCategoryForm />;
-    return <SimpleSectionForm sectionLabel={title} />;
-  }, [section?.key, title]);
+  const content =
+    section?.key === 'navbar-category' ? (
+      <NavbarCategoryForm visible={open} />
+    ) : (
+      <SimpleSectionForm sectionLabel={title} />
+    );
 
   return (
     <Modal
