@@ -194,39 +194,61 @@ export const getLocalizedText = (obj, lang = 'uz') => {
 // Rasm yo'lini normalizatsiya qilish
 export const normalizeImagePath = (imagePath) => {
   if (!imagePath) return FALLBACK_IMAGE_DATA_URL;
+  const rawPath = String(imagePath).trim();
+  if (!rawPath) return FALLBACK_IMAGE_DATA_URL;
+  const normalizedSlashes = rawPath.replace(/\\/g, '/');
   
   // Agar base64 yoki data URL bo'lsa, qaytarish
-  if (imagePath.startsWith('data:')) return imagePath;
+  if (normalizedSlashes.startsWith('data:')) return normalizedSlashes;
   
   // Agar http yoki https bo'lsa, qaytarish
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+  if (normalizedSlashes.startsWith('http://') || normalizedSlashes.startsWith('https://')) return normalizedSlashes;
 
   // Kodda ko'p joyda ishlatiladigan fallback path (fayl bo'lmasa ham bu SVG ishlaydi)
-  if (imagePath === '/img/no-image.png' || imagePath === 'img/no-image.png') {
+  if (normalizedSlashes === '/img/no-image.png' || normalizedSlashes === 'img/no-image.png') {
     return FALLBACK_IMAGE_DATA_URL;
   }
 
-  const isUploadPath = imagePath.startsWith('/uploads/') || imagePath.startsWith('uploads/');
+  const isUploadPath =
+    normalizedSlashes.startsWith('/uploads/') ||
+    normalizedSlashes.startsWith('uploads/') ||
+    normalizedSlashes.startsWith('/public/uploads/') ||
+    normalizedSlashes.startsWith('public/uploads/') ||
+    normalizedSlashes.includes('/uploads/');
   
   // Admin orqali yuklangan rasmlar backend domenidan ochilishi kerak
   if (isUploadPath) {
-    const normalizedUploadPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    const uploadStartIndex = normalizedSlashes.indexOf('/uploads/');
+    const uploadRelative =
+      uploadStartIndex >= 0
+        ? normalizedSlashes.slice(uploadStartIndex)
+        : normalizedSlashes
+            .replace(/^\/?public\//, '/')
+            .replace(/^\/?uploads\//, '/uploads/');
+    const normalizedUploadPath = uploadRelative.startsWith('/')
+      ? uploadRelative
+      : `/${uploadRelative}`;
     return `${getApiBaseUrl()}${normalizedUploadPath}`;
   }
 
+  // Ba'zi yozuvlarda faqat upload fayl nomi qolishi mumkin (admin-*.png va h.k.)
+  if (/^(admin-|upload-|image-).+\.[a-z0-9]+$/i.test(normalizedSlashes)) {
+    return `${getApiBaseUrl()}/uploads/${normalizedSlashes}`;
+  }
+
   // Agar / bilan boshlansa, qaytarish
-  if (imagePath.startsWith('/')) return imagePath;
+  if (normalizedSlashes.startsWith('/')) return normalizedSlashes;
   
   // Agar "my-app/img/" bilan boshlansa, uni "/img/" ga o'zgartirish
-  if (imagePath.startsWith('my-app/img/')) {
-    return '/' + imagePath.replace('my-app/', '');
+  if (normalizedSlashes.startsWith('my-app/img/')) {
+    return '/' + normalizedSlashes.replace('my-app/', '');
   }
   
   // Agar "my-app/" bilan boshlansa, uni "/" ga o'zgartirish
-  if (imagePath.startsWith('my-app/')) {
-    return '/' + imagePath.replace('my-app/', '');
+  if (normalizedSlashes.startsWith('my-app/')) {
+    return '/' + normalizedSlashes.replace('my-app/', '');
   }
   
   // Boshqa holatlarda "/" qo'shish
-  return '/' + imagePath;
+  return '/' + normalizedSlashes;
 };
