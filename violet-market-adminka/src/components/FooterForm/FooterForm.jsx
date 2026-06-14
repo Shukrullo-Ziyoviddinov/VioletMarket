@@ -430,7 +430,7 @@ export default function FooterForm({ visible }) {
             <div key={section.id} className="global-section-modal__saved-card">
               <div className="global-section-modal__row-between">
                 <div>
-                  <strong>#{section.id}</strong>
+                  <strong>{section?.title?.uz || 'About section'}</strong>
                   <div className="global-section-modal__meta">
                     {section?.title?.uz} / {section?.title?.ru}
                   </div>
@@ -632,7 +632,7 @@ export default function FooterForm({ visible }) {
             <div key={social.id} className="global-section-modal__saved-card">
               <div className="global-section-modal__row-between">
                 <div>
-                  <strong>#{social.id} {social.name}</strong>
+                  <strong>{social.name}</strong>
                   <div className="global-section-modal__meta">{social.link}</div>
                 </div>
                 <div className="global-section-modal__saved-actions">
@@ -759,7 +759,7 @@ export default function FooterForm({ visible }) {
             <div key={app.id} className="global-section-modal__saved-card">
               <div className="global-section-modal__row-between">
                 <div>
-                  <strong>#{app.id} {app.name}</strong>
+                  <strong>{app.name}</strong>
                   <div className="global-section-modal__meta">{app.link}</div>
                 </div>
                 <div className="global-section-modal__saved-actions">
@@ -886,7 +886,7 @@ export default function FooterForm({ visible }) {
             <div key={contact.id} className="global-section-modal__saved-card">
               <div className="global-section-modal__row-between">
                 <div>
-                  <strong>#{contact.id} {contact.name}</strong>
+                  <strong>{contact.name}</strong>
                   <div className="global-section-modal__meta">{contact.link}</div>
                 </div>
                 <div className="global-section-modal__saved-actions">
