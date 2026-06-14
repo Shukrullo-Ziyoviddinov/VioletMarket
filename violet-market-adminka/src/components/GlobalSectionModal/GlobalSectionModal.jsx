@@ -44,6 +44,7 @@ import {
   fetchUzWarehouseData,
   updateUzWarehouseData,
 } from '../../api/uzWarehouseAdminApi';
+import FooterForm from '../FooterForm/FooterForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
@@ -3188,6 +3189,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <VideoBannerForm visible={open} />
     ) : section?.key === 'country-seller-banner' ? (
       <UzWarehouseForm visible={open} />
+    ) : section?.key === 'footer' ? (
+      <FooterForm visible={open} />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
     );
