@@ -12,6 +12,7 @@ const {
   VideoBannerItem,
   SellerAccount,
   UzWarehouseLocale,
+  UzbProductDeliveryInfo,
   ProductPolicyBlock,
 } = require("../models");
 
@@ -114,6 +115,17 @@ async function getUzWarehouse() {
   return Object.keys(result).length ? result : null;
 }
 
+async function getUzbProductDeliveryInfo() {
+  const row = await UzbProductDeliveryInfo.findOne({ key: "default" }).lean();
+  if (!row) return null;
+  return {
+    deliveryInfo: {
+      title: row.title,
+      text: row.text,
+    },
+  };
+}
+
 /** Frontend to'g'ridan-to'g'ri massiv kutadi */
 async function getDefaultProductPolicy() {
   const blocks = await ProductPolicyBlock.find().sort({ order: 1 }).lean();
@@ -130,5 +142,6 @@ module.exports = {
   getVideoBanner,
   getSellers,
   getUzWarehouse,
+  getUzbProductDeliveryInfo,
   getDefaultProductPolicy,
 };

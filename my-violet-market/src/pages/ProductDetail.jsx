@@ -237,7 +237,7 @@ const ProductDetail = () => {
   const { getCommentsByProductId, comments, loadCommentsForProduct } = useComments();
   const { recordView } = useViewedAt();
   const { authToken, authLoading } = useUser();
-  const { allProducts, getSellerById, loading, error } = useAppData();
+  const { allProducts, getSellerById, loading, error, uzbProductDeliveryInfo } = useAppData();
   const catalog = allProducts || [];
   const showDetailSkeleton = loading && !error;
   const [selectedColor, setSelectedColor] = useState(null);
@@ -280,11 +280,10 @@ const ProductDetail = () => {
         console.log('Product loaded:', {
           id: latestProduct.id,
           countries: latestProduct.countries,
-          deliveryInfo: latestProduct.deliveryInfo,
           hasCountries: !!latestProduct.countries,
           isArray: Array.isArray(latestProduct.countries),
           hasUzb: latestProduct.countries?.some(c => c?.toLowerCase() === "uzb"),
-          hasDeliveryInfo: !!latestProduct.deliveryInfo
+          hasUzbDeliveryInfo: !!uzbProductDeliveryInfo
         });
         setProductData(latestProduct);
         const colorList = Array.isArray(latestProduct.colors) ? latestProduct.colors : [];
@@ -322,7 +321,7 @@ const ProductDetail = () => {
     } else {
       navigate('/');
     }
-  }, [navigate, catalog]);
+  }, [navigate, catalog, uzbProductDeliveryInfo]);
 
   useEffect(() => {
     loadProductData();
@@ -1890,7 +1889,7 @@ const ProductDetail = () => {
 
 
             {/* Delivery Info - Only for UZB products */}
-            <DeliveryInfo product={productData} />
+            <DeliveryInfo product={productData} deliveryInfo={uzbProductDeliveryInfo} />
 
             <ProductPolicy product={productData} lang={lang} skeleton={showDetailSkeleton} />
 

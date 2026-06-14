@@ -125,9 +125,15 @@ function keepNewestProductPerId(products) {
   return unique;
 }
 
+function stripLegacyDeliveryInfo(product) {
+  if (!product || typeof product !== "object") return product;
+  const { deliveryInfo, ...rest } = product;
+  return rest;
+}
+
 async function findAll() {
   const products = await Product.find().sort({ _id: -1 }).lean();
-  const uniqueProducts = keepNewestProductPerId(products);
+  const uniqueProducts = keepNewestProductPerId(products).map(stripLegacyDeliveryInfo);
   const decorated = await decorateProductsWithFlashSaleMeta(uniqueProducts);
   const withEffectiveQty = decorateWithEffectiveQuantity(decorated);
   const withDetailSalesMeta = decorateWithProductDetailSalesProgressMeta(withEffectiveQty);
@@ -141,7 +147,8 @@ async function findByProductId(id) {
   if (!Number.isFinite(num)) return null;
   /** Bir xil `id` nechta bo‘lsa — eng eski `_id` bo‘yicha bittasi */
   const rows = await Product.find({ id: num }).sort({ _id: -1 }).limit(1).lean();
-  const decorated = await decorateSingleProductWithFlashSaleMeta(rows[0] || null);
+  const sanitized = stripLegacyDeliveryInfo(rows[0] || null);
+  const decorated = await decorateSingleProductWithFlashSaleMeta(sanitized);
   if (!decorated) return null;
   const effectiveQuantity = computeEffectiveQuantity(decorated);
   return {
@@ -157,10 +164,11 @@ async function findByProductId(id) {
 async function createProduct(input) {
   const payload = { ...(input && typeof input === "object" ? input : {}) };
   delete payload.id; // qat'iy rejim: id faqat DB tomonidan beriladi
+  delete payload.deliveryInfo; // deliveryInfo endi alohida kolleksiyada saqlanadi
 
   const created = await Product.create(payload);
   const doc = created.toObject ? created.toObject() : created;
-  const decorated = await decorateSingleProductWithFlashSaleMeta(doc);
+  const decorated = await decorateSingleProductWithFlashSaleMeta(stripLegacyDeliveryInfo(doc));
   if (!decorated) return null;
   const effectiveQuantity = computeEffectiveQuantity(decorated);
 

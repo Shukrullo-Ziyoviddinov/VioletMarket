@@ -49,6 +49,7 @@ import FlashSaleRulesForm from '../FlashSaleRulesForm/FlashSaleRulesForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
+import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
 
@@ -3194,6 +3195,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <UzWarehouseForm visible={open} />
     ) : section?.key === 'shipping-country' ? (
       <ShippingCountryForm visible={open} />
+    ) : section?.key === 'product-uzb-warehouse-info' ? (
+      <UzbProductDeliveryInfoForm visible={open} />
     ) : section?.key === 'logistics-info' ? (
       <LogisticsInfoForm visible={open} />
     ) : section?.key === 'footer' ? (

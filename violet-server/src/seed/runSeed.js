@@ -26,6 +26,7 @@ const {
   VideoBannerItem,
   SellerAccount,
   UzWarehouseLocale,
+  UzbProductDeliveryInfo,
   ProductPolicyBlock,
   FlashSaleRuleConfig,
   ShippingCountry,
@@ -273,6 +274,20 @@ async function seedProductPolicyMany() {
   console.log(`Default product policy: product_policy_blocks=${Array.isArray(blocks) ? blocks.length : 0}`);
 }
 
+async function seedUzbProductDeliveryInfoMany() {
+  const { uzbProductDeliveryInfo } = loadJsonFile("seedUzbProductDeliveryInfo.json");
+  await UzbProductDeliveryInfo.syncIndexes();
+  await UzbProductDeliveryInfo.deleteMany({});
+  if (uzbProductDeliveryInfo) {
+    await UzbProductDeliveryInfo.create({
+      key: "default",
+      title: uzbProductDeliveryInfo.title,
+      text: uzbProductDeliveryInfo.text,
+    });
+  }
+  console.log(`UZB product delivery info: uzb_product_delivery_info=${uzbProductDeliveryInfo ? 1 : 0}`);
+}
+
 async function seedFlashSaleRules() {
   const config = require("./seedFlashSaleRules");
   await FlashSaleRuleConfig.syncIndexes();
@@ -312,6 +327,7 @@ async function seedSiteCollections() {
   await seedVideoBannersMany();
   await seedSellersMany();
   await seedUzWarehouseMany();
+  await seedUzbProductDeliveryInfoMany();
   await seedProductPolicyMany();
   await seedFlashSaleRules();
 }
@@ -438,6 +454,7 @@ async function logDbSummary() {
     video_banner_items: await VideoBannerItem.countDocuments(),
     seller_accounts: await SellerAccount.countDocuments(),
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),
+    uzb_product_delivery_info: await UzbProductDeliveryInfo.countDocuments(),
     product_policy_blocks: await ProductPolicyBlock.countDocuments(),
     flash_sale_rule_configs: await FlashSaleRuleConfig.countDocuments(),
     product_section_metrics: await ProductSectionMetric.countDocuments(),

@@ -816,16 +816,6 @@
     "flashSale": false,
     "category": "Erkaklar kiyimi",
     "weight": 600,
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot o'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Cargo uchun orteqcha tulovlar yuq. Mahsulot o'zbekiston omboreda yetkazeb berish 1 kundan boshlab 3 kungacha",
-        "ru": "Дополнительной платы за груз нет. Доставка со склада в Узбекистане от 1 до 3 дней."
-      }
-    },
     "relatedGroups": [
       {
         "title": {
@@ -1555,16 +1545,6 @@
     "brandCategories": "apple",
     "countriesCategories": "yevropa",
     "category": "Erkaklar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "video": "video/video-1.mp4",
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
@@ -1637,16 +1617,6 @@
     "brandCategories": "puma",
     "countriesCategories": "yevropa",
     "category": "Ayollar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "video": "video/video-1.mp4",
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
@@ -1715,16 +1685,6 @@
     "brandCategories": "gucci",
     "countriesCategories": "yevropa",
     "category": "Erkaklar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "video": "video/video-1.mp4",
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
@@ -2220,16 +2180,6 @@
     "brandCategories": "nike",
     "countriesCategories": "yevropa",
     "category": "Ayollar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
       "ru": "Описание товара."
@@ -2465,16 +2415,6 @@
     "brandCategories": "apple",
     "countriesCategories": "yevropa",
     "category": "Ayollar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
       "ru": "Описание товара."
@@ -2542,16 +2482,6 @@
     "brandCategories": "puma",
     "countriesCategories": "yevropa",
     "category": "Ayollar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Mahsulot O'zbekiston bo'ylab 1 kundan 3 kungacha yetkazib beriladi mahsulot uchun qo'shimcha cargo narxlari yo'q.",
-        "ru": "Доставка по Узбекистану от 1 до 3 дней. Дополнительная плата за груз не взимается."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur?",
       "ru": "Описание товара."
@@ -5098,16 +5028,6 @@
     "productCountry": "Uzbekistan",
     "brandCategories": "zara",
     "countriesCategories": "yevropa",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Yetkazib berish 1–3 kun.",
-        "ru": "Доставка от 1 до 3 дней."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."
@@ -5588,16 +5508,6 @@
     "countriesCategories": "yevropa",
     "category": "Erkaklar kiyimi",
     "weight": 600,
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot o'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Yetkazib berish 1–3 kun.",
-        "ru": "Доставка от 1 до 3 дней."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
       "ru": "Описание товара."
@@ -5643,16 +5553,6 @@
     "brandCategories": "nike",
     "countriesCategories": "yevropa",
     "category": "Ayollar kiyimi",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Yetkazib berish 1–3 kun.",
-        "ru": "Доставка от 1 до 3 дней."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
       "ru": "Описание товара."
@@ -8482,16 +8382,6 @@
     "productCountry": "Uzbekistan",
     "brandCategories": "nike",
     "countriesCategories": "yevropa",
-    "deliveryInfo": {
-      "title": {
-        "uz": "Mahsulot O'zbekiston omboreda",
-        "ru": "Товар на складе в Узбекистане"
-      },
-      "text": {
-        "uz": "Yetkazib berish 1–3 kun.",
-        "ru": "Доставка от 1 до 3 дней."
-      }
-    },
     "description": {
       "uz": "Lorem ipsum dolor sit amet.",
       "ru": "Описание товара."

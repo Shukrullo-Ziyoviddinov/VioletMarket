@@ -33,6 +33,7 @@ export function AppDataProvider({ children }) {
         sellersWrap,
         defaultProductPolicy,
         uzWarehouse,
+        uzbProductDeliveryInfo,
       ] = await Promise.all([
         fetchJson("/api/products"),
         fetchJson("/api/categories"),
@@ -44,6 +45,7 @@ export function AppDataProvider({ children }) {
         fetchJson("/api/sellers"),
         fetchJson("/api/default-product-policy"),
         fetchJson("/api/uz-warehouse"),
+        fetchJson("/api/uzb-product-delivery-info"),
       ]);
 
       setPayload({
@@ -57,6 +59,7 @@ export function AppDataProvider({ children }) {
         sellersWrap: sellersWrap || {},
         defaultProductPolicy: Array.isArray(defaultProductPolicy) ? defaultProductPolicy : [],
         uzWarehouse: uzWarehouse || {},
+        uzbProductDeliveryInfo: uzbProductDeliveryInfo || {},
       });
     } catch (e) {
       setError(e?.message || String(e));
@@ -99,6 +102,7 @@ export function AppDataProvider({ children }) {
         uzWarehouseData: null,
         chinaWarehouseData: null,
         defaultProductPolicy: [],
+        uzbProductDeliveryInfo: null,
         ...buildProductCollections([]),
       };
     }
@@ -126,6 +130,7 @@ export function AppDataProvider({ children }) {
       uzWarehouseData: payload.uzWarehouse?.uzWarehouseData || null,
       chinaWarehouseData: payload.uzWarehouse?.chinaWarehouseData || null,
       defaultProductPolicy: payload.defaultProductPolicy,
+      uzbProductDeliveryInfo: payload.uzbProductDeliveryInfo?.deliveryInfo || null,
       ...cols,
     };
   }, [payload, loading, error, load]);

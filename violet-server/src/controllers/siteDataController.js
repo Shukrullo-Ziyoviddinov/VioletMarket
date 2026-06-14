@@ -58,6 +58,11 @@ async function uzWarehouse(req, res) {
   res.json(data);
 }
 
+async function uzbProductDeliveryInfo(req, res) {
+  const data = await siteContentService.getUzbProductDeliveryInfo();
+  res.json(data || { deliveryInfo: null });
+}
+
 async function sellerById(req, res) {
   const data = await siteContentService.getSellers();
   if (!data?.sellers) return notFound(res);
@@ -81,4 +86,5 @@ module.exports = {
   sellerById,
   defaultProductPolicy,
   uzWarehouse,
+  uzbProductDeliveryInfo,
 };

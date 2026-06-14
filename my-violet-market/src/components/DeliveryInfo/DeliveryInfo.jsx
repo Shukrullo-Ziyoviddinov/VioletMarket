@@ -4,21 +4,21 @@ import { getLocalizedText } from '../../utils/utils';
 import './DeliveryInfo.css';
 
 /**
- * DeliveryInfo komponenti - UZB mahsulotlari uchun yetkazib berish ma'lumotlarini ko'rsatadi
+ * DeliveryInfo komponenti - UZB mahsulotlari uchun global ombor ma'lumotini ko'rsatadi
  * 
  * @param {Object} props
- * @param {Object} props.product - Mahsulot obyekti (countries va deliveryInfo bilan)
+ * @param {Object} props.product - Mahsulot obyekti (countries bilan)
  * @param {Array} props.countries - Mahsulot mamlakatlari array (product prop bo'lmasa)
- * @param {Object} props.deliveryInfo - Yetkazib berish ma'lumotlari (product prop bo'lmasa)
+ * @param {Object} props.deliveryInfo - Global UZB ombor yetkazib berish ma'lumotlari
  * @param {boolean} props.showDebug - Debug log'larni ko'rsatish (default: false)
  * @returns {JSX.Element|null}
  */
 const DeliveryInfo = ({ product, countries, deliveryInfo, showDebug = false }) => {
   const { i18n } = useTranslation();
   const lang = i18n.language || 'uz';
-  // Agar product prop berilgan bo'lsa, undan countries va deliveryInfo ni olish
+  // Agar product prop berilgan bo'lsa, undan countries ni olish
   const productCountries = product?.countries || countries;
-  const productDeliveryInfo = product?.deliveryInfo || deliveryInfo;
+  const productDeliveryInfo = deliveryInfo;
 
   // Tekshiruvlar
   const hasCountries = productCountries && Array.isArray(productCountries);

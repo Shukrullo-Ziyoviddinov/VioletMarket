@@ -1,0 +1,12 @@
+{
+  "uzbProductDeliveryInfo": {
+    "title": {
+      "uz": "Mahsulot O'zbekiston omborida",
+      "ru": "Товар на складе в Узбекистане"
+    },
+    "text": {
+      "uz": "Cargo uchun ortiqcha to'lovlar yo'q. Mahsulot O'zbekiston omboridan 1 kundan 3 kungacha yetkazib beriladi.",
+      "ru": "Дополнительной платы за груз нет. Доставка со склада в Узбекистане от 1 до 3 дней."
+    }
+  }
+}
