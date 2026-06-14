@@ -32,6 +32,9 @@ const footerData = {
     appStores: [
       { id: 1, name: "App Store", image: "/img/app%20store%20logo.svg", link: "https://apps.apple.com/app/violetmarket" },
       { id: 2, name: "Google Play", image: "/img/Google_Play-Badge-Logo.wine.svg", link: "https://play.google.com/store/apps/details?id=com.violetmarket" }
+    ],
+    contacts: [
+      { id: 1, name: "Telegram", icon: "/img/telegram.png", link: "https://t.me/violetmarket" }
     ]
   };
 

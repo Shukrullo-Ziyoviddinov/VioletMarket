@@ -17,4 +17,8 @@ router.post("/admin/footer/app-stores", controller.createAppStore);
 router.patch("/admin/footer/app-stores/:appStoreId", controller.updateAppStore);
 router.delete("/admin/footer/app-stores/:appStoreId", controller.removeAppStore);
 
+router.post("/admin/footer/contacts", controller.createContact);
+router.patch("/admin/footer/contacts/:contactId", controller.updateContact);
+router.delete("/admin/footer/contacts/:contactId", controller.removeContact);
+
 module.exports = router;

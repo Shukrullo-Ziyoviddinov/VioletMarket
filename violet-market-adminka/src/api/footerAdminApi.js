@@ -15,7 +15,7 @@ async function parseJson(res) {
 export async function fetchFooterAdminData() {
   const res = await fetch(apiUrl('/api/admin/footer'));
   const data = await parseJson(res);
-  return data?.data?.footerData || { aboutSections: [], socialMedia: [], appStores: [] };
+  return data?.data?.footerData || { aboutSections: [], socialMedia: [], appStores: [], contacts: [] };
 }
 
 export async function createFooterAboutSection(payload) {
@@ -94,6 +94,33 @@ export async function updateFooterAppStore(appStoreId, payload) {
 
 export async function deleteFooterAppStore(appStoreId) {
   const res = await fetch(apiUrl(`/api/admin/footer/app-stores/${appStoreId}`), {
+    method: 'DELETE',
+  });
+  await parseJson(res);
+}
+
+export async function createFooterContact(payload) {
+  const res = await fetch(apiUrl('/api/admin/footer/contacts'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function updateFooterContact(contactId, payload) {
+  const res = await fetch(apiUrl(`/api/admin/footer/contacts/${contactId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function deleteFooterContact(contactId) {
+  const res = await fetch(apiUrl(`/api/admin/footer/contacts/${contactId}`), {
     method: 'DELETE',
   });
   await parseJson(res);

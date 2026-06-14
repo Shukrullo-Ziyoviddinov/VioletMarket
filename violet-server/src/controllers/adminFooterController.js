@@ -51,6 +51,21 @@ const removeAppStore = asyncHandler(async (req, res) => {
   res.json({ ok: true });
 });
 
+const createContact = asyncHandler(async (req, res) => {
+  const row = await service.createContact(req.body || {});
+  res.status(201).json({ ok: true, data: row });
+});
+
+const updateContact = asyncHandler(async (req, res) => {
+  const row = await service.updateContact(req.params.contactId, req.body || {});
+  res.json({ ok: true, data: row });
+});
+
+const removeContact = asyncHandler(async (req, res) => {
+  await service.deleteContact(req.params.contactId);
+  res.json({ ok: true });
+});
+
 module.exports = {
   list,
   createAboutSection,
@@ -62,4 +77,7 @@ module.exports = {
   createAppStore,
   updateAppStore,
   removeAppStore,
+  createContact,
+  updateContact,
+  removeContact,
 };

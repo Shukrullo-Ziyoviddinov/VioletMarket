@@ -8,6 +8,7 @@ const { HomeBannerSlide } = require("./homeBannerSlide");
 const { FooterAboutSection } = require("./footerAboutSection");
 const { FooterSocialLink } = require("./footerSocialLink");
 const { FooterAppStore } = require("./footerAppStore");
+const { FooterContactLink } = require("./footerContactLink");
 const { CargoRegionRate } = require("./cargoRegionRate");
 const { DeliveryRegionPrice } = require("./deliveryRegionPrice");
 const { VideoBannerItem } = require("./videoBannerItem");
@@ -34,6 +35,7 @@ module.exports = {
   FooterAboutSection,
   FooterSocialLink,
   FooterAppStore,
+  FooterContactLink,
   CargoRegionRate,
   DeliveryRegionPrice,
   VideoBannerItem,

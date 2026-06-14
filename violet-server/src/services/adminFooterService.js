@@ -2,6 +2,7 @@ const {
   FooterAboutSection,
   FooterSocialLink,
   FooterAppStore,
+  FooterContactLink,
 } = require("../models");
 const { HttpError } = require("../utils/httpError");
 
@@ -82,15 +83,17 @@ function stripMongoMeta(doc) {
 }
 
 async function listFooterData() {
-  const [aboutSections, socialMedia, appStores] = await Promise.all([
+  const [aboutSections, socialMedia, appStores, contacts] = await Promise.all([
     FooterAboutSection.find().sort({ id: 1 }).lean(),
     FooterSocialLink.find().sort({ id: 1 }).lean(),
     FooterAppStore.find().sort({ id: 1 }).lean(),
+    FooterContactLink.find().sort({ id: 1 }).lean(),
   ]);
   return {
     aboutSections: aboutSections.map(stripMongoMeta),
     socialMedia: socialMedia.map(stripMongoMeta),
     appStores: appStores.map(stripMongoMeta),
+    contacts: contacts.map(stripMongoMeta),
   };
 }
 
@@ -209,6 +212,45 @@ async function deleteAppStore(appStoreId) {
   }
 }
 
+async function getContactByIdOrThrow(contactId) {
+  const id = toInt(contactId, "contactId");
+  const row = await FooterContactLink.findOne({ id });
+  if (!row) {
+    throw new HttpError(404, "Contact topilmadi", "NOT_FOUND");
+  }
+  return row;
+}
+
+async function createContact(payload) {
+  const normalized = normalizeSocialPayload(payload);
+  const row = new FooterContactLink(normalized);
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function updateContact(contactId, payload) {
+  const row = await getContactByIdOrThrow(contactId);
+  const merged = {
+    name: payload?.name ?? row.name,
+    icon: payload?.icon ?? row.icon,
+    link: payload?.link ?? row.link,
+  };
+  const normalized = normalizeSocialPayload(merged);
+  row.name = normalized.name;
+  row.icon = normalized.icon;
+  row.link = normalized.link;
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function deleteContact(contactId) {
+  const id = toInt(contactId, "contactId");
+  const result = await FooterContactLink.findOneAndDelete({ id });
+  if (!result) {
+    throw new HttpError(404, "Contact topilmadi", "NOT_FOUND");
+  }
+}
+
 module.exports = {
   listFooterData,
   createAboutSection,
@@ -220,4 +262,7 @@ module.exports = {
   createAppStore,
   updateAppStore,
   deleteAppStore,
+  createContact,
+  updateContact,
+  deleteContact,
 };

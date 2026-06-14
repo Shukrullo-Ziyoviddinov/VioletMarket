@@ -6,6 +6,7 @@ const {
   FooterAboutSection,
   FooterSocialLink,
   FooterAppStore,
+  FooterContactLink,
   CargoRegionRate,
   DeliveryRegionPrice,
   VideoBannerItem,
@@ -54,17 +55,19 @@ async function getHomeBanner() {
 }
 
 async function getFooter() {
-  const [aboutSections, socialMedia, appStores] = await Promise.all([
+  const [aboutSections, socialMedia, appStores, contacts] = await Promise.all([
     FooterAboutSection.find().sort({ id: 1 }).lean(),
     FooterSocialLink.find().sort({ id: 1 }).lean(),
     FooterAppStore.find().sort({ id: 1 }).lean(),
+    FooterContactLink.find().sort({ id: 1 }).lean(),
   ]);
-  if (!aboutSections.length && !socialMedia.length && !appStores.length) return null;
+  if (!aboutSections.length && !socialMedia.length && !appStores.length && !contacts.length) return null;
   return {
     footerData: {
       aboutSections: aboutSections.map(stripMongoMeta),
       socialMedia: socialMedia.map(stripMongoMeta),
       appStores: appStores.map(stripMongoMeta),
+      contacts: contacts.map(stripMongoMeta),
     },
   };
 }

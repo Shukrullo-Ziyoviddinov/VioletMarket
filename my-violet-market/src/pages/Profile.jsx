@@ -1238,7 +1238,7 @@ const Profile = () => {
                         rel="noopener noreferrer"
                         className="profile-social-modal__link"
                       >
-                        <img src={social.icon} alt={social.name} />
+                        <img src={normalizeImagePath(social.icon)} alt={social.name} />
                       </a>
                     ))}
                   </div>
@@ -1251,7 +1251,7 @@ const Profile = () => {
                         rel="noopener noreferrer"
                         className="profile-social-modal__app-link"
                       >
-                        <img src={store.image} alt={store.name} loading="lazy" />
+                        <img src={normalizeImagePath(store.image)} alt={store.name} loading="lazy" />
                       </a>
                     ))}
                   </div>
@@ -1280,7 +1280,7 @@ const Profile = () => {
                 <div className="profile-contact-modal__body">
                   <h3 className="profile-contact-modal__title profile-contact-modal__title--center">{getLocalizedText({ uz: "Biz bilan bog'lanish", ru: "Связаться с нами" }, lang)}</h3>
                   <div className="profile-contact-modal__icons">
-                    {(footerData?.socialMedia || []).filter((s) => s.name === 'Telegram').map((social) => (
+                    {(footerData?.contacts?.length ? footerData.contacts : (footerData?.socialMedia || []).filter((s) => s.name === 'Telegram')).map((social) => (
                       <a
                         key={social.id}
                         href={social.link}
@@ -1288,7 +1288,7 @@ const Profile = () => {
                         rel="noopener noreferrer"
                         className="profile-contact-modal__link"
                       >
-                        <img src={social.icon} alt={social.name} />
+                        <img src={normalizeImagePath(social.icon)} alt={social.name} />
                       </a>
                     ))}
                   </div>

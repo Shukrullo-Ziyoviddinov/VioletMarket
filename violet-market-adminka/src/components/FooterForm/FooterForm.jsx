@@ -3,13 +3,16 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   createFooterAboutSection,
   createFooterAppStore,
+  createFooterContact,
   createFooterSocialMedia,
   deleteFooterAboutSection,
   deleteFooterAppStore,
+  deleteFooterContact,
   deleteFooterSocialMedia,
   fetchFooterAdminData,
   updateFooterAboutSection,
   updateFooterAppStore,
+  updateFooterContact,
   updateFooterSocialMedia,
 } from '../../api/footerAdminApi';
 import { toAbsoluteImageUrl } from '../../api/navbarAdminApi';
@@ -33,6 +36,10 @@ function buildSocialDraft() {
 
 function buildAppStoreDraft() {
   return { name: '', image: '', link: '' };
+}
+
+function buildContactDraft() {
+  return { name: '', icon: '', link: '' };
 }
 
 function normalizeAboutPayload(draft) {
@@ -116,6 +123,7 @@ export default function FooterForm({ visible }) {
     aboutSections: [],
     socialMedia: [],
     appStores: [],
+    contacts: [],
   });
 
   const [aboutDraft, setAboutDraft] = useState(buildAboutDraft());
@@ -129,6 +137,9 @@ export default function FooterForm({ visible }) {
   const [appDraft, setAppDraft] = useState(buildAppStoreDraft());
   const [editingAppId, setEditingAppId] = useState(null);
   const [editingAppDraft, setEditingAppDraft] = useState(null);
+  const [contactDraft, setContactDraft] = useState(buildContactDraft());
+  const [editingContactId, setEditingContactId] = useState(null);
+  const [editingContactDraft, setEditingContactDraft] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -139,6 +150,7 @@ export default function FooterForm({ visible }) {
         aboutSections: Array.isArray(data?.aboutSections) ? data.aboutSections : [],
         socialMedia: Array.isArray(data?.socialMedia) ? data.socialMedia : [],
         appStores: Array.isArray(data?.appStores) ? data.appStores : [],
+        contacts: Array.isArray(data?.contacts) ? data.contacts : [],
       });
     } catch (err) {
       setError(err.message || "Footer ma'lumotlarini yuklab bo'lmadi");
@@ -342,6 +354,57 @@ export default function FooterForm({ visible }) {
       await loadData();
     } catch (err) {
       setError(err.message || "App store linkni o'chirib bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const saveNewContact = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const payload = normalizeSocialPayload(contactDraft);
+      await createFooterContact(payload);
+      setContactDraft(buildContactDraft());
+      await loadData();
+    } catch (err) {
+      setError(err.message || "Contact linkni saqlab bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveEditingContact = async () => {
+    if (!editingContactId || !editingContactDraft) return;
+    setUpdating(true);
+    setError('');
+    try {
+      const payload = normalizeSocialPayload(editingContactDraft);
+      await updateFooterContact(editingContactId, payload);
+      setEditingContactId(null);
+      setEditingContactDraft(null);
+      await loadData();
+    } catch (err) {
+      setError(err.message || "Contact linkni yangilab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeContact = async (id) => {
+    const ok = window.confirm("Bu contact link o'chirilsinmi?");
+    if (!ok) return;
+    setUpdating(true);
+    setError('');
+    try {
+      await deleteFooterContact(id);
+      if (Number(editingContactId) === Number(id)) {
+        setEditingContactId(null);
+        setEditingContactDraft(null);
+      }
+      await loadData();
+    } catch (err) {
+      setError(err.message || "Contact linkni o'chirib bo'lmadi");
     } finally {
       setUpdating(false);
     }
@@ -807,6 +870,133 @@ export default function FooterForm({ visible }) {
                 onClick={() => {
                   setEditingAppId(null);
                   setEditingAppDraft(null);
+                }}
+              >
+                Bekor
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">Biz bilan bog'lanish (contacts)</h3>
+        <div className="global-section-modal__list">
+          {(footerData.contacts || []).map((contact) => (
+            <div key={contact.id} className="global-section-modal__saved-card">
+              <div className="global-section-modal__row-between">
+                <div>
+                  <strong>#{contact.id} {contact.name}</strong>
+                  <div className="global-section-modal__meta">{contact.link}</div>
+                </div>
+                <div className="global-section-modal__saved-actions">
+                  <button
+                    type="button"
+                    className="global-section-modal__ghost-btn"
+                    onClick={() => {
+                      setEditingContactId(contact.id);
+                      setEditingContactDraft({
+                        name: contact.name || '',
+                        icon: contact.icon || '',
+                        link: contact.link || '',
+                      });
+                      setError('');
+                    }}
+                  >
+                    Tahrirlash
+                  </button>
+                  <button
+                    type="button"
+                    className="global-section-modal__danger-link"
+                    onClick={() => removeContact(contact.id)}
+                    disabled={updating}
+                  >
+                    O'chirish
+                  </button>
+                </div>
+              </div>
+              {contact.icon ? (
+                <div className="global-section-modal__saved-thumb-wrap">
+                  <img
+                    src={toAbsoluteImageUrl(contact.icon)}
+                    alt={contact.name || 'contact'}
+                    className="global-section-modal__saved-thumb"
+                  />
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <div className="global-section-modal__sub-card">
+          <h3 className="global-section-modal__block-title">
+            {editingContactId ? "Contact linkni tahrirlash" : 'Yangi contact link'}
+          </h3>
+          <div className="global-section-modal__grid global-section-modal__grid--2">
+            <label className="global-section-modal__field">
+              <span className="global-section-modal__label">name</span>
+              <input
+                className="global-section-modal__input"
+                value={(editingContactId ? editingContactDraft?.name : contactDraft.name) || ''}
+                onChange={(e) =>
+                  editingContactId
+                    ? setEditingContactDraft((prev) => ({ ...prev, name: e.target.value }))
+                    : setContactDraft((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+            </label>
+            <label className="global-section-modal__field">
+              <span className="global-section-modal__label">link</span>
+              <input
+                className="global-section-modal__input"
+                value={(editingContactId ? editingContactDraft?.link : contactDraft.link) || ''}
+                onChange={(e) =>
+                  editingContactId
+                    ? setEditingContactDraft((prev) => ({ ...prev, link: e.target.value }))
+                    : setContactDraft((prev) => ({ ...prev, link: e.target.value }))
+                }
+              />
+            </label>
+            <label className="global-section-modal__field global-section-modal__field--full">
+              <ImageUploadField
+                label="icon (image)"
+                value={(editingContactId ? editingContactDraft?.icon : contactDraft.icon) || ''}
+                onChange={(uploadedPath) =>
+                  editingContactId
+                    ? setEditingContactDraft((prev) => ({ ...prev, icon: uploadedPath }))
+                    : setContactDraft((prev) => ({ ...prev, icon: uploadedPath }))
+                }
+                onUploadStateChange={(isUploading) => handleUploadCounter(setActiveUploads, isUploading)}
+              />
+            </label>
+          </div>
+          <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+            {editingContactId ? (
+              <button
+                type="button"
+                className="global-section-modal__ghost-btn"
+                onClick={saveEditingContact}
+                disabled={updating || activeUploads > 0}
+              >
+                {updating ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Fayl yuklanmoqda...' : 'Saqlash'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="global-section-modal__ghost-btn"
+                onClick={saveNewContact}
+                disabled={saving || activeUploads > 0}
+              >
+                {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Fayl yuklanmoqda...' : "Qo'shish"}
+              </button>
+            )}
+            {editingContactId ? (
+              <button
+                type="button"
+                className="global-section-modal__link-btn"
+                onClick={() => {
+                  setEditingContactId(null);
+                  setEditingContactDraft(null);
                 }}
               >
                 Bekor

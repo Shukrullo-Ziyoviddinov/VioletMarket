@@ -20,6 +20,7 @@ const {
   FooterAboutSection,
   FooterSocialLink,
   FooterAppStore,
+  FooterContactLink,
   CargoRegionRate,
   DeliveryRegionPrice,
   VideoBannerItem,
@@ -171,9 +172,11 @@ async function seedFooterMany() {
   await FooterAboutSection.syncIndexes();
   await FooterSocialLink.syncIndexes();
   await FooterAppStore.syncIndexes();
+  await FooterContactLink.syncIndexes();
   await FooterAboutSection.deleteMany({});
   await FooterSocialLink.deleteMany({});
   await FooterAppStore.deleteMany({});
+  await FooterContactLink.deleteMany({});
   if (footerData?.aboutSections?.length) {
     const aboutDocs = footerData.aboutSections.map(({ id, ...rest }) => rest);
     await FooterAboutSection.insertMany(aboutDocs);
@@ -186,8 +189,12 @@ async function seedFooterMany() {
     const appDocs = footerData.appStores.map(({ id, ...rest }) => rest);
     await FooterAppStore.insertMany(appDocs);
   }
+  if (footerData?.contacts?.length) {
+    const contactDocs = footerData.contacts.map(({ id, ...rest }) => rest);
+    await FooterContactLink.insertMany(contactDocs);
+  }
   console.log(
-    `Footer: about=${footerData?.aboutSections?.length || 0}, social=${footerData?.socialMedia?.length || 0}, apps=${footerData?.appStores?.length || 0}`
+    `Footer: about=${footerData?.aboutSections?.length || 0}, social=${footerData?.socialMedia?.length || 0}, apps=${footerData?.appStores?.length || 0}, contacts=${footerData?.contacts?.length || 0}`
   );
 }
 
@@ -411,6 +418,7 @@ async function logDbSummary() {
     footer_about_sections: await FooterAboutSection.countDocuments(),
     footer_social_links: await FooterSocialLink.countDocuments(),
     footer_app_stores: await FooterAppStore.countDocuments(),
+    footer_contact_links: await FooterContactLink.countDocuments(),
     cargo_region_rates: await CargoRegionRate.countDocuments(),
     delivery_region_prices: await DeliveryRegionPrice.countDocuments(),
     video_banner_items: await VideoBannerItem.countDocuments(),
