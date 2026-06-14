@@ -27,3 +27,11 @@ export async function updateUzWarehouseData(payload) {
   const data = await parseJson(res);
   return data?.data || {};
 }
+
+export async function deleteUzWarehouseData(slotKey) {
+  const res = await fetch(apiUrl(`/api/admin/uz-warehouse/${encodeURIComponent(slotKey)}`), {
+    method: 'DELETE',
+  });
+  const data = await parseJson(res);
+  return data?.data || {};
+}

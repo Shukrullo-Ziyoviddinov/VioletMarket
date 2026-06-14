@@ -11,7 +11,13 @@ const upsert = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const remove = asyncHandler(async (req, res) => {
+  const data = await adminUzWarehouseService.deleteWarehouseBanner(req.params.slotKey);
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   get,
   upsert,
+  remove,
 };

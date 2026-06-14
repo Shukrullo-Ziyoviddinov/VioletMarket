@@ -68,7 +68,24 @@ async function upsertWarehouseBanners(payload) {
   return getWarehouseBanners();
 }
 
+function resolveSlotByKey(slotKey) {
+  const key = String(slotKey || "").trim().toLowerCase();
+  if (key === "uz" || key === "uzwarehousedata" || key === "uz-warehouse") return 1;
+  if (key === "china" || key === "chinawarehousedata" || key === "china-warehouse") return 2;
+  throw new HttpError(400, "slotKey noto'g'ri (uz yoki china bo'lishi kerak)", "VALIDATION_ERROR");
+}
+
+async function deleteWarehouseBanner(slotKey) {
+  const slot = resolveSlotByKey(slotKey);
+  const deleted = await UzWarehouseLocale.findOneAndDelete({ slot });
+  if (!deleted) {
+    throw new HttpError(404, "Warehouse banner topilmadi", "NOT_FOUND");
+  }
+  return getWarehouseBanners();
+}
+
 module.exports = {
   getWarehouseBanners,
   upsertWarehouseBanners,
+  deleteWarehouseBanner,
 };

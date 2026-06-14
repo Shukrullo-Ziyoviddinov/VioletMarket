@@ -18,7 +18,11 @@ import {
   toAbsoluteVideoUrl,
   updateVideoBanner,
 } from '../../api/videoBannerAdminApi';
-import { fetchUzWarehouseData, updateUzWarehouseData } from '../../api/uzWarehouseAdminApi';
+import {
+  deleteUzWarehouseData,
+  fetchUzWarehouseData,
+  updateUzWarehouseData,
+} from '../../api/uzWarehouseAdminApi';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
@@ -1187,12 +1191,30 @@ function buildWarehouseDraft(srcPair) {
 }
 
 function UzWarehouseForm({ visible }) {
+  const SLOT_CONFIG = [
+    {
+      slotKey: 'uz',
+      dataKey: 'uzWarehouseData',
+      title: 'Uz warehouse banner',
+    },
+    {
+      slotKey: 'china',
+      dataKey: 'chinaWarehouseData',
+      title: 'China warehouse banner',
+    },
+  ];
+
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deletingSlotKey, setDeletingSlotKey] = useState('');
   const [error, setError] = useState('');
   const [activeUploads, setActiveUploads] = useState(0);
-  const [uzDraft, setUzDraft] = useState(buildWarehouseDraft());
-  const [chinaDraft, setChinaDraft] = useState(buildWarehouseDraft());
+  const [savedData, setSavedData] = useState({
+    uzWarehouseData: null,
+    chinaWarehouseData: null,
+  });
+  const [editingSlotKey, setEditingSlotKey] = useState('');
+  const [editingDraft, setEditingDraft] = useState(buildWarehouseDraft());
 
   const handleUploadStateChange = (isUploading) => {
     setActiveUploads((prev) => {
@@ -1206,8 +1228,10 @@ function UzWarehouseForm({ visible }) {
     setError('');
     try {
       const data = await fetchUzWarehouseData();
-      setUzDraft(buildWarehouseDraft(data?.uzWarehouseData?.src));
-      setChinaDraft(buildWarehouseDraft(data?.chinaWarehouseData?.src));
+      setSavedData({
+        uzWarehouseData: data?.uzWarehouseData || null,
+        chinaWarehouseData: data?.chinaWarehouseData || null,
+      });
     } catch (err) {
       setError(err.message || "Warehouse bannerlarni yuklab bo'lmadi");
     } finally {
@@ -1221,35 +1245,65 @@ function UzWarehouseForm({ visible }) {
     }
   }, [visible]);
 
-  const handleSave = async () => {
-    const payload = {
-      uzWarehouseData: {
-        src: { uz: uzDraft.uz.trim(), ru: uzDraft.ru.trim() },
-      },
-      chinaWarehouseData: {
-        src: { uz: chinaDraft.uz.trim(), ru: chinaDraft.ru.trim() },
-      },
-    };
+  const startEdit = (slotKey, sourcePair) => {
+    setEditingSlotKey(slotKey);
+    setEditingDraft(buildWarehouseDraft(sourcePair));
+    setError('');
+  };
 
-    if (!payload.uzWarehouseData.src.uz || !payload.uzWarehouseData.src.ru) {
-      setError("uzWarehouseData uchun src.uz va src.ru to'ldirilishi shart");
+  const cancelEdit = () => {
+    setEditingSlotKey('');
+    setEditingDraft(buildWarehouseDraft());
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingSlotKey) return;
+    const nextUz = editingDraft.uz.trim();
+    const nextRu = editingDraft.ru.trim();
+    if (!nextUz || !nextRu) {
+      setError("src.uz va src.ru to'ldirilishi shart");
       return;
     }
-    if (!payload.chinaWarehouseData.src.uz || !payload.chinaWarehouseData.src.ru) {
-      setError("chinaWarehouseData uchun src.uz va src.ru to'ldirilishi shart");
-      return;
-    }
 
-    setSaving(true);
+    const payload =
+      editingSlotKey === 'uz'
+        ? { uzWarehouseData: { src: { uz: nextUz, ru: nextRu } } }
+        : { chinaWarehouseData: { src: { uz: nextUz, ru: nextRu } } };
+
+    setUpdating(true);
     setError('');
     try {
       const data = await updateUzWarehouseData(payload);
-      setUzDraft(buildWarehouseDraft(data?.uzWarehouseData?.src));
-      setChinaDraft(buildWarehouseDraft(data?.chinaWarehouseData?.src));
+      setSavedData({
+        uzWarehouseData: data?.uzWarehouseData || null,
+        chinaWarehouseData: data?.chinaWarehouseData || null,
+      });
+      cancelEdit();
     } catch (err) {
       setError(err.message || "Warehouse bannerlarni saqlab bo'lmadi");
     } finally {
-      setSaving(false);
+      setUpdating(false);
+    }
+  };
+
+  const handleDelete = async (slotKey) => {
+    const ok = window.confirm("Bu banner o'chirilsinmi?");
+    if (!ok) return;
+    setDeletingSlotKey(slotKey);
+    setError('');
+    try {
+      const data = await deleteUzWarehouseData(slotKey);
+      setSavedData({
+        uzWarehouseData: data?.uzWarehouseData || null,
+        chinaWarehouseData: data?.chinaWarehouseData || null,
+      });
+      if (editingSlotKey === slotKey) {
+        cancelEdit();
+      }
+    } catch (err) {
+      setError(err.message || "Warehouse bannerni o'chirib bo'lmadi");
+    } finally {
+      setDeletingSlotKey('');
     }
   };
 
@@ -1257,96 +1311,116 @@ function UzWarehouseForm({ visible }) {
     <div className="global-section-modal__form-stack">
       <div className="global-section-modal__card">
         <div className="global-section-modal__row-between">
-          <h3 className="global-section-modal__block-title">Uz warehouse banner</h3>
+          <h3 className="global-section-modal__block-title">Saqlangan warehouse bannerlar</h3>
           <button type="button" className="global-section-modal__ghost-btn" onClick={loadWarehouseData}>
             <ReloadOutlined />
             <span>Yangilash</span>
           </button>
         </div>
         {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
-        <div className="global-section-modal__grid global-section-modal__grid--2">
-          <label className="global-section-modal__field">
-            <ImageUploadField
-              label="src.uz (image)"
-              value={uzDraft.uz}
-              onChange={(uploadedPath) => setUzDraft((prev) => ({ ...prev, uz: uploadedPath }))}
-              onUploadStateChange={handleUploadStateChange}
-            />
-          </label>
-          <label className="global-section-modal__field">
-            <ImageUploadField
-              label="src.ru (image)"
-              value={uzDraft.ru}
-              onChange={(uploadedPath) => setUzDraft((prev) => ({ ...prev, ru: uploadedPath }))}
-              onUploadStateChange={handleUploadStateChange}
-            />
-          </label>
-        </div>
-        <div className="global-section-modal__saved-thumb-wrap">
-          {uzDraft.uz ? (
-            <img
-              src={toAbsoluteImageUrl(uzDraft.uz)}
-              alt="uz warehouse uz"
-              className="global-section-modal__saved-thumb"
-            />
-          ) : null}
-          {uzDraft.ru ? (
-            <img
-              src={toAbsoluteImageUrl(uzDraft.ru)}
-              alt="uz warehouse ru"
-              className="global-section-modal__saved-thumb"
-            />
-          ) : null}
-        </div>
-      </div>
+        <div className="global-section-modal__list">
+          {SLOT_CONFIG.map((slot) => {
+            const current = savedData?.[slot.dataKey];
+            const srcPair = current?.src || {};
+            const hasData = Boolean(srcPair.uz || srcPair.ru);
+            const isEditing = editingSlotKey === slot.slotKey;
 
-      <div className="global-section-modal__card">
-        <h3 className="global-section-modal__block-title">China warehouse banner</h3>
-        <div className="global-section-modal__grid global-section-modal__grid--2">
-          <label className="global-section-modal__field">
-            <ImageUploadField
-              label="src.uz (image)"
-              value={chinaDraft.uz}
-              onChange={(uploadedPath) => setChinaDraft((prev) => ({ ...prev, uz: uploadedPath }))}
-              onUploadStateChange={handleUploadStateChange}
-            />
-          </label>
-          <label className="global-section-modal__field">
-            <ImageUploadField
-              label="src.ru (image)"
-              value={chinaDraft.ru}
-              onChange={(uploadedPath) => setChinaDraft((prev) => ({ ...prev, ru: uploadedPath }))}
-              onUploadStateChange={handleUploadStateChange}
-            />
-          </label>
-        </div>
-        <div className="global-section-modal__saved-thumb-wrap">
-          {chinaDraft.uz ? (
-            <img
-              src={toAbsoluteImageUrl(chinaDraft.uz)}
-              alt="china warehouse uz"
-              className="global-section-modal__saved-thumb"
-            />
-          ) : null}
-          {chinaDraft.ru ? (
-            <img
-              src={toAbsoluteImageUrl(chinaDraft.ru)}
-              alt="china warehouse ru"
-              className="global-section-modal__saved-thumb"
-            />
-          ) : null}
-        </div>
-      </div>
+            return (
+              <div key={slot.slotKey} className="global-section-modal__saved-card">
+                <div className="global-section-modal__row-between">
+                  <div>
+                    <strong>{slot.title}</strong>
+                    <div className="global-section-modal__meta">
+                      holat: {hasData ? 'saqlangan' : "hozircha yo'q"}
+                    </div>
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    {!isEditing ? (
+                      <button
+                        type="button"
+                        className="global-section-modal__ghost-btn"
+                        onClick={() => startEdit(slot.slotKey, srcPair)}
+                      >
+                        {hasData ? 'Tahrirlash' : "Qo'shish"}
+                      </button>
+                    ) : null}
+                    {hasData ? (
+                      <button
+                        type="button"
+                        className="global-section-modal__danger-link"
+                        onClick={() => handleDelete(slot.slotKey)}
+                        disabled={deletingSlotKey === slot.slotKey}
+                      >
+                        {deletingSlotKey === slot.slotKey ? "O'chirilmoqda..." : "O'chirish"}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
 
-      <div className="global-section-modal__actions">
-        <button
-          type="button"
-          className="global-section-modal__btn"
-          onClick={handleSave}
-          disabled={saving || activeUploads > 0}
-        >
-          {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Fayl yuklanmoqda...' : 'Saqlash'}
-        </button>
+                {isEditing ? (
+                  <div className="global-section-modal__saved-item-edit global-section-modal__edit-block">
+                    <div className="global-section-modal__grid global-section-modal__grid--2">
+                      <label className="global-section-modal__field">
+                        <ImageUploadField
+                          label="src.uz (image)"
+                          value={editingDraft.uz}
+                          onChange={(uploadedPath) =>
+                            setEditingDraft((prev) => ({ ...prev, uz: uploadedPath }))
+                          }
+                          onUploadStateChange={handleUploadStateChange}
+                        />
+                      </label>
+                      <label className="global-section-modal__field">
+                        <ImageUploadField
+                          label="src.ru (image)"
+                          value={editingDraft.ru}
+                          onChange={(uploadedPath) =>
+                            setEditingDraft((prev) => ({ ...prev, ru: uploadedPath }))
+                          }
+                          onUploadStateChange={handleUploadStateChange}
+                        />
+                      </label>
+                    </div>
+                    <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                      <button
+                        type="button"
+                        className="global-section-modal__ghost-btn"
+                        onClick={handleSaveEdit}
+                        disabled={updating || activeUploads > 0}
+                      >
+                        {updating ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Fayl yuklanmoqda...' : 'Saqlash'}
+                      </button>
+                      <button
+                        type="button"
+                        className="global-section-modal__link-btn"
+                        onClick={cancelEdit}
+                      >
+                        Bekor
+                      </button>
+                    </div>
+                  </div>
+                ) : hasData ? (
+                  <div className="global-section-modal__saved-thumb-wrap">
+                    {srcPair.uz ? (
+                      <img
+                        src={toAbsoluteImageUrl(srcPair.uz)}
+                        alt={`${slot.title} uz`}
+                        className="global-section-modal__saved-thumb"
+                      />
+                    ) : null}
+                    {srcPair.ru ? (
+                      <img
+                        src={toAbsoluteImageUrl(srcPair.ru)}
+                        alt={`${slot.title} ru`}
+                        className="global-section-modal__saved-thumb"
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
       {error ? <p className="global-section-modal__error">{error}</p> : null}
     </div>

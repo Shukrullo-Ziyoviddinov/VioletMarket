@@ -9,12 +9,6 @@ import './UzWarehouse.css';
 const UZ_WAREHOUSE_PAGE_PATH = '/uzWarehousePage';
 const CHINA_WAREHOUSE_PAGE_PATH = '/chinaWarehousePage';
 
-/** API/seed yangilanmaguncha public/img dagi bannerlar */
-const CHINA_WAREHOUSE_BANNER_SRC = {
-  uz: '/img/sellerCountryimguz.jpg',
-  ru: '/img/sellerCountryimgru.jpg',
-};
-
 const BANNER_CONFIG = [
   {
     dataKey: 'uzWarehouseData',
@@ -36,17 +30,12 @@ const UzWarehouse = () => {
   const langKey = (i18n.language || 'uz').split('-')[0];
   const lang = langKey === 'ru' ? 'ru' : 'uz';
 
-  const resolvedChinaWarehouseData = useMemo(() => {
-    if (chinaWarehouseData?.src) return chinaWarehouseData;
-    return { src: CHINA_WAREHOUSE_BANNER_SRC };
-  }, [chinaWarehouseData]);
-
   const warehouseDataByKey = useMemo(
     () => ({
       uzWarehouseData,
-      chinaWarehouseData: resolvedChinaWarehouseData,
+      chinaWarehouseData,
     }),
-    [uzWarehouseData, resolvedChinaWarehouseData]
+    [uzWarehouseData, chinaWarehouseData]
   );
 
   const banners = useMemo(
