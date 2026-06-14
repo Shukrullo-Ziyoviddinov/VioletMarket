@@ -21,7 +21,9 @@ const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
 
 const menuItems = [
   { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa' },
-  { key: 'brand-country-categories', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
+  { key: 'brand-country-filter-values', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
+  { key: 'brand-country-categories', icon: <TeamOutlined />, label: 'Brend va davlat categoriya' },
+  { key: 'master-categories', icon: <MenuOutlined />, label: 'Master categoriya' },
   { key: 'banner', icon: <PictureOutlined />, label: 'Banner' },
   { key: 'video-banner', icon: <VideoCameraOutlined />, label: 'Video banner' },
   { key: 'country-seller-banner', icon: <ShopOutlined />, label: 'Davlat seller banner' },

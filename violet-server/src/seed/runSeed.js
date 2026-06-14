@@ -67,6 +67,7 @@ async function dropLegacySingletonSiteCollections() {
 
 async function seedCategoriesMany() {
   const categories = require("./seedCategories");
+  const { filterValues } = require("./seedBrandCountryFilterValues");
   await BrandCountryFilterValue.syncIndexes();
   await CountryCategory.syncIndexes();
   await BrandCategory.syncIndexes();
@@ -74,22 +75,14 @@ async function seedCategoriesMany() {
   await CountryCategory.deleteMany({});
   await BrandCategory.deleteMany({});
 
-  const filterRows = [];
-  const countryValues = Array.isArray(categories.categoriyCountries)
-    ? categories.categoriyCountries.map((row) => String(row?.filterValue || "").trim()).filter(Boolean)
+  const filterRows = Array.isArray(filterValues)
+    ? filterValues
+        .map((row) => ({
+          type: String(row?.type || "").trim(),
+          filterValue: String(row?.filterValue || "").trim(),
+        }))
+        .filter((row) => row.type && row.filterValue)
     : [];
-  const brandValues = Array.isArray(categories.categoriesBrend)
-    ? categories.categoriesBrend.map((row) => String(row?.filterValue || "").trim()).filter(Boolean)
-    : [];
-
-  const countrySet = new Set(countryValues);
-  const brandSet = new Set(brandValues);
-  for (const filterValue of countrySet) {
-    filterRows.push({ type: "country", filterValue });
-  }
-  for (const filterValue of brandSet) {
-    filterRows.push({ type: "brand", filterValue });
-  }
   if (filterRows.length) {
     await BrandCountryFilterValue.insertMany(filterRows);
   }

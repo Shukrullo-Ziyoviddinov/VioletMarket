@@ -13,9 +13,11 @@ export default function AdminLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSectionSelect = (section) => {
-    // Hozircha faqat Brand/Country categories, Banner, Navbar category, Video banner va Davlat seller banner bo'limlari real ishlaydi
+    // Hozircha faqat Brand/Country filter values, Brand/Country categories, Master categories, Banner, Navbar category, Video banner va Davlat seller banner bo'limlari real ishlaydi
     if (
+      section?.key !== 'brand-country-filter-values' &&
       section?.key !== 'brand-country-categories' &&
+      section?.key !== 'master-categories' &&
       section?.key !== 'banner' &&
       section?.key !== 'navbar-category' &&
       section?.key !== 'video-banner' &&
@@ -49,7 +51,7 @@ export default function AdminLayout() {
           <Content className="admin-layout__content">
             <div className="admin-layout__placeholder">
               <h2>Bo'limni tanlang</h2>
-              <p>Hozircha Brand/Country categories, Banner, Navbar category, Video banner va Davlat seller banner bo'limlarida modal va to'ldirish ishlaydi.</p>
+              <p>Hozircha Brand/Country filter values, Brand/Country categories, Master categories, Banner, Navbar category, Video banner va Davlat seller banner bo'limlarida modal va to'ldirish ishlaydi.</p>
             </div>
           </Content>
         </Layout>

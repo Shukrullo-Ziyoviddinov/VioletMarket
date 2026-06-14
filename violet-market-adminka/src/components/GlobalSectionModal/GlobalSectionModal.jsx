@@ -999,7 +999,7 @@ function buildDefaultFilterValueDraft() {
   };
 }
 
-function BrandCountryCategoriesForm({ visible }) {
+function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories' }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -1432,8 +1432,13 @@ function BrandCountryCategoriesForm({ visible }) {
     }
   };
 
+  const showMaster = mode === 'master-categories';
+  const showFilterValues = mode === 'brand-country-filter-values';
+  const showBrandCountryCategories = mode === 'brand-country-categories';
+
   return (
     <div className="global-section-modal__form-stack">
+      {showMaster ? (
       <div className="global-section-modal__card">
         <h3 className="global-section-modal__block-title">MasterCategory</h3>
         <div className="global-section-modal__grid global-section-modal__grid--2">
@@ -1543,7 +1548,9 @@ function BrandCountryCategoriesForm({ visible }) {
           ))}
         </div>
       </div>
+      ) : null}
 
+      {showFilterValues ? (
       <div className="global-section-modal__card">
         <h3 className="global-section-modal__block-title">BrandCategories&CountryCategories filter values</h3>
         <div className="global-section-modal__grid global-section-modal__grid--2">
@@ -1655,7 +1662,9 @@ function BrandCountryCategoriesForm({ visible }) {
           ))}
         </div>
       </div>
+      ) : null}
 
+      {showBrandCountryCategories ? (
       <div className="global-section-modal__card">
         <div className="global-section-modal__row-between">
           <h3 className="global-section-modal__block-title">CountryCategories</h3>
@@ -1870,7 +1879,9 @@ function BrandCountryCategoriesForm({ visible }) {
           ))}
         </div>
       </div>
+      ) : null}
 
+      {showBrandCountryCategories ? (
       <div className="global-section-modal__card">
         <h3 className="global-section-modal__block-title">BrandCategories</h3>
         <div className="global-section-modal__grid global-section-modal__grid--2">
@@ -2034,6 +2045,7 @@ function BrandCountryCategoriesForm({ visible }) {
           ))}
         </div>
       </div>
+      ) : null}
 
       {error ? <p className="global-section-modal__error">{error}</p> : null}
     </div>
@@ -3162,8 +3174,12 @@ export default function GlobalSectionModal({ open, section, onClose }) {
   const title = section?.label || 'Bo‘lim';
 
   const content =
-    section?.key === 'brand-country-categories' ? (
-      <BrandCountryCategoriesForm visible={open} />
+    section?.key === 'brand-country-filter-values' ? (
+      <BrandCountryCategoriesForm visible={open} mode="brand-country-filter-values" />
+    ) : section?.key === 'brand-country-categories' ? (
+      <BrandCountryCategoriesForm visible={open} mode="brand-country-categories" />
+    ) : section?.key === 'master-categories' ? (
+      <BrandCountryCategoriesForm visible={open} mode="master-categories" />
     ) : section?.key === 'banner' ? (
       <HomeBannerForm visible={open} />
     ) : section?.key === 'navbar-category' ? (
