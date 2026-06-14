@@ -11,6 +11,18 @@
   font-size: 18px;
 }
 
+.admin-header__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-header__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
 .admin-header__right {
   display: flex;
   align-items: center;

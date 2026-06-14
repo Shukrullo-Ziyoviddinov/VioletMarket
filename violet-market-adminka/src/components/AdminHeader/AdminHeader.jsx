@@ -9,12 +9,15 @@ const { Text } = Typography;
 export default function AdminHeader({ collapsed, onToggle }) {
   return (
     <Header className="admin-header">
-      <Button
-        type="text"
-        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        onClick={onToggle}
-        className="admin-header__trigger"
-      />
+      <div className="admin-header__left">
+        <Button
+          type="text"
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={onToggle}
+          className="admin-header__trigger"
+        />
+        <Text className="admin-header__title">Admin dashboard overview</Text>
+      </div>
       <div className="admin-header__right">
         <Space className="admin-header__user">
           <Avatar size="small" icon={<UserOutlined />} className="admin-header__avatar" />
