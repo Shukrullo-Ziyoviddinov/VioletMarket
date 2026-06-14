@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { getPortalContainer } from '../../utils/utils';
 import { useTranslation } from 'react-i18next';
 import { useAppData } from '../../contexts/AppDataContext';
-import { formatPrice, getLocalizedText } from '../../utils/utils';
+import { formatPrice, getDeliveryTiers, getLocalizedText } from '../../utils/utils';
 import './DeliveryInfoModal.css';
 
 const CLOSE_THRESHOLD_PERCENT = 0.2; // 20% pastga surilsa yopiladi
@@ -89,6 +89,8 @@ const DeliveryInfoModal = ({ isOpen, onClose }) => {
 
   const toshkentInfo = prices.toshkent;
   const viloyatInfo = prices.viloyat;
+  const toshkentTiers = getDeliveryTiers(toshkentInfo, 'toshkent');
+  const viloyatTiers = getDeliveryTiers(viloyatInfo, 'viloyat');
   const freeLabel = i18n.t('cart.free');
 
   const dragHandleProps = {
@@ -139,59 +141,23 @@ const DeliveryInfoModal = ({ isOpen, onClose }) => {
         </div>
         <div className="delivery-modal-body">
           <div className="delivery-info-section">
-            <h4>{getLocalizedText(toshkentInfo.name, lang)}</h4>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(toshkentInfo.namePricetsh1, lang)}</span>
-              <span className="price">
-                {toshkentInfo.pricetsh1 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh1)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(toshkentInfo.namePricetsh2, lang)}</span>
-              <span className="price">
-                {toshkentInfo.pricetsh2 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh2)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(toshkentInfo.namePricetsh3, lang)}</span>
-              <span className="price">
-                {toshkentInfo.pricetsh3 === 0 ? freeLabel : formatPrice(toshkentInfo.pricetsh3)}
-              </span>
-            </div>
+            <h4>{getLocalizedText(toshkentInfo?.name, lang)}</h4>
+            {toshkentTiers.map((tier) => (
+              <div key={`tsh-${tier.index}`} className="delivery-price-item">
+                <span>{getLocalizedText(tier.label, lang)}</span>
+                <span className="price">{tier.price === 0 ? freeLabel : formatPrice(tier.price)}</span>
+              </div>
+            ))}
           </div>
           
           <div className="delivery-info-section">
-            <h4>{getLocalizedText(viloyatInfo.name, lang)}</h4>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(viloyatInfo.namePricev1, lang)}</span>
-              <span className="price">
-                {viloyatInfo.pricev1 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev1)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(viloyatInfo.namePricev2, lang)}</span>
-              <span className="price">
-                {viloyatInfo.pricev2 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev2)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(viloyatInfo.namePricev3, lang)}</span>
-              <span className="price">
-                {viloyatInfo.pricev3 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev3)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(viloyatInfo.namePricev4, lang)}</span>
-              <span className="price">
-                {viloyatInfo.pricev4 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev4)}
-              </span>
-            </div>
-            <div className="delivery-price-item">
-              <span>{getLocalizedText(viloyatInfo.namePricev5, lang)}</span>
-              <span className="price">
-                {viloyatInfo.pricev5 === 0 ? freeLabel : formatPrice(viloyatInfo.pricev5)}
-              </span>
-            </div>
+            <h4>{getLocalizedText(viloyatInfo?.name, lang)}</h4>
+            {viloyatTiers.map((tier) => (
+              <div key={`vil-${tier.index}`} className="delivery-price-item">
+                <span>{getLocalizedText(tier.label, lang)}</span>
+                <span className="price">{tier.price === 0 ? freeLabel : formatPrice(tier.price)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

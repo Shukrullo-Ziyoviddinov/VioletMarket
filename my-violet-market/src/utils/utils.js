@@ -81,6 +81,91 @@ export const getOriginalPrice = (val) => {
   return null;
 };
 
+function extractNumberCandidates(text) {
+  const parts = String(text || '').match(/\d[\d\s,.]*/g) || [];
+  return parts
+    .map((part) => Number(String(part).replace(/[^\d]/g, '')))
+    .filter((n) => Number.isFinite(n) && n > 0);
+}
+
+function parseTierBounds(labelValue) {
+  const texts = [];
+  if (typeof labelValue === 'string') {
+    texts.push(labelValue);
+  } else if (labelValue && typeof labelValue === 'object') {
+    if (typeof labelValue.uz === 'string') texts.push(labelValue.uz);
+    if (typeof labelValue.ru === 'string') texts.push(labelValue.ru);
+  }
+
+  let best = { lower: null, upper: null, score: -1 };
+  texts.forEach((rawText) => {
+    const text = String(rawText || '').toLowerCase();
+    const nums = extractNumberCandidates(text);
+    if (!nums.length) return;
+
+    let lower = null;
+    let upper = null;
+    if (nums.length >= 2) {
+      lower = Math.min(...nums);
+      upper = Math.max(...nums);
+    } else {
+      const n = nums[0];
+      const hasUpperHint = /(gacha|до|up to|maximum|максимум|max)/i.test(text);
+      const hasLowerHint = /(dan|от|from|>=|plus|\+)/i.test(text);
+      if (hasLowerHint && !hasUpperHint) {
+        lower = n;
+      } else if (hasUpperHint && !hasLowerHint) {
+        upper = n;
+      } else {
+        upper = n;
+      }
+    }
+
+    const score = (lower != null ? 1 : 0) + (upper != null ? 1 : 0);
+    if (score > best.score) {
+      best = { lower, upper, score };
+    }
+  });
+
+  return {
+    lower: best.lower,
+    upper: best.upper,
+  };
+}
+
+export function getDeliveryTiers(regionData, regionKey = 'toshkent') {
+  const data = regionData && typeof regionData === 'object' ? regionData : {};
+  const isViloyat = String(regionKey || '').toLowerCase() === 'viloyat';
+  const labelPrefix = isViloyat ? 'namePricev' : 'namePricetsh';
+  const pricePrefix = isViloyat ? 'pricev' : 'pricetsh';
+
+  const indexSet = new Set();
+  Object.keys(data).forEach((key) => {
+    const labelMatch = key.match(new RegExp(`^${labelPrefix}(\\d+)$`));
+    if (labelMatch) indexSet.add(Number(labelMatch[1]));
+    const priceMatch = key.match(new RegExp(`^${pricePrefix}(\\d+)$`));
+    if (priceMatch) indexSet.add(Number(priceMatch[1]));
+  });
+
+  const indexes = Array.from(indexSet)
+    .filter((i) => Number.isFinite(i) && i > 0)
+    .sort((a, b) => a - b);
+
+  return indexes.map((index) => {
+    const label = data[`${labelPrefix}${index}`];
+    const rawPrice = data[`${pricePrefix}${index}`];
+    const numericPrice = Number(rawPrice);
+    const bounds = parseTierBounds(label);
+    return {
+      index,
+      label,
+      price: Number.isFinite(numericPrice) ? numericPrice : 0,
+      lower: bounds.lower,
+      upper: bounds.upper,
+    };
+  });
+}
+
 // Yetkazib berish narxini hisoblash (deliveryPrices — API / AppData dan)
 export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType = 'toshkent', deliveryPrices) => {
   if (!deliveryPrices?.toshkent || !deliveryPrices?.viloyat) return 0;
@@ -88,18 +173,28 @@ export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType =
   const deliveryType = selectedDeliveryType === 'toshkent'
     ? deliveryPrices.toshkent
     : deliveryPrices.viloyat;
-  
-  if (selectedDeliveryType === 'toshkent') {
-    if (totalProductPrice < 20000) return deliveryType.pricetsh1; // 7000
-    if (totalProductPrice < 50000) return deliveryType.pricetsh2; // 5000
-    return deliveryType.pricetsh3; // 0 (Bepul)
-  } else {
-    if (totalProductPrice < 20000) return deliveryType.pricev1; // 20000
-    if (totalProductPrice < 50000) return deliveryType.pricev2; // 15000
-    if (totalProductPrice < 100000) return deliveryType.pricev3; // 13000
-    if (totalProductPrice < 150000) return deliveryType.pricev4; // 10000
-    return deliveryType.pricev5; // 0 (Bepul)
+  const tiers = getDeliveryTiers(deliveryType, selectedDeliveryType);
+  if (!tiers.length) return 0;
+
+  let bestLowerTier = null;
+  for (const tier of tiers) {
+    if (tier.lower != null && totalProductPrice >= tier.lower) {
+      if (!bestLowerTier || tier.lower > bestLowerTier.lower) {
+        bestLowerTier = tier;
+      }
+    }
+
+    if (
+      tier.upper != null &&
+      totalProductPrice < tier.upper &&
+      (tier.lower == null || totalProductPrice >= tier.lower)
+    ) {
+      return tier.price;
+    }
   }
+
+  if (bestLowerTier) return bestLowerTier.price;
+  return tiers[tiers.length - 1]?.price || 0;
 };
 
 // Kargo narxini hisoblash (cargoRates — API / AppData dan)
