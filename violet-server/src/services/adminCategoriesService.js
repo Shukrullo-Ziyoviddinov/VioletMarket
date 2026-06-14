@@ -1,4 +1,4 @@
-const { BrandCategory, CountryCategory } = require("../models");
+const { BrandCategory, BrandCountryFilterValue, CountryCategory } = require("../models");
 const { HttpError } = require("../utils/httpError");
 
 function toInt(value, label) {
@@ -11,6 +11,14 @@ function toInt(value, label) {
 
 function clean(value) {
   return String(value || "").trim();
+}
+
+function normalizeFilterType(value) {
+  const type = clean(value).toLowerCase();
+  if (type !== "brand" && type !== "country") {
+    throw new HttpError(400, "type faqat brand yoki country bo'lishi mumkin", "VALIDATION_ERROR");
+  }
+  return type;
 }
 
 function normalizeCountryPayload(raw) {
@@ -76,6 +84,18 @@ function normalizeBrandPayload(raw) {
   };
 }
 
+function normalizeFilterValuePayload(raw) {
+  if (!raw || typeof raw !== "object") {
+    throw new HttpError(400, "Filter payload noto'g'ri", "VALIDATION_ERROR");
+  }
+  const type = normalizeFilterType(raw?.type);
+  const filterValue = clean(raw?.filterValue);
+  if (!filterValue) {
+    throw new HttpError(400, "filterValue to'ldirilishi shart", "VALIDATION_ERROR");
+  }
+  return { type, filterValue };
+}
+
 function stripMongoMeta(doc) {
   if (!doc || typeof doc !== "object") return doc;
   const plain = typeof doc.toObject === "function" ? doc.toObject() : doc;
@@ -84,14 +104,35 @@ function stripMongoMeta(doc) {
 }
 
 async function listCategories() {
-  const [categoriyCountries, categoriesBrend] = await Promise.all([
+  const [categoriyCountries, categoriesBrend, filterValues] = await Promise.all([
     CountryCategory.find().sort({ id: 1 }).lean(),
     BrandCategory.find().sort({ id: 1 }).lean(),
+    BrandCountryFilterValue.find().sort({ type: 1, id: 1 }).lean(),
   ]);
   return {
     categoriyCountries: categoriyCountries.map(stripMongoMeta),
     categoriesBrend: categoriesBrend.map(stripMongoMeta),
+    filterValues: filterValues.map(stripMongoMeta),
   };
+}
+
+async function ensureFilterValueExists(type, filterValue) {
+  const normalizedType = normalizeFilterType(type);
+  const normalizedFilterValue = clean(filterValue);
+  if (!normalizedFilterValue) {
+    throw new HttpError(400, "filterValue to'ldirilishi shart", "VALIDATION_ERROR");
+  }
+  const row = await BrandCountryFilterValue.findOne({
+    type: normalizedType,
+    filterValue: normalizedFilterValue,
+  }).lean();
+  if (!row) {
+    throw new HttpError(
+      400,
+      `Tanlangan filterValue (${normalizedFilterValue}) ${normalizedType} turida topilmadi`,
+      "VALIDATION_ERROR"
+    );
+  }
 }
 
 async function getCountryByIdOrThrow(countryId) {
@@ -114,6 +155,7 @@ async function getBrandByIdOrThrow(brandId) {
 
 async function createCountryCategory(payload) {
   const normalized = normalizeCountryPayload(payload);
+  await ensureFilterValueExists("country", normalized.filterValue);
   const doc = new CountryCategory(normalized);
   await doc.save();
   return stripMongoMeta(doc);
@@ -129,6 +171,7 @@ async function updateCountryCategory(countryId, payload) {
     filterValue: payload?.filterValue ?? doc.filterValue,
   };
   const normalized = normalizeCountryPayload(merged);
+  await ensureFilterValueExists("country", normalized.filterValue);
   doc.name = normalized.name;
   doc.image = normalized.image;
   doc.flag = normalized.flag;
@@ -148,6 +191,7 @@ async function deleteCountryCategory(countryId) {
 
 async function createBrandCategory(payload) {
   const normalized = normalizeBrandPayload(payload);
+  await ensureFilterValueExists("brand", normalized.filterValue);
   const doc = new BrandCategory(normalized);
   await doc.save();
   return stripMongoMeta(doc);
@@ -162,6 +206,7 @@ async function updateBrandCategory(brandId, payload) {
     filterValue: payload?.filterValue ?? doc.filterValue,
   };
   const normalized = normalizeBrandPayload(merged);
+  await ensureFilterValueExists("brand", normalized.filterValue);
   doc.name = normalized.name;
   doc.image = normalized.image;
   doc.link = normalized.link;
@@ -178,6 +223,71 @@ async function deleteBrandCategory(brandId) {
   }
 }
 
+async function getFilterValueByIdOrThrow(filterId) {
+  const id = toInt(filterId, "filterId");
+  const row = await BrandCountryFilterValue.findOne({ id });
+  if (!row) {
+    throw new HttpError(404, "Filter value topilmadi", "NOT_FOUND");
+  }
+  return row;
+}
+
+async function createFilterValue(payload) {
+  const normalized = normalizeFilterValuePayload(payload);
+  const duplicate = await BrandCountryFilterValue.findOne(normalized).lean();
+  if (duplicate) {
+    throw new HttpError(409, "Bunday filterValue allaqachon bor", "CONFLICT");
+  }
+  const row = new BrandCountryFilterValue(normalized);
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function updateFilterValue(filterId, payload) {
+  const row = await getFilterValueByIdOrThrow(filterId);
+  const merged = {
+    type: payload?.type ?? row.type,
+    filterValue: payload?.filterValue ?? row.filterValue,
+  };
+  const normalized = normalizeFilterValuePayload(merged);
+  if (normalized.type !== row.type || normalized.filterValue !== row.filterValue) {
+    const duplicate = await BrandCountryFilterValue.findOne(normalized).lean();
+    if (duplicate) {
+      throw new HttpError(409, "Bunday filterValue allaqachon bor", "CONFLICT");
+    }
+  }
+
+  const sourceModel = row.type === "country" ? CountryCategory : BrandCategory;
+  const inUseCount = await sourceModel.countDocuments({ filterValue: row.filterValue });
+  const changingKey = normalized.type !== row.type || normalized.filterValue !== row.filterValue;
+  if (changingKey && inUseCount > 0) {
+    throw new HttpError(
+      409,
+      "Bu filterValue kategoriyalarda ishlatilgan. Avval kategoriyalarni yangilang.",
+      "CONFLICT"
+    );
+  }
+
+  row.type = normalized.type;
+  row.filterValue = normalized.filterValue;
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function deleteFilterValue(filterId) {
+  const row = await getFilterValueByIdOrThrow(filterId);
+  const sourceModel = row.type === "country" ? CountryCategory : BrandCategory;
+  const inUseCount = await sourceModel.countDocuments({ filterValue: row.filterValue });
+  if (inUseCount > 0) {
+    throw new HttpError(
+      409,
+      "Bu filterValue kategoriyalarda ishlatilgan. O'chirib bo'lmaydi.",
+      "CONFLICT"
+    );
+  }
+  await BrandCountryFilterValue.deleteOne({ id: row.id });
+}
+
 module.exports = {
   listCategories,
   createCountryCategory,
@@ -186,4 +296,7 @@ module.exports = {
   createBrandCategory,
   updateBrandCategory,
   deleteBrandCategory,
+  createFilterValue,
+  updateFilterValue,
+  deleteFilterValue,
 };

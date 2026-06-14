@@ -4,11 +4,14 @@ import { Modal } from 'antd';
 import {
   createAdminBrandCategory,
   createAdminCountryCategory,
+  createAdminFilterValue,
   deleteAdminBrandCategory,
   deleteAdminCountryCategory,
+  deleteAdminFilterValue,
   fetchAdminCategories,
   updateAdminBrandCategory,
   updateAdminCountryCategory,
+  updateAdminFilterValue,
 } from '../../api/adminCategoriesApi';
 import {
   createHomeBanner,
@@ -939,21 +942,36 @@ function buildDefaultBrandCategoryDraft() {
   };
 }
 
+function buildDefaultFilterValueDraft() {
+  return {
+    type: 'country',
+    filterValue: '',
+  };
+}
+
 function BrandCountryCategoriesForm({ visible }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
   const [activeUploads, setActiveUploads] = useState(0);
-  const [data, setData] = useState({ categoriyCountries: [], categoriesBrend: [] });
+  const [data, setData] = useState({ categoriyCountries: [], categoriesBrend: [], filterValues: [] });
 
   const [countryDraft, setCountryDraft] = useState(buildDefaultCountryCategoryDraft());
   const [editingCountryId, setEditingCountryId] = useState(null);
   const [editingCountryDraft, setEditingCountryDraft] = useState(null);
+  const [isCountryFilterOpen, setIsCountryFilterOpen] = useState(false);
+  const [isCountryEditFilterOpen, setIsCountryEditFilterOpen] = useState(false);
 
   const [brandDraft, setBrandDraft] = useState(buildDefaultBrandCategoryDraft());
   const [editingBrandId, setEditingBrandId] = useState(null);
   const [editingBrandDraft, setEditingBrandDraft] = useState(null);
+  const [isBrandFilterOpen, setIsBrandFilterOpen] = useState(false);
+  const [isBrandEditFilterOpen, setIsBrandEditFilterOpen] = useState(false);
+
+  const [filterDraft, setFilterDraft] = useState(buildDefaultFilterValueDraft());
+  const [editingFilterId, setEditingFilterId] = useState(null);
+  const [editingFilterDraft, setEditingFilterDraft] = useState(null);
 
   const handleUploadStateChange = (isUploading) => {
     setActiveUploads((prev) => {
@@ -970,6 +988,7 @@ function BrandCountryCategoriesForm({ visible }) {
       setData({
         categoriyCountries: Array.isArray(payload?.categoriyCountries) ? payload.categoriyCountries : [],
         categoriesBrend: Array.isArray(payload?.categoriesBrend) ? payload.categoriesBrend : [],
+        filterValues: Array.isArray(payload?.filterValues) ? payload.filterValues : [],
       });
     } catch (err) {
       setError(err.message || "Brand/Country kategoriyalarni yuklab bo'lmadi");
@@ -983,6 +1002,22 @@ function BrandCountryCategoriesForm({ visible }) {
       loadCategories();
     }
   }, [visible]);
+
+  const countryFilterOptions = (data.filterValues || [])
+    .filter((item) => item.type === 'country')
+    .map((item) => ({
+      value: item.filterValue || '',
+      main: item.filterValue || '',
+      sub: 'Country filter',
+    }));
+
+  const brandFilterOptions = (data.filterValues || [])
+    .filter((item) => item.type === 'brand')
+    .map((item) => ({
+      value: item.filterValue || '',
+      main: item.filterValue || '',
+      sub: 'Brand filter',
+    }));
 
   const normalizeCountryPayload = (draft) => ({
     name: {
@@ -1002,6 +1037,11 @@ function BrandCountryCategoriesForm({ visible }) {
     filterValue: draft.filterValue.trim(),
   });
 
+  const normalizeFilterPayload = (draft) => ({
+    type: draft.type,
+    filterValue: draft.filterValue.trim(),
+  });
+
   const validateCountryPayload = (payload) => {
     if (!payload.name.uz || !payload.name.ru) return "Country: name.uz va name.ru majburiy";
     if (!payload.image) return "Country: image majburiy";
@@ -1018,6 +1058,85 @@ function BrandCountryCategoriesForm({ visible }) {
     return '';
   };
 
+  const validateFilterPayload = (payload) => {
+    if (payload.type !== 'country' && payload.type !== 'brand') {
+      return 'Filter: type noto‘g‘ri';
+    }
+    if (!payload.filterValue) {
+      return 'Filter: filterValue majburiy';
+    }
+    return '';
+  };
+
+  const handleCreateFilter = async () => {
+    const payload = normalizeFilterPayload(filterDraft);
+    const validationError = validateFilterPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createAdminFilterValue(payload);
+      setFilterDraft(buildDefaultFilterValueDraft());
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Filter value qo'shib bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startFilterEdit = (item) => {
+    setEditingFilterId(item.id);
+    setEditingFilterDraft({
+      type: item.type || 'country',
+      filterValue: item.filterValue || '',
+    });
+  };
+
+  const cancelFilterEdit = () => {
+    setEditingFilterId(null);
+    setEditingFilterDraft(null);
+  };
+
+  const saveFilterEdit = async () => {
+    if (!editingFilterId || !editingFilterDraft) return;
+    const payload = normalizeFilterPayload(editingFilterDraft);
+    const validationError = validateFilterPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateAdminFilterValue(editingFilterId, payload);
+      cancelFilterEdit();
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Filter value tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeFilter = async (filterId) => {
+    const ok = window.confirm("Bu filter value o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteAdminFilterValue(filterId);
+      if (editingFilterId === filterId) {
+        cancelFilterEdit();
+      }
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Filter value o'chirib bo'lmadi");
+    }
+  };
+
   const handleCreateCountry = async () => {
     const payload = normalizeCountryPayload(countryDraft);
     const validationError = validateCountryPayload(payload);
@@ -1030,6 +1149,7 @@ function BrandCountryCategoriesForm({ visible }) {
     try {
       await createAdminCountryCategory(payload);
       setCountryDraft(buildDefaultCountryCategoryDraft());
+      setIsCountryFilterOpen(false);
       await loadCategories();
     } catch (err) {
       setError(err.message || "Country category qo'shib bo'lmadi");
@@ -1048,12 +1168,14 @@ function BrandCountryCategoriesForm({ visible }) {
       link: item.link || '',
       filterValue: item.filterValue || '',
     });
+    setIsCountryEditFilterOpen(false);
     setError('');
   };
 
   const cancelCountryEdit = () => {
     setEditingCountryId(null);
     setEditingCountryDraft(null);
+    setIsCountryEditFilterOpen(false);
   };
 
   const saveCountryEdit = async () => {
@@ -1104,6 +1226,7 @@ function BrandCountryCategoriesForm({ visible }) {
     try {
       await createAdminBrandCategory(payload);
       setBrandDraft(buildDefaultBrandCategoryDraft());
+      setIsBrandFilterOpen(false);
       await loadCategories();
     } catch (err) {
       setError(err.message || "Brand category qo'shib bo'lmadi");
@@ -1120,12 +1243,14 @@ function BrandCountryCategoriesForm({ visible }) {
       link: item.link || '',
       filterValue: item.filterValue || '',
     });
+    setIsBrandEditFilterOpen(false);
     setError('');
   };
 
   const cancelBrandEdit = () => {
     setEditingBrandId(null);
     setEditingBrandDraft(null);
+    setIsBrandEditFilterOpen(false);
   };
 
   const saveBrandEdit = async () => {
@@ -1166,6 +1291,118 @@ function BrandCountryCategoriesForm({ visible }) {
 
   return (
     <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">BrandCategories&CountryCategories filter values</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">type</span>
+            <select
+              className="global-section-modal__select"
+              value={filterDraft.type}
+              onChange={(e) => setFilterDraft((prev) => ({ ...prev, type: e.target.value }))}
+            >
+              <option value="country">country</option>
+              <option value="brand">brand</option>
+            </select>
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">filterValue</span>
+            <input
+              className="global-section-modal__input"
+              value={filterDraft.filterValue}
+              onChange={(e) => setFilterDraft((prev) => ({ ...prev, filterValue: e.target.value }))}
+              placeholder="masalan: yevropa yoki puma"
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreateFilter}
+            disabled={saving}
+          >
+            {saving ? 'Saqlanmoqda...' : "Filter qo'shish"}
+          </button>
+        </div>
+        <div className="global-section-modal__list">
+          {(data.filterValues || []).map((item) => (
+            <div key={item.id} className="global-section-modal__saved-card">
+              {editingFilterId === item.id && editingFilterDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">type</span>
+                      <select
+                        className="global-section-modal__select"
+                        value={editingFilterDraft.type}
+                        onChange={(e) =>
+                          setEditingFilterDraft((prev) => (prev ? { ...prev, type: e.target.value } : prev))
+                        }
+                      >
+                        <option value="country">country</option>
+                        <option value="brand">brand</option>
+                      </select>
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">filterValue</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingFilterDraft.filterValue}
+                        onChange={(e) =>
+                          setEditingFilterDraft((prev) =>
+                            prev ? { ...prev, filterValue: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveFilterEdit}
+                      disabled={updating}
+                    >
+                      Saqlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelFilterEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div className="global-section-modal__saved-name">
+                    {item.type} | {item.filterValue}
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startFilterEdit(item)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeFilter(item.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="global-section-modal__card">
         <div className="global-section-modal__row-between">
           <h3 className="global-section-modal__block-title">CountryCategories</h3>
@@ -1222,13 +1459,16 @@ function BrandCountryCategoriesForm({ visible }) {
           </label>
           <label className="global-section-modal__field">
             <span className="global-section-modal__label">filterValue</span>
-            <input
-              className="global-section-modal__input"
+            <CategoryPicker
               value={countryDraft.filterValue}
-              onChange={(e) =>
-                setCountryDraft((prev) => ({ ...prev, filterValue: e.target.value }))
-              }
-              placeholder="xitoy"
+              options={countryFilterOptions}
+              placeholder="Country filter tanlang"
+              isOpen={isCountryFilterOpen}
+              onToggle={() => setIsCountryFilterOpen((prev) => !prev)}
+              onSelect={(selectedValue) => {
+                setCountryDraft((prev) => ({ ...prev, filterValue: selectedValue }));
+                setIsCountryFilterOpen(false);
+              }}
             />
           </label>
         </div>
@@ -1312,14 +1552,18 @@ function BrandCountryCategoriesForm({ visible }) {
                     </label>
                     <label className="global-section-modal__field">
                       <span className="global-section-modal__label">filterValue</span>
-                      <input
-                        className="global-section-modal__input"
+                      <CategoryPicker
                         value={editingCountryDraft.filterValue}
-                        onChange={(e) =>
+                        options={countryFilterOptions}
+                        placeholder="Country filter tanlang"
+                        isOpen={isCountryEditFilterOpen}
+                        onToggle={() => setIsCountryEditFilterOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
                           setEditingCountryDraft((prev) =>
-                            prev ? { ...prev, filterValue: e.target.value } : prev,
-                          )
-                        }
+                            prev ? { ...prev, filterValue: selectedValue } : prev,
+                          );
+                          setIsCountryEditFilterOpen(false);
+                        }}
                       />
                     </label>
                   </div>
@@ -1406,11 +1650,16 @@ function BrandCountryCategoriesForm({ visible }) {
           </label>
           <label className="global-section-modal__field">
             <span className="global-section-modal__label">filterValue</span>
-            <input
-              className="global-section-modal__input"
+            <CategoryPicker
               value={brandDraft.filterValue}
-              onChange={(e) => setBrandDraft((prev) => ({ ...prev, filterValue: e.target.value }))}
-              placeholder="puma"
+              options={brandFilterOptions}
+              placeholder="Brand filter tanlang"
+              isOpen={isBrandFilterOpen}
+              onToggle={() => setIsBrandFilterOpen((prev) => !prev)}
+              onSelect={(selectedValue) => {
+                setBrandDraft((prev) => ({ ...prev, filterValue: selectedValue }));
+                setIsBrandFilterOpen(false);
+              }}
             />
           </label>
         </div>
@@ -1469,14 +1718,18 @@ function BrandCountryCategoriesForm({ visible }) {
                     </label>
                     <label className="global-section-modal__field">
                       <span className="global-section-modal__label">filterValue</span>
-                      <input
-                        className="global-section-modal__input"
+                      <CategoryPicker
                         value={editingBrandDraft.filterValue}
-                        onChange={(e) =>
+                        options={brandFilterOptions}
+                        placeholder="Brand filter tanlang"
+                        isOpen={isBrandEditFilterOpen}
+                        onToggle={() => setIsBrandEditFilterOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
                           setEditingBrandDraft((prev) =>
-                            prev ? { ...prev, filterValue: e.target.value } : prev,
-                          )
-                        }
+                            prev ? { ...prev, filterValue: selectedValue } : prev,
+                          );
+                          setIsBrandEditFilterOpen(false);
+                        }}
                       />
                     </label>
                   </div>
@@ -1549,7 +1802,7 @@ function buildDefaultHomeBannerDraft() {
 function HomeBannerForm({ visible }) {
   const [draft, setDraft] = useState(buildDefaultHomeBannerDraft());
   const [banners, setBanners] = useState([]);
-  const [categoryMaster, setCategoryMaster] = useState({ categoriyCountries: [], categoriesBrend: [] });
+  const [categoryMaster, setCategoryMaster] = useState({ filterValues: [] });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -1588,26 +1841,29 @@ function HomeBannerForm({ visible }) {
     try {
       const data = await fetchAdminCategories();
       setCategoryMaster({
-        categoriyCountries: Array.isArray(data?.categoriyCountries) ? data.categoriyCountries : [],
-        categoriesBrend: Array.isArray(data?.categoriesBrend) ? data.categoriesBrend : [],
+        filterValues: Array.isArray(data?.filterValues) ? data.filterValues : [],
       });
     } catch (err) {
-      setCategoryMaster({ categoriyCountries: [], categoriesBrend: [] });
+      setCategoryMaster({ filterValues: [] });
       setError(err.message || "Category ro'yxatini yuklab bo'lmadi");
     }
   };
 
-  const countryOptions = (categoryMaster.categoriyCountries || []).map((item) => ({
-    value: item.filterValue || '',
-    main: item?.name?.uz || item.filterValue || '',
-    sub: `${item?.name?.ru || ''}${item?.filterValue ? ` (${item.filterValue})` : ''}`.trim(),
-  }));
+  const countryOptions = (categoryMaster.filterValues || [])
+    .filter((item) => item.type === 'country')
+    .map((item) => ({
+      value: item.filterValue || '',
+      main: item.filterValue || '',
+      sub: 'Country filter',
+    }));
 
-  const brandOptions = (categoryMaster.categoriesBrend || []).map((item) => ({
-    value: item.filterValue || '',
-    main: item?.name || item.filterValue || '',
-    sub: item?.filterValue || '',
-  }));
+  const brandOptions = (categoryMaster.filterValues || [])
+    .filter((item) => item.type === 'brand')
+    .map((item) => ({
+      value: item.filterValue || '',
+      main: item.filterValue || '',
+      sub: 'Brand filter',
+    }));
 
   useEffect(() => {
     if (visible) {

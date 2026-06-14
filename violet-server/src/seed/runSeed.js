@@ -13,6 +13,7 @@ const {
   Product,
   CountryCategory,
   BrandCategory,
+  BrandCountryFilterValue,
   NavbarSection,
   HomeBannerSlide,
   FooterAboutSection,
@@ -65,10 +66,33 @@ async function dropLegacySingletonSiteCollections() {
 
 async function seedCategoriesMany() {
   const categories = require("./seedCategories");
+  await BrandCountryFilterValue.syncIndexes();
   await CountryCategory.syncIndexes();
   await BrandCategory.syncIndexes();
+  await BrandCountryFilterValue.deleteMany({});
   await CountryCategory.deleteMany({});
   await BrandCategory.deleteMany({});
+
+  const filterRows = [];
+  const countryValues = Array.isArray(categories.categoriyCountries)
+    ? categories.categoriyCountries.map((row) => String(row?.filterValue || "").trim()).filter(Boolean)
+    : [];
+  const brandValues = Array.isArray(categories.categoriesBrend)
+    ? categories.categoriesBrend.map((row) => String(row?.filterValue || "").trim()).filter(Boolean)
+    : [];
+
+  const countrySet = new Set(countryValues);
+  const brandSet = new Set(brandValues);
+  for (const filterValue of countrySet) {
+    filterRows.push({ type: "country", filterValue });
+  }
+  for (const filterValue of brandSet) {
+    filterRows.push({ type: "brand", filterValue });
+  }
+  if (filterRows.length) {
+    await BrandCountryFilterValue.insertMany(filterRows);
+  }
+
   if (categories.categoriyCountries?.length) {
     const countryDocs = categories.categoriyCountries.map(({ id, ...rest }) => rest);
     await CountryCategory.insertMany(countryDocs);
@@ -78,7 +102,7 @@ async function seedCategoriesMany() {
     await BrandCategory.insertMany(brandDocs);
   }
   console.log(
-    `Kategoriyalar: country_categories=${categories.categoriyCountries?.length || 0}, brand_categories=${categories.categoriesBrend?.length || 0}`
+    `Kategoriyalar: country_categories=${categories.categoriyCountries?.length || 0}, brand_categories=${categories.categoriesBrend?.length || 0}, brand_country_filter_values=${filterRows.length}`
   );
 }
 
@@ -346,6 +370,7 @@ async function logDbSummary() {
   const counts = {
     country_categories: await CountryCategory.countDocuments(),
     brand_categories: await BrandCategory.countDocuments(),
+    brand_country_filter_values: await BrandCountryFilterValue.countDocuments(),
     navbar_sections: await NavbarSection.countDocuments(),
     home_banner_slides: await HomeBannerSlide.countDocuments(),
     footer_about_sections: await FooterAboutSection.countDocuments(),

@@ -1,6 +1,7 @@
 const { Product } = require("./product");
 const { CountryCategory } = require("./countryCategory");
 const { BrandCategory } = require("./brandCategory");
+const { BrandCountryFilterValue } = require("./brandCountryFilterValue");
 const { NavbarSection } = require("./navbarSection");
 const { HomeBannerSlide } = require("./homeBannerSlide");
 const { FooterAboutSection } = require("./footerAboutSection");
@@ -25,6 +26,7 @@ module.exports = {
   Product,
   CountryCategory,
   BrandCategory,
+  BrandCountryFilterValue,
   NavbarSection,
   HomeBannerSlide,
   FooterAboutSection,

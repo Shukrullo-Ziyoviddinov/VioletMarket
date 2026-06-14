@@ -36,6 +36,21 @@ const removeBrand = asyncHandler(async (req, res) => {
   res.json({ ok: true });
 });
 
+const createFilterValue = asyncHandler(async (req, res) => {
+  const row = await service.createFilterValue(req.body || {});
+  res.status(201).json({ ok: true, data: row });
+});
+
+const updateFilterValue = asyncHandler(async (req, res) => {
+  const row = await service.updateFilterValue(req.params.filterId, req.body || {});
+  res.json({ ok: true, data: row });
+});
+
+const removeFilterValue = asyncHandler(async (req, res) => {
+  await service.deleteFilterValue(req.params.filterId);
+  res.json({ ok: true });
+});
+
 module.exports = {
   list,
   createCountry,
@@ -44,4 +59,7 @@ module.exports = {
   createBrand,
   updateBrand,
   removeBrand,
+  createFilterValue,
+  updateFilterValue,
+  removeFilterValue,
 };

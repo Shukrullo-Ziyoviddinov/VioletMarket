@@ -6,6 +6,7 @@ const {
   Product,
   CountryCategory,
   BrandCategory,
+  BrandCountryFilterValue,
   NavbarSection,
   HomeBannerSlide,
   FooterAboutSection,
@@ -40,6 +41,7 @@ async function main() {
   const counts = {
     country_categories: await CountryCategory.countDocuments(),
     brand_categories: await BrandCategory.countDocuments(),
+    brand_country_filter_values: await BrandCountryFilterValue.countDocuments(),
     navbar_sections: await NavbarSection.countDocuments(),
     home_banner_slides: await HomeBannerSlide.countDocuments(),
     footer_about_sections: await FooterAboutSection.countDocuments(),

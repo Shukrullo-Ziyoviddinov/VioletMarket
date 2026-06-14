@@ -71,3 +71,30 @@ export async function deleteAdminBrandCategory(brandId) {
   });
   await parseJson(res);
 }
+
+export async function createAdminFilterValue(payload) {
+  const res = await fetch(apiUrl('/api/admin/categories/filter-values'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function updateAdminFilterValue(filterId, payload) {
+  const res = await fetch(apiUrl(`/api/admin/categories/filter-values/${filterId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function deleteAdminFilterValue(filterId) {
+  const res = await fetch(apiUrl(`/api/admin/categories/filter-values/${filterId}`), {
+    method: 'DELETE',
+  });
+  await parseJson(res);
+}
