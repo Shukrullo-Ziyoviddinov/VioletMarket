@@ -11,8 +11,8 @@ const CHINA_WAREHOUSE_PAGE_PATH = '/chinaWarehousePage';
 
 /** API/seed yangilanmaguncha public/img dagi bannerlar */
 const CHINA_WAREHOUSE_BANNER_SRC = {
-  uz: 'img/sellerCountryimguz.jpg',
-  ru: 'img/sellerCountryimgru.jpg',
+  uz: '/img/sellerCountryimguz.jpg',
+  ru: '/img/sellerCountryimgru.jpg',
 };
 
 const BANNER_CONFIG = [

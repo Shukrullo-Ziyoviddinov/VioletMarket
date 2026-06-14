@@ -18,6 +18,7 @@ import {
   toAbsoluteVideoUrl,
   updateVideoBanner,
 } from '../../api/videoBannerAdminApi';
+import { fetchUzWarehouseData, updateUzWarehouseData } from '../../api/uzWarehouseAdminApi';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
@@ -1178,6 +1179,180 @@ function VideoBannerForm({ visible }) {
   );
 }
 
+function buildWarehouseDraft(srcPair) {
+  return {
+    uz: srcPair?.uz || '',
+    ru: srcPair?.ru || '',
+  };
+}
+
+function UzWarehouseForm({ visible }) {
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [activeUploads, setActiveUploads] = useState(0);
+  const [uzDraft, setUzDraft] = useState(buildWarehouseDraft());
+  const [chinaDraft, setChinaDraft] = useState(buildWarehouseDraft());
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads((prev) => {
+      const next = prev + (isUploading ? 1 : -1);
+      return next < 0 ? 0 : next;
+    });
+  };
+
+  const loadWarehouseData = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchUzWarehouseData();
+      setUzDraft(buildWarehouseDraft(data?.uzWarehouseData?.src));
+      setChinaDraft(buildWarehouseDraft(data?.chinaWarehouseData?.src));
+    } catch (err) {
+      setError(err.message || "Warehouse bannerlarni yuklab bo'lmadi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      loadWarehouseData();
+    }
+  }, [visible]);
+
+  const handleSave = async () => {
+    const payload = {
+      uzWarehouseData: {
+        src: { uz: uzDraft.uz.trim(), ru: uzDraft.ru.trim() },
+      },
+      chinaWarehouseData: {
+        src: { uz: chinaDraft.uz.trim(), ru: chinaDraft.ru.trim() },
+      },
+    };
+
+    if (!payload.uzWarehouseData.src.uz || !payload.uzWarehouseData.src.ru) {
+      setError("uzWarehouseData uchun src.uz va src.ru to'ldirilishi shart");
+      return;
+    }
+    if (!payload.chinaWarehouseData.src.uz || !payload.chinaWarehouseData.src.ru) {
+      setError("chinaWarehouseData uchun src.uz va src.ru to'ldirilishi shart");
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    try {
+      const data = await updateUzWarehouseData(payload);
+      setUzDraft(buildWarehouseDraft(data?.uzWarehouseData?.src));
+      setChinaDraft(buildWarehouseDraft(data?.chinaWarehouseData?.src));
+    } catch (err) {
+      setError(err.message || "Warehouse bannerlarni saqlab bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <div className="global-section-modal__row-between">
+          <h3 className="global-section-modal__block-title">Uz warehouse banner</h3>
+          <button type="button" className="global-section-modal__ghost-btn" onClick={loadWarehouseData}>
+            <ReloadOutlined />
+            <span>Yangilash</span>
+          </button>
+        </div>
+        {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.uz (image)"
+              value={uzDraft.uz}
+              onChange={(uploadedPath) => setUzDraft((prev) => ({ ...prev, uz: uploadedPath }))}
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.ru (image)"
+              value={uzDraft.ru}
+              onChange={(uploadedPath) => setUzDraft((prev) => ({ ...prev, ru: uploadedPath }))}
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__saved-thumb-wrap">
+          {uzDraft.uz ? (
+            <img
+              src={toAbsoluteImageUrl(uzDraft.uz)}
+              alt="uz warehouse uz"
+              className="global-section-modal__saved-thumb"
+            />
+          ) : null}
+          {uzDraft.ru ? (
+            <img
+              src={toAbsoluteImageUrl(uzDraft.ru)}
+              alt="uz warehouse ru"
+              className="global-section-modal__saved-thumb"
+            />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">China warehouse banner</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.uz (image)"
+              value={chinaDraft.uz}
+              onChange={(uploadedPath) => setChinaDraft((prev) => ({ ...prev, uz: uploadedPath }))}
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.ru (image)"
+              value={chinaDraft.ru}
+              onChange={(uploadedPath) => setChinaDraft((prev) => ({ ...prev, ru: uploadedPath }))}
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__saved-thumb-wrap">
+          {chinaDraft.uz ? (
+            <img
+              src={toAbsoluteImageUrl(chinaDraft.uz)}
+              alt="china warehouse uz"
+              className="global-section-modal__saved-thumb"
+            />
+          ) : null}
+          {chinaDraft.ru ? (
+            <img
+              src={toAbsoluteImageUrl(chinaDraft.ru)}
+              alt="china warehouse ru"
+              className="global-section-modal__saved-thumb"
+            />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="global-section-modal__actions">
+        <button
+          type="button"
+          className="global-section-modal__btn"
+          onClick={handleSave}
+          disabled={saving || activeUploads > 0}
+        >
+          {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Fayl yuklanmoqda...' : 'Saqlash'}
+        </button>
+      </div>
+      {error ? <p className="global-section-modal__error">{error}</p> : null}
+    </div>
+  );
+}
+
 function SimpleSectionForm({ sectionLabel }) {
   const [imagePath, setImagePath] = useState('');
 
@@ -1234,6 +1409,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <NavbarCategoryForm visible={open} />
     ) : section?.key === 'video-banner' ? (
       <VideoBannerForm visible={open} />
+    ) : section?.key === 'country-seller-banner' ? (
+      <UzWarehouseForm visible={open} />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
     );

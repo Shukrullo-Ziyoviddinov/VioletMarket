@@ -307,6 +307,9 @@
 
 .global-section-modal__saved-thumb-wrap {
   margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .global-section-modal__saved-thumb {

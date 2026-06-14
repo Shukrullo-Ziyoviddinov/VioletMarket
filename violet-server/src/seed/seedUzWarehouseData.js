@@ -1,14 +1,14 @@
 const uzWarehouseData = {
   src: {
-    uz: 'img/uzbproductuz.jpg',
-    ru: 'img/uzbproductru.jpg',
+    uz: '/img/uzbproductuz.jpg',
+    ru: '/img/uzbproductru.jpg',
   },
 };
 
 const chinaWarehouseData = {
   src: {
-    uz: 'img/sellerCountryimguz.jpg',
-    ru: 'img/sellerCountryimgru.jpg',
+    uz: '/img/sellerCountryimguz.jpg',
+    ru: '/img/sellerCountryimgru.jpg',
   },
 };
 
