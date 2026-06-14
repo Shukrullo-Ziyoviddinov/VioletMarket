@@ -3,7 +3,6 @@ import { Menu } from 'antd';
 import {
   ControlOutlined,
   DashboardOutlined,
-  FireOutlined,
   FileProtectOutlined,
   LayoutOutlined,
   LogoutOutlined,
@@ -30,7 +29,7 @@ const menuItems = [
   { key: 'navbar-category', icon: <MenuOutlined />, label: 'Navbar category' },
   { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Product policy' },
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar' },
-  { key: 'flash-sale', icon: <FireOutlined />, label: 'Flash Sale' },
+  { key: 'logistics-info', icon: <ControlOutlined />, label: "Logistika ma'lumoti" },
   { key: 'flash-sale-rules', icon: <ControlOutlined />, label: 'Flash sale rules' },
   { key: 'footer', icon: <LayoutOutlined />, label: 'Footer' },
 ];

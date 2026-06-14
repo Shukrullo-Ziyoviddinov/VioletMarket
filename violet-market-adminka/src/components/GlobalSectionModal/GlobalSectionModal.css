@@ -319,6 +319,22 @@
   color: #2b1a44;
 }
 
+.global-section-modal__json-preview {
+  margin: 0;
+  width: 100%;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #2d1f46;
+  background: #f7f2fd;
+  border: 1px solid #e7dcf8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .global-section-modal__saved-thumb-wrap {
   margin-top: 8px;
   display: flex;
