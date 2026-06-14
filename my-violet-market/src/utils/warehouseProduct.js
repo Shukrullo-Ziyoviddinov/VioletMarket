@@ -3,6 +3,21 @@ export function isChinaWarehouseProduct(product) {
   return String(product?.sellerCountry ?? '').trim().toLowerCase() === 'china';
 }
 
+const COUNTRY_CODE_ALIASES = {
+  xitoy: 'china',
+  kitay: 'china',
+  aqsh: 'usa',
+  us: 'usa',
+  koreya: 'korea',
+};
+
+/** Turli yozilgan davlat kodlarini bitta standart kodga o'tkazish */
+export function normalizeCountryCode(value) {
+  const key = String(value || '').toLowerCase().trim();
+  if (!key) return '';
+  return COUNTRY_CODE_ALIASES[key] || key;
+}
+
 /** Mahsulot/savat elementi `countries` maydonini normallashtirish */
 export function normalizeProductCountries(productOrItem) {
   let raw = productOrItem?.countries;
@@ -23,7 +38,7 @@ export function normalizeProductCountries(productOrItem) {
   if (!Array.isArray(raw)) return [];
 
   return raw
-    .map((c) => String(c || '').toLowerCase().trim())
+    .map((c) => normalizeCountryCode(c))
     .filter(Boolean);
 }
 
@@ -35,7 +50,7 @@ export function isUzWarehouseProduct(product) {
 /** Faqat berilgan davlat ombori — `countries` faqat shu davlat */
 export function isExclusiveCountryProduct(product, countryKey) {
   const normalized = normalizeProductCountries(product);
-  const key = String(countryKey || '').toLowerCase().trim();
+  const key = normalizeCountryCode(countryKey);
   return normalized.length > 0 && normalized.every((c) => c === key);
 }
 

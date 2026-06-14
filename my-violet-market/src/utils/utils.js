@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from '../config/api';
+import { normalizeProductCountries } from './warehouseProduct';
 
 const FALLBACK_IMAGE_DATA_URL =
   'data:image/svg+xml;utf8,' +
@@ -109,15 +110,12 @@ export const calculateCargoPrice = (items, selectedCargoOptions = {}, cargoRates
   
   // Davlatlar bo'yicha guruhlash
   items.forEach(item => {
-    if (item.countries && item.countries.length > 0) {
-      item.countries.forEach(country => {
-        const countryKey = country.toLowerCase();
-        if (!countryGroups[countryKey]) {
-          countryGroups[countryKey] = [];
-        }
-        countryGroups[countryKey].push(item);
-      });
-    }
+    normalizeProductCountries(item).forEach((countryKey) => {
+      if (!countryGroups[countryKey]) {
+        countryGroups[countryKey] = [];
+      }
+      countryGroups[countryKey].push(item);
+    });
   });
   
   let totalCargoPrice = 0;

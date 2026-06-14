@@ -30,7 +30,7 @@ const menuItems = [
   { key: 'navbar-category', icon: <MenuOutlined />, label: 'Navbar category' },
   { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Product policy' },
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar' },
-  { key: 'shipping-country', icon: <GlobalOutlined />, label: "Yetkazib berish davlatlari" },
+  { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },
   { key: 'logistics-info', icon: <ControlOutlined />, label: "Logistika ma'lumoti" },
   { key: 'flash-sale-rules', icon: <ControlOutlined />, label: 'Flash sale rules' },
   { key: 'footer', icon: <LayoutOutlined />, label: 'Footer' },
