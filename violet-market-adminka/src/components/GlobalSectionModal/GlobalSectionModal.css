@@ -350,6 +350,12 @@
   color: #7b649e;
 }
 
+.global-section-modal__hint {
+  font-size: 12px;
+  color: #6e5a8f;
+  line-height: 1.4;
+}
+
 .global-section-modal__danger-btn,
 .global-section-modal__danger-link {
   display: inline-flex;

@@ -45,6 +45,7 @@ import {
   updateUzWarehouseData,
 } from '../../api/uzWarehouseAdminApi';
 import FooterForm from '../FooterForm/FooterForm';
+import FlashSaleRulesForm from '../FlashSaleRulesForm/FlashSaleRulesForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
@@ -3191,6 +3192,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <UzWarehouseForm visible={open} />
     ) : section?.key === 'footer' ? (
       <FooterForm visible={open} />
+    ) : section?.key === 'flash-sale-rules' ? (
+      <FlashSaleRulesForm visible={open} />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
     );
