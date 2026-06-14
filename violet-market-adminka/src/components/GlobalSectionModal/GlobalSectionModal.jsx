@@ -2,6 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
 import {
+  createAdminBrandCategory,
+  createAdminCountryCategory,
+  deleteAdminBrandCategory,
+  deleteAdminCountryCategory,
+  fetchAdminCategories,
+  updateAdminBrandCategory,
+  updateAdminCountryCategory,
+} from '../../api/adminCategoriesApi';
+import {
+  createHomeBanner,
+  deleteHomeBanner,
+  fetchHomeBanners,
+  updateHomeBanner,
+} from '../../api/homeBannerAdminApi';
+import {
   createNavbarItem,
   createNavbarSection,
   deleteNavbarItem,
@@ -74,7 +89,26 @@ function buildEmptyItemDraft(sectionId) {
   };
 }
 
-function CategoryPicker({ value, onSelect, isOpen, onToggle }) {
+function CategoryPicker({
+  value,
+  onSelect,
+  isOpen,
+  onToggle,
+  placeholder = 'Category tanlang',
+  options = NAVBAR_CATEGORY_OPTIONS,
+}) {
+  const normalizedOptions = (Array.isArray(options) ? options : [])
+    .map((option) => {
+      const optionValue = String(option?.value || '').trim();
+      if (!optionValue) return null;
+      return {
+        value: optionValue,
+        main: String(option?.main || optionValue).trim() || optionValue,
+        sub: String(option?.sub || option?.ru || '').trim(),
+      };
+    })
+    .filter(Boolean);
+
   return (
     <div className="global-section-modal__category-picker">
       <button
@@ -82,21 +116,23 @@ function CategoryPicker({ value, onSelect, isOpen, onToggle }) {
         className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
         onClick={onToggle}
       >
-        <span>{value || 'Category tanlang'}</span>
+        <span>{value || placeholder}</span>
         <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
       </button>
 
       {isOpen ? (
         <div className="global-section-modal__category-options">
-          {NAVBAR_CATEGORY_OPTIONS.map((option) => (
+          {normalizedOptions.map((option) => (
             <button
               key={option.value}
               type="button"
               className={`global-section-modal__category-option${value === option.value ? ' global-section-modal__category-option--active' : ''}`}
               onClick={() => onSelect(option.value)}
             >
-              <span className="global-section-modal__category-main">{option.value}</span>
-              <span className="global-section-modal__category-sub">{option.ru}</span>
+              <span className="global-section-modal__category-main">{option.main}</span>
+              {option.sub ? (
+                <span className="global-section-modal__category-sub">{option.sub}</span>
+              ) : null}
             </button>
           ))}
         </div>
@@ -883,6 +919,1116 @@ function NavbarCategoryForm({ visible }) {
   );
 }
 
+function buildDefaultCountryCategoryDraft() {
+  return {
+    nameUz: '',
+    nameRu: '',
+    image: '',
+    flag: '',
+    link: '',
+    filterValue: '',
+  };
+}
+
+function buildDefaultBrandCategoryDraft() {
+  return {
+    name: '',
+    image: '',
+    link: '',
+    filterValue: '',
+  };
+}
+
+function BrandCountryCategoriesForm({ visible }) {
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState('');
+  const [activeUploads, setActiveUploads] = useState(0);
+  const [data, setData] = useState({ categoriyCountries: [], categoriesBrend: [] });
+
+  const [countryDraft, setCountryDraft] = useState(buildDefaultCountryCategoryDraft());
+  const [editingCountryId, setEditingCountryId] = useState(null);
+  const [editingCountryDraft, setEditingCountryDraft] = useState(null);
+
+  const [brandDraft, setBrandDraft] = useState(buildDefaultBrandCategoryDraft());
+  const [editingBrandId, setEditingBrandId] = useState(null);
+  const [editingBrandDraft, setEditingBrandDraft] = useState(null);
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads((prev) => {
+      const next = prev + (isUploading ? 1 : -1);
+      return next < 0 ? 0 : next;
+    });
+  };
+
+  const loadCategories = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = await fetchAdminCategories();
+      setData({
+        categoriyCountries: Array.isArray(payload?.categoriyCountries) ? payload.categoriyCountries : [],
+        categoriesBrend: Array.isArray(payload?.categoriesBrend) ? payload.categoriesBrend : [],
+      });
+    } catch (err) {
+      setError(err.message || "Brand/Country kategoriyalarni yuklab bo'lmadi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      loadCategories();
+    }
+  }, [visible]);
+
+  const normalizeCountryPayload = (draft) => ({
+    name: {
+      uz: draft.nameUz.trim(),
+      ru: draft.nameRu.trim(),
+    },
+    image: draft.image.trim(),
+    flag: draft.flag.trim(),
+    link: draft.link.trim(),
+    filterValue: draft.filterValue.trim(),
+  });
+
+  const normalizeBrandPayload = (draft) => ({
+    name: draft.name.trim(),
+    image: draft.image.trim(),
+    link: draft.link.trim(),
+    filterValue: draft.filterValue.trim(),
+  });
+
+  const validateCountryPayload = (payload) => {
+    if (!payload.name.uz || !payload.name.ru) return "Country: name.uz va name.ru majburiy";
+    if (!payload.image) return "Country: image majburiy";
+    if (!payload.link) return "Country: link majburiy";
+    if (!payload.filterValue) return "Country: filterValue majburiy";
+    return '';
+  };
+
+  const validateBrandPayload = (payload) => {
+    if (!payload.name) return "Brand: name majburiy";
+    if (!payload.image) return "Brand: image majburiy";
+    if (!payload.link) return "Brand: link majburiy";
+    if (!payload.filterValue) return "Brand: filterValue majburiy";
+    return '';
+  };
+
+  const handleCreateCountry = async () => {
+    const payload = normalizeCountryPayload(countryDraft);
+    const validationError = validateCountryPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createAdminCountryCategory(payload);
+      setCountryDraft(buildDefaultCountryCategoryDraft());
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Country category qo'shib bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startCountryEdit = (item) => {
+    setEditingCountryId(item.id);
+    setEditingCountryDraft({
+      nameUz: item?.name?.uz || '',
+      nameRu: item?.name?.ru || '',
+      image: item.image || '',
+      flag: item.flag || '',
+      link: item.link || '',
+      filterValue: item.filterValue || '',
+    });
+    setError('');
+  };
+
+  const cancelCountryEdit = () => {
+    setEditingCountryId(null);
+    setEditingCountryDraft(null);
+  };
+
+  const saveCountryEdit = async () => {
+    if (!editingCountryId || !editingCountryDraft) return;
+    const payload = normalizeCountryPayload(editingCountryDraft);
+    const validationError = validateCountryPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateAdminCountryCategory(editingCountryId, payload);
+      cancelCountryEdit();
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Country category tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeCountry = async (countryId) => {
+    const ok = window.confirm("Bu country category o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteAdminCountryCategory(countryId);
+      if (editingCountryId === countryId) {
+        cancelCountryEdit();
+      }
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Country category o'chirib bo'lmadi");
+    }
+  };
+
+  const handleCreateBrand = async () => {
+    const payload = normalizeBrandPayload(brandDraft);
+    const validationError = validateBrandPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createAdminBrandCategory(payload);
+      setBrandDraft(buildDefaultBrandCategoryDraft());
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Brand category qo'shib bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startBrandEdit = (item) => {
+    setEditingBrandId(item.id);
+    setEditingBrandDraft({
+      name: item.name || '',
+      image: item.image || '',
+      link: item.link || '',
+      filterValue: item.filterValue || '',
+    });
+    setError('');
+  };
+
+  const cancelBrandEdit = () => {
+    setEditingBrandId(null);
+    setEditingBrandDraft(null);
+  };
+
+  const saveBrandEdit = async () => {
+    if (!editingBrandId || !editingBrandDraft) return;
+    const payload = normalizeBrandPayload(editingBrandDraft);
+    const validationError = validateBrandPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateAdminBrandCategory(editingBrandId, payload);
+      cancelBrandEdit();
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Brand category tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeBrand = async (brandId) => {
+    const ok = window.confirm("Bu brand category o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteAdminBrandCategory(brandId);
+      if (editingBrandId === brandId) {
+        cancelBrandEdit();
+      }
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Brand category o'chirib bo'lmadi");
+    }
+  };
+
+  return (
+    <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <div className="global-section-modal__row-between">
+          <h3 className="global-section-modal__block-title">CountryCategories</h3>
+          <button type="button" className="global-section-modal__ghost-btn" onClick={loadCategories}>
+            <ReloadOutlined />
+            <span>Yangilash</span>
+          </button>
+        </div>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">name.uz</span>
+            <input
+              className="global-section-modal__input"
+              value={countryDraft.nameUz}
+              onChange={(e) => setCountryDraft((prev) => ({ ...prev, nameUz: e.target.value }))}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">name.ru</span>
+            <input
+              className="global-section-modal__input"
+              value={countryDraft.nameRu}
+              onChange={(e) => setCountryDraft((prev) => ({ ...prev, nameRu: e.target.value }))}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="image"
+              value={countryDraft.image}
+              onChange={(uploadedPath) =>
+                setCountryDraft((prev) => ({ ...prev, image: uploadedPath }))
+              }
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="flag (ixtiyoriy)"
+              value={countryDraft.flag}
+              onChange={(uploadedPath) =>
+                setCountryDraft((prev) => ({ ...prev, flag: uploadedPath }))
+              }
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">link</span>
+            <input
+              className="global-section-modal__input"
+              value={countryDraft.link}
+              onChange={(e) => setCountryDraft((prev) => ({ ...prev, link: e.target.value }))}
+              placeholder="/category/china"
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">filterValue</span>
+            <input
+              className="global-section-modal__input"
+              value={countryDraft.filterValue}
+              onChange={(e) =>
+                setCountryDraft((prev) => ({ ...prev, filterValue: e.target.value }))
+              }
+              placeholder="xitoy"
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreateCountry}
+            disabled={saving || activeUploads > 0}
+          >
+            {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Rasm yuklanmoqda...' : "Country qo'shish"}
+          </button>
+        </div>
+
+        {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
+        <div className="global-section-modal__list">
+          {(data.categoriyCountries || []).map((item) => (
+            <div key={item.id} className="global-section-modal__saved-card">
+              {editingCountryId === item.id && editingCountryDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.uz</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingCountryDraft.nameUz}
+                        onChange={(e) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, nameUz: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.ru</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingCountryDraft.nameRu}
+                        onChange={(e) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, nameRu: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <ImageUploadField
+                        label="image"
+                        value={editingCountryDraft.image}
+                        onChange={(uploadedPath) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, image: uploadedPath } : prev,
+                          )
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <ImageUploadField
+                        label="flag (ixtiyoriy)"
+                        value={editingCountryDraft.flag}
+                        onChange={(uploadedPath) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, flag: uploadedPath } : prev,
+                          )
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">link</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingCountryDraft.link}
+                        onChange={(e) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, link: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">filterValue</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingCountryDraft.filterValue}
+                        onChange={(e) =>
+                          setEditingCountryDraft((prev) =>
+                            prev ? { ...prev, filterValue: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveCountryEdit}
+                      disabled={updating || activeUploads > 0}
+                    >
+                      {activeUploads > 0 ? 'Rasm yuklanmoqda...' : 'Saqlash'}
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelCountryEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div>
+                    <div className="global-section-modal__saved-name">
+                      {item?.name?.uz || '-'} / {item?.name?.ru || '-'}
+                    </div>
+                    <div className="global-section-modal__meta">
+                      id: {item.id} | filterValue: {item.filterValue || '-'}
+                    </div>
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startCountryEdit(item)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeCountry(item.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">BrandCategories</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">name</span>
+            <input
+              className="global-section-modal__input"
+              value={brandDraft.name}
+              onChange={(e) => setBrandDraft((prev) => ({ ...prev, name: e.target.value }))}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">link</span>
+            <input
+              className="global-section-modal__input"
+              value={brandDraft.link}
+              onChange={(e) => setBrandDraft((prev) => ({ ...prev, link: e.target.value }))}
+              placeholder="/category/puma"
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="image"
+              value={brandDraft.image}
+              onChange={(uploadedPath) =>
+                setBrandDraft((prev) => ({ ...prev, image: uploadedPath }))
+              }
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">filterValue</span>
+            <input
+              className="global-section-modal__input"
+              value={brandDraft.filterValue}
+              onChange={(e) => setBrandDraft((prev) => ({ ...prev, filterValue: e.target.value }))}
+              placeholder="puma"
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreateBrand}
+            disabled={saving || activeUploads > 0}
+          >
+            {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Rasm yuklanmoqda...' : "Brand qo'shish"}
+          </button>
+        </div>
+
+        <div className="global-section-modal__list">
+          {(data.categoriesBrend || []).map((item) => (
+            <div key={item.id} className="global-section-modal__saved-card">
+              {editingBrandId === item.id && editingBrandDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingBrandDraft.name}
+                        onChange={(e) =>
+                          setEditingBrandDraft((prev) =>
+                            prev ? { ...prev, name: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">link</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingBrandDraft.link}
+                        onChange={(e) =>
+                          setEditingBrandDraft((prev) =>
+                            prev ? { ...prev, link: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <ImageUploadField
+                        label="image"
+                        value={editingBrandDraft.image}
+                        onChange={(uploadedPath) =>
+                          setEditingBrandDraft((prev) =>
+                            prev ? { ...prev, image: uploadedPath } : prev,
+                          )
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">filterValue</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingBrandDraft.filterValue}
+                        onChange={(e) =>
+                          setEditingBrandDraft((prev) =>
+                            prev ? { ...prev, filterValue: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveBrandEdit}
+                      disabled={updating || activeUploads > 0}
+                    >
+                      {activeUploads > 0 ? 'Rasm yuklanmoqda...' : 'Saqlash'}
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelBrandEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div>
+                    <div className="global-section-modal__saved-name">{item.name || '-'}</div>
+                    <div className="global-section-modal__meta">
+                      id: {item.id} | filterValue: {item.filterValue || '-'}
+                    </div>
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startBrandEdit(item)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeBrand(item.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {error ? <p className="global-section-modal__error">{error}</p> : null}
+    </div>
+  );
+}
+
+function buildDefaultHomeBannerDraft() {
+  return {
+    type: 'image',
+    srcUz: '',
+    srcRu: '',
+    clickable: false,
+    category: '',
+    countriesCategories: '',
+    brandCategories: '',
+  };
+}
+
+function HomeBannerForm({ visible }) {
+  const [draft, setDraft] = useState(buildDefaultHomeBannerDraft());
+  const [banners, setBanners] = useState([]);
+  const [categoryMaster, setCategoryMaster] = useState({ categoriyCountries: [], categoriesBrend: [] });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState(null);
+  const [editingDraft, setEditingDraft] = useState(null);
+  const [error, setError] = useState('');
+  const [activeUploads, setActiveUploads] = useState(0);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+  const [isCreateCountryOpen, setIsCreateCountryOpen] = useState(false);
+  const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [isEditCountryOpen, setIsEditCountryOpen] = useState(false);
+  const [isEditBrandOpen, setIsEditBrandOpen] = useState(false);
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads((prev) => {
+      const next = prev + (isUploading ? 1 : -1);
+      return next < 0 ? 0 : next;
+    });
+  };
+
+  const loadBanners = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchHomeBanners();
+      setBanners(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Bannerlarni yuklab bo'lmadi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategoryMaster = async () => {
+    try {
+      const data = await fetchAdminCategories();
+      setCategoryMaster({
+        categoriyCountries: Array.isArray(data?.categoriyCountries) ? data.categoriyCountries : [],
+        categoriesBrend: Array.isArray(data?.categoriesBrend) ? data.categoriesBrend : [],
+      });
+    } catch (err) {
+      setCategoryMaster({ categoriyCountries: [], categoriesBrend: [] });
+      setError(err.message || "Category ro'yxatini yuklab bo'lmadi");
+    }
+  };
+
+  const countryOptions = (categoryMaster.categoriyCountries || []).map((item) => ({
+    value: item.filterValue || '',
+    main: item?.name?.uz || item.filterValue || '',
+    sub: `${item?.name?.ru || ''}${item?.filterValue ? ` (${item.filterValue})` : ''}`.trim(),
+  }));
+
+  const brandOptions = (categoryMaster.categoriesBrend || []).map((item) => ({
+    value: item.filterValue || '',
+    main: item?.name || item.filterValue || '',
+    sub: item?.filterValue || '',
+  }));
+
+  useEffect(() => {
+    if (visible) {
+      loadBanners();
+      loadCategoryMaster();
+    }
+  }, [visible]);
+
+  const validatePayload = (payload, prefixText = "Ma'lumot") => {
+    if (!payload.type.trim()) {
+      return `${prefixText}: type tanlanishi shart`;
+    }
+    if (!payload.src.uz.trim() || !payload.src.ru.trim()) {
+      return `${prefixText}: src.uz va src.ru majburiy`;
+    }
+    if (payload.clickable && !payload.category.trim()) {
+      return `${prefixText}: clickable yoqilgan bo'lsa category tanlang`;
+    }
+    return '';
+  };
+
+  const mapDraftToPayload = (targetDraft) => ({
+    type: targetDraft.type.trim() || 'image',
+    src: {
+      uz: targetDraft.srcUz.trim(),
+      ru: targetDraft.srcRu.trim(),
+    },
+    clickable: Boolean(targetDraft.clickable),
+    category: targetDraft.category.trim(),
+    countriesCategories: targetDraft.countriesCategories.trim(),
+    brandCategories: targetDraft.brandCategories.trim(),
+  });
+
+  const handleCreate = async () => {
+    const payload = mapDraftToPayload(draft);
+    const validationError = validatePayload(payload, 'Yangi banner');
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createHomeBanner(payload);
+      setDraft(buildDefaultHomeBannerDraft());
+      setIsCreateCategoryOpen(false);
+      setIsCreateCountryOpen(false);
+      setIsCreateBrandOpen(false);
+      await loadBanners();
+    } catch (err) {
+      setError(err.message || "Banner qo'shib bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startEdit = (banner) => {
+    setEditingBannerId(banner.id);
+    setEditingDraft({
+      type: banner.type || 'image',
+      srcUz: banner?.src?.uz || '',
+      srcRu: banner?.src?.ru || '',
+      clickable: Boolean(banner.clickable),
+      category: banner.category || '',
+      countriesCategories: banner.countriesCategories || '',
+      brandCategories: banner.brandCategories || '',
+    });
+    setIsEditCategoryOpen(false);
+    setIsEditCountryOpen(false);
+    setIsEditBrandOpen(false);
+    setError('');
+  };
+
+  const cancelEdit = () => {
+    setEditingBannerId(null);
+    setEditingDraft(null);
+    setIsEditCategoryOpen(false);
+    setIsEditCountryOpen(false);
+    setIsEditBrandOpen(false);
+  };
+
+  const saveEdit = async () => {
+    if (!editingDraft || !editingBannerId) return;
+    const payload = mapDraftToPayload(editingDraft);
+    const validationError = validatePayload(payload, 'Tahrirlash');
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateHomeBanner(editingBannerId, payload);
+      await loadBanners();
+      cancelEdit();
+    } catch (err) {
+      setError(err.message || "Bannerni tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeBanner = async (bannerId) => {
+    const ok = window.confirm("Bu banner o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteHomeBanner(bannerId);
+      if (editingBannerId === bannerId) {
+        cancelEdit();
+      }
+      await loadBanners();
+    } catch (err) {
+      setError(err.message || "Bannerni o'chirib bo'lmadi");
+    }
+  };
+
+  return (
+    <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">Yangi home banner</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">type</span>
+            <select
+              className="global-section-modal__select"
+              value={draft.type}
+              onChange={(e) => setDraft((prev) => ({ ...prev, type: e.target.value }))}
+            >
+              <option value="image">image</option>
+            </select>
+          </label>
+
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">clickable</span>
+            <label className="global-section-modal__check">
+              <input
+                type="checkbox"
+                checked={draft.clickable}
+                onChange={(e) => setDraft((prev) => ({ ...prev, clickable: e.target.checked }))}
+              />
+              <span>Banner bosilganda category sahifaga o'tadi</span>
+            </label>
+          </label>
+
+          <label className="global-section-modal__field global-section-modal__field--full">
+            <span className="global-section-modal__label">category</span>
+            <CategoryPicker
+              value={draft.category}
+              placeholder={draft.clickable ? 'Category tanlang' : 'Ixtiyoriy'}
+              isOpen={isCreateCategoryOpen}
+              onToggle={() => setIsCreateCategoryOpen((prev) => !prev)}
+              onSelect={(selectedValue) => {
+                setDraft((prev) => ({ ...prev, category: selectedValue }));
+                setIsCreateCategoryOpen(false);
+              }}
+            />
+          </label>
+
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">countriesCategories</span>
+            <CategoryPicker
+              value={draft.countriesCategories}
+              placeholder="Davlat filter tanlang"
+              options={countryOptions}
+              isOpen={isCreateCountryOpen}
+              onToggle={() => setIsCreateCountryOpen((prev) => !prev)}
+              onSelect={(selectedValue) => {
+                setDraft((prev) => ({ ...prev, countriesCategories: selectedValue }));
+                setIsCreateCountryOpen(false);
+              }}
+            />
+          </label>
+
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">brandCategories</span>
+            <CategoryPicker
+              value={draft.brandCategories}
+              placeholder="Brend filter tanlang"
+              options={brandOptions}
+              isOpen={isCreateBrandOpen}
+              onToggle={() => setIsCreateBrandOpen((prev) => !prev)}
+              onSelect={(selectedValue) => {
+                setDraft((prev) => ({ ...prev, brandCategories: selectedValue }));
+                setIsCreateBrandOpen(false);
+              }}
+            />
+          </label>
+
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.uz (image)"
+              value={draft.srcUz}
+              onChange={(uploadedPath) =>
+                setDraft((prev) => ({ ...prev, srcUz: uploadedPath }))
+              }
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+
+          <label className="global-section-modal__field">
+            <ImageUploadField
+              label="src.ru (image)"
+              value={draft.srcRu}
+              onChange={(uploadedPath) =>
+                setDraft((prev) => ({ ...prev, srcRu: uploadedPath }))
+              }
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+        </div>
+
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreate}
+            disabled={saving || activeUploads > 0}
+          >
+            {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Rasm yuklanmoqda...' : "Qo'shish"}
+          </button>
+        </div>
+      </div>
+
+      <div className="global-section-modal__card">
+        <div className="global-section-modal__row-between">
+          <h3 className="global-section-modal__block-title">Saqlangan home bannerlar</h3>
+          <button type="button" className="global-section-modal__ghost-btn" onClick={loadBanners}>
+            <ReloadOutlined />
+            <span>Yangilash</span>
+          </button>
+        </div>
+
+        {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
+        {!loading && banners.length === 0 ? (
+          <p className="global-section-modal__state">Hozircha home banner yo'q</p>
+        ) : null}
+
+        <div className="global-section-modal__list">
+          {banners.map((banner) => (
+            <div key={banner.id} className="global-section-modal__saved-card">
+              {editingBannerId === banner.id && editingDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">type</span>
+                      <select
+                        className="global-section-modal__select"
+                        value={editingDraft.type}
+                        onChange={(e) =>
+                          setEditingDraft((prev) => (prev ? { ...prev, type: e.target.value } : prev))
+                        }
+                      >
+                        <option value="image">image</option>
+                      </select>
+                    </label>
+
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">clickable</span>
+                      <label className="global-section-modal__check">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(editingDraft.clickable)}
+                          onChange={(e) =>
+                            setEditingDraft((prev) =>
+                              prev ? { ...prev, clickable: e.target.checked } : prev,
+                            )
+                          }
+                        />
+                        <span>Banner bosilganda category sahifaga o'tadi</span>
+                      </label>
+                    </label>
+
+                    <label className="global-section-modal__field global-section-modal__field--full">
+                      <span className="global-section-modal__label">category</span>
+                      <CategoryPicker
+                        value={editingDraft.category}
+                        placeholder={editingDraft.clickable ? 'Category tanlang' : 'Ixtiyoriy'}
+                        isOpen={isEditCategoryOpen}
+                        onToggle={() => setIsEditCategoryOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
+                          setEditingDraft((prev) =>
+                            prev ? { ...prev, category: selectedValue } : prev,
+                          );
+                          setIsEditCategoryOpen(false);
+                        }}
+                      />
+                    </label>
+
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">countriesCategories</span>
+                      <CategoryPicker
+                        value={editingDraft.countriesCategories}
+                        placeholder="Davlat filter tanlang"
+                        options={countryOptions}
+                        isOpen={isEditCountryOpen}
+                        onToggle={() => setIsEditCountryOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
+                          setEditingDraft((prev) =>
+                            prev ? { ...prev, countriesCategories: selectedValue } : prev,
+                          );
+                          setIsEditCountryOpen(false);
+                        }}
+                      />
+                    </label>
+
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">brandCategories</span>
+                      <CategoryPicker
+                        value={editingDraft.brandCategories}
+                        placeholder="Brend filter tanlang"
+                        options={brandOptions}
+                        isOpen={isEditBrandOpen}
+                        onToggle={() => setIsEditBrandOpen((prev) => !prev)}
+                        onSelect={(selectedValue) => {
+                          setEditingDraft((prev) =>
+                            prev ? { ...prev, brandCategories: selectedValue } : prev,
+                          );
+                          setIsEditBrandOpen(false);
+                        }}
+                      />
+                    </label>
+
+                    <label className="global-section-modal__field">
+                      <ImageUploadField
+                        label="src.uz (image)"
+                        value={editingDraft.srcUz}
+                        onChange={(uploadedPath) =>
+                          setEditingDraft((prev) => (prev ? { ...prev, srcUz: uploadedPath } : prev))
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+
+                    <label className="global-section-modal__field">
+                      <ImageUploadField
+                        label="src.ru (image)"
+                        value={editingDraft.srcRu}
+                        onChange={(uploadedPath) =>
+                          setEditingDraft((prev) => (prev ? { ...prev, srcRu: uploadedPath } : prev))
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveEdit}
+                      disabled={updating || activeUploads > 0}
+                    >
+                      {activeUploads > 0 ? 'Rasm yuklanmoqda...' : 'Saqlash'}
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div>
+                    <div className="global-section-modal__saved-name">
+                      type: {banner.type || '-'} | clickable: {banner.clickable ? 'ha' : "yo'q"}
+                    </div>
+                    <div className="global-section-modal__meta">
+                      id: {banner.id} | category: {banner.category || '-'}
+                    </div>
+                    <div className="global-section-modal__meta">
+                      country: {banner.countriesCategories || '-'} | brand: {banner.brandCategories || '-'}
+                    </div>
+                    <div className="global-section-modal__saved-thumb-wrap">
+                      {banner?.src?.uz ? (
+                        <img
+                          src={toAbsoluteImageUrl(banner.src.uz)}
+                          alt={`Home banner uz ${banner.id}`}
+                          className="global-section-modal__saved-thumb"
+                        />
+                      ) : null}
+                      {banner?.src?.ru ? (
+                        <img
+                          src={toAbsoluteImageUrl(banner.src.ru)}
+                          alt={`Home banner ru ${banner.id}`}
+                          className="global-section-modal__saved-thumb"
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startEdit(banner)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeBanner(banner.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {error ? <p className="global-section-modal__error">{error}</p> : null}
+    </div>
+  );
+}
+
 function buildDefaultVideoBannerDraft() {
   return {
     title: '',
@@ -1479,7 +2625,11 @@ export default function GlobalSectionModal({ open, section, onClose }) {
   const title = section?.label || 'Bo‘lim';
 
   const content =
-    section?.key === 'navbar-category' ? (
+    section?.key === 'brand-country-categories' ? (
+      <BrandCountryCategoriesForm visible={open} />
+    ) : section?.key === 'banner' ? (
+      <HomeBannerForm visible={open} />
+    ) : section?.key === 'navbar-category' ? (
       <NavbarCategoryForm visible={open} />
     ) : section?.key === 'video-banner' ? (
       <VideoBannerForm visible={open} />

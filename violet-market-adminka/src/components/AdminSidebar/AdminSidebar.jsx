@@ -4,7 +4,6 @@ import {
   ControlOutlined,
   DashboardOutlined,
   FireOutlined,
-  FlagOutlined,
   FileProtectOutlined,
   LayoutOutlined,
   LogoutOutlined,
@@ -22,8 +21,7 @@ const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
 
 const menuItems = [
   { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa' },
-  { key: 'country-categories', icon: <FlagOutlined />, label: 'Categories Davlat' },
-  { key: 'brand-categories', icon: <TrademarkOutlined />, label: 'Categories Brend' },
+  { key: 'brand-country-categories', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
   { key: 'banner', icon: <PictureOutlined />, label: 'Banner' },
   { key: 'video-banner', icon: <VideoCameraOutlined />, label: 'Video banner' },
   { key: 'country-seller-banner', icon: <ShopOutlined />, label: 'Davlat seller banner' },

@@ -196,6 +196,20 @@
   resize: vertical;
 }
 
+.global-section-modal__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font-size: 13px;
+  color: #3b2759;
+}
+
+.global-section-modal__check input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+
 .global-section-modal__input:focus,
 .global-section-modal__select:focus,
 .global-section-modal__textarea:focus {
