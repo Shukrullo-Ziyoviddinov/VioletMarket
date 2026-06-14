@@ -9,6 +9,7 @@ import {
   updateCargoRate,
   updateDeliveryPrice,
 } from '../../api/cargoAdminApi';
+import { fetchShippingCountries } from '../../api/shippingCountryAdminApi';
 
 const EMPTY_CARGO_DRAFT = {
   key: '',
@@ -28,6 +29,64 @@ function createTier() {
     labelRu: '',
     price: '',
   };
+}
+
+function CategoryPicker({
+  value,
+  onSelect,
+  isOpen,
+  onToggle,
+  placeholder = "Hudud kodini tanlang",
+  options = [],
+}) {
+  const normalizedOptions = (Array.isArray(options) ? options : [])
+    .map((option) => {
+      const optionValue = String(option?.value || '').trim();
+      if (!optionValue) return null;
+      return {
+        value: optionValue,
+        main: String(option?.main || optionValue).trim() || optionValue,
+        sub: String(option?.sub || '').trim(),
+      };
+    })
+    .filter(Boolean);
+
+  const selectedOption = normalizedOptions.find((option) => option.value === value);
+  const triggerText = selectedOption?.main || value || placeholder;
+
+  return (
+    <div className="global-section-modal__category-picker">
+      <button
+        type="button"
+        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
+        onClick={onToggle}
+      >
+        <span>{triggerText}</span>
+        <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="global-section-modal__category-options">
+          {normalizedOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`global-section-modal__category-option${value === option.value ? ' global-section-modal__category-option--active' : ''}`}
+              onClick={() => onSelect(option.value)}
+            >
+              <span className="global-section-modal__category-main">{option.main}</span>
+              {option.sub ? <span className="global-section-modal__category-sub">{option.sub}</span> : null}
+            </button>
+          ))}
+          {!normalizedOptions.length ? (
+            <div className="global-section-modal__category-empty">
+              Avval "Yetkazib berish davlatlari" bo'limida hudud qo'shing
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function normalizeOptionalNumber(value, fieldLabel) {
@@ -210,6 +269,9 @@ function CargoFormCard({
   submitText,
   submitDisabled,
   onCancel,
+  shippingCountryOptions,
+  isCountryPickerOpen,
+  onToggleCountryPicker,
 }) {
   return (
     <div className="global-section-modal__sub-card">
@@ -217,13 +279,20 @@ function CargoFormCard({
       <div className="global-section-modal__grid global-section-modal__grid--2">
         <label className="global-section-modal__field">
           <span className="global-section-modal__label">Hudud kodi</span>
-          <input
-            className="global-section-modal__input"
-            placeholder="Masalan: china, usa, turkiya, korea, uzb"
+          <CategoryPicker
             value={draft.key}
-            onChange={(e) => onChange('key', e.target.value)}
+            onSelect={(nextValue) => {
+              onChange('key', nextValue);
+              onToggleCountryPicker(false);
+            }}
+            isOpen={isCountryPickerOpen}
+            onToggle={() => onToggleCountryPicker(!isCountryPickerOpen)}
+            placeholder="Masalan: china"
+            options={shippingCountryOptions}
           />
-          <span className="global-section-modal__hint">Qaysi davlat/yunalish uchun ekanini yozing.</span>
+          <span className="global-section-modal__hint">
+            Hudud kodi Shipping Country bo'limidan tanlanadi.
+          </span>
         </label>
         <label className="global-section-modal__field">
           <span className="global-section-modal__label">Ko'rinish tartibi (ixtiyoriy)</span>
@@ -437,6 +506,9 @@ export default function LogisticsInfoForm({ visible }) {
   const [error, setError] = useState('');
   const [cargoRates, setCargoRates] = useState([]);
   const [deliveryPrices, setDeliveryPrices] = useState([]);
+  const [shippingCountries, setShippingCountries] = useState([]);
+  const [isCreateCargoCountryOpen, setIsCreateCargoCountryOpen] = useState(false);
+  const [isEditCargoCountryOpen, setIsEditCargoCountryOpen] = useState(false);
 
   const [createCargoDraft, setCreateCargoDraft] = useState(EMPTY_CARGO_DRAFT);
   const [editingCargoKey, setEditingCargoKey] = useState('');
@@ -451,14 +523,24 @@ export default function LogisticsInfoForm({ visible }) {
     setError('');
     try {
       const data = await fetchCargoAdminData();
+      const shippingRows = await fetchShippingCountries();
       setCargoRates(Array.isArray(data?.cargoRates) ? data.cargoRates : []);
       setDeliveryPrices(Array.isArray(data?.deliveryPrices) ? data.deliveryPrices : []);
+      setShippingCountries(
+        (Array.isArray(shippingRows) ? shippingRows : []).filter((row) => row?.active !== false),
+      );
     } catch (err) {
       setError(err.message || "Logistika ma'lumotlarini yuklab bo'lmadi");
     } finally {
       setLoading(false);
     }
   };
+
+  const shippingCountryOptions = shippingCountries.map((row) => ({
+    value: row.code,
+    main: `${row.code} - ${row?.name?.uz || row.code}`,
+    sub: row?.name?.ru || '',
+  }));
 
   useEffect(() => {
     if (visible) loadData();
@@ -498,6 +580,7 @@ export default function LogisticsInfoForm({ visible }) {
     try {
       await createCargoRate(cargoDraftToPayload(createCargoDraft));
       setCreateCargoDraft(EMPTY_CARGO_DRAFT);
+      setIsCreateCargoCountryOpen(false);
       await loadData();
     } catch (err) {
       setError(err.message || "Kargo ma'lumotini qo'shib bo'lmadi");
@@ -514,6 +597,7 @@ export default function LogisticsInfoForm({ visible }) {
       await updateCargoRate(editingCargoKey, cargoDraftToPayload(editingCargoDraft));
       setEditingCargoKey('');
       setEditingCargoDraft(null);
+      setIsEditCargoCountryOpen(false);
       await loadData();
     } catch (err) {
       setError(err.message || "Kargo ma'lumotini yangilab bo'lmadi");
@@ -532,6 +616,7 @@ export default function LogisticsInfoForm({ visible }) {
       if (editingCargoKey === key) {
         setEditingCargoKey('');
         setEditingCargoDraft(null);
+        setIsEditCargoCountryOpen(false);
       }
       await loadData();
     } catch (err) {
@@ -626,6 +711,7 @@ export default function LogisticsInfoForm({ visible }) {
                     onClick={() => {
                       setEditingCargoKey(row.key);
                       setEditingCargoDraft(buildCargoDraft(row));
+                      setIsEditCargoCountryOpen(false);
                     }}
                   >
                     Tahrirlash
@@ -652,9 +738,13 @@ export default function LogisticsInfoForm({ visible }) {
             onSubmit={handleUpdateCargo}
             submitText={updating ? 'Saqlanmoqda...' : 'Saqlash'}
             submitDisabled={updating}
+            shippingCountryOptions={shippingCountryOptions}
+            isCountryPickerOpen={isEditCargoCountryOpen}
+            onToggleCountryPicker={setIsEditCargoCountryOpen}
             onCancel={() => {
               setEditingCargoKey('');
               setEditingCargoDraft(null);
+              setIsEditCargoCountryOpen(false);
             }}
           />
         ) : null}
@@ -666,6 +756,9 @@ export default function LogisticsInfoForm({ visible }) {
           onSubmit={handleCreateCargo}
           submitText={saving ? "Qo'shilmoqda..." : "Qo'shish"}
           submitDisabled={saving}
+          shippingCountryOptions={shippingCountryOptions}
+          isCountryPickerOpen={isCreateCargoCountryOpen}
+          onToggleCountryPicker={setIsCreateCargoCountryOpen}
         />
       </div>
 

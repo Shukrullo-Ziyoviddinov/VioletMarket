@@ -28,6 +28,7 @@ const {
   UzWarehouseLocale,
   ProductPolicyBlock,
   FlashSaleRuleConfig,
+  ShippingCountry,
   ProductSectionMetric,
   Counter,
 } = require("../models");
@@ -220,6 +221,17 @@ async function seedCargoMany() {
   console.log(`Cargo: cargo_region_rates=${rateDocs.length}, delivery_region_prices=${priceDocs.length}`);
 }
 
+async function seedShippingCountriesMany() {
+  const { shippingCountries } = require("./seedShippingCountry");
+  await ShippingCountry.syncIndexes();
+  await ShippingCountry.deleteMany({});
+  if (shippingCountries?.length) {
+    const docs = shippingCountries.map(({ id, ...rest }) => rest);
+    await ShippingCountry.insertMany(docs);
+  }
+  console.log(`Shipping countries: shipping_country=${shippingCountries?.length || 0}`);
+}
+
 async function seedVideoBannersMany() {
   const { videoBannerData } = require("./seedVideoBannerData");
   await VideoBannerItem.syncIndexes();
@@ -296,6 +308,7 @@ async function seedSiteCollections() {
   await seedHomeBannersMany();
   await seedFooterMany();
   await seedCargoMany();
+  await seedShippingCountriesMany();
   await seedVideoBannersMany();
   await seedSellersMany();
   await seedUzWarehouseMany();
@@ -421,6 +434,7 @@ async function logDbSummary() {
     footer_contact_links: await FooterContactLink.countDocuments(),
     cargo_region_rates: await CargoRegionRate.countDocuments(),
     delivery_region_prices: await DeliveryRegionPrice.countDocuments(),
+    shipping_country: await ShippingCountry.countDocuments(),
     video_banner_items: await VideoBannerItem.countDocuments(),
     seller_accounts: await SellerAccount.countDocuments(),
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),

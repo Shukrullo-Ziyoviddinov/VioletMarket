@@ -21,6 +21,7 @@ const {
   UzWarehouseLocale,
   ProductPolicyBlock,
   FlashSaleRuleConfig,
+  ShippingCountry,
   ProductSectionMetric,
   Counter,
 } = require("../models");
@@ -53,6 +54,7 @@ async function main() {
     footer_contact_links: await FooterContactLink.countDocuments(),
     cargo_region_rates: await CargoRegionRate.countDocuments(),
     delivery_region_prices: await DeliveryRegionPrice.countDocuments(),
+    shipping_country: await ShippingCountry.countDocuments(),
     video_banner_items: await VideoBannerItem.countDocuments(),
     seller_accounts: await SellerAccount.countDocuments(),
     uz_warehouse_locales: await UzWarehouseLocale.countDocuments(),

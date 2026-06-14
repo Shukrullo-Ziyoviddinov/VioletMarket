@@ -48,6 +48,7 @@ import FooterForm from '../FooterForm/FooterForm';
 import FlashSaleRulesForm from '../FlashSaleRulesForm/FlashSaleRulesForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
+import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
 
@@ -3191,6 +3192,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <VideoBannerForm visible={open} />
     ) : section?.key === 'country-seller-banner' ? (
       <UzWarehouseForm visible={open} />
+    ) : section?.key === 'shipping-country' ? (
+      <ShippingCountryForm visible={open} />
     ) : section?.key === 'logistics-info' ? (
       <LogisticsInfoForm visible={open} />
     ) : section?.key === 'footer' ? (

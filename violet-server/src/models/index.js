@@ -23,6 +23,7 @@ const { Comment } = require("./comment");
 const { SellerRatingSummary } = require("./sellerRatingSummary");
 const { ProductSectionMetric } = require("./productSectionMetric");
 const { Counter } = require("./counter");
+const { ShippingCountry } = require("./shippingCountry");
 
 module.exports = {
   Product,
@@ -50,4 +51,5 @@ module.exports = {
   SellerRatingSummary,
   ProductSectionMetric,
   Counter,
+  ShippingCountry,
 };
