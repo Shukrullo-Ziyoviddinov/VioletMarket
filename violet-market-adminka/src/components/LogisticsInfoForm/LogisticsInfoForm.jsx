@@ -29,18 +29,18 @@ function buildDraft(source) {
 function parsePayload(draft) {
   const key = String(draft?.key || '').trim();
   if (!key) {
-    throw new Error("key bo'sh bo'lmasligi kerak");
+    throw new Error("Hudud kodi bo'sh bo'lmasligi kerak");
   }
 
   let parsedData = {};
   try {
     parsedData = JSON.parse(String(draft?.dataText || '{}'));
   } catch (_error) {
-    throw new Error("data JSON formati noto'g'ri");
+    throw new Error("Batafsil ma'lumot formati noto'g'ri. Namunadagi ko'rinishda yozing.");
   }
 
   if (!parsedData || typeof parsedData !== 'object' || Array.isArray(parsedData)) {
-    throw new Error("data JSON object bo'lishi kerak");
+    throw new Error("Batafsil ma'lumot noto'g'ri. To'g'ri ko'rinishdagi ma'lumot kiriting.");
   }
 
   const payload = {
@@ -68,6 +68,9 @@ function sectionName(dataObj) {
 
 function SectionEditor({
   title,
+  technicalName,
+  keyHint,
+  dataHint,
   rows,
   editingKey,
   editingDraft,
@@ -85,6 +88,9 @@ function SectionEditor({
   return (
     <div className="global-section-modal__card">
       <h3 className="global-section-modal__block-title">{title}</h3>
+      <p className="global-section-modal__meta">
+        Tizimdagi nomi: <strong>{technicalName}</strong>
+      </p>
 
       <div className="global-section-modal__list">
         {(rows || []).map((row) => {
@@ -121,15 +127,17 @@ function SectionEditor({
                 <div className="global-section-modal__saved-item-edit global-section-modal__edit-block">
                   <div className="global-section-modal__grid global-section-modal__grid--2">
                     <label className="global-section-modal__field">
-                      <span className="global-section-modal__label">key</span>
+                      <span className="global-section-modal__label">Hudud kodi</span>
                       <input
                         className="global-section-modal__input"
+                        placeholder="Masalan: china, usa, toshkent, viloyat"
                         value={editingDraft?.key || ''}
                         onChange={(e) => onChangeEdit('key', e.target.value)}
                       />
+                      <span className="global-section-modal__hint">{keyHint}</span>
                     </label>
                     <label className="global-section-modal__field">
-                      <span className="global-section-modal__label">sortOrder</span>
+                      <span className="global-section-modal__label">Ko'rinish tartibi (ixtiyoriy)</span>
                       <input
                         className="global-section-modal__input"
                         type="number"
@@ -137,15 +145,19 @@ function SectionEditor({
                         value={editingDraft?.sortOrder ?? ''}
                         onChange={(e) => onChangeEdit('sortOrder', e.target.value)}
                       />
+                      <span className="global-section-modal__hint">
+                        Kichik raqam birinchi chiqadi. Bo'sh qoldirsangiz tizim o'zi beradi.
+                      </span>
                     </label>
                     <label className="global-section-modal__field global-section-modal__field--full">
-                      <span className="global-section-modal__label">data (JSON)</span>
+                      <span className="global-section-modal__label">Batafsil ma'lumot</span>
                       <textarea
                         className="global-section-modal__textarea"
                         rows={10}
                         value={editingDraft?.dataText || ''}
                         onChange={(e) => onChangeEdit('dataText', e.target.value)}
                       />
+                      <span className="global-section-modal__hint">{dataHint}</span>
                     </label>
                   </div>
                   <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
@@ -178,15 +190,17 @@ function SectionEditor({
         <h3 className="global-section-modal__block-title">Yangi ma'lumot qo'shish</h3>
         <div className="global-section-modal__grid global-section-modal__grid--2">
           <label className="global-section-modal__field">
-            <span className="global-section-modal__label">key</span>
+            <span className="global-section-modal__label">Hudud kodi</span>
             <input
               className="global-section-modal__input"
+              placeholder="Masalan: china, usa, toshkent, viloyat"
               value={createDraft.key}
               onChange={(e) => onChangeCreate('key', e.target.value)}
             />
+            <span className="global-section-modal__hint">{keyHint}</span>
           </label>
           <label className="global-section-modal__field">
-            <span className="global-section-modal__label">sortOrder</span>
+            <span className="global-section-modal__label">Ko'rinish tartibi (ixtiyoriy)</span>
             <input
               className="global-section-modal__input"
               type="number"
@@ -194,15 +208,19 @@ function SectionEditor({
               value={createDraft.sortOrder}
               onChange={(e) => onChangeCreate('sortOrder', e.target.value)}
             />
+            <span className="global-section-modal__hint">
+              Kichik raqam birinchi chiqadi. Bo'sh qoldirsangiz tizim o'zi beradi.
+            </span>
           </label>
           <label className="global-section-modal__field global-section-modal__field--full">
-            <span className="global-section-modal__label">data (JSON)</span>
+            <span className="global-section-modal__label">Batafsil ma'lumot</span>
             <textarea
               className="global-section-modal__textarea"
               rows={10}
               value={createDraft.dataText}
               onChange={(e) => onChangeCreate('dataText', e.target.value)}
             />
+            <span className="global-section-modal__hint">{dataHint}</span>
           </label>
         </div>
         <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
@@ -261,7 +279,7 @@ export default function LogisticsInfoForm({ visible }) {
       setCreateCargoDraft(buildDraft());
       await loadData();
     } catch (err) {
-      setError(err.message || "Cargo rate qo'shib bo'lmadi");
+      setError(err.message || "Kargo ma'lumotini qo'shib bo'lmadi");
     } finally {
       setSaving(false);
     }
@@ -278,14 +296,14 @@ export default function LogisticsInfoForm({ visible }) {
       setEditingCargoDraft(null);
       await loadData();
     } catch (err) {
-      setError(err.message || "Cargo rate yangilab bo'lmadi");
+      setError(err.message || "Kargo ma'lumotini yangilab bo'lmadi");
     } finally {
       setUpdating(false);
     }
   };
 
   const removeCargo = async (key) => {
-    const ok = window.confirm("Bu cargoRates ma'lumoti o'chirilsinmi?");
+    const ok = window.confirm("Bu kargo ma'lumoti o'chirilsinmi?");
     if (!ok) return;
     setUpdating(true);
     setError('');
@@ -297,7 +315,7 @@ export default function LogisticsInfoForm({ visible }) {
       }
       await loadData();
     } catch (err) {
-      setError(err.message || "Cargo rate o'chirib bo'lmadi");
+      setError(err.message || "Kargo ma'lumotini o'chirib bo'lmadi");
     } finally {
       setUpdating(false);
     }
@@ -312,7 +330,7 @@ export default function LogisticsInfoForm({ visible }) {
       setCreateDeliveryDraft(buildDraft());
       await loadData();
     } catch (err) {
-      setError(err.message || "Delivery price qo'shib bo'lmadi");
+      setError(err.message || "Yetkazib berish ma'lumotini qo'shib bo'lmadi");
     } finally {
       setSaving(false);
     }
@@ -329,14 +347,14 @@ export default function LogisticsInfoForm({ visible }) {
       setEditingDeliveryDraft(null);
       await loadData();
     } catch (err) {
-      setError(err.message || "Delivery price yangilab bo'lmadi");
+      setError(err.message || "Yetkazib berish ma'lumotini yangilab bo'lmadi");
     } finally {
       setUpdating(false);
     }
   };
 
   const removeDelivery = async (key) => {
-    const ok = window.confirm("Bu deliveryPrices ma'lumoti o'chirilsinmi?");
+    const ok = window.confirm("Bu yetkazib berish ma'lumoti o'chirilsinmi?");
     if (!ok) return;
     setUpdating(true);
     setError('');
@@ -348,7 +366,7 @@ export default function LogisticsInfoForm({ visible }) {
       }
       await loadData();
     } catch (err) {
-      setError(err.message || "Delivery price o'chirib bo'lmadi");
+      setError(err.message || "Yetkazib berish ma'lumotini o'chirib bo'lmadi");
     } finally {
       setUpdating(false);
     }
@@ -365,13 +383,17 @@ export default function LogisticsInfoForm({ visible }) {
           </button>
         </div>
         <p className="global-section-modal__meta">
-          Pastda ikki bo'lim alohida: <strong>cargoRates</strong> va <strong>deliveryPrices</strong>.
+          Pastda ikki bo'lim alohida: <strong>Kargo tariflari</strong> va{' '}
+          <strong>Yetkazib berish narxlari</strong>.
         </p>
         {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
       </div>
 
       <SectionEditor
-        title="cargoRates"
+        title="Kargo tariflari"
+        technicalName="cargoRates"
+        keyHint="Qaysi davlat/yunalish uchun ekanini yozing. Masalan: china, usa, turkiya, korea, uzb."
+        dataHint="Bu maydonda kargo nomi, narxlari va izoh matni yoziladi. Namunadagi ko'rinishni saqlang."
         rows={cargoRates}
         editingKey={editingCargoKey}
         editingDraft={editingCargoDraft}
@@ -395,7 +417,10 @@ export default function LogisticsInfoForm({ visible }) {
       />
 
       <SectionEditor
-        title="deliveryPrices"
+        title="Yetkazib berish narxlari"
+        technicalName="deliveryPrices"
+        keyHint="Qaysi hudud uchun ekanini yozing. Masalan: toshkent yoki viloyat."
+        dataHint="Bu maydonda narx bosqichlari va ularning nomlari yoziladi. Namunadagi ko'rinishni saqlang."
         rows={deliveryPrices}
         editingKey={editingDeliveryKey}
         editingDraft={editingDeliveryDraft}
