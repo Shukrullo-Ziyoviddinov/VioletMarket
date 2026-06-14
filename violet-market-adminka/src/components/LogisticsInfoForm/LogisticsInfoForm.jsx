@@ -21,31 +21,13 @@ const EMPTY_CARGO_DRAFT = {
   infoRu: '',
 };
 
-const DELIVERY_FIELDS_BY_KEY = {
-  toshkent: [
-    { keyBase: 'tsh1', nameKey: 'namePricetsh1', priceKey: 'pricetsh1' },
-    { keyBase: 'tsh2', nameKey: 'namePricetsh2', priceKey: 'pricetsh2' },
-    { keyBase: 'tsh3', nameKey: 'namePricetsh3', priceKey: 'pricetsh3' },
-  ],
-  viloyat: [
-    { keyBase: 'v1', nameKey: 'namePricev1', priceKey: 'pricev1' },
-    { keyBase: 'v2', nameKey: 'namePricev2', priceKey: 'pricev2' },
-    { keyBase: 'v3', nameKey: 'namePricev3', priceKey: 'pricev3' },
-    { keyBase: 'v4', nameKey: 'namePricev4', priceKey: 'pricev4' },
-    { keyBase: 'v5', nameKey: 'namePricev5', priceKey: 'pricev5' },
-  ],
-};
-
-function getDeliveryFieldConfig(regionKey) {
-  const key = String(regionKey || '').trim().toLowerCase();
-  return DELIVERY_FIELDS_BY_KEY[key] || [];
-}
-
-function toNumericOrEmpty(value) {
-  if (value === null || value === undefined) return '';
-  if (value === '') return '';
-  const n = Number(value);
-  return Number.isFinite(n) ? String(n) : '';
+function createTier() {
+  return {
+    id: `${Date.now()}-${Math.random()}`,
+    labelUz: '',
+    labelRu: '',
+    price: '',
+  };
 }
 
 function normalizeOptionalNumber(value, fieldLabel) {
@@ -70,6 +52,60 @@ function normalizeRequiredNumber(value, fieldLabel) {
   return n;
 }
 
+function toNumericOrEmpty(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const n = Number(value);
+  return Number.isFinite(n) ? String(n) : '';
+}
+
+function getDeliveryPrefixes(regionKey) {
+  const safe = String(regionKey || '').trim().toLowerCase();
+  if (safe === 'viloyat') {
+    return { namePrefix: 'namePricev', pricePrefix: 'pricev' };
+  }
+  return { namePrefix: 'namePricetsh', pricePrefix: 'pricetsh' };
+}
+
+function extractDeliveryTiers(data, regionKey) {
+  const { namePrefix, pricePrefix } = getDeliveryPrefixes(regionKey);
+  const rows = data && typeof data === 'object' ? data : {};
+
+  const indexSet = new Set();
+  Object.keys(rows).forEach((key) => {
+    const nameMatch = key.match(new RegExp(`^${namePrefix}(\\d+)$`));
+    if (nameMatch) {
+      indexSet.add(Number(nameMatch[1]));
+    }
+    const priceMatch = key.match(new RegExp(`^${pricePrefix}(\\d+)$`));
+    if (priceMatch) {
+      indexSet.add(Number(priceMatch[1]));
+    }
+  });
+
+  const indexes = Array.from(indexSet)
+    .filter((i) => Number.isFinite(i) && i > 0)
+    .sort((a, b) => a - b);
+
+  if (!indexes.length) return [createTier()];
+
+  return indexes.map((idx) => ({
+    id: `${Date.now()}-${idx}-${Math.random()}`,
+    labelUz: rows?.[`${namePrefix}${idx}`]?.uz || '',
+    labelRu: rows?.[`${namePrefix}${idx}`]?.ru || '',
+    price: toNumericOrEmpty(rows?.[`${pricePrefix}${idx}`]),
+  }));
+}
+
+function createEmptyDeliveryDraft(regionKey = 'toshkent') {
+  return {
+    key: regionKey,
+    sortOrder: '',
+    nameUz: '',
+    nameRu: '',
+    tiers: [createTier()],
+  };
+}
+
 function buildCargoDraft(source) {
   const data = source?.data || {};
   return {
@@ -92,8 +128,13 @@ function cargoDraftToPayload(draft) {
   const nameRu = String(draft?.nameRu || '').trim();
   const infoUz = String(draft?.infoUz || '').trim();
   const infoRu = String(draft?.infoRu || '').trim();
-  if (!nameUz || !nameRu) throw new Error("Kargo nomi (uz/ru) to'ldirilishi shart");
-  if (!infoUz || !infoRu) throw new Error("Kargo izohi (uz/ru) to'ldirilishi shart");
+
+  if (!nameUz || !nameRu) {
+    throw new Error("Kargo nomi (UZ/RU) to'ldirilishi shart");
+  }
+  if (!infoUz || !infoRu) {
+    throw new Error("Kargo izohi (UZ/RU) to'ldirilishi shart");
+  }
 
   const standard = normalizeOptionalNumber(draft?.standard, 'Standard narx');
   const express = normalizeOptionalNumber(draft?.express, 'Express narx');
@@ -113,63 +154,46 @@ function cargoDraftToPayload(draft) {
 
 function buildDeliveryDraft(source) {
   const data = source?.data || {};
-  const key = source?.key || '';
-  const fieldConfig = getDeliveryFieldConfig(key);
+  const key = source?.key || 'toshkent';
   return {
     key,
     sortOrder: source?.sortOrder ?? '',
     nameUz: data?.name?.uz || '',
     nameRu: data?.name?.ru || '',
-    fields: fieldConfig.map((cfg) => ({
-      ...cfg,
-      labelUz: data?.[cfg.nameKey]?.uz || '',
-      labelRu: data?.[cfg.nameKey]?.ru || '',
-      price: toNumericOrEmpty(data?.[cfg.priceKey]),
-    })),
-  };
-}
-
-function createEmptyDeliveryDraft(regionKey = 'toshkent') {
-  return {
-    key: regionKey,
-    sortOrder: '',
-    nameUz: '',
-    nameRu: '',
-    fields: getDeliveryFieldConfig(regionKey).map((cfg) => ({
-      ...cfg,
-      labelUz: '',
-      labelRu: '',
-      price: '',
-    })),
+    tiers: extractDeliveryTiers(data, key),
   };
 }
 
 function deliveryDraftToPayload(draft) {
   const key = String(draft?.key || '').trim().toLowerCase();
   if (!key) throw new Error("Hudud kodi bo'sh bo'lmasligi kerak");
-
-  const fieldConfig = getDeliveryFieldConfig(key);
-  if (!fieldConfig.length) {
-    throw new Error("Delivery hududi faqat toshkent yoki viloyat bo'lishi kerak");
+  if (key !== 'toshkent' && key !== 'viloyat') {
+    throw new Error("Hudud kodi faqat 'toshkent' yoki 'viloyat' bo'lishi kerak");
   }
 
   const nameUz = String(draft?.nameUz || '').trim();
   const nameRu = String(draft?.nameRu || '').trim();
   if (!nameUz || !nameRu) {
-    throw new Error("Yetkazib berish nomi (uz/ru) to'ldirilishi shart");
+    throw new Error("Yetkazib berish nomi (UZ/RU) to'ldirilishi shart");
   }
 
-  const fields = Array.isArray(draft?.fields) ? draft.fields : [];
+  const tiers = Array.isArray(draft?.tiers) ? draft.tiers : [];
+  if (!tiers.length) {
+    throw new Error("Kamida bitta narx bosqichi bo'lishi kerak");
+  }
+
+  const { namePrefix, pricePrefix } = getDeliveryPrefixes(key);
   const data = { name: { uz: nameUz, ru: nameRu } };
-  fieldConfig.forEach((cfg) => {
-    const row = fields.find((item) => item.keyBase === cfg.keyBase) || {};
-    const labelUz = String(row?.labelUz || '').trim();
-    const labelRu = String(row?.labelRu || '').trim();
+
+  tiers.forEach((tier, index) => {
+    const rowNo = index + 1;
+    const labelUz = String(tier?.labelUz || '').trim();
+    const labelRu = String(tier?.labelRu || '').trim();
     if (!labelUz || !labelRu) {
-      throw new Error(`${cfg.nameKey} uchun uz/ru nomlari to'ldirilishi shart`);
+      throw new Error(`${rowNo}-bosqich nomlari (UZ/RU) to'ldirilishi shart`);
     }
-    data[cfg.nameKey] = { uz: labelUz, ru: labelRu };
-    data[cfg.priceKey] = normalizeRequiredNumber(row?.price, cfg.priceKey);
+    data[`${namePrefix}${rowNo}`] = { uz: labelUz, ru: labelRu };
+    data[`${pricePrefix}${rowNo}`] = normalizeRequiredNumber(tier?.price, `${rowNo}-bosqich narxi`);
   });
 
   const payload = { key, data };
@@ -186,7 +210,6 @@ function CargoFormCard({
   submitText,
   submitDisabled,
   onCancel,
-  cancelText = 'Bekor',
 }) {
   return (
     <div className="global-section-modal__sub-card">
@@ -200,9 +223,7 @@ function CargoFormCard({
             value={draft.key}
             onChange={(e) => onChange('key', e.target.value)}
           />
-          <span className="global-section-modal__hint">
-            Qaysi davlat/yunalish uchun ekanini yozing.
-          </span>
+          <span className="global-section-modal__hint">Qaysi davlat/yunalish uchun ekanini yozing.</span>
         </label>
         <label className="global-section-modal__field">
           <span className="global-section-modal__label">Ko'rinish tartibi (ixtiyoriy)</span>
@@ -281,7 +302,7 @@ function CargoFormCard({
         </button>
         {onCancel ? (
           <button type="button" className="global-section-modal__link-btn" onClick={onCancel}>
-            {cancelText}
+            Bekor
           </button>
         ) : null}
       </div>
@@ -293,24 +314,21 @@ function DeliveryFormCard({
   title,
   draft,
   onChange,
-  onChangeField,
+  onChangeTier,
+  onAddTier,
+  onRemoveTier,
   onSubmit,
   submitText,
   submitDisabled,
   onCancel,
 }) {
-  const config = getDeliveryFieldConfig(draft.key);
   return (
     <div className="global-section-modal__sub-card">
       <h4 className="global-section-modal__block-title">{title}</h4>
       <div className="global-section-modal__grid global-section-modal__grid--2">
         <label className="global-section-modal__field">
           <span className="global-section-modal__label">Hudud kodi</span>
-          <input
-            className="global-section-modal__input"
-            value={draft.key}
-            readOnly
-          />
+          <input className="global-section-modal__input" value={draft.key} readOnly />
           <span className="global-section-modal__hint">Faqat `toshkent` yoki `viloyat` ishlatiladi.</span>
         </label>
         <label className="global-section-modal__field">
@@ -342,41 +360,54 @@ function DeliveryFormCard({
       </div>
 
       <div className="global-section-modal__saved-items">
-        {config.map((cfg) => {
-          const row = draft.fields.find((item) => item.keyBase === cfg.keyBase) || {};
-          return (
-            <div key={cfg.keyBase} className="global-section-modal__saved-item">
-              <div className="global-section-modal__grid global-section-modal__grid--3 global-section-modal__saved-item-edit">
-                <label className="global-section-modal__field">
-                  <span className="global-section-modal__label">{cfg.nameKey} (UZ)</span>
-                  <input
-                    className="global-section-modal__input"
-                    value={row.labelUz || ''}
-                    onChange={(e) => onChangeField(cfg.keyBase, 'labelUz', e.target.value)}
-                  />
-                </label>
-                <label className="global-section-modal__field">
-                  <span className="global-section-modal__label">{cfg.nameKey} (RU)</span>
-                  <input
-                    className="global-section-modal__input"
-                    value={row.labelRu || ''}
-                    onChange={(e) => onChangeField(cfg.keyBase, 'labelRu', e.target.value)}
-                  />
-                </label>
-                <label className="global-section-modal__field">
-                  <span className="global-section-modal__label">{cfg.priceKey} (so'm)</span>
-                  <input
-                    className="global-section-modal__input"
-                    type="number"
-                    min={0}
-                    value={row.price || ''}
-                    onChange={(e) => onChangeField(cfg.keyBase, 'price', e.target.value)}
-                  />
-                </label>
-              </div>
+        {draft.tiers.map((tier, index) => (
+          <div key={tier.id} className="global-section-modal__saved-item">
+            <div className="global-section-modal__grid global-section-modal__grid--3 global-section-modal__saved-item-edit">
+              <label className="global-section-modal__field">
+                <span className="global-section-modal__label">{index + 1}-bosqich nomi (UZ)</span>
+                <input
+                  className="global-section-modal__input"
+                  value={tier.labelUz}
+                  onChange={(e) => onChangeTier(tier.id, 'labelUz', e.target.value)}
+                />
+              </label>
+              <label className="global-section-modal__field">
+                <span className="global-section-modal__label">{index + 1}-bosqich nomi (RU)</span>
+                <input
+                  className="global-section-modal__input"
+                  value={tier.labelRu}
+                  onChange={(e) => onChangeTier(tier.id, 'labelRu', e.target.value)}
+                />
+              </label>
+              <label className="global-section-modal__field">
+                <span className="global-section-modal__label">{index + 1}-bosqich narxi (so'm)</span>
+                <input
+                  className="global-section-modal__input"
+                  type="number"
+                  min={0}
+                  value={tier.price}
+                  onChange={(e) => onChangeTier(tier.id, 'price', e.target.value)}
+                />
+              </label>
             </div>
-          );
-        })}
+            {draft.tiers.length > 1 ? (
+              <button
+                type="button"
+                className="global-section-modal__danger-link"
+                onClick={() => onRemoveTier(tier.id)}
+              >
+                Bosqichni o'chirish
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      <div className="global-section-modal__saved-actions">
+        <button type="button" className="global-section-modal__ghost-btn" onClick={onAddTier}>
+          <PlusOutlined />
+          <span>Narx bosqichi qo'shish</span>
+        </button>
       </div>
 
       <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
@@ -433,6 +464,34 @@ export default function LogisticsInfoForm({ visible }) {
     if (visible) loadData();
   }, [visible]);
 
+  const changeCargoField = (setter) => (field, value) =>
+    setter((prev) => ({ ...prev, [field]: value }));
+  const changeDeliveryField = (setter) => (field, value) =>
+    setter((prev) => ({ ...prev, [field]: value }));
+
+  const changeTier = (setter) => (tierId, field, value) => {
+    setter((prev) => ({
+      ...prev,
+      tiers: (prev?.tiers || []).map((tier) =>
+        tier.id === tierId ? { ...tier, [field]: value } : tier,
+      ),
+    }));
+  };
+
+  const addTier = (setter) => () => {
+    setter((prev) => ({ ...prev, tiers: [...(prev?.tiers || []), createTier()] }));
+  };
+
+  const removeTier = (setter) => (tierId) => {
+    setter((prev) => {
+      const nextTiers = (prev?.tiers || []).filter((tier) => tier.id !== tierId);
+      return {
+        ...prev,
+        tiers: nextTiers.length ? nextTiers : [createTier()],
+      };
+    });
+  };
+
   const handleCreateCargo = async () => {
     setSaving(true);
     setError('');
@@ -487,7 +546,7 @@ export default function LogisticsInfoForm({ visible }) {
     setError('');
     try {
       await createDeliveryPrice(deliveryDraftToPayload(createDeliveryDraft));
-      setCreateDeliveryDraft(createEmptyDeliveryDraft('toshkent'));
+      setCreateDeliveryDraft(createEmptyDeliveryDraft(createDeliveryDraft.key || 'toshkent'));
       await loadData();
     } catch (err) {
       setError(err.message || "Yetkazib berish ma'lumotini qo'shib bo'lmadi");
@@ -529,21 +588,6 @@ export default function LogisticsInfoForm({ visible }) {
     } finally {
       setUpdating(false);
     }
-  };
-
-  const changeCargoField = (setter) => (field, value) =>
-    setter((prev) => ({ ...prev, [field]: value }));
-
-  const changeDeliveryField = (setter) => (field, value) =>
-    setter((prev) => ({ ...prev, [field]: value }));
-
-  const changeDeliveryTierField = (setter) => (keyBase, field, value) => {
-    setter((prev) => ({
-      ...prev,
-      fields: (prev?.fields || []).map((item) =>
-        item.keyBase === keyBase ? { ...item, [field]: value } : item,
-      ),
-    }));
   };
 
   return (
@@ -669,7 +713,9 @@ export default function LogisticsInfoForm({ visible }) {
             title="Yetkazib berish ma'lumotini tahrirlash"
             draft={editingDeliveryDraft}
             onChange={changeDeliveryField(setEditingDeliveryDraft)}
-            onChangeField={changeDeliveryTierField(setEditingDeliveryDraft)}
+            onChangeTier={changeTier(setEditingDeliveryDraft)}
+            onAddTier={addTier(setEditingDeliveryDraft)}
+            onRemoveTier={removeTier(setEditingDeliveryDraft)}
             onSubmit={handleUpdateDelivery}
             submitText={updating ? 'Saqlanmoqda...' : 'Saqlash'}
             submitDisabled={updating}
@@ -685,24 +731,30 @@ export default function LogisticsInfoForm({ visible }) {
           <div className="global-section-modal__saved-actions">
             <button
               type="button"
-              className="global-section-modal__ghost-btn"
+              className={`global-section-modal__ghost-btn${
+                createDeliveryDraft.key === 'toshkent' ? ' global-section-modal__ghost-btn--active' : ''
+              }`}
               onClick={() => setCreateDeliveryDraft(createEmptyDeliveryDraft('toshkent'))}
             >
-              Toshkent uchun forma
+              Toshkent
             </button>
             <button
               type="button"
-              className="global-section-modal__ghost-btn"
+              className={`global-section-modal__ghost-btn${
+                createDeliveryDraft.key === 'viloyat' ? ' global-section-modal__ghost-btn--active' : ''
+              }`}
               onClick={() => setCreateDeliveryDraft(createEmptyDeliveryDraft('viloyat'))}
             >
-              Viloyat uchun forma
+              Viloyat
             </button>
           </div>
           <DeliveryFormCard
             title={`Yangi ma'lumot (${createDeliveryDraft.key || 'toshkent'})`}
             draft={createDeliveryDraft}
             onChange={changeDeliveryField(setCreateDeliveryDraft)}
-            onChangeField={changeDeliveryTierField(setCreateDeliveryDraft)}
+            onChangeTier={changeTier(setCreateDeliveryDraft)}
+            onAddTier={addTier(setCreateDeliveryDraft)}
+            onRemoveTier={removeTier(setCreateDeliveryDraft)}
             onSubmit={handleCreateDelivery}
             submitText={saving ? "Qo'shilmoqda..." : "Qo'shish"}
             submitDisabled={saving}

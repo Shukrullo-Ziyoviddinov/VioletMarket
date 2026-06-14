@@ -263,6 +263,12 @@
   cursor: pointer;
 }
 
+.global-section-modal__ghost-btn--active {
+  border-color: #9b4fe7;
+  background: #f3ebfd;
+  color: #40235f;
+}
+
 .global-section-modal__list {
   display: flex;
   flex-direction: column;
