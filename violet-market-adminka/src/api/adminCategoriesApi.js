@@ -18,6 +18,33 @@ export async function fetchAdminCategories() {
   return data?.data || {};
 }
 
+export async function createAdminMasterCategory(payload) {
+  const res = await fetch(apiUrl('/api/admin/categories/master-categories'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function updateAdminMasterCategory(masterCategoryId, payload) {
+  const res = await fetch(apiUrl(`/api/admin/categories/master-categories/${masterCategoryId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function deleteAdminMasterCategory(masterCategoryId) {
+  const res = await fetch(apiUrl(`/api/admin/categories/master-categories/${masterCategoryId}`), {
+    method: 'DELETE',
+  });
+  await parseJson(res);
+}
+
 export async function createAdminCountryCategory(payload) {
   const res = await fetch(apiUrl('/api/admin/categories/countries'), {
     method: 'POST',

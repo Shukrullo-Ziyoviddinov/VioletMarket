@@ -1,4 +1,11 @@
-const { BrandCategory, BrandCountryFilterValue, CountryCategory } = require("../models");
+const {
+  BrandCategory,
+  BrandCountryFilterValue,
+  CountryCategory,
+  HomeBannerSlide,
+  MasterCategory,
+  NavbarSection,
+} = require("../models");
 const { HttpError } = require("../utils/httpError");
 
 function toInt(value, label) {
@@ -96,6 +103,18 @@ function normalizeFilterValuePayload(raw) {
   return { type, filterValue };
 }
 
+function normalizeMasterCategoryPayload(raw) {
+  if (!raw || typeof raw !== "object") {
+    throw new HttpError(400, "Master category payload noto'g'ri", "VALIDATION_ERROR");
+  }
+  const uz = clean(raw?.name?.uz);
+  const ru = clean(raw?.name?.ru);
+  if (!uz || !ru) {
+    throw new HttpError(400, "name.uz va name.ru to'ldirilishi shart", "VALIDATION_ERROR");
+  }
+  return { name: { uz, ru } };
+}
+
 function stripMongoMeta(doc) {
   if (!doc || typeof doc !== "object") return doc;
   const plain = typeof doc.toObject === "function" ? doc.toObject() : doc;
@@ -104,12 +123,14 @@ function stripMongoMeta(doc) {
 }
 
 async function listCategories() {
-  const [categoriyCountries, categoriesBrend, filterValues] = await Promise.all([
+  const [masterCategories, categoriyCountries, categoriesBrend, filterValues] = await Promise.all([
+    MasterCategory.find().sort({ id: 1 }).lean(),
     CountryCategory.find().sort({ id: 1 }).lean(),
     BrandCategory.find().sort({ id: 1 }).lean(),
     BrandCountryFilterValue.find().sort({ type: 1, id: 1 }).lean(),
   ]);
   return {
+    masterCategories: masterCategories.map(stripMongoMeta),
     categoriyCountries: categoriyCountries.map(stripMongoMeta),
     categoriesBrend: categoriesBrend.map(stripMongoMeta),
     filterValues: filterValues.map(stripMongoMeta),
@@ -133,6 +154,15 @@ async function ensureFilterValueExists(type, filterValue) {
       "VALIDATION_ERROR"
     );
   }
+}
+
+async function getMasterCategoryByIdOrThrow(masterCategoryId) {
+  const id = toInt(masterCategoryId, "masterCategoryId");
+  const doc = await MasterCategory.findOne({ id });
+  if (!doc) {
+    throw new HttpError(404, "Master category topilmadi", "NOT_FOUND");
+  }
+  return doc;
 }
 
 async function getCountryByIdOrThrow(countryId) {
@@ -232,6 +262,52 @@ async function getFilterValueByIdOrThrow(filterId) {
   return row;
 }
 
+async function createMasterCategory(payload) {
+  const normalized = normalizeMasterCategoryPayload(payload);
+  const duplicate = await MasterCategory.findOne({
+    "name.uz": normalized.name.uz,
+    "name.ru": normalized.name.ru,
+  }).lean();
+  if (duplicate) {
+    throw new HttpError(409, "Bunday master category allaqachon bor", "CONFLICT");
+  }
+  const row = new MasterCategory(normalized);
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function updateMasterCategory(masterCategoryId, payload) {
+  const row = await getMasterCategoryByIdOrThrow(masterCategoryId);
+  const merged = {
+    name: {
+      uz: payload?.name?.uz ?? row?.name?.uz,
+      ru: payload?.name?.ru ?? row?.name?.ru,
+    },
+  };
+  const normalized = normalizeMasterCategoryPayload(merged);
+  row.name = normalized.name;
+  await row.save();
+  return stripMongoMeta(row);
+}
+
+async function deleteMasterCategory(masterCategoryId) {
+  const row = await getMasterCategoryByIdOrThrow(masterCategoryId);
+  const navbarInUse = await NavbarSection.countDocuments({
+    "items.masterCategoryId": row.id,
+  });
+  const bannerInUse = await HomeBannerSlide.countDocuments({
+    masterCategoryId: row.id,
+  });
+  if (navbarInUse > 0 || bannerInUse > 0) {
+    throw new HttpError(
+      409,
+      "Bu master category banner yoki navbar itemlarda ishlatilgan. O'chirib bo'lmaydi.",
+      "CONFLICT"
+    );
+  }
+  await MasterCategory.deleteOne({ id: row.id });
+}
+
 async function createFilterValue(payload) {
   const normalized = normalizeFilterValuePayload(payload);
   const duplicate = await BrandCountryFilterValue.findOne(normalized).lean();
@@ -290,6 +366,9 @@ async function deleteFilterValue(filterId) {
 
 module.exports = {
   listCategories,
+  createMasterCategory,
+  updateMasterCategory,
+  deleteMasterCategory,
   createCountryCategory,
   updateCountryCategory,
   deleteCountryCategory,

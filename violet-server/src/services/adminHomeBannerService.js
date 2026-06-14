@@ -1,4 +1,4 @@
-const { HomeBannerSlide } = require("../models");
+const { HomeBannerSlide, MasterCategory } = require("../models");
 const { HttpError } = require("../utils/httpError");
 
 function toInt(value, label) {
@@ -37,7 +37,33 @@ function normalizeClickable(value, fallback = false) {
   return Boolean(value);
 }
 
-function normalizeBannerPayload(raw, fallback = {}) {
+async function resolveMasterCategory(rawMasterCategoryId, rawCategoryText) {
+  const normalizedId = Number(rawMasterCategoryId);
+  if (Number.isFinite(normalizedId) && normalizedId > 0) {
+    const byId = await MasterCategory.findOne({ id: Math.floor(normalizedId) });
+    if (!byId) {
+      throw new HttpError(400, "masterCategoryId noto'g'ri", "VALIDATION_ERROR");
+    }
+    return byId;
+  }
+
+  const categoryText = String(rawCategoryText || "").trim();
+  if (!categoryText) return null;
+
+  const byName = await MasterCategory.findOne({
+    $or: [{ "name.uz": categoryText }, { "name.ru": categoryText }],
+  });
+  if (!byName) {
+    throw new HttpError(
+      400,
+      `Master category topilmadi: ${categoryText}`,
+      "VALIDATION_ERROR"
+    );
+  }
+  return byName;
+}
+
+async function normalizeBannerPayload(raw, fallback = {}) {
   if (!raw || typeof raw !== "object") {
     throw new HttpError(400, "Payload noto'g'ri", "VALIDATION_ERROR");
   }
@@ -45,7 +71,13 @@ function normalizeBannerPayload(raw, fallback = {}) {
   const type = normalizeType(raw?.type ?? fallback.type);
   const src = normalizeSrc(raw?.src ?? fallback.src);
   const clickable = normalizeClickable(raw?.clickable, fallback.clickable);
-  const category = String(raw?.category ?? fallback.category ?? "").trim();
+  const masterCategory = await resolveMasterCategory(
+    raw?.masterCategoryId ?? fallback.masterCategoryId,
+    raw?.category ?? fallback.category
+  );
+  const rawCategory =
+    raw?.category !== undefined ? raw.category : fallback?.category !== undefined ? fallback.category : "";
+  const category = String(masterCategory?.name?.uz || rawCategory || "").trim();
   const countriesCategories = String(
     raw?.countriesCategories ?? fallback.countriesCategories ?? ""
   ).trim();
@@ -55,6 +87,7 @@ function normalizeBannerPayload(raw, fallback = {}) {
     type,
     src,
     clickable,
+    masterCategoryId: masterCategory?.id,
     category: category || undefined,
     countriesCategories: countriesCategories || undefined,
     brandCategories: brandCategories || undefined,
@@ -74,7 +107,7 @@ async function listBanners() {
 }
 
 async function createBanner(payload) {
-  const normalized = normalizeBannerPayload(payload);
+  const normalized = await normalizeBannerPayload(payload);
   const banner = new HomeBannerSlide(normalized);
   await banner.save();
   return mapBanner(banner);
@@ -91,10 +124,11 @@ async function getBannerByIdOrThrow(bannerId) {
 
 async function updateBanner(bannerId, payload) {
   const banner = await getBannerByIdOrThrow(bannerId);
-  const normalized = normalizeBannerPayload(payload, banner);
+  const normalized = await normalizeBannerPayload(payload, banner);
   banner.type = normalized.type;
   banner.src = normalized.src;
   banner.clickable = normalized.clickable;
+  banner.masterCategoryId = normalized.masterCategoryId;
   banner.category = normalized.category;
   banner.countriesCategories = normalized.countriesCategories;
   banner.brandCategories = normalized.brandCategories;

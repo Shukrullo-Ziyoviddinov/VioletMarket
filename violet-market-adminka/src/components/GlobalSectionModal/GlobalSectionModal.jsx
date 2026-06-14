@@ -5,13 +5,16 @@ import {
   createAdminBrandCategory,
   createAdminCountryCategory,
   createAdminFilterValue,
+  createAdminMasterCategory,
   deleteAdminBrandCategory,
   deleteAdminCountryCategory,
   deleteAdminFilterValue,
+  deleteAdminMasterCategory,
   fetchAdminCategories,
   updateAdminBrandCategory,
   updateAdminCountryCategory,
   updateAdminFilterValue,
+  updateAdminMasterCategory,
 } from '../../api/adminCategoriesApi';
 import {
   createHomeBanner,
@@ -70,6 +73,7 @@ const NAVBAR_CATEGORY_OPTIONS = [
 function buildDefaultNavbarItem(index = 1) {
   return {
     localId: Date.now() + index,
+    masterCategoryId: '',
     nameUz: '',
     nameRu: '',
     category: '',
@@ -83,6 +87,7 @@ function buildEmptyItemDraft(sectionId) {
   return {
     sectionId,
     itemId: null,
+    masterCategoryId: '',
     category: '',
     nameUz: '',
     nameRu: '',
@@ -111,6 +116,8 @@ function CategoryPicker({
       };
     })
     .filter(Boolean);
+  const selectedOption = normalizedOptions.find((option) => option.value === value);
+  const triggerText = selectedOption?.main || value || placeholder;
 
   return (
     <div className="global-section-modal__category-picker">
@@ -119,7 +126,7 @@ function CategoryPicker({
         className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
         onClick={onToggle}
       >
-        <span>{value || placeholder}</span>
+        <span>{triggerText}</span>
         <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
       </button>
 
@@ -164,6 +171,13 @@ function NavbarCategoryForm({ visible }) {
   const [addingItemDraft, setAddingItemDraft] = useState(null);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
+  const [masterCategories, setMasterCategories] = useState([]);
+
+  const masterCategoryOptions = masterCategories.map((item) => ({
+    value: String(item.id),
+    main: item?.name?.uz || String(item.id),
+    sub: item?.name?.ru || '',
+  }));
 
   const handleUploadStateChange = (isUploading) => {
     setActiveUploads((prev) => {
@@ -185,9 +199,19 @@ function NavbarCategoryForm({ visible }) {
     }
   };
 
+  const loadMasterCategories = async () => {
+    try {
+      const data = await fetchAdminCategories();
+      setMasterCategories(Array.isArray(data?.masterCategories) ? data.masterCategories : []);
+    } catch (_err) {
+      setMasterCategories([]);
+    }
+  };
+
   useEffect(() => {
     if (visible) {
       loadSections();
+      loadMasterCategories();
     }
   }, [visible]);
 
@@ -202,14 +226,15 @@ function NavbarCategoryForm({ visible }) {
     setItems((prev) =>
       prev.map((item) => {
         if (item.localId !== id) return item;
-        if (field !== 'category') return { ...item, [field]: value };
+        if (field !== 'masterCategoryId') return { ...item, [field]: value };
 
-        const selected = NAVBAR_CATEGORY_OPTIONS.find((opt) => opt.value === value);
+        const selected = masterCategories.find((opt) => Number(opt.id) === Number(value));
         return {
           ...item,
-          category: value,
-          nameUz: item.nameUz || value,
-          nameRu: item.nameRu || selected?.ru || value,
+          masterCategoryId: String(value),
+          category: selected?.name?.uz || item.category,
+          nameUz: item.nameUz || selected?.name?.uz || item.nameUz,
+          nameRu: item.nameRu || selected?.name?.ru || item.nameRu,
         };
       }),
     );
@@ -227,12 +252,13 @@ function NavbarCategoryForm({ visible }) {
     const title = { uz: sectionTitleUz.trim(), ru: sectionTitleRu.trim() };
     const normalizedItems = items
       .map((item) => ({
+        masterCategoryId: Number(item.masterCategoryId),
         category: item.category.trim(),
         name: { uz: item.nameUz.trim(), ru: item.nameRu.trim() },
         image: item.image.trim(),
         description: { uz: item.descriptionUz.trim(), ru: item.descriptionRu.trim() },
       }))
-      .filter((item) => item.category || item.name.uz || item.name.ru || item.image || item.description.uz || item.description.ru);
+      .filter((item) => item.masterCategoryId || item.category || item.name.uz || item.name.ru || item.image || item.description.uz || item.description.ru);
 
     if (!title.uz || !title.ru) {
       setError("title.uz va title.ru to'ldirilishi shart");
@@ -243,7 +269,7 @@ function NavbarCategoryForm({ visible }) {
       return;
     }
     for (const [idx, item] of normalizedItems.entries()) {
-      if (!item.category || !item.name.uz || !item.name.ru || !item.description.uz || !item.description.ru) {
+      if (!item.masterCategoryId || !item.name.uz || !item.name.ru || !item.description.uz || !item.description.ru) {
         setError(`Item #${idx + 1} da majburiy maydonlar bo'sh`);
         return;
       }
@@ -333,6 +359,7 @@ function NavbarCategoryForm({ visible }) {
     setEditingItemDraft({
       sectionId,
       itemId: item.id,
+      masterCategoryId: item.masterCategoryId ? String(item.masterCategoryId) : '',
       category: item.category || '',
       nameUz: item?.name?.uz || '',
       nameRu: item?.name?.ru || '',
@@ -372,6 +399,7 @@ function NavbarCategoryForm({ visible }) {
     if (!addingItemDraft || !addingItemSectionId) return;
 
     const payload = {
+      masterCategoryId: Number(addingItemDraft.masterCategoryId),
       category: addingItemDraft.category.trim(),
       name: {
         uz: addingItemDraft.nameUz.trim(),
@@ -384,7 +412,7 @@ function NavbarCategoryForm({ visible }) {
       },
     };
 
-    if (!payload.category || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
+    if (!payload.masterCategoryId || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
       setError("Yangi itemda category, name va description maydonlari to'liq bo'lishi kerak");
       return;
     }
@@ -409,6 +437,7 @@ function NavbarCategoryForm({ visible }) {
   const saveItemEdit = async () => {
     if (!editingItemDraft) return;
     const payload = {
+      masterCategoryId: Number(editingItemDraft.masterCategoryId),
       category: editingItemDraft.category.trim(),
       name: {
         uz: editingItemDraft.nameUz.trim(),
@@ -421,7 +450,7 @@ function NavbarCategoryForm({ visible }) {
       },
     };
 
-    if (!payload.category || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
+    if (!payload.masterCategoryId || !payload.name.uz || !payload.name.ru || !payload.description.uz || !payload.description.ru) {
       setError("Itemda category, name va description maydonlari to'liq bo'lishi kerak");
       return;
     }
@@ -498,7 +527,8 @@ function NavbarCategoryForm({ visible }) {
                 <label className="global-section-modal__field global-section-modal__field--full">
                   <span className="global-section-modal__label">category</span>
                   <CategoryPicker
-                    value={item.category}
+                    value={item.masterCategoryId}
+                    options={masterCategoryOptions}
                     isOpen={openCreateCategoryItemId === item.localId}
                     onToggle={() =>
                       setOpenCreateCategoryItemId((prev) =>
@@ -506,7 +536,7 @@ function NavbarCategoryForm({ visible }) {
                       )
                     }
                     onSelect={(selectedValue) => {
-                      handleItemChange(item.localId, 'category', selectedValue);
+                      handleItemChange(item.localId, 'masterCategoryId', selectedValue);
                       setOpenCreateCategoryItemId(null);
                     }}
                   />
@@ -673,12 +703,22 @@ function NavbarCategoryForm({ visible }) {
                     <label className="global-section-modal__field global-section-modal__field--full">
                       <span className="global-section-modal__label">category</span>
                       <CategoryPicker
-                        value={addingItemDraft.category}
+                        value={addingItemDraft.masterCategoryId}
+                        options={masterCategoryOptions}
                         isOpen={isAddCategoryOpen}
                         onToggle={() => setIsAddCategoryOpen((prev) => !prev)}
                         onSelect={(selectedValue) => {
+                          const selected = masterCategories.find((opt) => Number(opt.id) === Number(selectedValue));
                           setAddingItemDraft((prev) =>
-                            prev ? { ...prev, category: selectedValue } : prev,
+                            prev
+                              ? {
+                                  ...prev,
+                                  masterCategoryId: String(selectedValue),
+                                  category: selected?.name?.uz || prev.category,
+                                  nameUz: prev.nameUz || selected?.name?.uz || prev.nameUz,
+                                  nameRu: prev.nameRu || selected?.name?.ru || prev.nameRu,
+                                }
+                              : prev,
                           );
                           setIsAddCategoryOpen(false);
                         }}
@@ -777,12 +817,22 @@ function NavbarCategoryForm({ visible }) {
                           <label className="global-section-modal__field global-section-modal__field--full">
                             <span className="global-section-modal__label">category</span>
                             <CategoryPicker
-                              value={editingItemDraft.category}
+                              value={editingItemDraft.masterCategoryId}
+                              options={masterCategoryOptions}
                               isOpen={isEditCategoryOpen}
                               onToggle={() => setIsEditCategoryOpen((prev) => !prev)}
                               onSelect={(selectedValue) => {
+                                const selected = masterCategories.find((opt) => Number(opt.id) === Number(selectedValue));
                                 setEditingItemDraft((prev) =>
-                                  prev ? { ...prev, category: selectedValue } : prev,
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        masterCategoryId: String(selectedValue),
+                                        category: selected?.name?.uz || prev.category,
+                                        nameUz: prev.nameUz || selected?.name?.uz || prev.nameUz,
+                                        nameRu: prev.nameRu || selected?.name?.ru || prev.nameRu,
+                                      }
+                                    : prev,
                                 );
                                 setIsEditCategoryOpen(false);
                               }}
@@ -955,7 +1005,12 @@ function BrandCountryCategoriesForm({ visible }) {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
   const [activeUploads, setActiveUploads] = useState(0);
-  const [data, setData] = useState({ categoriyCountries: [], categoriesBrend: [], filterValues: [] });
+  const [data, setData] = useState({
+    masterCategories: [],
+    categoriyCountries: [],
+    categoriesBrend: [],
+    filterValues: [],
+  });
 
   const [countryDraft, setCountryDraft] = useState(buildDefaultCountryCategoryDraft());
   const [editingCountryId, setEditingCountryId] = useState(null);
@@ -972,6 +1027,9 @@ function BrandCountryCategoriesForm({ visible }) {
   const [filterDraft, setFilterDraft] = useState(buildDefaultFilterValueDraft());
   const [editingFilterId, setEditingFilterId] = useState(null);
   const [editingFilterDraft, setEditingFilterDraft] = useState(null);
+  const [masterDraft, setMasterDraft] = useState({ nameUz: '', nameRu: '' });
+  const [editingMasterId, setEditingMasterId] = useState(null);
+  const [editingMasterDraft, setEditingMasterDraft] = useState(null);
 
   const handleUploadStateChange = (isUploading) => {
     setActiveUploads((prev) => {
@@ -986,6 +1044,7 @@ function BrandCountryCategoriesForm({ visible }) {
     try {
       const payload = await fetchAdminCategories();
       setData({
+        masterCategories: Array.isArray(payload?.masterCategories) ? payload.masterCategories : [],
         categoriyCountries: Array.isArray(payload?.categoriyCountries) ? payload.categoriyCountries : [],
         categoriesBrend: Array.isArray(payload?.categoriesBrend) ? payload.categoriesBrend : [],
         filterValues: Array.isArray(payload?.filterValues) ? payload.filterValues : [],
@@ -1018,6 +1077,90 @@ function BrandCountryCategoriesForm({ visible }) {
       main: item.filterValue || '',
       sub: 'Brand filter',
     }));
+
+  const normalizeMasterPayload = (draft) => ({
+    name: {
+      uz: draft.nameUz.trim(),
+      ru: draft.nameRu.trim(),
+    },
+  });
+
+  const validateMasterPayload = (payload) => {
+    if (!payload.name.uz || !payload.name.ru) {
+      return 'Master category: name.uz va name.ru majburiy';
+    }
+    return '';
+  };
+
+  const handleCreateMaster = async () => {
+    const payload = normalizeMasterPayload(masterDraft);
+    const validationError = validateMasterPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createAdminMasterCategory(payload);
+      setMasterDraft({ nameUz: '', nameRu: '' });
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Master category qo'shib bo'lmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startMasterEdit = (item) => {
+    setEditingMasterId(item.id);
+    setEditingMasterDraft({
+      nameUz: item?.name?.uz || '',
+      nameRu: item?.name?.ru || '',
+    });
+    setError('');
+  };
+
+  const cancelMasterEdit = () => {
+    setEditingMasterId(null);
+    setEditingMasterDraft(null);
+  };
+
+  const saveMasterEdit = async () => {
+    if (!editingMasterId || !editingMasterDraft) return;
+    const payload = normalizeMasterPayload(editingMasterDraft);
+    const validationError = validateMasterPayload(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateAdminMasterCategory(editingMasterId, payload);
+      cancelMasterEdit();
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Master category tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeMaster = async (masterId) => {
+    const ok = window.confirm("Bu master category o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteAdminMasterCategory(masterId);
+      if (editingMasterId === masterId) {
+        cancelMasterEdit();
+      }
+      await loadCategories();
+    } catch (err) {
+      setError(err.message || "Master category o'chirib bo'lmadi");
+    }
+  };
 
   const normalizeCountryPayload = (draft) => ({
     name: {
@@ -1291,6 +1434,116 @@ function BrandCountryCategoriesForm({ visible }) {
 
   return (
     <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">MasterCategory</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">name.uz</span>
+            <input
+              className="global-section-modal__input"
+              value={masterDraft.nameUz}
+              onChange={(e) => setMasterDraft((prev) => ({ ...prev, nameUz: e.target.value }))}
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">name.ru</span>
+            <input
+              className="global-section-modal__input"
+              value={masterDraft.nameRu}
+              onChange={(e) => setMasterDraft((prev) => ({ ...prev, nameRu: e.target.value }))}
+            />
+          </label>
+        </div>
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreateMaster}
+            disabled={saving}
+          >
+            {saving ? 'Saqlanmoqda...' : "Master category qo'shish"}
+          </button>
+        </div>
+        <div className="global-section-modal__list">
+          {(data.masterCategories || []).map((item) => (
+            <div key={item.id} className="global-section-modal__saved-card">
+              {editingMasterId === item.id && editingMasterDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.uz</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingMasterDraft.nameUz}
+                        onChange={(e) =>
+                          setEditingMasterDraft((prev) =>
+                            prev ? { ...prev, nameUz: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">name.ru</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingMasterDraft.nameRu}
+                        onChange={(e) =>
+                          setEditingMasterDraft((prev) =>
+                            prev ? { ...prev, nameRu: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveMasterEdit}
+                      disabled={updating}
+                    >
+                      Saqlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelMasterEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div>
+                    <div className="global-section-modal__saved-name">
+                      {item?.name?.uz || '-'} / {item?.name?.ru || '-'}
+                    </div>
+                    <div className="global-section-modal__meta">id: {item.id}</div>
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startMasterEdit(item)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeMaster(item.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="global-section-modal__card">
         <h3 className="global-section-modal__block-title">BrandCategories&CountryCategories filter values</h3>
         <div className="global-section-modal__grid global-section-modal__grid--2">
@@ -1793,6 +2046,7 @@ function buildDefaultHomeBannerDraft() {
     srcUz: '',
     srcRu: '',
     clickable: false,
+    masterCategoryId: '',
     category: '',
     countriesCategories: '',
     brandCategories: '',
@@ -1802,7 +2056,7 @@ function buildDefaultHomeBannerDraft() {
 function HomeBannerForm({ visible }) {
   const [draft, setDraft] = useState(buildDefaultHomeBannerDraft());
   const [banners, setBanners] = useState([]);
-  const [categoryMaster, setCategoryMaster] = useState({ filterValues: [] });
+  const [categoryMaster, setCategoryMaster] = useState({ masterCategories: [], filterValues: [] });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -1841,13 +2095,20 @@ function HomeBannerForm({ visible }) {
     try {
       const data = await fetchAdminCategories();
       setCategoryMaster({
+        masterCategories: Array.isArray(data?.masterCategories) ? data.masterCategories : [],
         filterValues: Array.isArray(data?.filterValues) ? data.filterValues : [],
       });
     } catch (err) {
-      setCategoryMaster({ filterValues: [] });
+      setCategoryMaster({ masterCategories: [], filterValues: [] });
       setError(err.message || "Category ro'yxatini yuklab bo'lmadi");
     }
   };
+
+  const masterCategoryOptions = (categoryMaster.masterCategories || []).map((item) => ({
+    value: String(item.id),
+    main: item?.name?.uz || String(item.id),
+    sub: item?.name?.ru || '',
+  }));
 
   const countryOptions = (categoryMaster.filterValues || [])
     .filter((item) => item.type === 'country')
@@ -1879,7 +2140,7 @@ function HomeBannerForm({ visible }) {
     if (!payload.src.uz.trim() || !payload.src.ru.trim()) {
       return `${prefixText}: src.uz va src.ru majburiy`;
     }
-    if (payload.clickable && !payload.category.trim()) {
+    if (payload.clickable && !payload.masterCategoryId) {
       return `${prefixText}: clickable yoqilgan bo'lsa category tanlang`;
     }
     return '';
@@ -1892,6 +2153,7 @@ function HomeBannerForm({ visible }) {
       ru: targetDraft.srcRu.trim(),
     },
     clickable: Boolean(targetDraft.clickable),
+    masterCategoryId: Number(targetDraft.masterCategoryId) || undefined,
     category: targetDraft.category.trim(),
     countriesCategories: targetDraft.countriesCategories.trim(),
     brandCategories: targetDraft.brandCategories.trim(),
@@ -1927,6 +2189,7 @@ function HomeBannerForm({ visible }) {
       srcUz: banner?.src?.uz || '',
       srcRu: banner?.src?.ru || '',
       clickable: Boolean(banner.clickable),
+      masterCategoryId: banner.masterCategoryId ? String(banner.masterCategoryId) : '',
       category: banner.category || '',
       countriesCategories: banner.countriesCategories || '',
       brandCategories: banner.brandCategories || '',
@@ -2012,12 +2275,20 @@ function HomeBannerForm({ visible }) {
           <label className="global-section-modal__field global-section-modal__field--full">
             <span className="global-section-modal__label">category</span>
             <CategoryPicker
-              value={draft.category}
+              value={draft.masterCategoryId}
+              options={masterCategoryOptions}
               placeholder={draft.clickable ? 'Category tanlang' : 'Ixtiyoriy'}
               isOpen={isCreateCategoryOpen}
               onToggle={() => setIsCreateCategoryOpen((prev) => !prev)}
               onSelect={(selectedValue) => {
-                setDraft((prev) => ({ ...prev, category: selectedValue }));
+                const selected = (categoryMaster.masterCategories || []).find(
+                  (item) => Number(item.id) === Number(selectedValue),
+                );
+                setDraft((prev) => ({
+                  ...prev,
+                  masterCategoryId: String(selectedValue),
+                  category: selected?.name?.uz || prev.category,
+                }));
                 setIsCreateCategoryOpen(false);
               }}
             />
@@ -2140,13 +2411,23 @@ function HomeBannerForm({ visible }) {
                     <label className="global-section-modal__field global-section-modal__field--full">
                       <span className="global-section-modal__label">category</span>
                       <CategoryPicker
-                        value={editingDraft.category}
+                        value={editingDraft.masterCategoryId}
+                        options={masterCategoryOptions}
                         placeholder={editingDraft.clickable ? 'Category tanlang' : 'Ixtiyoriy'}
                         isOpen={isEditCategoryOpen}
                         onToggle={() => setIsEditCategoryOpen((prev) => !prev)}
                         onSelect={(selectedValue) => {
+                          const selected = (categoryMaster.masterCategories || []).find(
+                            (item) => Number(item.id) === Number(selectedValue),
+                          );
                           setEditingDraft((prev) =>
-                            prev ? { ...prev, category: selectedValue } : prev,
+                            prev
+                              ? {
+                                  ...prev,
+                                  masterCategoryId: String(selectedValue),
+                                  category: selected?.name?.uz || prev.category,
+                                }
+                              : prev,
                           );
                           setIsEditCategoryOpen(false);
                         }}
@@ -2235,7 +2516,7 @@ function HomeBannerForm({ visible }) {
                       type: {banner.type || '-'} | clickable: {banner.clickable ? 'ha' : "yo'q"}
                     </div>
                     <div className="global-section-modal__meta">
-                      id: {banner.id} | category: {banner.category || '-'}
+                      id: {banner.id} | categoryId: {banner.masterCategoryId || '-'} | category: {banner.category || '-'}
                     </div>
                     <div className="global-section-modal__meta">
                       country: {banner.countriesCategories || '-'} | brand: {banner.brandCategories || '-'}

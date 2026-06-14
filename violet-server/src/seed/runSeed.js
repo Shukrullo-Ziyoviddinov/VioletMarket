@@ -14,6 +14,7 @@ const {
   CountryCategory,
   BrandCategory,
   BrandCountryFilterValue,
+  MasterCategory,
   NavbarSection,
   HomeBannerSlide,
   FooterAboutSection,
@@ -106,15 +107,40 @@ async function seedCategoriesMany() {
   );
 }
 
+async function seedMasterCategoriesMany() {
+  const { masterCategories } = require("./seedMasterCategory");
+  await MasterCategory.syncIndexes();
+  await MasterCategory.deleteMany({});
+  if (masterCategories?.length) {
+    const docs = masterCategories.map(({ id, ...rest }) => rest);
+    await MasterCategory.insertMany(docs);
+  }
+  console.log(`Master categories: master_categories=${masterCategories?.length || 0}`);
+}
+
 async function seedNavbarMany() {
   const { navbarItems } = require("./seedNavbarItem");
+  const masterRows = await MasterCategory.find().sort({ id: 1 }).lean();
+  const masterByUz = new Map();
+  for (const row of masterRows) {
+    const key = String(row?.name?.uz || "").trim();
+    if (key) masterByUz.set(key, row);
+  }
   await NavbarSection.syncIndexes();
   await NavbarSection.deleteMany({});
   if (navbarItems?.length) {
     const docs = navbarItems.map(({ id, items, ...section }) => ({
       ...section,
       items: Array.isArray(items)
-        ? items.map(({ id: itemId, ...item }) => item)
+        ? items.map(({ id: itemId, ...item }) => {
+            const categoryText = String(item?.category || "").trim();
+            const matched = masterByUz.get(categoryText);
+            return {
+              ...item,
+              category: categoryText,
+              masterCategoryId: matched?.id,
+            };
+          })
         : [],
     }));
     await NavbarSection.insertMany(docs);
@@ -124,10 +150,24 @@ async function seedNavbarMany() {
 
 async function seedHomeBannersMany() {
   const { homeBannerData } = require("./seedHomeBanner");
+  const masterRows = await MasterCategory.find().sort({ id: 1 }).lean();
+  const masterByUz = new Map();
+  for (const row of masterRows) {
+    const key = String(row?.name?.uz || "").trim();
+    if (key) masterByUz.set(key, row);
+  }
   await HomeBannerSlide.syncIndexes();
   await HomeBannerSlide.deleteMany({});
   if (homeBannerData?.length) {
-    const docs = homeBannerData.map(({ id, ...rest }) => rest);
+    const docs = homeBannerData.map(({ id, ...rest }) => {
+      const categoryText = String(rest?.category || "").trim();
+      const matched = masterByUz.get(categoryText);
+      return {
+        ...rest,
+        category: categoryText || undefined,
+        masterCategoryId: matched?.id,
+      };
+    });
     await HomeBannerSlide.insertMany(docs);
   }
   console.log(`Home banners: home_banner_slides=${homeBannerData?.length || 0}`);
@@ -250,6 +290,7 @@ async function seedFlashSaleRules() {
 
 async function seedSiteCollections() {
   await dropLegacySingletonSiteCollections();
+  await seedMasterCategoriesMany();
   await seedCategoriesMany();
   await seedNavbarMany();
   await seedHomeBannersMany();
@@ -368,6 +409,7 @@ async function seedProducts() {
 async function logDbSummary() {
   const dbName = mongoose.connection.db?.databaseName;
   const counts = {
+    master_categories: await MasterCategory.countDocuments(),
     country_categories: await CountryCategory.countDocuments(),
     brand_categories: await BrandCategory.countDocuments(),
     brand_country_filter_values: await BrandCountryFilterValue.countDocuments(),

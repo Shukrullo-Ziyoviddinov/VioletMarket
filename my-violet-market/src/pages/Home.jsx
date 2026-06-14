@@ -18,7 +18,15 @@ import FlashSaleStatsRow from '../components/FlashSaleSection/FlashSaleStatsRow'
 import { sortProductsByGlobalRanking } from '../utils/globalProductRanking';
 import './Home.css';
 
-const getNavbarCategoryId = (categoryName, navbarItems) => {
+const getNavbarCategoryId = (categoryName, navbarItems, masterCategoryId) => {
+  const masterId = Number(masterCategoryId);
+  if (Number.isFinite(masterId) && masterId > 0) {
+    for (const section of navbarItems || []) {
+      const item = (section.items || []).find((i) => Number(i?.masterCategoryId) === masterId);
+      if (item?.id != null) return item.id;
+    }
+  }
+
   const cat = (categoryName || '').trim();
   for (const section of navbarItems || []) {
     const item = (section.items || []).find((i) => {
@@ -43,11 +51,12 @@ const getNavbarCategoryId = (categoryName, navbarItems) => {
 const getBannerLink = (banner, navbarItems, categoriyCountries, categoriesBrend) => {
   if (!banner.clickable) return null;
   const cat = banner.category;
+  const masterCategoryId = banner.masterCategoryId;
   const country = (banner.countriesCategories || '').toLowerCase();
   const brand = (banner.brandCategories || '').toLowerCase();
   let slug = null;
-  if (cat) {
-    slug = getNavbarCategoryId(cat, navbarItems);
+  if (cat || masterCategoryId) {
+    slug = getNavbarCategoryId(cat, navbarItems, masterCategoryId);
   }
   if (!slug && country) {
     const c = (categoriyCountries || []).find((x) => (x.filterValue || '').toLowerCase() === country);

@@ -12,6 +12,7 @@ const homeBannerSlideSchema = new mongoose.Schema(
     type: { type: String, enum: ["image", "video"], default: "image", trim: true },
     src: { type: bannerSrcSchema, required: true },
     clickable: { type: Boolean, default: false },
+    masterCategoryId: { type: Number, index: true },
     category: { type: String, trim: true },
     countriesCategories: { type: String, trim: true },
     brandCategories: { type: String, trim: true },

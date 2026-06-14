@@ -6,6 +6,21 @@ const list = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const createMasterCategory = asyncHandler(async (req, res) => {
+  const row = await service.createMasterCategory(req.body || {});
+  res.status(201).json({ ok: true, data: row });
+});
+
+const updateMasterCategory = asyncHandler(async (req, res) => {
+  const row = await service.updateMasterCategory(req.params.masterCategoryId, req.body || {});
+  res.json({ ok: true, data: row });
+});
+
+const removeMasterCategory = asyncHandler(async (req, res) => {
+  await service.deleteMasterCategory(req.params.masterCategoryId);
+  res.json({ ok: true });
+});
+
 const createCountry = asyncHandler(async (req, res) => {
   const country = await service.createCountryCategory(req.body || {});
   res.status(201).json({ ok: true, data: country });
@@ -53,6 +68,9 @@ const removeFilterValue = asyncHandler(async (req, res) => {
 
 module.exports = {
   list,
+  createMasterCategory,
+  updateMasterCategory,
+  removeMasterCategory,
   createCountry,
   updateCountry,
   removeCountry,

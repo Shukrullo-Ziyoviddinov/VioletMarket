@@ -1,4 +1,4 @@
-const { NavbarSection } = require("../models");
+const { MasterCategory, NavbarSection } = require("../models");
 const { HttpError } = require("../utils/httpError");
 
 function toInt(value, label) {
@@ -21,15 +21,65 @@ function normalizeI18nPair(value, label) {
   return { uz, ru };
 }
 
-function normalizeNavbarItem(raw, index) {
+function normalizeOptionalI18nPair(value) {
+  if (!value || typeof value !== "object") return null;
+  const uz = String(value.uz || "").trim();
+  const ru = String(value.ru || "").trim();
+  if (!uz || !ru) return null;
+  return { uz, ru };
+}
+
+async function resolveMasterCategory(rawMasterCategoryId, rawCategoryText) {
+  const normalizedId = Number(rawMasterCategoryId);
+  if (Number.isFinite(normalizedId) && normalizedId > 0) {
+    const byId = await MasterCategory.findOne({ id: Math.floor(normalizedId) });
+    if (!byId) {
+      throw new HttpError(400, "masterCategoryId noto'g'ri", "VALIDATION_ERROR");
+    }
+    return byId;
+  }
+
+  const categoryText = String(rawCategoryText || "").trim();
+  if (!categoryText) return null;
+
+  const byName = await MasterCategory.findOne({
+    $or: [{ "name.uz": categoryText }, { "name.ru": categoryText }],
+  });
+  if (!byName) {
+    throw new HttpError(
+      400,
+      `Master category topilmadi: ${categoryText}`,
+      "VALIDATION_ERROR"
+    );
+  }
+  return byName;
+}
+
+async function normalizeNavbarItem(raw, index) {
   const itemLabel = `items[${index}]`;
   if (!raw || typeof raw !== "object") {
     throw new HttpError(400, `${itemLabel} noto'g'ri`, "VALIDATION_ERROR");
   }
 
+  const masterCategory = await resolveMasterCategory(raw.masterCategoryId, raw.category);
+  if (!masterCategory) {
+    throw new HttpError(400, `${itemLabel}.masterCategoryId tanlanishi shart`, "VALIDATION_ERROR");
+  }
+
+  const fallbackName = {
+    uz: String(masterCategory?.name?.uz || "").trim(),
+    ru: String(masterCategory?.name?.ru || "").trim(),
+  };
+  const providedName = normalizeOptionalI18nPair(raw.name);
+  const normalizedName = providedName || fallbackName;
+  if (!normalizedName?.uz || !normalizedName?.ru) {
+    throw new HttpError(400, `${itemLabel}.name.uz va .ru to'ldirilishi shart`, "VALIDATION_ERROR");
+  }
+
   const normalized = {
-    name: normalizeI18nPair(raw.name, `${itemLabel}.name`),
-    category: String(raw.category || raw.name?.uz || "").trim(),
+    masterCategoryId: Number(masterCategory.id),
+    name: normalizedName,
+    category: String(masterCategory?.name?.uz || raw.category || normalizedName.uz || "").trim(),
     image: String(raw.image || "").trim(),
     description: normalizeI18nPair(raw.description, `${itemLabel}.description`),
   };
@@ -65,7 +115,7 @@ async function getSectionByIdOrThrow(sectionId) {
 async function createSection(payload) {
   const title = normalizeI18nPair(payload?.title, "title");
   const rawItems = Array.isArray(payload?.items) ? payload.items : [];
-  const items = rawItems.map((item, index) => normalizeNavbarItem(item, index));
+  const items = await Promise.all(rawItems.map((item, index) => normalizeNavbarItem(item, index)));
 
   const section = new NavbarSection({ title, items });
   await section.save();
@@ -78,7 +128,9 @@ async function updateSection(sectionId, payload) {
     section.title = normalizeI18nPair(payload.title, "title");
   }
   if (Array.isArray(payload?.items)) {
-    section.items = payload.items.map((item, index) => normalizeNavbarItem(item, index));
+    section.items = await Promise.all(
+      payload.items.map((item, index) => normalizeNavbarItem(item, index))
+    );
   }
   await section.save();
   return mapSection(section);
@@ -94,7 +146,7 @@ async function deleteSection(sectionId) {
 
 async function createItem(sectionId, payload) {
   const section = await getSectionByIdOrThrow(sectionId);
-  const item = normalizeNavbarItem(payload, section.items.length);
+  const item = await normalizeNavbarItem(payload, section.items.length);
   section.items.push(item);
   await section.save();
   return mapSection(section);
@@ -110,11 +162,12 @@ async function updateItem(sectionId, itemId, payload) {
   const existing = section.items[index];
   const merged = {
     name: payload?.name ?? existing.name,
+    masterCategoryId: payload?.masterCategoryId ?? existing.masterCategoryId,
     category: payload?.category ?? existing.category,
     image: payload?.image ?? existing.image,
     description: payload?.description ?? existing.description,
   };
-  const normalized = normalizeNavbarItem(merged, index);
+  const normalized = await normalizeNavbarItem(merged, index);
   normalized.id = existing.id;
   section.items[index] = normalized;
   await section.save();

@@ -4,6 +4,9 @@ const controller = require("../../controllers/adminCategoriesController");
 const router = express.Router();
 
 router.get("/admin/categories", controller.list);
+router.post("/admin/categories/master-categories", controller.createMasterCategory);
+router.patch("/admin/categories/master-categories/:masterCategoryId", controller.updateMasterCategory);
+router.delete("/admin/categories/master-categories/:masterCategoryId", controller.removeMasterCategory);
 
 router.post("/admin/categories/countries", controller.createCountry);
 router.patch("/admin/categories/countries/:countryId", controller.updateCountry);
