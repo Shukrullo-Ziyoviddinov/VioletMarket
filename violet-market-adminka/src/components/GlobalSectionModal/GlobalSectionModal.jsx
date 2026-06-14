@@ -48,6 +48,7 @@ import FooterForm from '../FooterForm/FooterForm';
 import FlashSaleRulesForm from '../FlashSaleRulesForm/FlashSaleRulesForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
+import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
@@ -3189,6 +3190,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <HomeBannerForm visible={open} />
     ) : section?.key === 'navbar-category' ? (
       <NavbarCategoryForm visible={open} />
+    ) : section?.key === 'product-policy' ? (
+      <ProductPolicyForm visible={open} />
     ) : section?.key === 'video-banner' ? (
       <VideoBannerForm visible={open} />
     ) : section?.key === 'country-seller-banner' ? (

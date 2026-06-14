@@ -20,6 +20,7 @@ export default function AdminLayout() {
       section?.key !== 'master-categories' &&
       section?.key !== 'banner' &&
       section?.key !== 'navbar-category' &&
+      section?.key !== 'product-policy' &&
       section?.key !== 'video-banner' &&
       section?.key !== 'country-seller-banner' &&
       section?.key !== 'shipping-country' &&
@@ -56,7 +57,7 @@ export default function AdminLayout() {
           <Content className="admin-layout__content">
             <div className="admin-layout__placeholder">
               <h2>Bo'limni tanlang</h2>
-              <p>Hozircha Brand/Country filter values, Brand/Country categories, Master categories, Banner, Navbar category, Video banner, Davlat seller banner, Yetkazib berish davlatlari, Mahsulot UZB omborida, Logistika ma'lumoti, Footer va Flash sale rules bo'limlarida modal va to'ldirish ishlaydi.</p>
+              <p>Hozircha Brand/Country filter values, Brand/Country categories, Master categories, Banner, Navbar category, Product policy, Video banner, Davlat seller banner, Mahsulot hududi, Mahsulot UZB omborida, Logistika ma'lumoti, Footer va Flash sale rules bo'limlarida modal va to'ldirish ishlaydi.</p>
             </div>
           </Content>
         </Layout>
