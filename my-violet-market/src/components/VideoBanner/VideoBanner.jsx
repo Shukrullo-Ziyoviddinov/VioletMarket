@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SkeletonPulse } from '../SkeletonLoader';
+import { getApiBaseUrl } from '../../config/api';
 import './VideoBanner.css';
+
+const resolveVideoSrc = (src) => {
+    const raw = String(src || '').trim();
+    if (!raw) return '';
+    const normalized = raw.replace(/\\/g, '/');
+
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+        return normalized;
+    }
+    if (normalized.startsWith('/uploads/') || normalized.startsWith('uploads/')) {
+        return `${getApiBaseUrl()}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
+    }
+    return normalized.startsWith('/') ? normalized : `/${normalized}`;
+};
 
 const VideoBanner = ({ videos = [], isLoading = false }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -9,7 +24,7 @@ const VideoBanner = ({ videos = [], isLoading = false }) => {
     // Videoni yuklash
     const loadVideo = useCallback((index) => {
         if (isLoading || !videoRef.current || !videos[index]) return;
-        videoRef.current.src = videos[index].src;
+        videoRef.current.src = resolveVideoSrc(videos[index].src);
         videoRef.current.load();
         videoRef.current.play().catch(err => {
             console.log('Autoplay blocked:', err);
@@ -68,8 +83,8 @@ const VideoBanner = ({ videos = [], isLoading = false }) => {
                         autoPlay
                         playsInline
                     >
-                        {videos[currentIndex]?.src && (
-                            <source src={videos[currentIndex].src} type="video/mp4" />
+                        {videos[currentIndex]?.src && resolveVideoSrc(videos[currentIndex].src) && (
+                            <source src={resolveVideoSrc(videos[currentIndex].src)} type="video/mp4" />
                         )}
                         Brauzeringiz video formatini qo'llab-quvvatlamaydi.
                     </video>

@@ -34,6 +34,21 @@ const uploadSingleImageMiddleware = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 }).single("image");
 
+function videoFileFilter(_req, file, cb) {
+  if (!file || !file.mimetype || !file.mimetype.startsWith("video/")) {
+    cb(new Error("Faqat video fayl yuklash mumkin"));
+    return;
+  }
+  cb(null, true);
+}
+
+const uploadSingleVideoMiddleware = multer({
+  storage,
+  fileFilter: videoFileFilter,
+  // Katta videolar uchun limit oshirildi: 512MB
+  limits: { fileSize: 512 * 1024 * 1024 },
+}).single("video");
+
 function uploadImage(req, res) {
   if (!req.file) {
     res.status(400).json({
@@ -55,7 +70,30 @@ function uploadImage(req, res) {
   });
 }
 
+function uploadVideo(req, res) {
+  if (!req.file) {
+    res.status(400).json({
+      ok: false,
+      message: "Video fayl topilmadi",
+      code: "VALIDATION_ERROR",
+    });
+    return;
+  }
+
+  res.status(201).json({
+    ok: true,
+    data: {
+      path: `/uploads/${req.file.filename}`,
+      filename: req.file.filename,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+    },
+  });
+}
+
 module.exports = {
   uploadSingleImageMiddleware,
+  uploadSingleVideoMiddleware,
   uploadImage,
+  uploadVideo,
 };

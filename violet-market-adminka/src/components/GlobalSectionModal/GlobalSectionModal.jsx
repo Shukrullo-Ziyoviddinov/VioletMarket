@@ -11,7 +11,15 @@ import {
   updateNavbarItem,
   updateNavbarSection,
 } from '../../api/navbarAdminApi';
+import {
+  createVideoBanner,
+  deleteVideoBanner,
+  fetchVideoBanners,
+  toAbsoluteVideoUrl,
+  updateVideoBanner,
+} from '../../api/videoBannerAdminApi';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
+import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
 
 const NAVBAR_CATEGORY_OPTIONS = [
@@ -870,6 +878,306 @@ function NavbarCategoryForm({ visible }) {
   );
 }
 
+function buildDefaultVideoBannerDraft() {
+  return {
+    title: '',
+    subtitle: '',
+    src: '',
+  };
+}
+
+function VideoBannerForm({ visible }) {
+  const [draft, setDraft] = useState(buildDefaultVideoBannerDraft());
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [activeUploads, setActiveUploads] = useState(0);
+  const [editingBannerId, setEditingBannerId] = useState(null);
+  const [editingDraft, setEditingDraft] = useState(null);
+  const [error, setError] = useState('');
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads((prev) => {
+      const next = prev + (isUploading ? 1 : -1);
+      return next < 0 ? 0 : next;
+    });
+  };
+
+  const loadBanners = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchVideoBanners();
+      setBanners(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Video bannerlarni yuklab bo'lmadi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (visible) {
+      loadBanners();
+    }
+  }, [visible]);
+
+  const validatePayload = (payload, prefixText = "Ma'lumot") => {
+    if (!payload.title.trim()) {
+      return `${prefixText}: title to'ldirilishi shart`;
+    }
+    if (!payload.subtitle.trim()) {
+      return `${prefixText}: subtitle to'ldirilishi shart`;
+    }
+    if (!payload.src.trim()) {
+      return `${prefixText}: video yuklanishi shart`;
+    }
+    return '';
+  };
+
+  const handleCreate = async () => {
+    const payload = {
+      title: draft.title.trim(),
+      subtitle: draft.subtitle.trim(),
+      src: draft.src.trim(),
+    };
+    const validationError = validatePayload(payload, 'Yangi video');
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await createVideoBanner(payload);
+      setDraft(buildDefaultVideoBannerDraft());
+      await loadBanners();
+    } catch (err) {
+      setError(err.message || "Yangi video banner qo'shilmadi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startEdit = (banner) => {
+    setEditingBannerId(banner.id);
+    setEditingDraft({
+      title: banner.title || '',
+      subtitle: banner.subtitle || '',
+      src: banner.src || '',
+    });
+    setError('');
+  };
+
+  const cancelEdit = () => {
+    setEditingBannerId(null);
+    setEditingDraft(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingDraft || !editingBannerId) return;
+    const payload = {
+      title: editingDraft.title.trim(),
+      subtitle: editingDraft.subtitle.trim(),
+      src: editingDraft.src.trim(),
+    };
+    const validationError = validatePayload(payload, 'Tahrirlash');
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setUpdating(true);
+    setError('');
+    try {
+      await updateVideoBanner(editingBannerId, payload);
+      await loadBanners();
+      cancelEdit();
+    } catch (err) {
+      setError(err.message || "Video bannerni tahrirlab bo'lmadi");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeBanner = async (bannerId) => {
+    const ok = window.confirm("Bu video banner o'chirilsinmi?");
+    if (!ok) return;
+    setError('');
+    try {
+      await deleteVideoBanner(bannerId);
+      if (editingBannerId === bannerId) {
+        cancelEdit();
+      }
+      await loadBanners();
+    } catch (err) {
+      setError(err.message || "Video bannerni o'chirib bo'lmadi");
+    }
+  };
+
+  return (
+    <div className="global-section-modal__form-stack">
+      <div className="global-section-modal__card">
+        <h3 className="global-section-modal__block-title">Yangi video banner</h3>
+        <div className="global-section-modal__grid global-section-modal__grid--2">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">title</span>
+            <input
+              className="global-section-modal__input"
+              value={draft.title}
+              onChange={(e) => setDraft((prev) => ({ ...prev, title: e.target.value }))}
+              placeholder="Masalan: Yangi moda kolleksiyasi"
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">subtitle</span>
+            <input
+              className="global-section-modal__input"
+              value={draft.subtitle}
+              onChange={(e) => setDraft((prev) => ({ ...prev, subtitle: e.target.value }))}
+              placeholder="Masalan: 2026 yil trendlari"
+            />
+          </label>
+          <label className="global-section-modal__field global-section-modal__field--full">
+            <VideoUploadField
+              label="src (video)"
+              value={draft.src}
+              onChange={(uploadedPath) => setDraft((prev) => ({ ...prev, src: uploadedPath }))}
+              onUploadStateChange={handleUploadStateChange}
+            />
+          </label>
+        </div>
+
+        <div className="global-section-modal__actions">
+          <button
+            type="button"
+            className="global-section-modal__btn"
+            onClick={handleCreate}
+            disabled={saving || activeUploads > 0}
+          >
+            {saving ? 'Saqlanmoqda...' : activeUploads > 0 ? 'Video yuklanmoqda...' : "Qo'shish"}
+          </button>
+        </div>
+      </div>
+
+      <div className="global-section-modal__card">
+        <div className="global-section-modal__row-between">
+          <h3 className="global-section-modal__block-title">Saqlangan video bannerlar</h3>
+          <button type="button" className="global-section-modal__ghost-btn" onClick={loadBanners}>
+            <ReloadOutlined />
+            <span>Yangilash</span>
+          </button>
+        </div>
+
+        {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
+        {!loading && banners.length === 0 ? (
+          <p className="global-section-modal__state">Hozircha video banner yo'q</p>
+        ) : null}
+
+        <div className="global-section-modal__list">
+          {banners.map((banner) => (
+            <div key={banner.id} className="global-section-modal__saved-card">
+              {editingBannerId === banner.id && editingDraft ? (
+                <div className="global-section-modal__saved-item-edit">
+                  <div className="global-section-modal__grid global-section-modal__grid--2">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">title</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingDraft.title}
+                        onChange={(e) =>
+                          setEditingDraft((prev) => (prev ? { ...prev, title: e.target.value } : prev))
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">subtitle</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingDraft.subtitle}
+                        onChange={(e) =>
+                          setEditingDraft((prev) =>
+                            prev ? { ...prev, subtitle: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field global-section-modal__field--full">
+                      <VideoUploadField
+                        label="src (video)"
+                        value={editingDraft.src}
+                        onChange={(uploadedPath) =>
+                          setEditingDraft((prev) => (prev ? { ...prev, src: uploadedPath } : prev))
+                        }
+                        onUploadStateChange={handleUploadStateChange}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={saveEdit}
+                      disabled={updating || activeUploads > 0}
+                    >
+                      {activeUploads > 0 ? 'Video yuklanmoqda...' : 'Saqlash'}
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__link-btn"
+                      onClick={cancelEdit}
+                    >
+                      Bekor
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="global-section-modal__saved-item">
+                  <div>
+                    <div className="global-section-modal__saved-name">{banner.title || '-'}</div>
+                    <div className="global-section-modal__meta">
+                      id: {banner.id} | subtitle: {banner.subtitle || '-'}
+                    </div>
+                    {banner.src ? (
+                      <div className="global-section-modal__saved-thumb-wrap">
+                        <video
+                          src={toAbsoluteVideoUrl(banner.src)}
+                          className="global-section-modal__saved-video"
+                          controls
+                          preload="metadata"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="global-section-modal__saved-actions">
+                    <button
+                      type="button"
+                      className="global-section-modal__ghost-btn"
+                      onClick={() => startEdit(banner)}
+                    >
+                      Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      className="global-section-modal__danger-link"
+                      onClick={() => removeBanner(banner.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {error ? <p className="global-section-modal__error">{error}</p> : null}
+    </div>
+  );
+}
+
 function SimpleSectionForm({ sectionLabel }) {
   const [imagePath, setImagePath] = useState('');
 
@@ -924,6 +1232,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
   const content =
     section?.key === 'navbar-category' ? (
       <NavbarCategoryForm visible={open} />
+    ) : section?.key === 'video-banner' ? (
+      <VideoBannerForm visible={open} />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
     );

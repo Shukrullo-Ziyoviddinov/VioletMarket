@@ -13,8 +13,8 @@ export default function AdminLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSectionSelect = (section) => {
-    // Hozircha faqat Navbar category bo'limi real ishlaydi
-    if (section?.key !== 'navbar-category') {
+    // Hozircha faqat Navbar category va Video banner bo'limlari real ishlaydi
+    if (section?.key !== 'navbar-category' && section?.key !== 'video-banner') {
       setActiveSection(null);
       setIsModalOpen(false);
       return;
@@ -43,7 +43,7 @@ export default function AdminLayout() {
           <Content className="admin-layout__content">
             <div className="admin-layout__placeholder">
               <h2>Bo'limni tanlang</h2>
-              <p>Hozircha faqat Navbar category bo'limida modal va to'ldirish ishlaydi.</p>
+              <p>Hozircha Navbar category va Video banner bo'limlarida modal va to'ldirish ishlaydi.</p>
             </div>
           </Content>
         </Layout>

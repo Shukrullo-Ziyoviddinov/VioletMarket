@@ -318,6 +318,15 @@
   background: #f6f1fd;
 }
 
+.global-section-modal__saved-video {
+  width: 220px;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e8ddf8;
+  background: #000;
+  display: block;
+}
+
 .global-section-modal__meta {
   margin-top: 3px;
   font-size: 12px;
