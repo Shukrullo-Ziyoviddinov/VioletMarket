@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import AdminModalContext from '../../context/AdminModalContext';
+import { AdminToastProvider } from '../../context/AdminToastContext';
 import { MiniGlobalModalProvider } from '../../context/MiniGlobalModalContext';
 import AdminHeader from '../AdminHeader/AdminHeader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
@@ -64,7 +65,8 @@ export default function AdminLayout() {
 
   return (
     <AdminModalContext.Provider value={modalContextValue}>
-      <MiniGlobalModalProvider>
+      <AdminToastProvider>
+        <MiniGlobalModalProvider>
         <Layout className="admin-layout">
           <Sider
             collapsible
@@ -84,7 +86,8 @@ export default function AdminLayout() {
           </Layout>
         </Layout>
         <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
-      </MiniGlobalModalProvider>
+        </MiniGlobalModalProvider>
+      </AdminToastProvider>
     </AdminModalContext.Provider>
   );
 }

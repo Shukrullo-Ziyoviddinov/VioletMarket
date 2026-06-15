@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeftOutlined, EditOutlined, InboxOutlined } from '@ant-design/icons';
-import { Button, Empty, Spin, message } from 'antd';
+import { Button, Empty, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { ADMIN_TOAST_TEXTS } from '../../components/AdminToast/adminToastTexts';
 import { deleteAdminProduct, fetchAdminProducts, setAdminProductClientActive } from '../../api/productsAdminApi';
 import ProductCardMenu from '../../components/ProductCardMenu/ProductCardMenu';
 import ProductSellerSearch, {
   collectSellersFromProducts,
 } from '../../components/ProductSellerSearch/ProductSellerSearch';
 import { useAdminModal } from '../../context/AdminModalContext';
+import { useAdminToast } from '../../context/AdminToastContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
   formatStatNumber,
@@ -45,6 +47,7 @@ export default function ProductPage({ mode = 'all' }) {
   const navigate = useNavigate();
   const { openAdminModal } = useAdminModal();
   const { openMiniGlobalModal } = useMiniGlobalModal();
+  const { showSuccess, showError } = useAdminToast();
   const [products, setProducts] = useState([]);
   const [selectedSellerId, setSelectedSellerId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,11 +102,11 @@ export default function ProductPage({ mode = 'all' }) {
       onConfirm: async () => {
         try {
           await deleteAdminProduct(product.id);
-          message.success('Mahsulot o\'chirildi');
+          showSuccess(ADMIN_TOAST_TEXTS.productDeleted);
           setOpenMenuProductId(null);
           await loadProducts();
         } catch (err) {
-          message.error(err.message || 'Mahsulotni o\'chirishda xatolik');
+          showError(err.message || ADMIN_TOAST_TEXTS.productDeleteError);
           throw err;
         }
       },
@@ -127,13 +130,13 @@ export default function ProductPage({ mode = 'all' }) {
             : row,
         );
       });
-      message.success(
+      showSuccess(
         nextClientActive
-          ? 'Mahsulot client qismida faollashtirildi'
-          : 'Mahsulot client qismida vaqtincha yashirildi',
+          ? ADMIN_TOAST_TEXTS.productActivated
+          : ADMIN_TOAST_TEXTS.productPaused,
       );
     } catch (err) {
-      message.error(err.message || 'Mahsulot holatini yangilashda xatolik');
+      showError(err.message || ADMIN_TOAST_TEXTS.productPauseError);
     } finally {
       setTogglingPauseProductId(null);
     }
