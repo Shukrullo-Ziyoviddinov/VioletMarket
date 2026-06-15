@@ -158,8 +158,11 @@ async function findNewestProductDoc(productId) {
 function mapProductForEdit(product) {
   if (!product) return null;
 
+  const sellerId = String(product.sellerId || "").trim();
+
   return {
     id: product.id,
+    sellerId: sellerId || null,
     title: product.title || { uz: "", ru: "" },
     price: product.price || "",
     originalPrice: product.originalPrice || "",
@@ -179,19 +182,74 @@ async function getProductForEdit(productIdRaw) {
   return mapProductForEdit(product);
 }
 
-async function listProductPickerOptions(excludeProductIdRaw) {
-  const excludeId = excludeProductIdRaw != null ? parseProductId(excludeProductIdRaw) : null;
-  const rows = await Product.find()
-    .select({ id: 1, title: 1 })
+async function listProductPickerOptions(forProductIdRaw) {
+  if (forProductIdRaw == null || forProductIdRaw === "") {
+    return [];
+  }
+
+  const forProductId = parseProductId(forProductIdRaw);
+  const sourceProduct = await findNewestProductDoc(forProductId);
+  if (!sourceProduct) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  const sellerId = String(sourceProduct.sellerId || "").trim();
+  if (!sellerId) {
+    return [];
+  }
+
+  const rows = await Product.find({ sellerId })
+    .select({ id: 1, title: 1, sellerId: 1 })
     .sort({ _id: -1 })
     .lean();
 
   return keepNewestProductPerId(rows)
-    .filter((product) => excludeId == null || Number(product.id) !== excludeId)
+    .filter((product) => Number(product.id) !== forProductId)
     .map((product) => ({
       id: product.id,
       title: product.title || { uz: "", ru: "" },
+      sellerId: product.sellerId,
     }));
+}
+
+async function assertRelatedProductIdsForSeller(productIds, sellerId, currentProductId) {
+  const ids = [...new Set((Array.isArray(productIds) ? productIds : []).map(Number))]
+    .filter((id) => Number.isFinite(id) && id !== currentProductId);
+
+  if (ids.length === 0) return;
+
+  if (!sellerId) {
+    throw new HttpError(
+      400,
+      "Sotuvchi biriktirilmagan mahsulotga related mahsulot qo'shib bo'lmaydi",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  const rows = await Product.find({ id: { $in: ids } })
+    .select({ id: 1, sellerId: 1 })
+    .sort({ _id: -1 })
+    .lean();
+
+  const newestById = new Map();
+  for (const row of rows) {
+    const key = String(row.id);
+    if (!newestById.has(key)) newestById.set(key, row);
+  }
+
+  for (const id of ids) {
+    const row = newestById.get(String(id));
+    if (!row) {
+      throw new HttpError(400, `Related mahsulot topilmadi: ${id}`, "VALIDATION_ERROR");
+    }
+    if (String(row.sellerId || "").trim() !== sellerId) {
+      throw new HttpError(
+        400,
+        `Mahsulot #${id} shu sotuvchiga tegishli emas`,
+        "VALIDATION_ERROR",
+      );
+    }
+  }
 }
 
 function normalizeLabelDraft(raw) {
@@ -240,7 +298,7 @@ function normalizeRelatedGroups(raw, currentProductId) {
     return titleUz || titleRu || productIds.length > 0;
   });
 
-  return groups.map((group, index) => {
+  const normalized = groups.map((group, index) => {
     const title = normalizeI18nPair(group?.title, `Turkum #${index + 1} sarlavhasi`);
     const productIds = (Array.isArray(group?.productIds) ? group.productIds : [])
       .map((id) => Number(id))
@@ -260,6 +318,8 @@ function normalizeRelatedGroups(raw, currentProductId) {
       productIds: uniqueIds,
     };
   });
+
+  return normalized;
 }
 
 function normalizeUpdatePayload(body, currentProductId) {
@@ -294,6 +354,9 @@ async function updateProductForAdmin(productIdRaw, body) {
   }
 
   const payload = normalizeUpdatePayload(body, productId);
+  const sellerId = String(existing.sellerId || "").trim();
+  const relatedIds = payload.relatedGroups.flatMap((group) => group.productIds || []);
+  await assertRelatedProductIdsForSeller(relatedIds, sellerId, productId);
 
   await Product.updateOne({ _id: existing._id }, { $set: payload });
   const updated = await findNewestProductDoc(productId);

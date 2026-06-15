@@ -12,7 +12,7 @@ const stats = asyncHandler(async (_req, res) => {
 });
 
 const picker = asyncHandler(async (req, res) => {
-  const options = await service.listProductPickerOptions(req.query.excludeId);
+  const options = await service.listProductPickerOptions(req.query.forProductId);
   res.json({ ok: true, data: { options } });
 });
 

@@ -33,9 +33,11 @@ export async function fetchAdminProductById(productId) {
   return data?.data?.product || null;
 }
 
-export async function fetchProductPickerOptions(excludeProductId) {
-  const query = excludeProductId != null ? `?excludeId=${encodeURIComponent(excludeProductId)}` : '';
-  const res = await fetch(apiUrl(`/api/admin/products/picker${query}`));
+export async function fetchProductPickerOptions(forProductId) {
+  if (forProductId == null) return [];
+  const res = await fetch(
+    apiUrl(`/api/admin/products/picker?forProductId=${encodeURIComponent(forProductId)}`),
+  );
   const data = await parseJson(res);
   return Array.isArray(data?.data?.options) ? data.data.options : [];
 }

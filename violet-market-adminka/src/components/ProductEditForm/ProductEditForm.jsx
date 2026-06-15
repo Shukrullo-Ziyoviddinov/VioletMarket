@@ -72,6 +72,7 @@ function buildDraftFromProduct(product) {
   const labelDraft = parseLabelDraftFromProduct(product);
 
   return {
+    sellerId: product?.sellerId || null,
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
     price: product?.price || '',
@@ -122,7 +123,7 @@ function buildPayloadFromDraft(draft) {
   };
 }
 
-function ProductIdPicker({ value, options, usedIds, onSelect, placeholder = 'Mahsulot tanlang' }) {
+function ProductIdPicker({ value, options, usedIds, onSelect, disabled = false, placeholder = 'Mahsulot tanlang' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -144,11 +145,17 @@ function ProductIdPicker({ value, options, usedIds, onSelect, placeholder = 'Mah
       <button
         type="button"
         className="product-edit-form__picker-trigger"
-        onClick={() => setIsOpen((open) => !open)}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return;
+          setIsOpen((open) => !open);
+        }}
       >
-        {selected
-          ? `#${selected.id} — ${getLocalizedText(selected.title, 'uz')}`
-          : placeholder}
+        {disabled
+          ? 'Sotuvchi biriktirilmagan'
+          : selected
+            ? `#${selected.id} — ${getLocalizedText(selected.title, 'uz')}`
+            : placeholder}
       </button>
       {isOpen ? (
         <div className="product-edit-form__picker-dropdown">
@@ -192,6 +199,8 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [draft, setDraft] = useState(null);
   const [pickerOptions, setPickerOptions] = useState([]);
   const [activeUploads, setActiveUploads] = useState(0);
+
+  const sellerId = draft?.sellerId || null;
 
   const loadData = useCallback(async () => {
     if (!visible || productId == null) return;
@@ -429,8 +438,19 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
               </button>
             </div>
             <p className="global-section-modal__hint">
-              Har bir turkumda sarlavha va maksimal 3 ta mahsulot ID biriktiriladi.
+              Har bir turkumda sarlavha va maksimal 3 ta mahsulot ID biriktiriladi. Tanlovda faqat
+              shu mahsulot sotuvchisidagi mahsulotlar chiqadi.
             </p>
+            {!sellerId ? (
+              <p className="global-section-modal__meta">
+                Bu mahsulotga sotuvchi biriktirilmagan — related mahsulot tanlash mumkin emas.
+              </p>
+            ) : null}
+            {sellerId && pickerOptions.length === 0 ? (
+              <p className="global-section-modal__meta">
+                Sotuvchi ({sellerId}) uchun boshqa mahsulot topilmadi.
+              </p>
+            ) : null}
 
             {(draft.relatedGroups || []).length === 0 ? (
               <p className="global-section-modal__state">Hozircha related group yo‘q</p>
@@ -495,6 +515,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                             value={currentId}
                             options={pickerOptions}
                             usedIds={usedIds}
+                            disabled={!sellerId}
                             onSelect={(id) => changeGroupProductId(group.localId, slotIndex, id)}
                           />
                           {currentId ? (
