@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeftOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EditOutlined, InboxOutlined, MoreOutlined } from '@ant-design/icons';
 import { Button, Empty, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdminProducts } from '../../api/productsAdminApi';
@@ -89,6 +89,7 @@ export default function ProductPage() {
             const sellerLogoUrl = product.seller
               ? product.seller.logoUrl || resolveProductImageUrl(product.seller.logo)
               : '';
+            const quantity = Number(product.effectiveQuantity) || 0;
 
             return (
               <article key={product.id} className="product-page-card">
@@ -110,6 +111,10 @@ export default function ProductPage() {
                       {originalPrice ? (
                         <span className="product-page-card__old-price">{originalPrice}</span>
                       ) : null}
+                    </div>
+                    <div className="product-page-card__quantity" aria-live="polite">
+                      <InboxOutlined aria-hidden="true" />
+                      <span>{formatStatNumber(quantity)} dona qoldi</span>
                     </div>
                   </div>
 

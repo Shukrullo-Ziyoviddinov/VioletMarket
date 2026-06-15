@@ -186,4 +186,5 @@ module.exports = {
   findAll,
   findByProductId,
   createProduct,
+  computeEffectiveQuantity,
 };

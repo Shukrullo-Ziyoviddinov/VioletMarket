@@ -1,6 +1,7 @@
 const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
+const { computeEffectiveQuantity } = require("./productService");
 
 function keepNewestProductPerId(products) {
   const seen = new Set();
@@ -62,6 +63,7 @@ function mapProductCard(product, sellerMap) {
     originalPrice: firstColor?.originalPrice || product.originalPrice || "",
     image,
     imageUrl: resolvePublicAssetUrl(image),
+    effectiveQuantity: computeEffectiveQuantity(product),
     sellerId: sellerId || null,
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
   };
@@ -87,6 +89,13 @@ async function listProductsForAdmin() {
         mainImage: 1,
         colors: 1,
         sellerId: 1,
+        quantity: 1,
+        models: 1,
+        storage: 1,
+        modelStock: 1,
+        storageStock: 1,
+        sizeStock: 1,
+        colorStock: 1,
       })
       .sort({ _id: -1 })
       .lean(),
