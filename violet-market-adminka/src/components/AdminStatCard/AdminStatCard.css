@@ -10,6 +10,22 @@
   box-shadow: 0 2px 10px rgba(42, 24, 66, 0.04);
 }
 
+.admin-stat-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-stat-card--clickable:hover {
+  border-color: #d8c9ef;
+  box-shadow: 0 6px 18px rgba(42, 24, 66, 0.08);
+  transform: translateY(-1px);
+}
+
+.admin-stat-card--clickable:focus-visible {
+  outline: 2px solid #7b49c8;
+  outline-offset: 2px;
+}
+
 .admin-stat-card__top {
   display: flex;
   align-items: flex-start;

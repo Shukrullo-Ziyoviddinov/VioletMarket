@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
-import AdminDashboardOverview from '../AdminDashboardOverview/AdminDashboardOverview';
+import { Outlet } from 'react-router-dom';
 import AdminHeader from '../AdminHeader/AdminHeader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
 import GlobalSectionModal from '../GlobalSectionModal/GlobalSectionModal';
@@ -56,7 +56,7 @@ export default function AdminLayout() {
         <Layout>
           <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
           <Content className="admin-layout__content">
-            <AdminDashboardOverview />
+            <Outlet />
           </Content>
         </Layout>
       </Layout>

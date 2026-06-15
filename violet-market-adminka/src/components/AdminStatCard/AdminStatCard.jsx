@@ -37,11 +37,28 @@ export default function AdminStatCard({
   footerHighlight,
   badgeText,
   showChart = false,
+  onClick,
+  clickable = false,
 }) {
   const gradientId = useId().replace(/:/g, '');
+  const isInteractive = clickable || typeof onClick === 'function';
+
+  const handleKeyDown = (event) => {
+    if (!isInteractive || typeof onClick !== 'function') return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick(event);
+    }
+  };
 
   return (
-    <article className="admin-stat-card">
+    <article
+      className={`admin-stat-card${isInteractive ? ' admin-stat-card--clickable' : ''}`}
+      onClick={isInteractive ? onClick : undefined}
+      onKeyDown={isInteractive ? handleKeyDown : undefined}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+    >
       <div className="admin-stat-card__top">
         <div className="admin-stat-card__title-row">
           <span className={`admin-stat-card__icon-wrap admin-stat-card__icon-wrap--${iconTone}`}>

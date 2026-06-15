@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BarChartOutlined,
   InboxOutlined,
   ProfileOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { fetchProductStats } from '../../api/productsAdminApi';
+import { formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
 export default function AdminDashboardOverview() {
+  const navigate = useNavigate();
+  const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProductStats() {
+      setStatsLoading(true);
+
+      try {
+        const stats = await fetchProductStats();
+        if (!cancelled) setProductStats(stats);
+      } catch (_error) {
+        if (!cancelled) setProductStats({ total: 0, addedToday: 0 });
+      } finally {
+        if (!cancelled) setStatsLoading(false);
+      }
+    }
+
+    loadProductStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="admin-dashboard-overview">
       <div className="admin-dashboard-overview__grid">
@@ -26,9 +56,11 @@ export default function AdminDashboardOverview() {
           icon={<InboxOutlined />}
           iconTone="blue"
           title="Mahsulotlar"
-          value="1,450"
+          value={statsLoading ? '...' : formatStatNumber(productStats.total)}
           footerLabel="Yangi bugun: "
-          footerHighlight="+8"
+          footerHighlight={statsLoading ? '...' : formatTodayHighlight(productStats.addedToday)}
+          clickable
+          onClick={() => navigate('/products')}
         />
         <AdminStatCard
           icon={<TeamOutlined />}
