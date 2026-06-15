@@ -2,6 +2,7 @@ const { Product } = require("../../models/product");
 const { getProductDisplayPrice } = require("../viewedAt/viewedAtHelpers");
 const { parsePagination, parseSort, stripMongoMeta } = require("../../utils/paginationHelpers");
 const { parseCategoryName } = require("./collectionHelpers");
+const { filterProductsActiveOnClient } = require("../../utils/productClientVisibility");
 const {
   getSectionMetricsByProductIds,
   sortProductsBySectionRanking,
@@ -136,7 +137,9 @@ async function getCollectionProducts(categoryNameRaw, query) {
   const { page, limit, skip } = parsePagination(query);
   const sort = resolveSort(categoryName, parseSort(query?.sort));
 
-  const allForCategory = keepNewestProductPerId(await Product.find({ categoryName }).lean()).map((p) => ({
+  const allForCategory = filterProductsActiveOnClient(
+    keepNewestProductPerId(await Product.find({ categoryName }).lean()),
+  ).map((p) => ({
     ...p,
     effectiveQuantity: computeEffectiveQuantity(p),
   }));

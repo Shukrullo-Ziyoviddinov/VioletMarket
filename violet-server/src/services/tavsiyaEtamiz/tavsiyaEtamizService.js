@@ -6,9 +6,13 @@ const {
   getRecommendationsForProductDetail,
   getDefaultProducts,
 } = require("./tavsiyaEtamizAlgorithm");
+const {
+  filterProductsActiveOnClient,
+  isProductActiveOnClient,
+} = require("../../utils/productClientVisibility");
 
 async function loadAllProducts() {
-  return Product.find().lean();
+  return filterProductsActiveOnClient(await Product.find().lean());
 }
 
 async function findProductById(rawId) {
@@ -18,6 +22,9 @@ async function findProductById(rawId) {
   }
   const product = await Product.findOne({ id: productId }).lean();
   if (!product) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+  if (!isProductActiveOnClient(product)) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
   return product;

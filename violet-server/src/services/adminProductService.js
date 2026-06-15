@@ -11,6 +11,7 @@ const {
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
+const { isProductActiveOnClient } = require("../utils/productClientVisibility");
 
 const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
 const SUPER_NARX_COLOR = "#13BE4C";
@@ -109,6 +110,7 @@ function mapProductCard(product, sellerMap) {
     effectiveQuantity: computeEffectiveQuantity(product),
     sellerId: sellerId || null,
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
+    clientActive: isProductActiveOnClient(product),
   };
 }
 
@@ -139,6 +141,7 @@ async function listProductsForAdmin() {
         storageStock: 1,
         sizeStock: 1,
         colorStock: 1,
+        clientActive: 1,
       })
       .sort({ _id: -1 })
       .lean(),
@@ -630,6 +633,22 @@ async function deleteProductForAdmin(productIdRaw) {
   return { id: productId };
 }
 
+async function setProductClientActive(productIdRaw, clientActiveRaw) {
+  const productId = parseProductId(productIdRaw);
+  const existing = await findNewestProductDoc(productId);
+  if (!existing) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  const clientActive = clientActiveRaw !== false;
+  await Product.updateMany({ id: productId }, { $set: { clientActive } });
+
+  return {
+    id: productId,
+    clientActive,
+  };
+}
+
 module.exports = {
   listProductsForAdmin,
   getProductStats,
@@ -637,4 +656,5 @@ module.exports = {
   listProductPickerOptions,
   updateProductForAdmin,
   deleteProductForAdmin,
+  setProductClientActive,
 };

@@ -7,6 +7,7 @@ const {
   getSimilarRecommended,
   getDefaultRecommended,
 } = require("../../utils/searchAlgorithm");
+const { filterProductsActiveOnClient } = require("../../utils/productClientVisibility");
 
 function toUserObjectId(userId) {
   if (userId instanceof mongoose.Types.ObjectId) return userId;
@@ -16,7 +17,7 @@ function toUserObjectId(userId) {
 const MAX_QUERY_HISTORY = 15;
 
 async function loadAllProducts() {
-  return Product.find().lean();
+  return filterProductsActiveOnClient(await Product.find().lean());
 }
 
 async function searchProducts(rawQuery, limit) {

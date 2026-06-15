@@ -1,6 +1,10 @@
 const { Product } = require("../../models/product");
 const { HttpError } = require("../../utils/httpError");
 const { getRelatedByTypeAndCountry } = require("../../utils/recommendationAlgorithm");
+const {
+  filterProductsActiveOnClient,
+  isProductActiveOnClient,
+} = require("../../utils/productClientVisibility");
 
 function keepNewestProductPerId(products) {
   const sortedByNewest = [...(Array.isArray(products) ? products : [])].sort((a, b) =>
@@ -20,7 +24,7 @@ function keepNewestProductPerId(products) {
 }
 
 async function loadAllProducts() {
-  return keepNewestProductPerId(await Product.find().lean());
+  return filterProductsActiveOnClient(keepNewestProductPerId(await Product.find().lean()));
 }
 
 async function findProductById(rawId) {
@@ -30,6 +34,9 @@ async function findProductById(rawId) {
   }
   const product = await Product.findOne({ id: productId }).sort({ _id: -1 }).lean();
   if (!product) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+  if (!isProductActiveOnClient(product)) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
   return product;

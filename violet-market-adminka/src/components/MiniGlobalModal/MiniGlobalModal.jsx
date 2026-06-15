@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { resolveMiniGlobalModalPermission } from './miniGlobalModalTexts';
 import './MiniGlobalModal.css';
 
@@ -30,7 +31,7 @@ export default function MiniGlobalModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="mini-global-modal" role="presentation">
       <button
         type="button"
@@ -40,39 +41,42 @@ export default function MiniGlobalModal({
         disabled={loading}
       />
 
-      <div
-        className="mini-global-modal__dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="mini-global-modal-title"
-        aria-describedby="mini-global-modal-message"
-      >
-        <h2 id="mini-global-modal-title" className="mini-global-modal__title">
-          {copy.title}
-        </h2>
-        <p id="mini-global-modal-message" className="mini-global-modal__message">
-          {copy.message}
-        </p>
+      <div className="mini-global-modal__center">
+        <div
+          className="mini-global-modal__dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mini-global-modal-title"
+          aria-describedby="mini-global-modal-message"
+        >
+          <h2 id="mini-global-modal-title" className="mini-global-modal__title">
+            {copy.title}
+          </h2>
+          <p id="mini-global-modal-message" className="mini-global-modal__message">
+            {copy.message}
+          </p>
 
-        <div className="mini-global-modal__actions">
-          <button
-            type="button"
-            className="mini-global-modal__btn mini-global-modal__btn--ghost"
-            onClick={onCancel}
-            disabled={loading}
-          >
-            {copy.cancelText}
-          </button>
-          <button
-            type="button"
-            className="mini-global-modal__btn mini-global-modal__btn--danger"
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? 'O\'chirilmoqda...' : copy.confirmText}
-          </button>
+          <div className="mini-global-modal__actions">
+            <button
+              type="button"
+              className="mini-global-modal__btn mini-global-modal__btn--ghost"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {copy.cancelText}
+            </button>
+            <button
+              type="button"
+              className="mini-global-modal__btn mini-global-modal__btn--danger"
+              onClick={onConfirm}
+              disabled={loading}
+            >
+              {loading ? 'O\'chirilmoqda...' : copy.confirmText}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

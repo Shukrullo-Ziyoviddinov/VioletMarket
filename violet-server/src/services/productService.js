@@ -12,6 +12,10 @@ const {
   buildProductDetailSalesProgressMeta,
   decorateWithProductDetailSalesProgressMeta,
 } = require("./productDetail/productDetailSalesProgressService");
+const {
+  filterProductsActiveOnClient,
+  isProductActiveOnClient,
+} = require("../utils/productClientVisibility");
 
 function toNonNegativeInt(value) {
   const n = Number(value);
@@ -133,7 +137,9 @@ function stripLegacyDeliveryInfo(product) {
 
 async function findAll() {
   const products = await Product.find().sort({ _id: -1 }).lean();
-  const uniqueProducts = keepNewestProductPerId(products).map(stripLegacyDeliveryInfo);
+  const uniqueProducts = keepNewestProductPerId(products)
+    .map(stripLegacyDeliveryInfo)
+    .filter(isProductActiveOnClient);
   const decorated = await decorateProductsWithFlashSaleMeta(uniqueProducts);
   const withEffectiveQty = decorateWithEffectiveQuantity(decorated);
   const withDetailSalesMeta = decorateWithProductDetailSalesProgressMeta(withEffectiveQty);
@@ -148,6 +154,7 @@ async function findByProductId(id) {
   /** Bir xil `id` nechta bo‘lsa — eng eski `_id` bo‘yicha bittasi */
   const rows = await Product.find({ id: num }).sort({ _id: -1 }).limit(1).lean();
   const sanitized = stripLegacyDeliveryInfo(rows[0] || null);
+  if (!sanitized || !isProductActiveOnClient(sanitized)) return null;
   const decorated = await decorateSingleProductWithFlashSaleMeta(sanitized);
   if (!decorated) return null;
   const effectiveQuantity = computeEffectiveQuantity(decorated);
@@ -187,4 +194,6 @@ module.exports = {
   findByProductId,
   createProduct,
   computeEffectiveQuantity,
+  isProductActiveOnClient,
+  filterProductsActiveOnClient,
 };

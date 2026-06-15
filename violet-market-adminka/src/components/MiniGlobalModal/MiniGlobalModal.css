@@ -2,15 +2,12 @@
   position: fixed;
   inset: 0;
   z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
 }
 
 .mini-global-modal__backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 0;
   border: none;
   background: rgba(26, 18, 37, 0.45);
   cursor: pointer;
@@ -20,11 +17,23 @@
   cursor: not-allowed;
 }
 
+.mini-global-modal__center {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
 .mini-global-modal__dialog {
   position: relative;
-  z-index: 1;
   width: min(100%, 420px);
+  margin: 0;
   padding: 20px;
+  pointer-events: auto;
   border: 1px solid #ece7f3;
   border-radius: 14px;
   background: #ffffff;

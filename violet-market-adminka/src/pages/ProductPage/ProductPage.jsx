@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeftOutlined, EditOutlined, InboxOutlined } from '@ant-design/icons';
 import { Button, Empty, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { deleteAdminProduct, fetchAdminProducts } from '../../api/productsAdminApi';
+import { deleteAdminProduct, fetchAdminProducts, setAdminProductClientActive } from '../../api/productsAdminApi';
 import ProductCardMenu from '../../components/ProductCardMenu/ProductCardMenu';
 import ProductSellerSearch, {
   collectSellersFromProducts,
@@ -25,6 +25,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openMenuProductId, setOpenMenuProductId] = useState(null);
+  const [togglingPauseProductId, setTogglingPauseProductId] = useState(null);
 
   const sellers = useMemo(() => collectSellersFromProducts(products), [products]);
 
@@ -80,6 +81,31 @@ export default function ProductPage() {
         }
       },
     });
+  };
+
+  const handleToggleProductPause = async (product) => {
+    const nextClientActive = product.clientActive === false;
+    setTogglingPauseProductId(product.id);
+
+    try {
+      await setAdminProductClientActive(product.id, nextClientActive);
+      setProducts((current) =>
+        current.map((row) =>
+          String(row.id) === String(product.id)
+            ? { ...row, clientActive: nextClientActive }
+            : row,
+        ),
+      );
+      message.success(
+        nextClientActive
+          ? 'Mahsulot client qismida faollashtirildi'
+          : 'Mahsulot client qismida vaqtincha yashirildi',
+      );
+    } catch (err) {
+      message.error(err.message || 'Mahsulot holatini yangilashda xatolik');
+    } finally {
+      setTogglingPauseProductId(null);
+    }
   };
 
   return (
@@ -149,11 +175,14 @@ export default function ProductPage() {
               : '';
             const quantity = Number(product.effectiveQuantity) || 0;
             const isMenuOpen = String(openMenuProductId) === String(product.id);
+            const isClientActive = product.clientActive !== false;
 
             return (
               <article
                 key={product.id}
-                className={`product-page-card${isMenuOpen ? ' product-page-card--menu-open' : ''}`}
+                className={`product-page-card${isMenuOpen ? ' product-page-card--menu-open' : ''}${
+                  !isClientActive ? ' product-page-card--paused' : ''
+                }`}
               >
                 <div className="product-page-card__media">
                   <img
@@ -208,6 +237,8 @@ export default function ProductPage() {
                       </Button>
                       <ProductCardMenu
                         isOpen={isMenuOpen}
+                        clientActive={isClientActive}
+                        togglingPause={String(togglingPauseProductId) === String(product.id)}
                         onToggle={() =>
                           setOpenMenuProductId((current) =>
                             String(current) === String(product.id) ? null : product.id,
@@ -216,6 +247,7 @@ export default function ProductPage() {
                         onClose={() => setOpenMenuProductId(null)}
                         onEdit={() => handleEditProduct(product)}
                         onDelete={() => handleDeleteProduct(product)}
+                        onTogglePause={() => handleToggleProductPause(product)}
                       />
                     </div>
                   </div>

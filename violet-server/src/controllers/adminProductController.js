@@ -31,6 +31,12 @@ const remove = asyncHandler(async (req, res) => {
   res.json({ ok: true, data: result });
 });
 
+const setClientActive = asyncHandler(async (req, res) => {
+  const clientActive = req.body?.clientActive !== false;
+  const result = await service.setProductClientActive(req.params.id, clientActive);
+  res.json({ ok: true, data: result });
+});
+
 module.exports = {
   list,
   stats,
@@ -38,4 +44,5 @@ module.exports = {
   getById,
   update,
   remove,
+  setClientActive,
 };

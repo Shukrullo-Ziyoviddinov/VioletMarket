@@ -1,17 +1,27 @@
 import React, { useEffect, useRef } from 'react';
-import { DeleteOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import './ProductCardMenu.css';
 
 export default function ProductCardMenu({
   isOpen = false,
+  clientActive = true,
   deleting = false,
+  togglingPause = false,
   onToggle,
   onClose,
   onEdit,
   onDelete,
+  onTogglePause,
 }) {
   const rootRef = useRef(null);
+  const isPaused = clientActive === false;
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -42,6 +52,11 @@ export default function ProductCardMenu({
     onDelete?.();
   };
 
+  const handleTogglePause = () => {
+    onClose?.();
+    onTogglePause?.();
+  };
+
   return (
     <div className="product-card-menu" ref={rootRef}>
       {isOpen ? (
@@ -51,7 +66,7 @@ export default function ProductCardMenu({
             role="menuitem"
             className="product-card-menu__item product-card-menu__item--danger"
             onClick={handleDelete}
-            disabled={deleting}
+            disabled={deleting || togglingPause}
           >
             <DeleteOutlined aria-hidden="true" />
             <span>{deleting ? "O'chirilmoqda..." : "O'chirish"}</span>
@@ -61,10 +76,32 @@ export default function ProductCardMenu({
             role="menuitem"
             className="product-card-menu__item"
             onClick={handleEdit}
-            disabled={deleting}
+            disabled={deleting || togglingPause}
           >
             <EditOutlined aria-hidden="true" />
             <span>Tahrirlash</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`product-card-menu__item${
+              isPaused ? ' product-card-menu__item--activate' : ''
+            }`}
+            onClick={handleTogglePause}
+            disabled={deleting || togglingPause}
+          >
+            {isPaused ? (
+              <PlayCircleOutlined aria-hidden="true" />
+            ) : (
+              <PauseCircleOutlined aria-hidden="true" />
+            )}
+            <span>
+              {togglingPause
+                ? 'Saqlanmoqda...'
+                : isPaused
+                  ? 'Faollashtirish'
+                  : "Vaqtincha to'xtatish"}
+            </span>
           </button>
         </div>
       ) : null}

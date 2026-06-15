@@ -4,6 +4,7 @@ const { SellerSubscription } = require("../../models/sellerSubscription");
 const { HttpError } = require("../../utils/httpError");
 const { getProductDisplayPrice } = require("../viewedAt/viewedAtHelpers");
 const { getSellerRatingSummary } = require("./sellerRatingService");
+const { CLIENT_ACTIVE_FILTER } = require("../../utils/productClientVisibility");
 const {
   parseSellerId,
   parsePagination,
@@ -42,7 +43,7 @@ async function getSellerProfile(sellerIdRaw, userId) {
   const sellerDoc = await assertSellerExists(sellerId);
 
   const [productCount, subscriberCount] = await Promise.all([
-    Product.countDocuments({ sellerId }),
+    Product.countDocuments({ sellerId, ...CLIENT_ACTIVE_FILTER }),
     getSubscriberCount(sellerId),
   ]);
 
@@ -72,7 +73,7 @@ async function getSellerProducts(sellerIdRaw, query) {
   const { page, limit, skip } = parsePagination(query);
   const sort = parseSort(query?.sort);
 
-  const allForSeller = await Product.find({ sellerId }).lean();
+  const allForSeller = await Product.find({ sellerId, ...CLIENT_ACTIVE_FILTER }).lean();
   const total = allForSeller.length;
   const sorted = sortSellerProducts(allForSeller, sort);
   const slice = sorted.slice(skip, skip + limit).map(stripMongoMeta);

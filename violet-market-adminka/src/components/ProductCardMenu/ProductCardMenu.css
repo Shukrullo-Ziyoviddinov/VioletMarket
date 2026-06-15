@@ -57,6 +57,20 @@
   background: #fff0f0;
 }
 
+.product-card-menu__item--activate,
+.product-card-menu__item--activate .anticon {
+  color: #ea580c;
+}
+
+.product-card-menu__item--activate:hover:not(:disabled) {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.product-card-menu__item--activate:hover:not(:disabled) .anticon {
+  color: #c2410c;
+}
+
 .product-card-menu__trigger {
   color: #8b79a8;
   font-size: 16px;
