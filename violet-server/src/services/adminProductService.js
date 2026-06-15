@@ -3,6 +3,11 @@ const { SellerAccount } = require("../models/sellerAccount");
 const { MasterCategory } = require("../models/masterCategory");
 const { ShippingCountry } = require("../models/shippingCountry");
 const { BrandCountryFilterValue } = require("../models/brandCountryFilterValue");
+const {
+  listProductTypes,
+  normalizeProductTypeValue,
+  resolveProductTypeCode,
+} = require("./adminProductTypeService");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
@@ -208,6 +213,7 @@ function mapProductForEdit(product) {
     countriesCategories: String(product.countriesCategories || "").trim(),
     brandCategories: String(product.brandCategories || "").trim(),
     productCountry: String(product.productCountry || "").trim(),
+    productType: String(product.productType || "").trim(),
   };
 }
 
@@ -374,6 +380,8 @@ async function enrichProductForEdit(product) {
   mapped.productCountry = syncedCountryFilter;
   mapped.countriesCategories = syncedCountryFilter;
   mapped.brandCategories = resolveProductFilterValue(mapped.brandCategories, filterRows, "brand");
+  const productTypeRows = await listProductTypes({ activeOnly: false });
+  mapped.productType = resolveProductTypeCode(mapped.productType, productTypeRows);
   return mapped;
 }
 
@@ -574,6 +582,7 @@ async function normalizeUpdatePayload(body, currentProductId) {
     String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim(),
   );
   const brandCategories = await normalizeBrandCategories(body);
+  const productType = await normalizeProductTypeValue(body?.productType);
 
   return {
     title,
@@ -589,6 +598,7 @@ async function normalizeUpdatePayload(body, currentProductId) {
     countriesCategories: countryFilterValue,
     productCountry: countryFilterValue,
     brandCategories,
+    productType,
   };
 }
 

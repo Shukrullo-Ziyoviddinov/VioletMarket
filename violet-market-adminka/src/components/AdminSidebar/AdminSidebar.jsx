@@ -25,6 +25,7 @@ const menuItems = [
   { key: 'brand-country-filter-values', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
   { key: 'brand-country-categories', icon: <TeamOutlined />, label: 'Brend va davlat categoriya' },
   { key: 'master-categories', icon: <MenuOutlined />, label: 'Master categoriya' },
+  { key: 'product-types', icon: <InboxOutlined />, label: 'Mahsulot turlari categoriyasi' },
   { key: 'banner', icon: <PictureOutlined />, label: 'Banner' },
   { key: 'video-banner', icon: <VideoCameraOutlined />, label: 'Video banner' },
   { key: 'country-seller-banner', icon: <ShopOutlined />, label: 'Davlat seller banner' },

@@ -30,6 +30,7 @@ const {
   ProductPolicyBlock,
   FlashSaleRuleConfig,
   ShippingCountry,
+  ProductType,
   ProductSectionMetric,
   Counter,
 } = require("../models");
@@ -233,6 +234,23 @@ async function seedShippingCountriesMany() {
   console.log(`Shipping countries: shipping_country=${shippingCountries?.length || 0}`);
 }
 
+async function seedProductTypesMany() {
+  const { productTypes } = require("./seedProductType");
+  await ProductType.syncIndexes();
+  await ProductType.deleteMany({});
+  if (productTypes?.length) {
+    const docs = productTypes.map((row, index) => ({
+      code: String(row.code || "").trim(),
+      title: String(row.title || "").trim(),
+      group: String(row.group || "").trim(),
+      sortOrder: index,
+      active: true,
+    }));
+    await ProductType.insertMany(docs);
+  }
+  console.log(`Product types: product_types=${productTypes?.length || 0}`);
+}
+
 async function seedVideoBannersMany() {
   const { videoBannerData } = require("./seedVideoBannerData");
   await VideoBannerItem.syncIndexes();
@@ -324,6 +342,7 @@ async function seedSiteCollections() {
   await seedFooterMany();
   await seedCargoMany();
   await seedShippingCountriesMany();
+  await seedProductTypesMany();
   await seedVideoBannersMany();
   await seedSellersMany();
   await seedUzWarehouseMany();

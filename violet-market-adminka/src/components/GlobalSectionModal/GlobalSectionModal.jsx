@@ -51,6 +51,7 @@ import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
 import ProductEditForm from '../ProductEditForm/ProductEditForm';
 import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
+import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './GlobalSectionModal.css';
@@ -3199,6 +3200,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <UzWarehouseForm visible={open} />
     ) : section?.key === 'shipping-country' ? (
       <ShippingCountryForm visible={open} />
+    ) : section?.key === 'product-types' ? (
+      <ProductTypeForm visible={open} />
     ) : section?.key === 'product-uzb-warehouse-info' ? (
       <UzbProductDeliveryInfoForm visible={open} />
     ) : section?.key === 'logistics-info' ? (

@@ -7,6 +7,7 @@ import {
 } from '../../api/productsAdminApi';
 import { fetchAdminCategories } from '../../api/adminCategoriesApi';
 import { fetchShippingCountries } from '../../api/shippingCountryAdminApi';
+import { fetchProductTypes } from '../../api/productTypeAdminApi';
 import { getLocalizedText } from '../../utils/productDisplay';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './ProductEditForm.css';
@@ -235,6 +236,33 @@ const COUNTRY_FILTER_LEGACY_ALIASES = {
   europe: 'yevropa',
 };
 
+const PRODUCT_TYPE_LEGACY_ALIASES = {
+  'yozgi-keyim': 'yozgi_keyim',
+  "qo'lqop": 'qolqop',
+  'oyoq kiyim': 'oyoq_kiyim',
+  "o'yin": 'oyin',
+};
+
+function normalizeProductTypeToken(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (PRODUCT_TYPE_LEGACY_ALIASES[raw]) return PRODUCT_TYPE_LEGACY_ALIASES[raw];
+  return raw
+    .replace(/['’`]/g, '')
+    .replace(/[\s-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function resolveProductTypeCode(rawValue, productTypes) {
+  const token = normalizeProductTypeToken(rawValue);
+  if (!token) return '';
+
+  const list = Array.isArray(productTypes) ? productTypes : [];
+  const row = list.find((item) => normalizeProductTypeToken(item?.code) === token);
+  return row ? String(row.code).trim() : String(rawValue || '').trim();
+}
+
 function resolveProductFilterValue(rawValue, filterValues, type) {
   let token = String(rawValue || '').trim().toLowerCase();
   if (!token) return '';
@@ -255,11 +283,13 @@ function buildDraftFromProduct(
   masterCategories = [],
   shippingCountries = [],
   filterValues = [],
+  productTypes = [],
 ) {
   const labelDraft = parseLabelDraftFromProduct(product);
   const categories = Array.isArray(masterCategories) ? masterCategories : [];
   const countryRows = Array.isArray(shippingCountries) ? shippingCountries : [];
   const filterRows = Array.isArray(filterValues) ? filterValues : [];
+  const typeRows = Array.isArray(productTypes) ? productTypes : [];
 
   let masterCategoryId = product?.masterCategoryId ? String(product.masterCategoryId) : '';
   let category = String(product?.category || '').trim();
@@ -296,6 +326,7 @@ function buildDraftFromProduct(
     countryCodes: resolveCountryCodesFromProduct(product, countryRows),
     countriesCategories: syncedCountryFilter,
     productCountry: syncedCountryFilter,
+    productType: resolveProductTypeCode(product?.productType, typeRows),
     brandCategories: resolveProductFilterValue(product?.brandCategories, filterRows, 'brand'),
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
@@ -324,6 +355,7 @@ function buildPayloadFromDraft(draft) {
     countryCodes: (draft.countryCodes || []).map(String),
     countriesCategories: String(draft.countriesCategories || '').trim(),
     productCountry: String(draft.productCountry || draft.countriesCategories || '').trim(),
+    productType: String(draft.productType || '').trim(),
     brandCategories: String(draft.brandCategories || '').trim(),
     title: {
       uz: String(draft.titleUz || '').trim(),
@@ -431,10 +463,12 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [masterCategories, setMasterCategories] = useState([]);
   const [shippingCountries, setShippingCountries] = useState([]);
   const [filterValues, setFilterValues] = useState([]);
+  const [productTypes, setProductTypes] = useState([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isCountriesOpen, setIsCountriesOpen] = useState(false);
   const [isCountryFilterOpen, setIsCountryFilterOpen] = useState(false);
   const [isProductCountryOpen, setIsProductCountryOpen] = useState(false);
+  const [isProductTypeOpen, setIsProductTypeOpen] = useState(false);
   const [isBrandFilterOpen, setIsBrandFilterOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
 
@@ -486,11 +520,34 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     [filterValues],
   );
 
+  const productTypeOptions = useMemo(() => {
+    const selectedCode = draft?.productType ? String(draft.productType) : '';
+    const activeRows = productTypes.filter((item) => item?.active !== false);
+    const selectedInactive = productTypes.find(
+      (item) => String(item.code) === selectedCode && item?.active === false,
+    );
+    const rows = selectedInactive ? [...activeRows, selectedInactive] : activeRows;
+    return rows.map((item) => ({
+      value: String(item.code || ''),
+      main: item.title || item.code || '',
+      sub: item.group || item.code || '',
+    }));
+  }, [productTypes, draft?.productType]);
+
+  const productTypeFallbackLabel = useMemo(() => {
+    if (!draft?.productType) return '';
+    const matched = productTypeOptions.find(
+      (option) => String(option.value) === String(draft.productType),
+    );
+    return matched?.main || draft.productType;
+  }, [draft?.productType, productTypeOptions]);
+
   const closeAllPickers = () => {
     setIsCategoryOpen(false);
     setIsCountriesOpen(false);
     setIsCountryFilterOpen(false);
     setIsProductCountryOpen(false);
+    setIsProductTypeOpen(false);
     setIsBrandFilterOpen(false);
   };
 
@@ -501,11 +558,12 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     setError('');
 
     try {
-      const [product, options, categoriesData, countryRows] = await Promise.all([
+      const [product, options, categoriesData, countryRows, typeRows] = await Promise.all([
         fetchAdminProductById(productId),
         fetchProductPickerOptions(productId),
         fetchAdminCategories(),
         fetchShippingCountries(),
+        fetchProductTypes(),
       ]);
       const masterCats = Array.isArray(categoriesData?.masterCategories)
         ? categoriesData.masterCategories
@@ -514,11 +572,15 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
       const filterRows = Array.isArray(categoriesData?.filterValues)
         ? categoriesData.filterValues
         : [];
+      const productTypeRows = Array.isArray(typeRows) ? typeRows : [];
 
       setMasterCategories(masterCats);
       setShippingCountries(shippingRows);
       setFilterValues(filterRows);
-      setDraft(buildDraftFromProduct(product, masterCats, shippingRows, filterRows));
+      setProductTypes(productTypeRows);
+      setDraft(
+        buildDraftFromProduct(product, masterCats, shippingRows, filterRows, productTypeRows),
+      );
       setPickerOptions(options);
       closeAllPickers();
     } catch (err) {
@@ -527,6 +589,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
       setMasterCategories([]);
       setShippingCountries([]);
       setFilterValues([]);
+      setProductTypes([]);
       closeAllPickers();
       setError(err.message || 'Mahsulotni yuklashda xatolik');
     } finally {
@@ -568,6 +631,11 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const handleProductCountrySelect = (selectedValue) => {
     setDraft((prev) => ({ ...prev, ...syncCountryFilterFields(selectedValue) }));
     setIsProductCountryOpen(false);
+  };
+
+  const handleProductTypeSelect = (selectedValue) => {
+    setDraft((prev) => ({ ...prev, productType: String(selectedValue) }));
+    setIsProductTypeOpen(false);
   };
 
   const handleBrandFilterSelect = (selectedValue) => {
@@ -753,7 +821,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                 </span>
               </label>
               <label className="global-section-modal__field">
-                <span className="global-section-modal__label">Mahsulot kelib chiqish hududi (productCountry)</span>
+                <span className="global-section-modal__label">Mahsulotlar davlatlar aro o‘xshashlik maydoni</span>
                 <MasterCategoryPicker
                   value={draft.productCountry}
                   fallbackLabel={draft.productCountry}
@@ -768,6 +836,24 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                 />
                 <span className="global-section-modal__hint">
                   Tavsiya algoritmi uchun. Ma’lumot BrandCategories&CountryCategories dan olinadi (masalan: uzb, usa).
+                </span>
+              </label>
+              <label className="global-section-modal__field global-section-modal__field--full">
+                <span className="global-section-modal__label">Mahsulot turi (productType)</span>
+                <MasterCategoryPicker
+                  value={draft.productType}
+                  fallbackLabel={productTypeFallbackLabel}
+                  options={productTypeOptions}
+                  isOpen={isProductTypeOpen}
+                  onToggle={() => {
+                    closeAllPickers();
+                    setIsProductTypeOpen((open) => !open);
+                  }}
+                  onSelect={handleProductTypeSelect}
+                  placeholder="Mahsulot turini tanlang"
+                />
+                <span className="global-section-modal__hint">
+                  Ma’lumot Mahsulot turlari categoriyasi bo‘limidan olinadi. Kod bazada snake_case saqlanadi.
                 </span>
               </label>
               <label className="global-section-modal__field">

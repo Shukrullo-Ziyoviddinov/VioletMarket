@@ -20,6 +20,7 @@ export default function AdminLayout() {
       section?.key !== 'brand-country-filter-values' &&
       section?.key !== 'brand-country-categories' &&
       section?.key !== 'master-categories' &&
+      section?.key !== 'product-types' &&
       section?.key !== 'banner' &&
       section?.key !== 'navbar-category' &&
       section?.key !== 'product-policy' &&

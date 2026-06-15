@@ -24,6 +24,7 @@ const { SellerRatingSummary } = require("./sellerRatingSummary");
 const { ProductSectionMetric } = require("./productSectionMetric");
 const { Counter } = require("./counter");
 const { ShippingCountry } = require("./shippingCountry");
+const { ProductType } = require("./productType");
 const { UzbProductDeliveryInfo } = require("./uzbProductDeliveryInfo");
 
 module.exports = {
@@ -53,5 +54,6 @@ module.exports = {
   ProductSectionMetric,
   Counter,
   ShippingCountry,
+  ProductType,
   UzbProductDeliveryInfo,
 };
