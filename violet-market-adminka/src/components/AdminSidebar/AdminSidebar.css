@@ -31,6 +31,11 @@
   max-width: 56px;
 }
 
+.admin-sidebar__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .admin-sidebar__scroll .scroll-area__viewport .admin-sidebar__menu,
 .admin-sidebar__scroll .scroll-area__viewport .ant-menu.ant-menu-css-var {
   border-inline-end: none !important;
@@ -44,6 +49,15 @@
   margin-inline: 8px;
   width: calc(100% - 16px);
   border-radius: 8px;
+  height: auto;
+  min-height: 40px;
+  line-height: 1.35;
+  padding-block: 10px;
+}
+
+.admin-sidebar__menu .ant-menu-item .ant-menu-title-content {
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .admin-sidebar__menu .ant-menu-item-selected {

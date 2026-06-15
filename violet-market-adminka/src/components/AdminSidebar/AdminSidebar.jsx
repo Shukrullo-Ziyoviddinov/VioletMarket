@@ -28,7 +28,8 @@ const menuItems = [
   {
     key: 'products-paused',
     icon: <PauseCircleOutlined />,
-    label: "Vaqtincha to'xtatilgan mahsulotlar",
+    label: "Vaqtincha to'xtatilgan",
+    title: "Vaqtincha to'xtatilgan mahsulotlar",
     route: '/products/paused',
   },
   { key: 'brand-country-filter-values', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
@@ -94,7 +95,12 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
           mode="inline"
           className="admin-sidebar__menu"
           selectedKeys={[selectedKey]}
-          items={menuItems}
+          items={menuItems.map(({ key, icon, label, title }) => ({
+            key,
+            icon,
+            label,
+            title,
+          }))}
           onClick={handleMenuClick}
         />
       </ScrollArea>

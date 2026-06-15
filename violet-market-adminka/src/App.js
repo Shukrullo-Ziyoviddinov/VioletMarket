@@ -17,8 +17,8 @@ function App() {
       <Routes>
         <Route path="/" element={<AdminLayout />}>
           <Route index element={<AdminDashboardOverview />} />
-          <Route path="products" element={<AllProductsPage />} />
           <Route path="products/paused" element={<PausedProductsPage />} />
+          <Route path="products" element={<AllProductsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
