@@ -2,18 +2,27 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .product-seller-search__field-wrap {
   position: relative;
-  width: min(320px, 42vw);
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.product-seller-search__field-wrap .ant-input-affix-wrapper {
+  width: 100%;
+  min-height: 40px;
+  background: #ffffff;
 }
 
 .product-seller-search__input {
   border-radius: 10px;
   border-color: #e5dff0;
+  width: 100%;
 }
 
 .product-seller-search__input:hover,

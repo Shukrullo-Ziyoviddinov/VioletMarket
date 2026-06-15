@@ -61,7 +61,7 @@ export default function ProductPage() {
   return (
     <section className="product-page">
       <div className="product-page__header">
-        <div className="product-page__header-main">
+        <div className="product-page__header-left">
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
@@ -80,12 +80,14 @@ export default function ProductPage() {
           </div>
         </div>
 
-        <ProductSellerSearch
-          sellers={sellers}
-          selectedSellerId={selectedSellerId}
-          onSellerSelect={setSelectedSellerId}
-          onClear={() => setSelectedSellerId(null)}
-        />
+        <div className="product-page__header-right">
+          <ProductSellerSearch
+            sellers={sellers}
+            selectedSellerId={selectedSellerId}
+            onSellerSelect={setSelectedSellerId}
+            onClear={() => setSelectedSellerId(null)}
+          />
+        </div>
       </div>
 
       {loading ? (

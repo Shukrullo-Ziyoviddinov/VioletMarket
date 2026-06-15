@@ -108,6 +108,7 @@ export default function ProductSellerSearch({
             }
           }}
           onFocus={() => setIsOpen(true)}
+          onClick={() => setIsOpen(true)}
           onPressEnter={handleSubmitSearch}
           allowClear={!selectedSellerId}
         />
