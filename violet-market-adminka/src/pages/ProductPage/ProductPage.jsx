@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
 import { Button, Empty, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdminProducts } from '../../api/productsAdminApi';
@@ -103,27 +103,50 @@ export default function ProductPage() {
                   />
                 </div>
                 <div className="product-page-card__info">
-                  <h2 className="product-page-card__title">{title}</h2>
-                  <div className="product-page-card__prices">
-                    <span className="product-page-card__price">{price}</span>
-                    {originalPrice ? (
-                      <span className="product-page-card__old-price">{originalPrice}</span>
-                    ) : null}
-                  </div>
-                  {product.seller ? (
-                    <div className="product-page-card__seller">
-                      <img
-                        className="product-page-card__seller-logo"
-                        src={sellerLogoUrl}
-                        alt={sellerName}
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.src = resolveProductImageUrl('');
-                        }}
-                      />
-                      <span className="product-page-card__seller-name">{sellerName}</span>
+                  <div className="product-page-card__main">
+                    <h2 className="product-page-card__title">{title}</h2>
+                    <div className="product-page-card__prices">
+                      <span className="product-page-card__price">{price}</span>
+                      {originalPrice ? (
+                        <span className="product-page-card__old-price">{originalPrice}</span>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </div>
+
+                  <div className="product-page-card__footer">
+                    {product.seller ? (
+                      <div className="product-page-card__seller">
+                        <img
+                          className="product-page-card__seller-logo"
+                          src={sellerLogoUrl}
+                          alt={sellerName}
+                          loading="lazy"
+                          onError={(event) => {
+                            event.currentTarget.src = resolveProductImageUrl('');
+                          }}
+                        />
+                        <span className="product-page-card__seller-name">{sellerName}</span>
+                      </div>
+                    ) : null}
+
+                    <div className="product-page-card__actions">
+                      <Button
+                        type="default"
+                        size="small"
+                        icon={<EditOutlined />}
+                        className="product-page-card__edit-btn"
+                      >
+                        Tahrirlash
+                      </Button>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<MoreOutlined />}
+                        className="product-page-card__menu-btn"
+                        aria-label="Ko'proq"
+                      />
+                    </div>
+                  </div>
                 </div>
               </article>
             );

@@ -59,7 +59,7 @@
   display: flex;
   align-items: stretch;
   gap: 14px;
-  min-height: 118px;
+  min-height: 134px;
   padding: 12px;
   border: 1px solid #ece7f3;
   border-radius: 14px;
@@ -68,9 +68,9 @@
 }
 
 .product-page-card__media {
-  flex: 0 0 96px;
-  width: 96px;
-  height: 96px;
+  flex: 0 0 110px;
+  width: 110px;
+  height: 110px;
   border-radius: 10px;
   overflow: hidden;
   background: #f5f3f8;
@@ -90,7 +90,22 @@
   justify-content: flex-start;
   gap: 8px;
   min-width: 0;
-  min-height: 96px;
+  min-height: 110px;
+}
+
+.product-page-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.product-page-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .product-page-card__title {
@@ -129,8 +144,6 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  margin-top: auto;
-  padding-top: 4px;
 }
 
 .product-page-card__seller-logo {
@@ -150,6 +163,34 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.product-page-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-page-card__edit-btn {
+  border-color: #d8c9ef;
+  color: #5b4d73;
+  font-weight: 600;
+}
+
+.product-page-card__edit-btn:hover {
+  border-color: #7b49c8 !important;
+  color: #7b49c8 !important;
+}
+
+.product-page-card__menu-btn {
+  color: #8b79a8;
+  font-size: 16px;
+}
+
+.product-page-card__menu-btn:hover {
+  color: #5b4d73 !important;
+  background: #f5f3f8 !important;
 }
 
 @media (max-width: 1200px) {
@@ -174,8 +215,8 @@
   }
 
   .product-page-card__media {
-    flex-basis: 84px;
-    width: 84px;
-    height: 84px;
+    flex-basis: 110px;
+    width: 110px;
+    height: 110px;
   }
 }
