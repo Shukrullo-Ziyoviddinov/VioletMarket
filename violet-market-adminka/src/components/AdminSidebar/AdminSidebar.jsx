@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Menu } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ControlOutlined,
   DashboardOutlined,
@@ -21,7 +22,8 @@ import './AdminSidebar.css';
 const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
 
 const menuItems = [
-  { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa' },
+  { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa', route: '/' },
+  { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   { key: 'brand-country-filter-values', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
   { key: 'brand-country-categories', icon: <TeamOutlined />, label: 'Brend va davlat categoriya' },
   { key: 'master-categories', icon: <MenuOutlined />, label: 'Master categoriya' },
@@ -39,13 +41,29 @@ const menuItems = [
   { key: 'footer', icon: <LayoutOutlined />, label: 'Footer' },
 ];
 
+function getSelectedKeyFromPath(pathname) {
+  if (pathname === '/products') return 'products';
+  return 'dashboard';
+}
+
 export default function AdminSidebar({ collapsed, onSelectSection }) {
-  const [selectedKey, setSelectedKey] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedKey = getSelectedKeyFromPath(location.pathname);
 
   const handleMenuClick = ({ key }) => {
-    setSelectedKey(key);
     const selectedSection = menuItems.find((item) => item.key === key);
-    if (selectedSection && typeof onSelectSection === 'function') {
+    if (!selectedSection) return;
+
+    if (selectedSection.route) {
+      navigate(selectedSection.route);
+      if (typeof onSelectSection === 'function') {
+        onSelectSection(null);
+      }
+      return;
+    }
+
+    if (typeof onSelectSection === 'function') {
       onSelectSection(selectedSection);
     }
   };

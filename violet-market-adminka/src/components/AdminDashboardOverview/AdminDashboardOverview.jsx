@@ -5,14 +5,12 @@ import {
   ProfileOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { fetchProductStats } from '../../api/productsAdminApi';
 import { formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
 export default function AdminDashboardOverview() {
-  const navigate = useNavigate();
   const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -59,8 +57,6 @@ export default function AdminDashboardOverview() {
           value={statsLoading ? '...' : formatStatNumber(productStats.total)}
           footerLabel="Yangi bugun: "
           footerHighlight={statsLoading ? '...' : formatTodayHighlight(productStats.addedToday)}
-          clickable
-          onClick={() => navigate('/products')}
         />
         <AdminStatCard
           icon={<TeamOutlined />}

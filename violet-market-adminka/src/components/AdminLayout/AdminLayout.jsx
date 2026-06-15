@@ -15,6 +15,12 @@ export default function AdminLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSectionSelect = (section) => {
+    if (!section) {
+      setActiveSection(null);
+      setIsModalOpen(false);
+      return;
+    }
+
     // Hozircha faqat ayrim bo'limlarda modal ichida to'liq CRUD ishlaydi
     if (
       section?.key !== 'brand-country-filter-values' &&
