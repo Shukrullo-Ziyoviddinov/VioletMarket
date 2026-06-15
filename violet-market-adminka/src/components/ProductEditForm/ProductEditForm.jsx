@@ -28,15 +28,24 @@ const LABEL_OPTIONS = [
   },
 ];
 
-function MasterCategoryPicker({ value, options, isOpen, onToggle, onSelect, placeholder = 'Category tanlang' }) {
-  const selectedOption = options.find((option) => option.value === value);
-  const triggerText = selectedOption?.main || placeholder;
+function MasterCategoryPicker({
+  value,
+  options,
+  fallbackLabel = '',
+  isOpen,
+  onToggle,
+  onSelect,
+  placeholder = 'Category tanlang',
+}) {
+  const normalizedValue = value != null && value !== '' ? String(value) : '';
+  const selectedOption = options.find((option) => String(option.value) === normalizedValue);
+  const triggerText = selectedOption?.main || fallbackLabel || placeholder;
 
   return (
     <div className="global-section-modal__category-picker">
       <button
         type="button"
-        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
+        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}${selectedOption || fallbackLabel ? ' global-section-modal__category-trigger--filled' : ''}`}
         onClick={onToggle}
       >
         <span>{triggerText}</span>
@@ -45,19 +54,23 @@ function MasterCategoryPicker({ value, options, isOpen, onToggle, onSelect, plac
 
       {isOpen ? (
         <div className="global-section-modal__category-options">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={`global-section-modal__category-option${value === option.value ? ' global-section-modal__category-option--active' : ''}`}
-              onClick={() => onSelect(option.value)}
-            >
-              <span className="global-section-modal__category-main">{option.main}</span>
-              {option.sub ? (
-                <span className="global-section-modal__category-sub">{option.sub}</span>
-              ) : null}
-            </button>
-          ))}
+          {options.length === 0 ? (
+            <p className="global-section-modal__meta">Master categoriyalar topilmadi</p>
+          ) : (
+            options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`global-section-modal__category-option${normalizedValue === String(option.value) ? ' global-section-modal__category-option--active' : ''}`}
+                onClick={() => onSelect(option.value)}
+              >
+                <span className="global-section-modal__category-main">{option.main}</span>
+                {option.sub ? (
+                  <span className="global-section-modal__category-sub">{option.sub}</span>
+                ) : null}
+              </button>
+            ))
+          )}
         </div>
       ) : null}
     </div>
@@ -105,13 +118,34 @@ function parseLabelDraftFromProduct(product) {
   };
 }
 
-function buildDraftFromProduct(product) {
+function buildDraftFromProduct(product, masterCategories = []) {
   const labelDraft = parseLabelDraftFromProduct(product);
+  const categories = Array.isArray(masterCategories) ? masterCategories : [];
+
+  let masterCategoryId = product?.masterCategoryId ? String(product.masterCategoryId) : '';
+  let category = String(product?.category || '').trim();
+
+  if (!masterCategoryId && category) {
+    const matchedByName = categories.find(
+      (item) => item?.name?.uz === category || item?.name?.ru === category,
+    );
+    if (matchedByName) {
+      masterCategoryId = String(matchedByName.id);
+      category = matchedByName?.name?.uz || category;
+    }
+  }
+
+  if (masterCategoryId && !category) {
+    const matchedById = categories.find((item) => String(item.id) === String(masterCategoryId));
+    if (matchedById) {
+      category = matchedById?.name?.uz || '';
+    }
+  }
 
   return {
     sellerId: product?.sellerId || null,
-    masterCategoryId: product?.masterCategoryId ? String(product.masterCategoryId) : '',
-    category: product?.category || '',
+    masterCategoryId,
+    category,
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
     price: product?.price || '',
@@ -267,11 +301,13 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
         fetchProductPickerOptions(productId),
         fetchAdminCategories(),
       ]);
-      setDraft(buildDraftFromProduct(product));
+      const masterCats = Array.isArray(categoriesData?.masterCategories)
+        ? categoriesData.masterCategories
+        : [];
+
+      setMasterCategories(masterCats);
+      setDraft(buildDraftFromProduct(product, masterCats));
       setPickerOptions(options);
-      setMasterCategories(
-        Array.isArray(categoriesData?.masterCategories) ? categoriesData.masterCategories : [],
-      );
       setIsCategoryOpen(false);
     } catch (err) {
       setDraft(null);
@@ -423,14 +459,14 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                 <span className="global-section-modal__label">Category (Master categoriya)</span>
                 <MasterCategoryPicker
                   value={draft.masterCategoryId}
+                  fallbackLabel={draft.category}
                   options={masterCategoryOptions}
                   isOpen={isCategoryOpen}
                   onToggle={() => setIsCategoryOpen((open) => !open)}
                   onSelect={handleMasterCategorySelect}
                 />
                 <span className="global-section-modal__hint">
-                  Tanlangan category avtomatik mahsulot `category` maydoniga yoziladi.
-                  {draft.category ? ` Hozir: ${draft.category}` : ''}
+                  Oldin tanlangan category yuqorida ko‘rinadi. Boshqasini tanlasangiz, saqlashda yangilanadi.
                 </span>
               </label>
               <label className="global-section-modal__field">

@@ -67,6 +67,11 @@
   background: #f5f3f8;
 }
 
+.product-edit-form .global-section-modal__category-trigger--filled {
+  color: #2a1842;
+  font-weight: 600;
+}
+
 .product-edit-form__picker-dropdown {
   position: absolute;
   z-index: 20;
