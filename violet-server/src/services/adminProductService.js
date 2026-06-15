@@ -2,8 +2,7 @@ const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
 const { MasterCategory } = require("../models/masterCategory");
 const { ShippingCountry } = require("../models/shippingCountry");
-const { CountryCategory } = require("../models/countryCategory");
-const { BrandCategory } = require("../models/brandCategory");
+const { BrandCountryFilterValue } = require("../models/brandCountryFilterValue");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
@@ -262,19 +261,15 @@ function normalizeFilterToken(value) {
     .toLowerCase();
 }
 
-async function listCountryCategories() {
-  return CountryCategory.find().sort({ id: 1 }).lean();
+async function listBrandCountryFilterValues() {
+  return BrandCountryFilterValue.find().sort({ type: 1, id: 1 }).lean();
 }
 
-async function listBrandCategories() {
-  return BrandCategory.find().sort({ id: 1 }).lean();
-}
-
-function resolveCategoryFilterValue(rawValue, rows) {
+function resolveProductFilterValue(rawValue, rows, type) {
   const token = normalizeFilterToken(rawValue);
   if (!token) return "";
 
-  const list = Array.isArray(rows) ? rows : [];
+  const list = (Array.isArray(rows) ? rows : []).filter((item) => String(item?.type) === type);
   const row = list.find((item) => normalizeFilterToken(item?.filterValue) === token);
   return row ? String(row.filterValue).trim() : String(rawValue || "").trim();
 }
@@ -285,11 +280,13 @@ async function normalizeCountriesCategories(body) {
     return "";
   }
 
-  const rows = await listCountryCategories();
+  const rows = await listBrandCountryFilterValues();
   const token = normalizeFilterToken(raw);
-  const row = rows.find((item) => normalizeFilterToken(item?.filterValue) === token);
+  const row = rows.find(
+    (item) => item.type === "country" && normalizeFilterToken(item?.filterValue) === token,
+  );
   if (!row) {
-    throw new HttpError(400, "Davlat filter kategoriyasi topilmadi", "VALIDATION_ERROR");
+    throw new HttpError(400, "CountryCategories filter topilmadi", "VALIDATION_ERROR");
   }
 
   return String(row.filterValue).trim();
@@ -301,11 +298,13 @@ async function normalizeBrandCategories(body) {
     return "";
   }
 
-  const rows = await listBrandCategories();
+  const rows = await listBrandCountryFilterValues();
   const token = normalizeFilterToken(raw);
-  const row = rows.find((item) => normalizeFilterToken(item?.filterValue) === token);
+  const row = rows.find(
+    (item) => item.type === "brand" && normalizeFilterToken(item?.filterValue) === token,
+  );
   if (!row) {
-    throw new HttpError(400, "Brend filter kategoriyasi topilmadi", "VALIDATION_ERROR");
+    throw new HttpError(400, "BrandCategories filter topilmadi", "VALIDATION_ERROR");
   }
 
   return String(row.filterValue).trim();
@@ -329,18 +328,18 @@ async function resolveMasterCategoryId(product) {
 
 async function enrichProductForEdit(product) {
   const mapped = mapProductForEdit(product);
-  const [shippingRows, countryCategoryRows, brandCategoryRows] = await Promise.all([
+  const [shippingRows, filterRows] = await Promise.all([
     listActiveShippingCountries(),
-    listCountryCategories(),
-    listBrandCategories(),
+    listBrandCountryFilterValues(),
   ]);
   mapped.masterCategoryId = await resolveMasterCategoryId(product);
   mapped.countryCodes = resolveCountryCodes(mapped.countries, shippingRows);
-  mapped.countriesCategories = resolveCategoryFilterValue(
+  mapped.countriesCategories = resolveProductFilterValue(
     mapped.countriesCategories,
-    countryCategoryRows,
+    filterRows,
+    "country",
   );
-  mapped.brandCategories = resolveCategoryFilterValue(mapped.brandCategories, brandCategoryRows);
+  mapped.brandCategories = resolveProductFilterValue(mapped.brandCategories, filterRows, "brand");
   return mapped;
 }
 

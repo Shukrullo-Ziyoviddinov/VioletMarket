@@ -216,11 +216,13 @@ function parseLabelDraftFromProduct(product) {
   };
 }
 
-function resolveCategoryFilterValue(rawValue, rows) {
+function resolveProductFilterValue(rawValue, filterValues, type) {
   const token = String(rawValue || '').trim().toLowerCase();
   if (!token) return '';
 
-  const list = Array.isArray(rows) ? rows : [];
+  const list = (Array.isArray(filterValues) ? filterValues : []).filter(
+    (item) => item?.type === type,
+  );
   const row = list.find((item) => String(item?.filterValue || '').trim().toLowerCase() === token);
   return row ? String(row.filterValue).trim() : String(rawValue || '').trim();
 }
@@ -229,14 +231,12 @@ function buildDraftFromProduct(
   product,
   masterCategories = [],
   shippingCountries = [],
-  countryCategories = [],
-  brandCategories = [],
+  filterValues = [],
 ) {
   const labelDraft = parseLabelDraftFromProduct(product);
   const categories = Array.isArray(masterCategories) ? masterCategories : [];
   const countryRows = Array.isArray(shippingCountries) ? shippingCountries : [];
-  const countryCategoryRows = Array.isArray(countryCategories) ? countryCategories : [];
-  const brandCategoryRows = Array.isArray(brandCategories) ? brandCategories : [];
+  const filterRows = Array.isArray(filterValues) ? filterValues : [];
 
   let masterCategoryId = product?.masterCategoryId ? String(product.masterCategoryId) : '';
   let category = String(product?.category || '').trim();
@@ -263,8 +263,12 @@ function buildDraftFromProduct(
     masterCategoryId,
     category,
     countryCodes: resolveCountryCodesFromProduct(product, countryRows),
-    countriesCategories: resolveCategoryFilterValue(product?.countriesCategories, countryCategoryRows),
-    brandCategories: resolveCategoryFilterValue(product?.brandCategories, brandCategoryRows),
+    countriesCategories: resolveProductFilterValue(
+      product?.countriesCategories,
+      filterRows,
+      'country',
+    ),
+    brandCategories: resolveProductFilterValue(product?.brandCategories, filterRows, 'brand'),
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
     price: product?.price || '',
@@ -397,8 +401,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [pickerOptions, setPickerOptions] = useState([]);
   const [masterCategories, setMasterCategories] = useState([]);
   const [shippingCountries, setShippingCountries] = useState([]);
-  const [countryCategories, setCountryCategories] = useState([]);
-  const [brandCategories, setBrandCategories] = useState([]);
+  const [filterValues, setFilterValues] = useState([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isCountriesOpen, setIsCountriesOpen] = useState(false);
   const [isCountryFilterOpen, setIsCountryFilterOpen] = useState(false);
@@ -429,24 +432,28 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     [shippingCountries],
   );
 
-  const countryCategoryOptions = useMemo(
+  const countryFilterOptions = useMemo(
     () =>
-      countryCategories.map((item) => ({
-        value: String(item.filterValue || ''),
-        main: item?.name?.uz || item.filterValue || '',
-        sub: item?.name?.ru || '',
-      })),
-    [countryCategories],
+      filterValues
+        .filter((item) => item.type === 'country')
+        .map((item) => ({
+          value: String(item.filterValue || ''),
+          main: item.filterValue || '',
+          sub: 'CountryCategories',
+        })),
+    [filterValues],
   );
 
-  const brandCategoryOptions = useMemo(
+  const brandFilterOptions = useMemo(
     () =>
-      brandCategories.map((item) => ({
-        value: String(item.filterValue || ''),
-        main: item?.name || item.filterValue || '',
-        sub: item.filterValue || '',
-      })),
-    [brandCategories],
+      filterValues
+        .filter((item) => item.type === 'brand')
+        .map((item) => ({
+          value: String(item.filterValue || ''),
+          main: item.filterValue || '',
+          sub: 'BrandCategories',
+        })),
+    [filterValues],
   );
 
   const closeAllPickers = () => {
@@ -473,26 +480,14 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
         ? categoriesData.masterCategories
         : [];
       const shippingRows = Array.isArray(countryRows) ? countryRows : [];
-      const countryCategoryRows = Array.isArray(categoriesData?.categoriyCountries)
-        ? categoriesData.categoriyCountries
-        : [];
-      const brandCategoryRows = Array.isArray(categoriesData?.categoriesBrend)
-        ? categoriesData.categoriesBrend
+      const filterRows = Array.isArray(categoriesData?.filterValues)
+        ? categoriesData.filterValues
         : [];
 
       setMasterCategories(masterCats);
       setShippingCountries(shippingRows);
-      setCountryCategories(countryCategoryRows);
-      setBrandCategories(brandCategoryRows);
-      setDraft(
-        buildDraftFromProduct(
-          product,
-          masterCats,
-          shippingRows,
-          countryCategoryRows,
-          brandCategoryRows,
-        ),
-      );
+      setFilterValues(filterRows);
+      setDraft(buildDraftFromProduct(product, masterCats, shippingRows, filterRows));
       setPickerOptions(options);
       closeAllPickers();
     } catch (err) {
@@ -500,8 +495,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
       setPickerOptions([]);
       setMasterCategories([]);
       setShippingCountries([]);
-      setCountryCategories([]);
-      setBrandCategories([]);
+      setFilterValues([]);
       closeAllPickers();
       setError(err.message || 'Mahsulotni yuklashda xatolik');
     } finally {
@@ -701,7 +695,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                 <span className="global-section-modal__label">Davlat bo‘yicha filterlash (tanlang)</span>
                 <MasterCategoryPicker
                   value={draft.countriesCategories}
-                  options={countryCategoryOptions}
+                  options={countryFilterOptions}
                   isOpen={isCountryFilterOpen}
                   onToggle={() => {
                     closeAllPickers();
@@ -711,14 +705,14 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                   placeholder="Davlat filter tanlang"
                 />
                 <span className="global-section-modal__hint">
-                  Katalog filteri. Ma’lumot “Brend va davlat categoriya” bo‘limidan olinadi.
+                  Katalog filteri. Ma’lumot BrandCategories&CountryCategories bo‘limidan olinadi.
                 </span>
               </label>
               <label className="global-section-modal__field">
                 <span className="global-section-modal__label">Brend bo‘yicha filterlash (tanlang)</span>
                 <MasterCategoryPicker
                   value={draft.brandCategories}
-                  options={brandCategoryOptions}
+                  options={brandFilterOptions}
                   isOpen={isBrandFilterOpen}
                   onToggle={() => {
                     closeAllPickers();
@@ -728,7 +722,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                   placeholder="Brend filter tanlang"
                 />
                 <span className="global-section-modal__hint">
-                  Katalog filteri. Ma’lumot “Brend va davlat categoriya” bo‘limidan olinadi.
+                  Katalog filteri. Ma’lumot BrandCategories&CountryCategories bo‘limidan olinadi.
                 </span>
               </label>
               <label className="global-section-modal__field">
