@@ -1,5 +1,10 @@
 import React from 'react';
-import { BarChartOutlined, InboxOutlined } from '@ant-design/icons';
+import {
+  BarChartOutlined,
+  InboxOutlined,
+  ProfileOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
@@ -13,7 +18,8 @@ export default function AdminDashboardOverview() {
           title="Sotuvlar"
           value="$15,200"
           badgeText="this month"
-          footerText="Oylik o'sish: +12%"
+          footerLabel="Oylik o'sish: "
+          footerHighlight="+12%"
           showChart
         />
         <AdminStatCard
@@ -21,7 +27,24 @@ export default function AdminDashboardOverview() {
           iconTone="blue"
           title="Mahsulotlar"
           value="1,450"
-          footerText="Yangi bugun: +8"
+          footerLabel="Yangi bugun: "
+          footerHighlight="+8"
+        />
+        <AdminStatCard
+          icon={<TeamOutlined />}
+          iconTone="blue"
+          title="Yangi Mijozlar"
+          value="210"
+          footerLabel="Yangi bugun: "
+          footerHighlight="+15"
+        />
+        <AdminStatCard
+          icon={<ProfileOutlined />}
+          iconTone="purple"
+          title="Buyurtmalar"
+          value="85"
+          footerLabel="Jarayonda: "
+          footerHighlight="12"
         />
       </div>
     </section>

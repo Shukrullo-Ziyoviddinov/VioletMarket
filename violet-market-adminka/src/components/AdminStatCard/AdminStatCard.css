@@ -1,7 +1,7 @@
 .admin-stat-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-height: 168px;
   padding: 18px 20px;
   border: 1px solid #ece7f3;
@@ -21,6 +21,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .admin-stat-card__icon-wrap {
@@ -60,16 +61,17 @@
   white-space: nowrap;
 }
 
-.admin-stat-card__badge-arrow {
+.admin-stat-card__badge-icon {
   color: #22c55e;
   font-size: 11px;
 }
 
 .admin-stat-card__body {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  min-height: 52px;
 }
 
 .admin-stat-card__value {
@@ -78,25 +80,38 @@
   line-height: 1.1;
   font-weight: 700;
   color: #2a1842;
+  flex-shrink: 0;
 }
 
 .admin-stat-card__chart {
-  width: 92px;
-  height: 42px;
-  flex-shrink: 0;
+  width: 118px;
+  height: 48px;
+  flex: 1;
+  max-width: 118px;
+  align-self: center;
 }
 
 .admin-stat-card__chart svg {
   width: 100%;
   height: 100%;
   display: block;
+  overflow: visible;
 }
 
 .admin-stat-card__footer {
   margin: 0;
   font-size: 13px;
-  color: #22c55e;
+  line-height: 1.4;
+}
+
+.admin-stat-card__footer-label {
+  color: #4a3d5c;
   font-weight: 500;
+}
+
+.admin-stat-card__footer-highlight {
+  color: #22c55e;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -106,5 +121,11 @@
 
   .admin-stat-card__value {
     font-size: 28px;
+  }
+
+  .admin-stat-card__chart {
+    width: 96px;
+    max-width: 96px;
+    height: 42px;
   }
 }

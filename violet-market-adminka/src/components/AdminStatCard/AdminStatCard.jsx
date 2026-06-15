@@ -1,16 +1,29 @@
-import React from 'react';
+import React, { useId } from 'react';
+import { RiseOutlined } from '@ant-design/icons';
 import './AdminStatCard.css';
 
-function SalesSparkline() {
+function SalesSparkline({ gradientId }) {
   return (
-    <svg viewBox="0 0 92 42" fill="none" aria-hidden="true">
-      <polyline
-        points="2,30 18,24 30,28 42,18 54,22 66,12 78,16 90,8"
+    <svg viewBox="0 0 120 48" fill="none" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.38" />
+          <stop offset="100%" stopColor="#60a5fa" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0 34 C12 33 18 26 30 28 C42 30 52 20 64 22 C76 24 88 14 98 16 C108 18 114 10 120 8 L120 48 L0 48 Z"
+        fill={`url(#${gradientId})`}
+      />
+      <path
+        d="M0 34 C12 33 18 26 30 28 C42 30 52 20 64 22 C76 24 88 14 98 16 C108 18 114 10 120 8"
         stroke="#3b82f6"
         strokeWidth="2.5"
+        fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      <circle cx="120" cy="8" r="3.5" fill="#3b82f6" />
     </svg>
   );
 }
@@ -20,10 +33,13 @@ export default function AdminStatCard({
   iconTone = 'purple',
   title,
   value,
-  footerText,
+  footerLabel,
+  footerHighlight,
   badgeText,
   showChart = false,
 }) {
+  const gradientId = useId().replace(/:/g, '');
+
   return (
     <article className="admin-stat-card">
       <div className="admin-stat-card__top">
@@ -35,8 +51,8 @@ export default function AdminStatCard({
         </div>
         {badgeText ? (
           <span className="admin-stat-card__badge">
+            <RiseOutlined className="admin-stat-card__badge-icon" />
             {badgeText}
-            <span className="admin-stat-card__badge-arrow">↗</span>
           </span>
         ) : null}
       </div>
@@ -45,12 +61,19 @@ export default function AdminStatCard({
         <p className="admin-stat-card__value">{value}</p>
         {showChart ? (
           <div className="admin-stat-card__chart">
-            <SalesSparkline />
+            <SalesSparkline gradientId={gradientId} />
           </div>
         ) : null}
       </div>
 
-      {footerText ? <p className="admin-stat-card__footer">{footerText}</p> : null}
+      {footerLabel || footerHighlight ? (
+        <p className="admin-stat-card__footer">
+          {footerLabel ? <span className="admin-stat-card__footer-label">{footerLabel}</span> : null}
+          {footerHighlight ? (
+            <span className="admin-stat-card__footer-highlight">{footerHighlight}</span>
+          ) : null}
+        </p>
+      ) : null}
     </article>
   );
 }
