@@ -2,6 +2,8 @@ const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
 const { MasterCategory } = require("../models/masterCategory");
 const { ShippingCountry } = require("../models/shippingCountry");
+const { CountryCategory } = require("../models/countryCategory");
+const { BrandCategory } = require("../models/brandCategory");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
@@ -185,6 +187,8 @@ function mapProductForEdit(product) {
     labels: Array.isArray(product.labels) ? product.labels : [],
     relatedGroups: Array.isArray(product.relatedGroups) ? product.relatedGroups : [],
     countries: Array.isArray(product.countries) ? product.countries : [],
+    countriesCategories: String(product.countriesCategories || "").trim(),
+    brandCategories: String(product.brandCategories || "").trim(),
   };
 }
 
@@ -252,6 +256,61 @@ async function normalizeProductCountries(body) {
   return unique;
 }
 
+function normalizeFilterToken(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+async function listCountryCategories() {
+  return CountryCategory.find().sort({ id: 1 }).lean();
+}
+
+async function listBrandCategories() {
+  return BrandCategory.find().sort({ id: 1 }).lean();
+}
+
+function resolveCategoryFilterValue(rawValue, rows) {
+  const token = normalizeFilterToken(rawValue);
+  if (!token) return "";
+
+  const list = Array.isArray(rows) ? rows : [];
+  const row = list.find((item) => normalizeFilterToken(item?.filterValue) === token);
+  return row ? String(row.filterValue).trim() : String(rawValue || "").trim();
+}
+
+async function normalizeCountriesCategories(body) {
+  const raw = String(body?.countriesCategories ?? "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const rows = await listCountryCategories();
+  const token = normalizeFilterToken(raw);
+  const row = rows.find((item) => normalizeFilterToken(item?.filterValue) === token);
+  if (!row) {
+    throw new HttpError(400, "Davlat filter kategoriyasi topilmadi", "VALIDATION_ERROR");
+  }
+
+  return String(row.filterValue).trim();
+}
+
+async function normalizeBrandCategories(body) {
+  const raw = String(body?.brandCategories ?? "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const rows = await listBrandCategories();
+  const token = normalizeFilterToken(raw);
+  const row = rows.find((item) => normalizeFilterToken(item?.filterValue) === token);
+  if (!row) {
+    throw new HttpError(400, "Brend filter kategoriyasi topilmadi", "VALIDATION_ERROR");
+  }
+
+  return String(row.filterValue).trim();
+}
+
 async function resolveMasterCategoryId(product) {
   const directId = Number(product?.masterCategoryId);
   if (Number.isFinite(directId) && directId > 0) {
@@ -270,9 +329,18 @@ async function resolveMasterCategoryId(product) {
 
 async function enrichProductForEdit(product) {
   const mapped = mapProductForEdit(product);
-  const shippingRows = await listActiveShippingCountries();
+  const [shippingRows, countryCategoryRows, brandCategoryRows] = await Promise.all([
+    listActiveShippingCountries(),
+    listCountryCategories(),
+    listBrandCategories(),
+  ]);
   mapped.masterCategoryId = await resolveMasterCategoryId(product);
   mapped.countryCodes = resolveCountryCodes(mapped.countries, shippingRows);
+  mapped.countriesCategories = resolveCategoryFilterValue(
+    mapped.countriesCategories,
+    countryCategoryRows,
+  );
+  mapped.brandCategories = resolveCategoryFilterValue(mapped.brandCategories, brandCategoryRows);
   return mapped;
 }
 
@@ -469,6 +537,8 @@ async function normalizeUpdatePayload(body, currentProductId) {
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
   const categoryFields = await resolveProductCategory(body);
   const countries = await normalizeProductCountries(body);
+  const countriesCategories = await normalizeCountriesCategories(body);
+  const brandCategories = await normalizeBrandCategories(body);
 
   return {
     title,
@@ -481,6 +551,8 @@ async function normalizeUpdatePayload(body, currentProductId) {
     category: categoryFields.category,
     masterCategoryId: categoryFields.masterCategoryId,
     countries,
+    countriesCategories,
+    brandCategories,
   };
 }
 
