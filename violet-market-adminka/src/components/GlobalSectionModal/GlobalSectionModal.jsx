@@ -1007,6 +1007,47 @@ function buildDefaultFilterValueDraft() {
   };
 }
 
+function getFilterTypeLabel(type) {
+  if (type === 'brand') return 'Brend filteri';
+  if (type === 'country') return 'Davlat filteri';
+  return type;
+}
+
+function FilterValueFields({ draft, onChange }) {
+  return (
+    <>
+      <label className="global-section-modal__field">
+        <span className="global-section-modal__label">Filter turi</span>
+        <select
+          className="global-section-modal__select"
+          value={draft.type}
+          onChange={(e) => onChange('type', e.target.value)}
+        >
+          <option value="country">Davlat filteri</option>
+          <option value="brand">Brend filteri</option>
+        </select>
+        <span className="global-section-modal__hint">
+          Bu qiymat davlat uchunmi yoki brend uchunmi ekanini belgilaydi. Mahsulot va banner
+          filterlarida shu tur bo‘yicha ishlatiladi.
+        </span>
+      </label>
+      <label className="global-section-modal__field">
+        <span className="global-section-modal__label">Tizim kodi (ichki nom)</span>
+        <input
+          className="global-section-modal__input"
+          value={draft.filterValue}
+          onChange={(e) => onChange('filterValue', e.target.value)}
+          placeholder="Masalan: usa, xitoy, nike, puma"
+        />
+        <span className="global-section-modal__hint">
+          Tizim ichida saqlanadigan qisqa nom. Kichik lotin harflarida yozing. Xaridor buni
+          to‘g‘ridan-to‘g‘ri ko‘rmaydi — mahsulot va filter sozlamalarida ishlatiladi.
+        </span>
+      </label>
+    </>
+  );
+}
+
 function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories' }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1211,10 +1252,10 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
 
   const validateFilterPayload = (payload) => {
     if (payload.type !== 'country' && payload.type !== 'brand') {
-      return 'Filter: type noto‘g‘ri';
+      return 'Filter turi noto‘g‘ri tanlangan';
     }
     if (!payload.filterValue) {
-      return 'Filter: filterValue majburiy';
+      return 'Tizim kodi (ichki nom) to‘ldirilishi shart';
     }
     return '';
   };
@@ -1560,28 +1601,17 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
 
       {showFilterValues ? (
       <div className="global-section-modal__card">
-        <h3 className="global-section-modal__block-title">BrandCategories&CountryCategories filter values</h3>
+        <h3 className="global-section-modal__block-title">Brend va davlat filter qiymatlari</h3>
+        <p className="global-section-modal__meta">
+          Bu yerda mahsulotlar, bannerlar va filterlar uchun ishlatiladigan ichki kodlar
+          qo‘shiladi. Avval shu ro‘yxatga qiymat qo‘shing, keyin “Brend va davlat categoriya”
+          bo‘limida kartochkalarga bog‘lang.
+        </p>
         <div className="global-section-modal__grid global-section-modal__grid--2">
-          <label className="global-section-modal__field">
-            <span className="global-section-modal__label">type</span>
-            <select
-              className="global-section-modal__select"
-              value={filterDraft.type}
-              onChange={(e) => setFilterDraft((prev) => ({ ...prev, type: e.target.value }))}
-            >
-              <option value="country">country</option>
-              <option value="brand">brand</option>
-            </select>
-          </label>
-          <label className="global-section-modal__field">
-            <span className="global-section-modal__label">filterValue</span>
-            <input
-              className="global-section-modal__input"
-              value={filterDraft.filterValue}
-              onChange={(e) => setFilterDraft((prev) => ({ ...prev, filterValue: e.target.value }))}
-              placeholder="masalan: yevropa yoki puma"
-            />
-          </label>
+          <FilterValueFields
+            draft={filterDraft}
+            onChange={(field, value) => setFilterDraft((prev) => ({ ...prev, [field]: value }))}
+          />
         </div>
         <div className="global-section-modal__actions">
           <button
@@ -1590,7 +1620,7 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
             onClick={handleCreateFilter}
             disabled={saving}
           >
-            {saving ? 'Saqlanmoqda...' : "Filter qo'shish"}
+            {saving ? 'Saqlanmoqda...' : "Yangi filter qo'shish"}
           </button>
         </div>
         <div className="global-section-modal__list">
@@ -1599,31 +1629,12 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
               {editingFilterId === item.id && editingFilterDraft ? (
                 <div className="global-section-modal__saved-item-edit">
                   <div className="global-section-modal__grid global-section-modal__grid--2">
-                    <label className="global-section-modal__field">
-                      <span className="global-section-modal__label">type</span>
-                      <select
-                        className="global-section-modal__select"
-                        value={editingFilterDraft.type}
-                        onChange={(e) =>
-                          setEditingFilterDraft((prev) => (prev ? { ...prev, type: e.target.value } : prev))
-                        }
-                      >
-                        <option value="country">country</option>
-                        <option value="brand">brand</option>
-                      </select>
-                    </label>
-                    <label className="global-section-modal__field">
-                      <span className="global-section-modal__label">filterValue</span>
-                      <input
-                        className="global-section-modal__input"
-                        value={editingFilterDraft.filterValue}
-                        onChange={(e) =>
-                          setEditingFilterDraft((prev) =>
-                            prev ? { ...prev, filterValue: e.target.value } : prev,
-                          )
-                        }
-                      />
-                    </label>
+                    <FilterValueFields
+                      draft={editingFilterDraft}
+                      onChange={(field, value) =>
+                        setEditingFilterDraft((prev) => (prev ? { ...prev, [field]: value } : prev))
+                      }
+                    />
                   </div>
                   <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
                     <button
@@ -1646,7 +1657,7 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
               ) : (
                 <div className="global-section-modal__saved-item">
                   <div className="global-section-modal__saved-name">
-                    {item.type} | {item.filterValue}
+                    {getFilterTypeLabel(item.type)} — {item.filterValue}
                   </div>
                   <div className="global-section-modal__saved-actions">
                     <button
