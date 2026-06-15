@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeftOutlined, EditOutlined, InboxOutlined, MoreOutlined } from '@ant-design/icons';
 import { Button, Empty, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdminProducts } from '../../api/productsAdminApi';
+import ProductSellerSearch, {
+  collectSellersFromProducts,
+} from '../../components/ProductSellerSearch/ProductSellerSearch';
 import { useAdminModal } from '../../context/AdminModalContext';
 import {
   formatStatNumber,
@@ -15,8 +18,16 @@ export default function ProductPage() {
   const navigate = useNavigate();
   const { openAdminModal } = useAdminModal();
   const [products, setProducts] = useState([]);
+  const [selectedSellerId, setSelectedSellerId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const sellers = useMemo(() => collectSellersFromProducts(products), [products]);
+
+  const displayedProducts = useMemo(() => {
+    if (!selectedSellerId) return products;
+    return products.filter((product) => String(product.sellerId) === String(selectedSellerId));
+  }, [products, selectedSellerId]);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -50,20 +61,31 @@ export default function ProductPage() {
   return (
     <section className="product-page">
       <div className="product-page__header">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          className="product-page__back"
-          onClick={() => navigate('/')}
-        >
-          Orqaga
-        </Button>
-        <div className="product-page__heading">
-          <h1 className="product-page__title">Mahsulotlar</h1>
-          <p className="product-page__subtitle">
-            Jami: {formatStatNumber(products.length)} ta mahsulot
-          </p>
+        <div className="product-page__header-main">
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            className="product-page__back"
+            onClick={() => navigate('/')}
+          >
+            Orqaga
+          </Button>
+          <div className="product-page__heading">
+            <h1 className="product-page__title">Mahsulotlar</h1>
+            <p className="product-page__subtitle">
+              {selectedSellerId
+                ? `Ko‘rsatilmoqda: ${formatStatNumber(displayedProducts.length)} ta mahsulot`
+                : `Jami: ${formatStatNumber(products.length)} ta mahsulot`}
+            </p>
+          </div>
         </div>
+
+        <ProductSellerSearch
+          sellers={sellers}
+          selectedSellerId={selectedSellerId}
+          onSellerSelect={setSelectedSellerId}
+          onClear={() => setSelectedSellerId(null)}
+        />
       </div>
 
       {loading ? (
@@ -76,15 +98,21 @@ export default function ProductPage() {
         <div className="product-page__state product-page__state--error">{error}</div>
       ) : null}
 
-      {!loading && !error && products.length === 0 ? (
+      {!loading && !error && displayedProducts.length === 0 ? (
         <div className="product-page__state">
-          <Empty description="Mahsulotlar topilmadi" />
+          <Empty
+            description={
+              selectedSellerId
+                ? 'Bu sotuvchida mahsulot topilmadi'
+                : 'Mahsulotlar topilmadi'
+            }
+          />
         </div>
       ) : null}
 
-      {!loading && !error && products.length > 0 ? (
+      {!loading && !error && displayedProducts.length > 0 ? (
         <div className="product-page__grid">
-          {products.map((product) => {
+          {displayedProducts.map((product) => {
             const imageUrl = product.imageUrl || resolveProductImageUrl(product.image);
             const title = getLocalizedText(product.title, 'uz');
             const price = product.price || '—';

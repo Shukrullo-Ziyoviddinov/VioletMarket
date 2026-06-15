@@ -7,7 +7,16 @@
 .product-page__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.product-page__header-main {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .product-page__back {
@@ -232,6 +241,15 @@
 }
 
 @media (max-width: 768px) {
+  .product-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-page__header-main {
+    width: 100%;
+  }
+
   .product-page__heading {
     flex-direction: column;
     align-items: flex-start;
