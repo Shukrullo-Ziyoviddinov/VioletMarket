@@ -1,5 +1,6 @@
 const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
+const { MasterCategory } = require("../models/masterCategory");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
@@ -163,6 +164,10 @@ function mapProductForEdit(product) {
   return {
     id: product.id,
     sellerId: sellerId || null,
+    category: String(product.category || "").trim(),
+    masterCategoryId: Number.isFinite(Number(product.masterCategoryId))
+      ? Number(product.masterCategoryId)
+      : null,
     title: product.title || { uz: "", ru: "" },
     price: product.price || "",
     originalPrice: product.originalPrice || "",
@@ -173,13 +178,65 @@ function mapProductForEdit(product) {
   };
 }
 
+async function resolveMasterCategoryId(product) {
+  const directId = Number(product?.masterCategoryId);
+  if (Number.isFinite(directId) && directId > 0) {
+    return directId;
+  }
+
+  const categoryText = String(product?.category || "").trim();
+  if (!categoryText) return null;
+
+  const row = await MasterCategory.findOne({
+    $or: [{ "name.uz": categoryText }, { "name.ru": categoryText }],
+  }).lean();
+
+  return row?.id ?? null;
+}
+
+async function enrichProductForEdit(product) {
+  const mapped = mapProductForEdit(product);
+  mapped.masterCategoryId = await resolveMasterCategoryId(product);
+  return mapped;
+}
+
+async function resolveProductCategory(body) {
+  const masterCategoryId = Number(body?.masterCategoryId);
+  if (Number.isFinite(masterCategoryId) && masterCategoryId > 0) {
+    const row = await MasterCategory.findOne({ id: Math.floor(masterCategoryId) }).lean();
+    if (!row) {
+      throw new HttpError(400, "Master category noto'g'ri", "VALIDATION_ERROR");
+    }
+    return {
+      category: String(row?.name?.uz || "").trim(),
+      masterCategoryId: Number(row.id),
+    };
+  }
+
+  const categoryText = String(body?.category || "").trim();
+  if (categoryText) {
+    const row = await MasterCategory.findOne({
+      $or: [{ "name.uz": categoryText }, { "name.ru": categoryText }],
+    }).lean();
+    if (!row) {
+      throw new HttpError(400, `Master category topilmadi: ${categoryText}`, "VALIDATION_ERROR");
+    }
+    return {
+      category: String(row?.name?.uz || "").trim(),
+      masterCategoryId: Number(row.id),
+    };
+  }
+
+  throw new HttpError(400, "Category tanlanishi shart", "VALIDATION_ERROR");
+}
+
 async function getProductForEdit(productIdRaw) {
   const productId = parseProductId(productIdRaw);
   const product = await findNewestProductDoc(productId);
   if (!product) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
-  return mapProductForEdit(product);
+  return enrichProductForEdit(product);
 }
 
 async function listProductPickerOptions(forProductIdRaw) {
@@ -322,7 +379,7 @@ function normalizeRelatedGroups(raw, currentProductId) {
   return normalized;
 }
 
-function normalizeUpdatePayload(body, currentProductId) {
+async function normalizeUpdatePayload(body, currentProductId) {
   const title = normalizeI18nPair(body?.title, "Sarlavha");
   const price = String(body?.price ?? "").trim();
   if (!price) {
@@ -334,6 +391,7 @@ function normalizeUpdatePayload(body, currentProductId) {
   const video = String(body?.video ?? "").trim();
   const labels = normalizeLabelDraft(body?.labels);
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
+  const categoryFields = await resolveProductCategory(body);
 
   return {
     title,
@@ -343,6 +401,8 @@ function normalizeUpdatePayload(body, currentProductId) {
     video,
     labels,
     relatedGroups,
+    category: categoryFields.category,
+    masterCategoryId: categoryFields.masterCategoryId,
   };
 }
 
@@ -353,14 +413,14 @@ async function updateProductForAdmin(productIdRaw, body) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 
-  const payload = normalizeUpdatePayload(body, productId);
+  const payload = await normalizeUpdatePayload(body, productId);
   const sellerId = String(existing.sellerId || "").trim();
   const relatedIds = payload.relatedGroups.flatMap((group) => group.productIds || []);
   await assertRelatedProductIdsForSeller(relatedIds, sellerId, productId);
 
   await Product.updateOne({ _id: existing._id }, { $set: payload });
   const updated = await findNewestProductDoc(productId);
-  return mapProductForEdit(updated);
+  return enrichProductForEdit(updated);
 }
 
 module.exports = {

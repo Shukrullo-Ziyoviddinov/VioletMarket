@@ -5,6 +5,7 @@ import {
   fetchProductPickerOptions,
   updateAdminProduct,
 } from '../../api/productsAdminApi';
+import { fetchAdminCategories } from '../../api/adminCategoriesApi';
 import { getLocalizedText } from '../../utils/productDisplay';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './ProductEditForm.css';
@@ -26,6 +27,42 @@ const LABEL_OPTIONS = [
     hint: "Icon avtomatik: <i class='bx bxs-hot'></i>",
   },
 ];
+
+function MasterCategoryPicker({ value, options, isOpen, onToggle, onSelect, placeholder = 'Category tanlang' }) {
+  const selectedOption = options.find((option) => option.value === value);
+  const triggerText = selectedOption?.main || placeholder;
+
+  return (
+    <div className="global-section-modal__category-picker">
+      <button
+        type="button"
+        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}`}
+        onClick={onToggle}
+      >
+        <span>{triggerText}</span>
+        <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="global-section-modal__category-options">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`global-section-modal__category-option${value === option.value ? ' global-section-modal__category-option--active' : ''}`}
+              onClick={() => onSelect(option.value)}
+            >
+              <span className="global-section-modal__category-main">{option.main}</span>
+              {option.sub ? (
+                <span className="global-section-modal__category-sub">{option.sub}</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function createRelatedGroupDraft(index = 0) {
   return {
@@ -73,6 +110,8 @@ function buildDraftFromProduct(product) {
 
   return {
     sellerId: product?.sellerId || null,
+    masterCategoryId: product?.masterCategoryId ? String(product.masterCategoryId) : '',
+    category: product?.category || '',
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
     price: product?.price || '',
@@ -95,6 +134,8 @@ function buildDraftFromProduct(product) {
 
 function buildPayloadFromDraft(draft) {
   return {
+    masterCategoryId: draft.masterCategoryId ? Number(draft.masterCategoryId) : null,
+    category: draft.category || '',
     title: {
       uz: String(draft.titleUz || '').trim(),
       ru: String(draft.titleRu || '').trim(),
@@ -198,9 +239,21 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [error, setError] = useState('');
   const [draft, setDraft] = useState(null);
   const [pickerOptions, setPickerOptions] = useState([]);
+  const [masterCategories, setMasterCategories] = useState([]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
 
   const sellerId = draft?.sellerId || null;
+
+  const masterCategoryOptions = useMemo(
+    () =>
+      masterCategories.map((item) => ({
+        value: String(item.id),
+        main: item?.name?.uz || String(item.id),
+        sub: item?.name?.ru || '',
+      })),
+    [masterCategories],
+  );
 
   const loadData = useCallback(async () => {
     if (!visible || productId == null) return;
@@ -209,15 +262,22 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     setError('');
 
     try {
-      const [product, options] = await Promise.all([
+      const [product, options, categoriesData] = await Promise.all([
         fetchAdminProductById(productId),
         fetchProductPickerOptions(productId),
+        fetchAdminCategories(),
       ]);
       setDraft(buildDraftFromProduct(product));
       setPickerOptions(options);
+      setMasterCategories(
+        Array.isArray(categoriesData?.masterCategories) ? categoriesData.masterCategories : [],
+      );
+      setIsCategoryOpen(false);
     } catch (err) {
       setDraft(null);
       setPickerOptions([]);
+      setMasterCategories([]);
+      setIsCategoryOpen(false);
       setError(err.message || 'Mahsulotni yuklashda xatolik');
     } finally {
       setLoading(false);
@@ -230,6 +290,16 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
 
   const changeField = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleMasterCategorySelect = (selectedValue) => {
+    const selected = masterCategories.find((item) => String(item.id) === String(selectedValue));
+    setDraft((prev) => ({
+      ...prev,
+      masterCategoryId: String(selectedValue),
+      category: selected?.name?.uz || '',
+    }));
+    setIsCategoryOpen(false);
   };
 
   const toggleLabelType = (type) => {
@@ -348,6 +418,20 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                   value={draft.titleRu}
                   onChange={(event) => changeField('titleRu', event.target.value)}
                 />
+              </label>
+              <label className="global-section-modal__field global-section-modal__field--full">
+                <span className="global-section-modal__label">Category (Master categoriya)</span>
+                <MasterCategoryPicker
+                  value={draft.masterCategoryId}
+                  options={masterCategoryOptions}
+                  isOpen={isCategoryOpen}
+                  onToggle={() => setIsCategoryOpen((open) => !open)}
+                  onSelect={handleMasterCategorySelect}
+                />
+                <span className="global-section-modal__hint">
+                  Tanlangan category avtomatik mahsulot `category` maydoniga yoziladi.
+                  {draft.category ? ` Hozir: ${draft.category}` : ''}
+                </span>
               </label>
               <label className="global-section-modal__field">
                 <span className="global-section-modal__label">Narx (price)</span>
