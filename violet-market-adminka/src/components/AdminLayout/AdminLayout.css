@@ -20,27 +20,6 @@
   background: #f4f2f8;
 }
 
-.admin-layout__placeholder {
-  max-width: 620px;
-  margin: 0 auto;
-  margin-top: 24px;
-  padding: 22px;
-  border-radius: 14px;
-  border: 1px solid #e6dcf3;
-  background: #ffffff;
-  text-align: center;
-}
-
-.admin-layout__placeholder h2 {
-  margin: 0 0 8px;
-  color: #321d4e;
-}
-
-.admin-layout__placeholder p {
-  margin: 0;
-  color: #6c548d;
-}
-
 @media (max-width: 768px) {
   .admin-layout__content {
     padding: 16px;

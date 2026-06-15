@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
+import AdminDashboardOverview from '../AdminDashboardOverview/AdminDashboardOverview';
 import AdminHeader from '../AdminHeader/AdminHeader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
 import GlobalSectionModal from '../GlobalSectionModal/GlobalSectionModal';
@@ -55,10 +56,7 @@ export default function AdminLayout() {
         <Layout>
           <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
           <Content className="admin-layout__content">
-            <div className="admin-layout__placeholder">
-              <h2>Bo'limni tanlang</h2>
-              <p>Hozircha Brand/Country filter values, Brand/Country categories, Master categories, Banner, Navbar category, Product policy, Video banner, Davlat seller banner, Mahsulot hududi, Mahsulot UZB omborida, Logistika ma'lumoti, Footer va Flash sale rules bo'limlarida modal va to'ldirish ishlaydi.</p>
-            </div>
+            <AdminDashboardOverview />
           </Content>
         </Layout>
       </Layout>
