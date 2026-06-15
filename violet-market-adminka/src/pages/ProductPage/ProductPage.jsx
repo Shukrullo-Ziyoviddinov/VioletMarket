@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeftOutlined, EditOutlined, InboxOutlined } from '@ant-design/icons';
-import { Button, Empty, Modal, Spin, message } from 'antd';
+import { Button, Empty, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { deleteAdminProduct, fetchAdminProducts } from '../../api/productsAdminApi';
 import ProductCardMenu from '../../components/ProductCardMenu/ProductCardMenu';
@@ -8,6 +8,7 @@ import ProductSellerSearch, {
   collectSellersFromProducts,
 } from '../../components/ProductSellerSearch/ProductSellerSearch';
 import { useAdminModal } from '../../context/AdminModalContext';
+import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
   formatStatNumber,
   getLocalizedText,
@@ -18,12 +19,12 @@ import './ProductPage.css';
 export default function ProductPage() {
   const navigate = useNavigate();
   const { openAdminModal } = useAdminModal();
+  const { openMiniGlobalModal } = useMiniGlobalModal();
   const [products, setProducts] = useState([]);
   const [selectedSellerId, setSelectedSellerId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openMenuProductId, setOpenMenuProductId] = useState(null);
-  const [deletingProductId, setDeletingProductId] = useState(null);
 
   const sellers = useMemo(() => collectSellersFromProducts(products), [products]);
 
@@ -64,14 +65,10 @@ export default function ProductPage() {
   const handleDeleteProduct = (product) => {
     const title = getLocalizedText(product.title, 'uz') || `Mahsulot #${product.id}`;
 
-    Modal.confirm({
-      title: "Mahsulotni o'chirish",
-      content: `"${title}" mahsulotini o'chirishni tasdiqlaysizmi?`,
-      okText: "O'chirish",
-      okType: 'danger',
-      cancelText: 'Bekor qilish',
-      onOk: async () => {
-        setDeletingProductId(product.id);
+    openMiniGlobalModal({
+      permissionKey: 'deleteProduct',
+      itemName: title,
+      onConfirm: async () => {
         try {
           await deleteAdminProduct(product.id);
           message.success('Mahsulot o\'chirildi');
@@ -79,8 +76,7 @@ export default function ProductPage() {
           await loadProducts();
         } catch (err) {
           message.error(err.message || 'Mahsulotni o\'chirishda xatolik');
-        } finally {
-          setDeletingProductId(null);
+          throw err;
         }
       },
     });
@@ -212,7 +208,6 @@ export default function ProductPage() {
                       </Button>
                       <ProductCardMenu
                         isOpen={isMenuOpen}
-                        deleting={String(deletingProductId) === String(product.id)}
                         onToggle={() =>
                           setOpenMenuProductId((current) =>
                             String(current) === String(product.id) ? null : product.id,

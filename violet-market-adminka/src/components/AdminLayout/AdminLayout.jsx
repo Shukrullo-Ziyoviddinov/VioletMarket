@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import AdminModalContext from '../../context/AdminModalContext';
+import { MiniGlobalModalProvider } from '../../context/MiniGlobalModalContext';
 import AdminHeader from '../AdminHeader/AdminHeader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
 import GlobalSectionModal from '../GlobalSectionModal/GlobalSectionModal';
@@ -63,25 +64,27 @@ export default function AdminLayout() {
 
   return (
     <AdminModalContext.Provider value={modalContextValue}>
-      <Layout className="admin-layout">
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          width={240}
-          className="admin-layout__sider"
-          trigger={null}
-        >
-          <AdminSidebar collapsed={collapsed} onSelectSection={handleSectionSelect} />
-        </Sider>
-        <Layout>
-          <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
-          <Content className="admin-layout__content">
-            <Outlet />
-          </Content>
+      <MiniGlobalModalProvider>
+        <Layout className="admin-layout">
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={setCollapsed}
+            width={240}
+            className="admin-layout__sider"
+            trigger={null}
+          >
+            <AdminSidebar collapsed={collapsed} onSelectSection={handleSectionSelect} />
+          </Sider>
+          <Layout>
+            <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+            <Content className="admin-layout__content">
+              <Outlet />
+            </Content>
+          </Layout>
         </Layout>
-      </Layout>
-      <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
+        <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
+      </MiniGlobalModalProvider>
     </AdminModalContext.Provider>
   );
 }
