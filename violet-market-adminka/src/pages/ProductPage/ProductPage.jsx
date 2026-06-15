@@ -16,7 +16,32 @@ import {
 } from '../../utils/productDisplay';
 import './ProductPage.css';
 
-export default function ProductPage() {
+const PAGE_META = {
+  all: {
+    title: 'Mahsulotlar',
+    backTo: '/',
+    emptyDefault: 'Mahsulotlar topilmadi',
+    emptySeller: 'Bu sotuvchida mahsulot topilmadi',
+    totalLabel: 'mahsulot',
+  },
+  paused: {
+    title: "Vaqtincha to'xtatilgan mahsulotlar",
+    backTo: '/products',
+    emptyDefault: "Vaqtincha to'xtatilgan mahsulotlar topilmadi",
+    emptySeller: "Bu sotuvchida vaqtincha to'xtatilgan mahsulot yo'q",
+    totalLabel: "to'xtatilgan mahsulot",
+  },
+};
+
+function filterProductsByMode(products, mode) {
+  if (mode === 'paused') {
+    return products.filter((product) => product.clientActive === false);
+  }
+  return products;
+}
+
+export default function ProductPage({ mode = 'all' }) {
+  const pageMeta = PAGE_META[mode] || PAGE_META.all;
   const navigate = useNavigate();
   const { openAdminModal } = useAdminModal();
   const { openMiniGlobalModal } = useMiniGlobalModal();
@@ -40,14 +65,16 @@ export default function ProductPage() {
 
     try {
       const rows = await fetchAdminProducts();
-      setProducts(rows);
+      setProducts(filterProductsByMode(rows, mode));
+      setSelectedSellerId(null);
+      setOpenMenuProductId(null);
     } catch (err) {
       setProducts([]);
       setError(err.message || 'Mahsulotlarni yuklashda xatolik');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     loadProducts();
@@ -89,13 +116,17 @@ export default function ProductPage() {
 
     try {
       await setAdminProductClientActive(product.id, nextClientActive);
-      setProducts((current) =>
-        current.map((row) =>
+      setProducts((current) => {
+        if (mode === 'paused' && nextClientActive) {
+          return current.filter((row) => String(row.id) !== String(product.id));
+        }
+
+        return current.map((row) =>
           String(row.id) === String(product.id)
             ? { ...row, clientActive: nextClientActive }
             : row,
-        ),
-      );
+        );
+      });
       message.success(
         nextClientActive
           ? 'Mahsulot client qismida faollashtirildi'
@@ -116,16 +147,16 @@ export default function ProductPage() {
             type="text"
             icon={<ArrowLeftOutlined />}
             className="product-page__back"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(pageMeta.backTo)}
           >
             Orqaga
           </Button>
           <div className="product-page__heading">
-            <h1 className="product-page__title">Mahsulotlar</h1>
+            <h1 className="product-page__title">{pageMeta.title}</h1>
             <p className="product-page__subtitle">
               {selectedSellerId
-                ? `Ko‘rsatilmoqda: ${formatStatNumber(displayedProducts.length)} ta mahsulot`
-                : `Jami: ${formatStatNumber(products.length)} ta mahsulot`}
+                ? `Ko‘rsatilmoqda: ${formatStatNumber(displayedProducts.length)} ta ${pageMeta.totalLabel}`
+                : `Jami: ${formatStatNumber(products.length)} ta ${pageMeta.totalLabel}`}
             </p>
           </div>
         </div>
@@ -154,9 +185,7 @@ export default function ProductPage() {
         <div className="product-page__state">
           <Empty
             description={
-              selectedSellerId
-                ? 'Bu sotuvchida mahsulot topilmadi'
-                : 'Mahsulotlar topilmadi'
+              selectedSellerId ? pageMeta.emptySeller : pageMeta.emptyDefault
             }
           />
         </div>
@@ -193,6 +222,11 @@ export default function ProductPage() {
                       event.currentTarget.src = resolveProductImageUrl('');
                     }}
                   />
+                  {!isClientActive ? (
+                    <div className="product-page-card__paused-overlay" aria-hidden="true">
+                      <span>Vaqtincha to&apos;xtatilgan</span>
+                    </div>
+                  ) : null}
                 </div>
                 <div className="product-page-card__info">
                   <div className="product-page-card__main">

@@ -10,6 +10,7 @@ import {
   LayoutOutlined,
   LogoutOutlined,
   MenuOutlined,
+  PauseCircleOutlined,
   PictureOutlined,
   ShopOutlined,
   TeamOutlined,
@@ -24,6 +25,12 @@ const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
 const menuItems = [
   { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa', route: '/' },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
+  {
+    key: 'products-paused',
+    icon: <PauseCircleOutlined />,
+    label: "Vaqtincha to'xtatilgan mahsulotlar",
+    route: '/products/paused',
+  },
   { key: 'brand-country-filter-values', icon: <TrademarkOutlined />, label: 'BrandCategories&CountryCategories' },
   { key: 'brand-country-categories', icon: <TeamOutlined />, label: 'Brend va davlat categoriya' },
   { key: 'master-categories', icon: <MenuOutlined />, label: 'Master categoriya' },
@@ -42,6 +49,7 @@ const menuItems = [
 ];
 
 function getSelectedKeyFromPath(pathname) {
+  if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/products') return 'products';
   return 'dashboard';
 }
