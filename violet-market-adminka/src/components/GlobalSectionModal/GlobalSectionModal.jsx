@@ -48,6 +48,7 @@ import FooterForm from '../FooterForm/FooterForm';
 import FlashSaleRulesForm from '../FlashSaleRulesForm/FlashSaleRulesForm';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
+import ProductEditForm from '../ProductEditForm/ProductEditForm';
 import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3206,6 +3207,12 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <FooterForm visible={open} />
     ) : section?.key === 'flash-sale-rules' ? (
       <FlashSaleRulesForm visible={open} />
+    ) : section?.key === 'product-edit' ? (
+      <ProductEditForm
+        visible={open}
+        productId={section?.productId}
+        onRefresh={section?.onRefresh}
+      />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
     );

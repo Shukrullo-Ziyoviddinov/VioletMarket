@@ -2,6 +2,14 @@ const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
+const { HttpError } = require("../utils/httpError");
+
+const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
+const SUPER_NARX_COLOR = "#13BE4C";
+const ORIGINAL_ICON = "&#10004;";
+const ORIGINAL_COLOR = "#f30cfb";
+const CHEGIRMA_ICON = '<span class="animated-hourglass"></span>';
+const CHEGIRMA_COLOR = "#ff3333";
 
 function keepNewestProductPerId(products) {
   const seen = new Set();
@@ -115,7 +123,187 @@ async function getProductStats() {
   };
 }
 
+function normalizeI18nPair(raw, fieldName) {
+  const uz = String(raw?.uz ?? "").trim();
+  const ru = String(raw?.ru ?? "").trim();
+  if (!uz || !ru) {
+    throw new HttpError(400, `${fieldName} (UZ/RU) to'ldirilishi shart`, "VALIDATION_ERROR");
+  }
+  return { uz, ru };
+}
+
+function normalizeOptionalI18nPair(raw) {
+  const uz = String(raw?.uz ?? "").trim();
+  const ru = String(raw?.ru ?? "").trim();
+  if (!uz && !ru) return null;
+  if (!uz || !ru) {
+    throw new HttpError(400, "Ikkala til (UZ/RU) ham to'ldirilishi kerak", "VALIDATION_ERROR");
+  }
+  return { uz, ru };
+}
+
+function parseProductId(raw) {
+  const num = Number(raw);
+  if (!Number.isFinite(num)) {
+    throw new HttpError(400, "Mahsulot ID noto'g'ri", "INVALID_PRODUCT_ID");
+  }
+  return num;
+}
+
+async function findNewestProductDoc(productId) {
+  const rows = await Product.find({ id: productId }).sort({ _id: -1 }).limit(1).lean();
+  return rows[0] || null;
+}
+
+function mapProductForEdit(product) {
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    title: product.title || { uz: "", ru: "" },
+    price: product.price || "",
+    originalPrice: product.originalPrice || "",
+    discount: product.discount || null,
+    video: product.video || "",
+    labels: Array.isArray(product.labels) ? product.labels : [],
+    relatedGroups: Array.isArray(product.relatedGroups) ? product.relatedGroups : [],
+  };
+}
+
+async function getProductForEdit(productIdRaw) {
+  const productId = parseProductId(productIdRaw);
+  const product = await findNewestProductDoc(productId);
+  if (!product) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+  return mapProductForEdit(product);
+}
+
+async function listProductPickerOptions(excludeProductIdRaw) {
+  const excludeId = excludeProductIdRaw != null ? parseProductId(excludeProductIdRaw) : null;
+  const rows = await Product.find()
+    .select({ id: 1, title: 1 })
+    .sort({ _id: -1 })
+    .lean();
+
+  return keepNewestProductPerId(rows)
+    .filter((product) => excludeId == null || Number(product.id) !== excludeId)
+    .map((product) => ({
+      id: product.id,
+      title: product.title || { uz: "", ru: "" },
+    }));
+}
+
+function normalizeLabelDraft(raw) {
+  const labels = [];
+  const types = Array.isArray(raw?.types) ? raw.types : [];
+
+  if (types.includes("chegirma")) {
+    const percent = String(raw?.chegirmaPercent ?? "").trim().replace(/%/g, "");
+    if (!percent) {
+      throw new HttpError(400, "Chegirma foizi kiritilishi shart", "VALIDATION_ERROR");
+    }
+    labels.push({
+      text: {
+        uz: `Chegirma ${percent}%`,
+        ru: `Скидка ${percent}%`,
+      },
+      icon: CHEGIRMA_ICON,
+      color: CHEGIRMA_COLOR,
+    });
+  }
+
+  if (types.includes("original")) {
+    labels.push({
+      text: { uz: "Original", ru: "Оригинал" },
+      icon: ORIGINAL_ICON,
+      color: ORIGINAL_COLOR,
+    });
+  }
+
+  if (types.includes("superNarx")) {
+    labels.push({
+      text: { uz: "Super narx", ru: "Супер цена" },
+      icon: SUPER_NARX_ICON,
+      color: SUPER_NARX_COLOR,
+    });
+  }
+
+  return labels;
+}
+
+function normalizeRelatedGroups(raw, currentProductId) {
+  const groups = (Array.isArray(raw) ? raw : []).filter((group) => {
+    const titleUz = String(group?.title?.uz ?? "").trim();
+    const titleRu = String(group?.title?.ru ?? "").trim();
+    const productIds = Array.isArray(group?.productIds) ? group.productIds : [];
+    return titleUz || titleRu || productIds.length > 0;
+  });
+
+  return groups.map((group, index) => {
+    const title = normalizeI18nPair(group?.title, `Turkum #${index + 1} sarlavhasi`);
+    const productIds = (Array.isArray(group?.productIds) ? group.productIds : [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id) && id !== currentProductId);
+
+    const uniqueIds = [...new Set(productIds)];
+    if (uniqueIds.length > 3) {
+      throw new HttpError(
+        400,
+        `Turkum #${index + 1} uchun maksimal 3 ta mahsulot tanlash mumkin`,
+        "VALIDATION_ERROR",
+      );
+    }
+
+    return {
+      title,
+      productIds: uniqueIds,
+    };
+  });
+}
+
+function normalizeUpdatePayload(body, currentProductId) {
+  const title = normalizeI18nPair(body?.title, "Sarlavha");
+  const price = String(body?.price ?? "").trim();
+  if (!price) {
+    throw new HttpError(400, "Narx to'ldirilishi shart", "VALIDATION_ERROR");
+  }
+
+  const originalPrice = String(body?.originalPrice ?? "").trim();
+  const discount = normalizeOptionalI18nPair(body?.discount);
+  const video = String(body?.video ?? "").trim();
+  const labels = normalizeLabelDraft(body?.labels);
+  const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
+
+  return {
+    title,
+    price,
+    originalPrice,
+    discount,
+    video,
+    labels,
+    relatedGroups,
+  };
+}
+
+async function updateProductForAdmin(productIdRaw, body) {
+  const productId = parseProductId(productIdRaw);
+  const existing = await findNewestProductDoc(productId);
+  if (!existing) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  const payload = normalizeUpdatePayload(body, productId);
+
+  await Product.updateOne({ _id: existing._id }, { $set: payload });
+  const updated = await findNewestProductDoc(productId);
+  return mapProductForEdit(updated);
+}
+
 module.exports = {
   listProductsForAdmin,
   getProductStats,
+  getProductForEdit,
+  listProductPickerOptions,
+  updateProductForAdmin,
 };

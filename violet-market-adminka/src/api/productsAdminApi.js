@@ -26,3 +26,26 @@ export async function fetchAdminProducts() {
   const data = await parseJson(res);
   return Array.isArray(data?.data?.products) ? data.data.products : [];
 }
+
+export async function fetchAdminProductById(productId) {
+  const res = await fetch(apiUrl(`/api/admin/products/${encodeURIComponent(productId)}`));
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}
+
+export async function fetchProductPickerOptions(excludeProductId) {
+  const query = excludeProductId != null ? `?excludeId=${encodeURIComponent(excludeProductId)}` : '';
+  const res = await fetch(apiUrl(`/api/admin/products/picker${query}`));
+  const data = await parseJson(res);
+  return Array.isArray(data?.data?.options) ? data.data.options : [];
+}
+
+export async function updateAdminProduct(productId, payload) {
+  const res = await fetch(apiUrl(`/api/admin/products/${encodeURIComponent(productId)}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}

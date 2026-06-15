@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeftOutlined, EditOutlined, InboxOutlined, MoreOutlined } from '@ant-design/icons';
 import { Button, Empty, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdminProducts } from '../../api/productsAdminApi';
+import { useAdminModal } from '../../context/AdminModalContext';
 import {
   formatStatNumber,
   getLocalizedText,
@@ -12,36 +13,39 @@ import './ProductPage.css';
 
 export default function ProductPage() {
   const navigate = useNavigate();
+  const { openAdminModal } = useAdminModal();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    setError('');
 
-    async function loadProducts() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const rows = await fetchAdminProducts();
-        if (!cancelled) setProducts(rows);
-      } catch (err) {
-        if (!cancelled) {
-          setProducts([]);
-          setError(err.message || 'Mahsulotlarni yuklashda xatolik');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+    try {
+      const rows = await fetchAdminProducts();
+      setProducts(rows);
+    } catch (err) {
+      setProducts([]);
+      setError(err.message || 'Mahsulotlarni yuklashda xatolik');
+    } finally {
+      setLoading(false);
     }
-
-    loadProducts();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const handleEditProduct = (product) => {
+    const title = getLocalizedText(product.title, 'uz');
+    openAdminModal({
+      key: 'product-edit',
+      label: title ? `Tahrirlash: ${title}` : `Mahsulot #${product.id}`,
+      productId: product.id,
+      onRefresh: loadProducts,
+    });
+  };
 
   return (
     <section className="product-page">
@@ -140,6 +144,7 @@ export default function ProductPage() {
                         size="small"
                         icon={<EditOutlined />}
                         className="product-page-card__edit-btn"
+                        onClick={() => handleEditProduct(product)}
                       >
                         Tahrirlash
                       </Button>

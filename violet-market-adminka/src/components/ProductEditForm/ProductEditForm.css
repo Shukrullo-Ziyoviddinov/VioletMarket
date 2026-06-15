@@ -1,0 +1,110 @@
+.product-edit-form__label-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.product-edit-form__label-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  background: #fcfbfe;
+  cursor: pointer;
+}
+
+.product-edit-form__label-option input {
+  margin-right: 8px;
+}
+
+.product-edit-form__label-option-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
+.product-edit-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.product-edit-form__product-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-edit-form__product-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-edit-form__picker {
+  position: relative;
+}
+
+.product-edit-form__picker-trigger {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #d8c9ef;
+  border-radius: 10px;
+  background: #fff;
+  color: #2a1842;
+  text-align: left;
+  cursor: pointer;
+}
+
+.product-edit-form__picker-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(42, 24, 66, 0.12);
+}
+
+.product-edit-form__picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.product-edit-form__picker-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.product-edit-form__picker-option:hover {
+  background: #f5f0fb;
+}
+
+.product-edit-form__picker-option-id {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7b49c8;
+}

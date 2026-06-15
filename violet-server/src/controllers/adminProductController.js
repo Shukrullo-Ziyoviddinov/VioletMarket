@@ -11,7 +11,25 @@ const stats = asyncHandler(async (_req, res) => {
   res.json({ ok: true, data: statsData });
 });
 
+const picker = asyncHandler(async (req, res) => {
+  const options = await service.listProductPickerOptions(req.query.excludeId);
+  res.json({ ok: true, data: { options } });
+});
+
+const getById = asyncHandler(async (req, res) => {
+  const product = await service.getProductForEdit(req.params.id);
+  res.json({ ok: true, data: { product } });
+});
+
+const update = asyncHandler(async (req, res) => {
+  const product = await service.updateProductForAdmin(req.params.id, req.body || {});
+  res.json({ ok: true, data: { product } });
+});
+
 module.exports = {
   list,
   stats,
+  picker,
+  getById,
+  update,
 };

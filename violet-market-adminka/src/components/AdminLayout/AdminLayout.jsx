@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
+import AdminModalContext from '../../context/AdminModalContext';
 import AdminHeader from '../AdminHeader/AdminHeader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
 import GlobalSectionModal from '../GlobalSectionModal/GlobalSectionModal';
@@ -38,10 +39,23 @@ export default function AdminLayout() {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
+
+  const openAdminModal = useCallback((section) => {
+    setActiveSection(section);
+    setIsModalOpen(true);
+  }, []);
+
+  const modalContextValue = useMemo(
+    () => ({
+      openAdminModal,
+      closeAdminModal: closeModal,
+    }),
+    [openAdminModal, closeModal],
+  );
 
   return (
-    <>
+    <AdminModalContext.Provider value={modalContextValue}>
       <Layout className="admin-layout">
         <Sider
           collapsible
@@ -61,6 +75,6 @@ export default function AdminLayout() {
         </Layout>
       </Layout>
       <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
-    </>
+    </AdminModalContext.Provider>
   );
 }
