@@ -51,3 +51,11 @@ export async function updateAdminProduct(productId, payload) {
   const data = await parseJson(res);
   return data?.data?.product || null;
 }
+
+export async function deleteAdminProduct(productId) {
+  const res = await fetch(apiUrl(`/api/admin/products/${encodeURIComponent(productId)}`), {
+    method: 'DELETE',
+  });
+  const data = await parseJson(res);
+  return data?.data || null;
+}

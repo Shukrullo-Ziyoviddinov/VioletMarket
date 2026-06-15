@@ -26,10 +26,16 @@ const update = asyncHandler(async (req, res) => {
   res.json({ ok: true, data: { product } });
 });
 
+const remove = asyncHandler(async (req, res) => {
+  const result = await service.deleteProductForAdmin(req.params.id);
+  res.json({ ok: true, data: result });
+});
+
 module.exports = {
   list,
   stats,
   picker,
   getById,
   update,
+  remove,
 };

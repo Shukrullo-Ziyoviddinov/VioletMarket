@@ -619,10 +619,22 @@ async function updateProductForAdmin(productIdRaw, body) {
   return enrichProductForEdit(updated);
 }
 
+async function deleteProductForAdmin(productIdRaw) {
+  const productId = parseProductId(productIdRaw);
+  const existing = await findNewestProductDoc(productId);
+  if (!existing) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  await Product.deleteMany({ id: productId });
+  return { id: productId };
+}
+
 module.exports = {
   listProductsForAdmin,
   getProductStats,
   getProductForEdit,
   listProductPickerOptions,
   updateProductForAdmin,
+  deleteProductForAdmin,
 };

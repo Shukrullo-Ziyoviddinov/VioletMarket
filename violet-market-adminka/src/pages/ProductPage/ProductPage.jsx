@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeftOutlined, EditOutlined, InboxOutlined, MoreOutlined } from '@ant-design/icons';
-import { Button, Empty, Spin } from 'antd';
+import { ArrowLeftOutlined, EditOutlined, InboxOutlined } from '@ant-design/icons';
+import { Button, Empty, Modal, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { fetchAdminProducts } from '../../api/productsAdminApi';
+import { deleteAdminProduct, fetchAdminProducts } from '../../api/productsAdminApi';
+import ProductCardMenu from '../../components/ProductCardMenu/ProductCardMenu';
 import ProductSellerSearch, {
   collectSellersFromProducts,
 } from '../../components/ProductSellerSearch/ProductSellerSearch';
@@ -21,6 +22,8 @@ export default function ProductPage() {
   const [selectedSellerId, setSelectedSellerId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [openMenuProductId, setOpenMenuProductId] = useState(null);
+  const [deletingProductId, setDeletingProductId] = useState(null);
 
   const sellers = useMemo(() => collectSellersFromProducts(products), [products]);
 
@@ -55,6 +58,31 @@ export default function ProductPage() {
       label: title ? `Tahrirlash: ${title}` : `Mahsulot #${product.id}`,
       productId: product.id,
       onRefresh: loadProducts,
+    });
+  };
+
+  const handleDeleteProduct = (product) => {
+    const title = getLocalizedText(product.title, 'uz') || `Mahsulot #${product.id}`;
+
+    Modal.confirm({
+      title: "Mahsulotni o'chirish",
+      content: `"${title}" mahsulotini o'chirishni tasdiqlaysizmi?`,
+      okText: "O'chirish",
+      okType: 'danger',
+      cancelText: 'Bekor qilish',
+      onOk: async () => {
+        setDeletingProductId(product.id);
+        try {
+          await deleteAdminProduct(product.id);
+          message.success('Mahsulot o\'chirildi');
+          setOpenMenuProductId(null);
+          await loadProducts();
+        } catch (err) {
+          message.error(err.message || 'Mahsulotni o\'chirishda xatolik');
+        } finally {
+          setDeletingProductId(null);
+        }
+      },
     });
   };
 
@@ -178,12 +206,17 @@ export default function ProductPage() {
                       >
                         Tahrirlash
                       </Button>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<MoreOutlined />}
-                        className="product-page-card__menu-btn"
-                        aria-label="Ko'proq"
+                      <ProductCardMenu
+                        isOpen={openMenuProductId === product.id}
+                        deleting={deletingProductId === product.id}
+                        onToggle={() =>
+                          setOpenMenuProductId((current) =>
+                            current === product.id ? null : product.id,
+                          )
+                        }
+                        onClose={() => setOpenMenuProductId(null)}
+                        onEdit={() => handleEditProduct(product)}
+                        onDelete={() => handleDeleteProduct(product)}
                       />
                     </div>
                   </div>
