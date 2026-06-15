@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, UndoOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
 import { getLocalizedText, resolveProductImageUrl } from '../../utils/productDisplay';
 import './ProductSellerSearch.css';
@@ -152,11 +152,11 @@ export default function ProductSellerSearch({
       {selectedSellerId ? (
         <Button
           type="text"
-          icon={<ArrowLeftOutlined />}
+          icon={<UndoOutlined />}
           className="product-seller-search__back"
           onClick={handleClear}
         >
-          Orqaga
+          Oldingi holat
         </Button>
       ) : null}
     </div>
