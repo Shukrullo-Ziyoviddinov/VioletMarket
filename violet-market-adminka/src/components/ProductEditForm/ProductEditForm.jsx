@@ -216,9 +216,32 @@ function parseLabelDraftFromProduct(product) {
   };
 }
 
+const COUNTRY_FILTER_LEGACY_ALIASES = {
+  usa: 'usa',
+  us: 'usa',
+  aqsh: 'usa',
+  china: 'xitoy',
+  kitay: 'xitoy',
+  xitoy: 'xitoy',
+  turkiya: 'turkiya',
+  turkey: 'turkiya',
+  korea: 'koreya',
+  koreya: 'koreya',
+  uzbekistan: 'uzb',
+  uzbekiston: 'uzb',
+  "o'zbekiston": 'uzb',
+  uzb: 'uzb',
+  yevropa: 'yevropa',
+  europe: 'yevropa',
+};
+
 function resolveProductFilterValue(rawValue, filterValues, type) {
-  const token = String(rawValue || '').trim().toLowerCase();
+  let token = String(rawValue || '').trim().toLowerCase();
   if (!token) return '';
+
+  if (type === 'country') {
+    token = COUNTRY_FILTER_LEGACY_ALIASES[token] || token;
+  }
 
   const list = (Array.isArray(filterValues) ? filterValues : []).filter(
     (item) => item?.type === type,
@@ -258,16 +281,21 @@ function buildDraftFromProduct(
     }
   }
 
+  const countriesCategories = resolveProductFilterValue(
+    product?.countriesCategories,
+    filterRows,
+    'country',
+  );
+  const productCountry = resolveProductFilterValue(product?.productCountry, filterRows, 'country');
+  const syncedCountryFilter = productCountry || countriesCategories;
+
   return {
     sellerId: product?.sellerId || null,
     masterCategoryId,
     category,
     countryCodes: resolveCountryCodesFromProduct(product, countryRows),
-    countriesCategories: resolveProductFilterValue(
-      product?.countriesCategories,
-      filterRows,
-      'country',
-    ),
+    countriesCategories: syncedCountryFilter,
+    productCountry: syncedCountryFilter,
     brandCategories: resolveProductFilterValue(product?.brandCategories, filterRows, 'brand'),
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
@@ -295,6 +323,7 @@ function buildPayloadFromDraft(draft) {
     category: draft.category || '',
     countryCodes: (draft.countryCodes || []).map(String),
     countriesCategories: String(draft.countriesCategories || '').trim(),
+    productCountry: String(draft.productCountry || draft.countriesCategories || '').trim(),
     brandCategories: String(draft.brandCategories || '').trim(),
     title: {
       uz: String(draft.titleUz || '').trim(),
@@ -405,6 +434,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isCountriesOpen, setIsCountriesOpen] = useState(false);
   const [isCountryFilterOpen, setIsCountryFilterOpen] = useState(false);
+  const [isProductCountryOpen, setIsProductCountryOpen] = useState(false);
   const [isBrandFilterOpen, setIsBrandFilterOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
 
@@ -460,6 +490,7 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     setIsCategoryOpen(false);
     setIsCountriesOpen(false);
     setIsCountryFilterOpen(false);
+    setIsProductCountryOpen(false);
     setIsBrandFilterOpen(false);
   };
 
@@ -521,9 +552,22 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     setIsCategoryOpen(false);
   };
 
+  const syncCountryFilterFields = (selectedValue) => {
+    const normalized = String(selectedValue);
+    return {
+      countriesCategories: normalized,
+      productCountry: normalized,
+    };
+  };
+
   const handleCountryFilterSelect = (selectedValue) => {
-    setDraft((prev) => ({ ...prev, countriesCategories: String(selectedValue) }));
+    setDraft((prev) => ({ ...prev, ...syncCountryFilterFields(selectedValue) }));
     setIsCountryFilterOpen(false);
+  };
+
+  const handleProductCountrySelect = (selectedValue) => {
+    setDraft((prev) => ({ ...prev, ...syncCountryFilterFields(selectedValue) }));
+    setIsProductCountryOpen(false);
   };
 
   const handleBrandFilterSelect = (selectedValue) => {
@@ -706,6 +750,24 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                 />
                 <span className="global-section-modal__hint">
                   Katalog filteri. Ma’lumot BrandCategories&CountryCategories bo‘limidan olinadi.
+                </span>
+              </label>
+              <label className="global-section-modal__field">
+                <span className="global-section-modal__label">Mahsulot kelib chiqish hududi (productCountry)</span>
+                <MasterCategoryPicker
+                  value={draft.productCountry}
+                  fallbackLabel={draft.productCountry}
+                  options={countryFilterOptions}
+                  isOpen={isProductCountryOpen}
+                  onToggle={() => {
+                    closeAllPickers();
+                    setIsProductCountryOpen((open) => !open);
+                  }}
+                  onSelect={handleProductCountrySelect}
+                  placeholder="Davlat tanlang"
+                />
+                <span className="global-section-modal__hint">
+                  Tavsiya algoritmi uchun. Ma’lumot BrandCategories&CountryCategories dan olinadi (masalan: uzb, usa).
                 </span>
               </label>
               <label className="global-section-modal__field">

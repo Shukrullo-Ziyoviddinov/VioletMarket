@@ -22,6 +22,25 @@ const COUNTRY_CODE_ALIASES = {
   koreya: "korea",
 };
 
+const COUNTRY_FILTER_LEGACY_ALIASES = {
+  usa: "usa",
+  us: "usa",
+  aqsh: "usa",
+  china: "xitoy",
+  kitay: "xitoy",
+  xitoy: "xitoy",
+  turkiya: "turkiya",
+  turkey: "turkiya",
+  korea: "koreya",
+  koreya: "koreya",
+  uzbekistan: "uzb",
+  uzbekiston: "uzb",
+  "o'zbekiston": "uzb",
+  uzb: "uzb",
+  yevropa: "yevropa",
+  europe: "yevropa",
+};
+
 function keepNewestProductPerId(products) {
   const seen = new Set();
   const unique = [];
@@ -188,6 +207,7 @@ function mapProductForEdit(product) {
     countries: Array.isArray(product.countries) ? product.countries : [],
     countriesCategories: String(product.countriesCategories || "").trim(),
     brandCategories: String(product.brandCategories || "").trim(),
+    productCountry: String(product.productCountry || "").trim(),
   };
 }
 
@@ -265,28 +285,38 @@ async function listBrandCountryFilterValues() {
   return BrandCountryFilterValue.find().sort({ type: 1, id: 1 }).lean();
 }
 
-function resolveProductFilterValue(rawValue, rows, type) {
-  const token = normalizeFilterToken(rawValue);
+function normalizeCountryFilterToken(value) {
+  const token = normalizeFilterToken(value);
   if (!token) return "";
+  return COUNTRY_FILTER_LEGACY_ALIASES[token] || token;
+}
+
+function resolveProductFilterValue(rawValue, rows, type) {
+  let token = normalizeFilterToken(rawValue);
+  if (!token) return "";
+
+  if (type === "country") {
+    token = normalizeCountryFilterToken(rawValue);
+  }
 
   const list = (Array.isArray(rows) ? rows : []).filter((item) => String(item?.type) === type);
   const row = list.find((item) => normalizeFilterToken(item?.filterValue) === token);
   return row ? String(row.filterValue).trim() : String(rawValue || "").trim();
 }
 
-async function normalizeCountriesCategories(body) {
-  const raw = String(body?.countriesCategories ?? "").trim();
+async function normalizeCountryFilterField(rawValue) {
+  const raw = String(rawValue ?? "").trim();
   if (!raw) {
     return "";
   }
 
   const rows = await listBrandCountryFilterValues();
-  const token = normalizeFilterToken(raw);
+  const token = normalizeCountryFilterToken(raw);
   const row = rows.find(
     (item) => item.type === "country" && normalizeFilterToken(item?.filterValue) === token,
   );
   if (!row) {
-    throw new HttpError(400, "CountryCategories filter topilmadi", "VALIDATION_ERROR");
+    throw new HttpError(400, "Country filter topilmadi", "VALIDATION_ERROR");
   }
 
   return String(row.filterValue).trim();
@@ -339,6 +369,10 @@ async function enrichProductForEdit(product) {
     filterRows,
     "country",
   );
+  mapped.productCountry = resolveProductFilterValue(mapped.productCountry, filterRows, "country");
+  const syncedCountryFilter = mapped.productCountry || mapped.countriesCategories;
+  mapped.productCountry = syncedCountryFilter;
+  mapped.countriesCategories = syncedCountryFilter;
   mapped.brandCategories = resolveProductFilterValue(mapped.brandCategories, filterRows, "brand");
   return mapped;
 }
@@ -536,7 +570,9 @@ async function normalizeUpdatePayload(body, currentProductId) {
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
   const categoryFields = await resolveProductCategory(body);
   const countries = await normalizeProductCountries(body);
-  const countriesCategories = await normalizeCountriesCategories(body);
+  const countryFilterValue = await normalizeCountryFilterField(
+    String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim(),
+  );
   const brandCategories = await normalizeBrandCategories(body);
 
   return {
@@ -550,7 +586,8 @@ async function normalizeUpdatePayload(body, currentProductId) {
     category: categoryFields.category,
     masterCategoryId: categoryFields.masterCategoryId,
     countries,
-    countriesCategories,
+    countriesCategories: countryFilterValue,
+    productCountry: countryFilterValue,
     brandCategories,
   };
 }

@@ -4,6 +4,7 @@ const filterValues = [
   { type: "country", filterValue: "turkiya" },
   { type: "country", filterValue: "koreya" },
   { type: "country", filterValue: "yevropa" },
+  { type: "country", filterValue: "uzb" },
   { type: "brand", filterValue: "nike" },
   { type: "brand", filterValue: "apple" },
   { type: "brand", filterValue: "puma" },
