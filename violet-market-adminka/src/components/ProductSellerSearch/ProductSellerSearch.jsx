@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { SearchOutlined, UndoOutlined } from '@ant-design/icons';
+import { SearchOutlined, SyncOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
 import { getLocalizedText, resolveProductImageUrl } from '../../utils/productDisplay';
 import './ProductSellerSearch.css';
@@ -152,11 +152,11 @@ export default function ProductSellerSearch({
       {selectedSellerId ? (
         <Button
           type="text"
-          icon={<UndoOutlined />}
+          icon={<SyncOutlined />}
           className="product-seller-search__back"
           onClick={handleClear}
         >
-          Oldingi holat
+          Ortga
         </Button>
       ) : null}
     </div>
