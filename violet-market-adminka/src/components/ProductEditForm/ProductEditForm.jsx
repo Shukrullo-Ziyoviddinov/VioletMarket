@@ -6,6 +6,7 @@ import {
   updateAdminProduct,
 } from '../../api/productsAdminApi';
 import { fetchAdminCategories } from '../../api/adminCategoriesApi';
+import { fetchShippingCountries } from '../../api/shippingCountryAdminApi';
 import { getLocalizedText } from '../../utils/productDisplay';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 import './ProductEditForm.css';
@@ -77,6 +78,103 @@ function MasterCategoryPicker({
   );
 }
 
+const COUNTRY_CODE_ALIASES = {
+  xitoy: 'china',
+  kitay: 'china',
+  aqsh: 'usa',
+  us: 'usa',
+  koreya: 'korea',
+};
+
+function normalizeCountryToken(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (!key) return '';
+  return COUNTRY_CODE_ALIASES[key] || key;
+}
+
+function resolveCountryCodesFromProduct(product, shippingCountries) {
+  if (Array.isArray(product?.countryCodes) && product.countryCodes.length > 0) {
+    return product.countryCodes.map(String);
+  }
+
+  const rows = Array.isArray(shippingCountries) ? shippingCountries : [];
+  const raw = Array.isArray(product?.countries) ? product.countries : [];
+  const codes = new Set();
+
+  for (const item of raw) {
+    const token = normalizeCountryToken(item);
+    if (!token) continue;
+
+    const byCode = rows.find((row) => normalizeCountryToken(row.code) === token);
+    if (byCode) {
+      codes.add(String(byCode.code));
+      continue;
+    }
+
+    const rawText = String(item || '').trim();
+    const byName = rows.find(
+      (row) => row?.name?.uz === rawText || row?.name?.ru === rawText,
+    );
+    if (byName) codes.add(String(byName.code));
+  }
+
+  return [...codes];
+}
+
+function ShippingCountriesPicker({
+  value = [],
+  options,
+  isOpen,
+  onToggle,
+  onToggleCode,
+  placeholder = 'Mahsulot hududini tanlang',
+}) {
+  const selectedSet = new Set((Array.isArray(value) ? value : []).map(String));
+  const selectedOptions = options.filter((option) => selectedSet.has(String(option.value)));
+  const triggerText = selectedOptions.length
+    ? selectedOptions.map((option) => option.main).join(', ')
+    : placeholder;
+
+  return (
+    <div className="global-section-modal__category-picker">
+      <button
+        type="button"
+        className={`global-section-modal__category-trigger${isOpen ? ' global-section-modal__category-trigger--active' : ''}${selectedOptions.length ? ' global-section-modal__category-trigger--filled' : ''}`}
+        onClick={onToggle}
+      >
+        <span>{triggerText}</span>
+        <span className="global-section-modal__category-caret">{isOpen ? '▲' : '▼'}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="global-section-modal__category-options">
+          {options.length === 0 ? (
+            <p className="global-section-modal__meta">Mahsulot hududlari topilmadi</p>
+          ) : (
+            options.map((option) => {
+              const isSelected = selectedSet.has(String(option.value));
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`global-section-modal__category-option product-edit-form__country-option${isSelected ? ' global-section-modal__category-option--active' : ''}`}
+                  onClick={() => onToggleCode(option.value)}
+                >
+                  <span className="product-edit-form__country-check">{isSelected ? '✓' : ''}</span>
+                  <span className="global-section-modal__category-main">{option.main}</span>
+                  {option.sub ? (
+                    <span className="global-section-modal__category-sub">{option.sub}</span>
+                  ) : null}
+                </button>
+              );
+            })
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function createRelatedGroupDraft(index = 0) {
   return {
     localId: `${Date.now()}-${index}`,
@@ -118,9 +216,10 @@ function parseLabelDraftFromProduct(product) {
   };
 }
 
-function buildDraftFromProduct(product, masterCategories = []) {
+function buildDraftFromProduct(product, masterCategories = [], shippingCountries = []) {
   const labelDraft = parseLabelDraftFromProduct(product);
   const categories = Array.isArray(masterCategories) ? masterCategories : [];
+  const countryRows = Array.isArray(shippingCountries) ? shippingCountries : [];
 
   let masterCategoryId = product?.masterCategoryId ? String(product.masterCategoryId) : '';
   let category = String(product?.category || '').trim();
@@ -146,6 +245,7 @@ function buildDraftFromProduct(product, masterCategories = []) {
     sellerId: product?.sellerId || null,
     masterCategoryId,
     category,
+    countryCodes: resolveCountryCodesFromProduct(product, countryRows),
     titleUz: product?.title?.uz || '',
     titleRu: product?.title?.ru || '',
     price: product?.price || '',
@@ -170,6 +270,7 @@ function buildPayloadFromDraft(draft) {
   return {
     masterCategoryId: draft.masterCategoryId ? Number(draft.masterCategoryId) : null,
     category: draft.category || '',
+    countryCodes: (draft.countryCodes || []).map(String),
     title: {
       uz: String(draft.titleUz || '').trim(),
       ru: String(draft.titleRu || '').trim(),
@@ -274,7 +375,9 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
   const [draft, setDraft] = useState(null);
   const [pickerOptions, setPickerOptions] = useState([]);
   const [masterCategories, setMasterCategories] = useState([]);
+  const [shippingCountries, setShippingCountries] = useState([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isCountriesOpen, setIsCountriesOpen] = useState(false);
   const [activeUploads, setActiveUploads] = useState(0);
 
   const sellerId = draft?.sellerId || null;
@@ -289,6 +392,18 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     [masterCategories],
   );
 
+  const shippingCountryOptions = useMemo(
+    () =>
+      shippingCountries
+        .filter((item) => item?.active !== false)
+        .map((item) => ({
+          value: String(item.code),
+          main: item?.name?.uz || item.code,
+          sub: item?.name?.ru || '',
+        })),
+    [shippingCountries],
+  );
+
   const loadData = useCallback(async () => {
     if (!visible || productId == null) return;
 
@@ -296,24 +411,30 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
     setError('');
 
     try {
-      const [product, options, categoriesData] = await Promise.all([
+      const [product, options, categoriesData, countryRows] = await Promise.all([
         fetchAdminProductById(productId),
         fetchProductPickerOptions(productId),
         fetchAdminCategories(),
+        fetchShippingCountries(),
       ]);
       const masterCats = Array.isArray(categoriesData?.masterCategories)
         ? categoriesData.masterCategories
         : [];
+      const shippingRows = Array.isArray(countryRows) ? countryRows : [];
 
       setMasterCategories(masterCats);
-      setDraft(buildDraftFromProduct(product, masterCats));
+      setShippingCountries(shippingRows);
+      setDraft(buildDraftFromProduct(product, masterCats, shippingRows));
       setPickerOptions(options);
       setIsCategoryOpen(false);
+      setIsCountriesOpen(false);
     } catch (err) {
       setDraft(null);
       setPickerOptions([]);
       setMasterCategories([]);
+      setShippingCountries([]);
       setIsCategoryOpen(false);
+      setIsCountriesOpen(false);
       setError(err.message || 'Mahsulotni yuklashda xatolik');
     } finally {
       setLoading(false);
@@ -336,6 +457,16 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
       category: selected?.name?.uz || '',
     }));
     setIsCategoryOpen(false);
+  };
+
+  const toggleCountryCode = (code) => {
+    const normalized = String(code);
+    setDraft((prev) => {
+      const current = new Set((prev.countryCodes || []).map(String));
+      if (current.has(normalized)) current.delete(normalized);
+      else current.add(normalized);
+      return { ...prev, countryCodes: [...current] };
+    });
   };
 
   const toggleLabelType = (type) => {
@@ -462,11 +593,30 @@ export default function ProductEditForm({ visible, productId, onRefresh }) {
                   fallbackLabel={draft.category}
                   options={masterCategoryOptions}
                   isOpen={isCategoryOpen}
-                  onToggle={() => setIsCategoryOpen((open) => !open)}
+                  onToggle={() => {
+                    setIsCountriesOpen(false);
+                    setIsCategoryOpen((open) => !open);
+                  }}
                   onSelect={handleMasterCategorySelect}
                 />
                 <span className="global-section-modal__hint">
                   Oldin tanlangan category yuqorida ko‘rinadi. Boshqasini tanlasangiz, saqlashda yangilanadi.
+                </span>
+              </label>
+              <label className="global-section-modal__field global-section-modal__field--full">
+                <span className="global-section-modal__label">Countries (Mahsulot hududi)</span>
+                <ShippingCountriesPicker
+                  value={draft.countryCodes}
+                  options={shippingCountryOptions}
+                  isOpen={isCountriesOpen}
+                  onToggle={() => {
+                    setIsCategoryOpen(false);
+                    setIsCountriesOpen((open) => !open);
+                  }}
+                  onToggleCode={toggleCountryCode}
+                />
+                <span className="global-section-modal__hint">
+                  Bir nechta hudud tanlash mumkin. Oldin tanlanganlari yuqorida ko‘rinadi.
                 </span>
               </label>
               <label className="global-section-modal__field">

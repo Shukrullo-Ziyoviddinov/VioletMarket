@@ -1,6 +1,7 @@
 const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
 const { MasterCategory } = require("../models/masterCategory");
+const { ShippingCountry } = require("../models/shippingCountry");
 const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
@@ -11,6 +12,14 @@ const ORIGINAL_ICON = "&#10004;";
 const ORIGINAL_COLOR = "#f30cfb";
 const CHEGIRMA_ICON = '<span class="animated-hourglass"></span>';
 const CHEGIRMA_COLOR = "#ff3333";
+
+const COUNTRY_CODE_ALIASES = {
+  xitoy: "china",
+  kitay: "china",
+  aqsh: "usa",
+  us: "usa",
+  koreya: "korea",
+};
 
 function keepNewestProductPerId(products) {
   const seen = new Set();
@@ -175,7 +184,72 @@ function mapProductForEdit(product) {
     video: product.video || "",
     labels: Array.isArray(product.labels) ? product.labels : [],
     relatedGroups: Array.isArray(product.relatedGroups) ? product.relatedGroups : [],
+    countries: Array.isArray(product.countries) ? product.countries : [],
   };
+}
+
+function normalizeCountryToken(value) {
+  const key = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (!key) return "";
+  return COUNTRY_CODE_ALIASES[key] || key;
+}
+
+async function listActiveShippingCountries() {
+  const rows = await ShippingCountry.find({ active: { $ne: false } })
+    .sort({ sortOrder: 1, id: 1 })
+    .lean();
+  return rows;
+}
+
+function resolveCountryCodes(rawCountries, shippingRows) {
+  const rows = Array.isArray(shippingRows) ? shippingRows : [];
+  const list = Array.isArray(rawCountries) ? rawCountries : rawCountries ? [rawCountries] : [];
+  const codes = new Set();
+
+  for (const item of list) {
+    const token = normalizeCountryToken(item);
+    if (!token) continue;
+
+    const byCode = rows.find((row) => normalizeCountryToken(row.code) === token);
+    if (byCode) {
+      codes.add(String(byCode.code));
+      continue;
+    }
+
+    const rawText = String(item || "").trim();
+    const byName = rows.find(
+      (row) =>
+        String(row?.name?.uz || "").trim() === rawText ||
+        String(row?.name?.ru || "").trim() === rawText ||
+        normalizeCountryToken(row?.name?.uz) === token,
+    );
+    if (byName) {
+      codes.add(String(byName.code));
+    }
+  }
+
+  return [...codes];
+}
+
+async function normalizeProductCountries(body) {
+  const shippingRows = await listActiveShippingCountries();
+  const requested = Array.isArray(body?.countryCodes) ? body.countryCodes : [];
+  const unique = [...new Set(requested.map((code) => normalizeCountryToken(code)).filter(Boolean))];
+
+  if (unique.length === 0) {
+    throw new HttpError(400, "Kamida bitta mahsulot hududi tanlanishi shart", "VALIDATION_ERROR");
+  }
+
+  for (const code of unique) {
+    const row = shippingRows.find((item) => String(item.code) === code);
+    if (!row) {
+      throw new HttpError(400, `Mahsulot hududi topilmadi: ${code}`, "VALIDATION_ERROR");
+    }
+  }
+
+  return unique;
 }
 
 async function resolveMasterCategoryId(product) {
@@ -196,7 +270,9 @@ async function resolveMasterCategoryId(product) {
 
 async function enrichProductForEdit(product) {
   const mapped = mapProductForEdit(product);
+  const shippingRows = await listActiveShippingCountries();
   mapped.masterCategoryId = await resolveMasterCategoryId(product);
+  mapped.countryCodes = resolveCountryCodes(mapped.countries, shippingRows);
   return mapped;
 }
 
@@ -392,6 +468,7 @@ async function normalizeUpdatePayload(body, currentProductId) {
   const labels = normalizeLabelDraft(body?.labels);
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
   const categoryFields = await resolveProductCategory(body);
+  const countries = await normalizeProductCountries(body);
 
   return {
     title,
@@ -403,6 +480,7 @@ async function normalizeUpdatePayload(body, currentProductId) {
     relatedGroups,
     category: categoryFields.category,
     masterCategoryId: categoryFields.masterCategoryId,
+    countries,
   };
 }
 
