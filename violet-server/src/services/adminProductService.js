@@ -1,5 +1,6 @@
 const { Product } = require("../models");
 const { SellerAccount } = require("../models/sellerAccount");
+const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 
 function keepNewestProductPerId(products) {
   const seen = new Set();
@@ -39,23 +40,28 @@ function countAddedToday(products) {
 function mapSellerForAdmin(seller) {
   if (!seller) return null;
 
+  const logo = seller.logo || "";
+
   return {
     id: seller.id,
     name: seller.name,
-    logo: seller.logo || "",
+    logo,
+    logoUrl: resolvePublicAssetUrl(logo),
   };
 }
 
 function mapProductCard(product, sellerMap) {
   const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
   const sellerId = String(product.sellerId || "").trim();
+  const image = product.image || product.mainImage || firstColor?.mainImage || "";
 
   return {
     id: product.id,
     title: product.title,
     price: firstColor?.price || product.price || "",
     originalPrice: firstColor?.originalPrice || product.originalPrice || "",
-    image: product.image || product.mainImage || firstColor?.mainImage || "",
+    image,
+    imageUrl: resolvePublicAssetUrl(image),
     sellerId: sellerId || null,
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
   };

@@ -81,13 +81,13 @@ export default function ProductPage() {
       {!loading && !error && products.length > 0 ? (
         <div className="product-page__grid">
           {products.map((product) => {
-            const imageUrl = resolveProductImageUrl(product.image);
+            const imageUrl = product.imageUrl || resolveProductImageUrl(product.image);
             const title = getLocalizedText(product.title, 'uz');
             const price = product.price || '—';
             const originalPrice = product.originalPrice || '';
             const sellerName = product.seller ? getLocalizedText(product.seller.name, 'uz') : '';
             const sellerLogoUrl = product.seller
-              ? resolveProductImageUrl(product.seller.logo)
+              ? product.seller.logoUrl || resolveProductImageUrl(product.seller.logo)
               : '';
 
             return (
@@ -124,7 +124,6 @@ export default function ProductPage() {
                       <span className="product-page-card__seller-name">{sellerName}</span>
                     </div>
                   ) : null}
-                  <span className="product-page-card__id">ID: {product.id}</span>
                 </div>
               </article>
             );

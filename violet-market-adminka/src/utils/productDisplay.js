@@ -3,9 +3,22 @@ import { getApiBaseUrl } from '../config/api';
 const FALLBACK_IMAGE =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" fill="%23f3f4f6"/><text x="50%25" y="52%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-size="12" font-family="sans-serif">No image</text></svg>';
 
+function trimUrl(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
 function getStorefrontBaseUrl() {
-  const raw = (process.env.REACT_APP_STOREFRONT_URL || 'http://localhost:3000').trim();
-  return raw.replace(/\/+$/, '');
+  const configured =
+    trimUrl(process.env.REACT_APP_PUBLIC_SITE_URL) ||
+    trimUrl(process.env.REACT_APP_STOREFRONT_URL);
+
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:3000';
+  }
+
+  return '';
 }
 
 export function getLocalizedText(value, lang = 'uz') {
@@ -58,9 +71,14 @@ export function resolveProductImageUrl(imagePath) {
     return `${getApiBaseUrl()}/uploads/${normalizedSlashes}`;
   }
 
+  const storefrontBase = getStorefrontBaseUrl();
   const storefrontPath = normalizedSlashes.startsWith('/')
     ? normalizedSlashes
     : `/${normalizedSlashes}`;
 
-  return `${getStorefrontBaseUrl()}${storefrontPath}`;
+  if (storefrontBase) {
+    return `${storefrontBase}${storefrontPath}`;
+  }
+
+  return FALLBACK_IMAGE;
 }

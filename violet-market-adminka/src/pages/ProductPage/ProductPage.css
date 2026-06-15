@@ -87,9 +87,10 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   min-width: 0;
+  min-height: 96px;
 }
 
 .product-page-card__title {
@@ -128,6 +129,8 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .product-page-card__seller-logo {
@@ -147,11 +150,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.product-page-card__id {
-  font-size: 12px;
-  color: #8b79a8;
 }
 
 @media (max-width: 1200px) {
