@@ -1,4 +1,5 @@
 const { Product } = require("../models");
+const { SellerAccount } = require("../models/sellerAccount");
 
 function keepNewestProductPerId(products) {
   const seen = new Set();
@@ -35,8 +36,19 @@ function countAddedToday(products) {
   }).length;
 }
 
-function mapProductCard(product) {
+function mapSellerForAdmin(seller) {
+  if (!seller) return null;
+
+  return {
+    id: seller.id,
+    name: seller.name,
+    logo: seller.logo || "",
+  };
+}
+
+function mapProductCard(product, sellerMap) {
   const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
+  const sellerId = String(product.sellerId || "").trim();
 
   return {
     id: product.id,
@@ -44,24 +56,38 @@ function mapProductCard(product) {
     price: firstColor?.price || product.price || "",
     originalPrice: firstColor?.originalPrice || product.originalPrice || "",
     image: product.image || product.mainImage || firstColor?.mainImage || "",
+    sellerId: sellerId || null,
+    seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
   };
 }
 
-async function listProductsForAdmin() {
-  const rows = await Product.find()
-    .select({
-      id: 1,
-      title: 1,
-      price: 1,
-      originalPrice: 1,
-      image: 1,
-      mainImage: 1,
-      colors: 1,
-    })
-    .sort({ _id: -1 })
+async function buildSellerMap() {
+  const sellers = await SellerAccount.find()
+    .select({ id: 1, name: 1, logo: 1 })
     .lean();
 
-  return keepNewestProductPerId(rows).map(mapProductCard);
+  return new Map(sellers.map((seller) => [seller.id, seller]));
+}
+
+async function listProductsForAdmin() {
+  const [rows, sellerMap] = await Promise.all([
+    Product.find()
+      .select({
+        id: 1,
+        title: 1,
+        price: 1,
+        originalPrice: 1,
+        image: 1,
+        mainImage: 1,
+        colors: 1,
+        sellerId: 1,
+      })
+      .sort({ _id: -1 })
+      .lean(),
+    buildSellerMap(),
+  ]);
+
+  return keepNewestProductPerId(rows).map((product) => mapProductCard(product, sellerMap));
 }
 
 async function getProductStats() {

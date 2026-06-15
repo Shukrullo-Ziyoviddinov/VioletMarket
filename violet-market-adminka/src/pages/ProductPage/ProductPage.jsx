@@ -85,6 +85,10 @@ export default function ProductPage() {
             const title = getLocalizedText(product.title, 'uz');
             const price = product.price || '—';
             const originalPrice = product.originalPrice || '';
+            const sellerName = product.seller ? getLocalizedText(product.seller.name, 'uz') : '';
+            const sellerLogoUrl = product.seller
+              ? resolveProductImageUrl(product.seller.logo)
+              : '';
 
             return (
               <article key={product.id} className="product-page-card">
@@ -106,6 +110,20 @@ export default function ProductPage() {
                       <span className="product-page-card__old-price">{originalPrice}</span>
                     ) : null}
                   </div>
+                  {product.seller ? (
+                    <div className="product-page-card__seller">
+                      <img
+                        className="product-page-card__seller-logo"
+                        src={sellerLogoUrl}
+                        alt={sellerName}
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.src = resolveProductImageUrl('');
+                        }}
+                      />
+                      <span className="product-page-card__seller-name">{sellerName}</span>
+                    </div>
+                  ) : null}
                   <span className="product-page-card__id">ID: {product.id}</span>
                 </div>
               </article>
