@@ -22,8 +22,14 @@ export default function ProductCardMenu({
       }
     };
 
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
+    const frameId = window.requestAnimationFrame(() => {
+      document.addEventListener('mousedown', handlePointerDown);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      document.removeEventListener('mousedown', handlePointerDown);
+    };
   }, [isOpen, onClose]);
 
   const handleEdit = () => {
@@ -70,7 +76,11 @@ export default function ProductCardMenu({
         className="product-card-menu__trigger"
         aria-label="Ko'proq"
         aria-expanded={isOpen}
-        onClick={onToggle}
+        onMouseDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggle?.();
+        }}
       />
     </div>
   );

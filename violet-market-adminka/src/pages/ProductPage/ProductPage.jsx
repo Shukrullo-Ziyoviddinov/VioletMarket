@@ -152,9 +152,13 @@ export default function ProductPage() {
               ? product.seller.logoUrl || resolveProductImageUrl(product.seller.logo)
               : '';
             const quantity = Number(product.effectiveQuantity) || 0;
+            const isMenuOpen = String(openMenuProductId) === String(product.id);
 
             return (
-              <article key={product.id} className="product-page-card">
+              <article
+                key={product.id}
+                className={`product-page-card${isMenuOpen ? ' product-page-card--menu-open' : ''}`}
+              >
                 <div className="product-page-card__media">
                   <img
                     src={imageUrl}
@@ -207,11 +211,11 @@ export default function ProductPage() {
                         Tahrirlash
                       </Button>
                       <ProductCardMenu
-                        isOpen={openMenuProductId === product.id}
-                        deleting={deletingProductId === product.id}
+                        isOpen={isMenuOpen}
+                        deleting={String(deletingProductId) === String(product.id)}
                         onToggle={() =>
                           setOpenMenuProductId((current) =>
-                            current === product.id ? null : product.id,
+                            String(current) === String(product.id) ? null : product.id,
                           )
                         }
                         onClose={() => setOpenMenuProductId(null)}
