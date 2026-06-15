@@ -39,11 +39,11 @@ function normalizePayload(draft) {
   const code = normalizeCodeInput(draft?.code);
   const title = String(draft?.title || '').trim();
   const group = String(draft?.group || '').trim();
-  if (!code) throw new Error("Mahsulot turi kodi to'ldirilishi shart");
+  if (!code) throw new Error("Tizim kodi to'ldirilishi shart");
   if (!/^[a-z0-9_]+$/.test(code)) {
-    throw new Error("Kod faqat kichik lotin harflari, raqam va _ bo'lishi mumkin");
+    throw new Error("Tizim kodi faqat kichik lotin harflari, raqam va _ belgisidan iborat bo'lishi kerak");
   }
-  if (!title) throw new Error("Title to'ldirilishi shart");
+  if (!title) throw new Error("Ko'rinadigan nom to'ldirilishi shart");
 
   const payload = {
     code,
@@ -80,51 +80,68 @@ function ProductTypeEditor({
       <h4 className="global-section-modal__block-title">{title}</h4>
       <div className="global-section-modal__grid global-section-modal__grid--2">
         <label className="global-section-modal__field">
-          <span className="global-section-modal__label">code (snake_case)</span>
+          <span className="global-section-modal__label">Tizim kodi (ichki nom)</span>
           <input
             className="global-section-modal__input"
-            placeholder="masalan: smartphones"
+            placeholder="Masalan: smartphones yoki pants"
             value={draft.code}
             onChange={(e) => onChange('code', e.target.value)}
           />
+          <span className="global-section-modal__hint">
+            Tizim ichida ishlatiladigan qisqa nom. Faqat kichik lotin harflari, raqam va _ yoziladi.
+            Xaridor buni ko‘rmaydi — faqat admin va tizim uchun.
+          </span>
         </label>
         <label className="global-section-modal__field">
-          <span className="global-section-modal__label">title</span>
+          <span className="global-section-modal__label">Ko‘rinadigan nom</span>
           <input
             className="global-section-modal__input"
-            placeholder="masalan: Smartfonlar, telefonlar"
+            placeholder="Masalan: Smartfonlar, telefonlar"
             value={draft.title}
             onChange={(e) => onChange('title', e.target.value)}
           />
+          <span className="global-section-modal__hint">
+            Mahsulot tahrirlashda va ro‘yxatda ko‘rinadigan nom. Oddiy, tushunarli yozing.
+          </span>
         </label>
         <label className="global-section-modal__field">
-          <span className="global-section-modal__label">group (ixtiyoriy)</span>
+          <span className="global-section-modal__label">Guruh nomi (ixtiyoriy)</span>
           <input
             className="global-section-modal__input"
-            placeholder="masalan: Elektronika va Texnika"
+            placeholder="Masalan: Elektronika va Texnika"
             value={draft.group}
             onChange={(e) => onChange('group', e.target.value)}
           />
+          <span className="global-section-modal__hint">
+            Bu tur qaysi katta bo‘limga tegishli ekanini ko‘rsatish uchun. To‘ldirish majburiy emas.
+          </span>
         </label>
         <label className="global-section-modal__field">
-          <span className="global-section-modal__label">sortOrder</span>
+          <span className="global-section-modal__label">Ro‘yxatdagi tartib raqami</span>
           <input
             className="global-section-modal__input"
             value={draft.sortOrder}
             onChange={(e) => onChange('sortOrder', e.target.value)}
-            placeholder="0"
+            placeholder="Masalan: 1"
           />
+          <span className="global-section-modal__hint">
+            Qaysi tartibda chiqishini belgilaydi. Kichik raqam yuqoriroq turadi. Bo‘sh qoldirsangiz
+            avtomatik beriladi.
+          </span>
         </label>
-        <label className="global-section-modal__field">
-          <span className="global-section-modal__label">active</span>
+        <label className="global-section-modal__field global-section-modal__field--full">
+          <span className="global-section-modal__label">Holati</span>
           <label className="global-section-modal__check">
             <input
               type="checkbox"
               checked={draft.active}
               onChange={(e) => onChange('active', e.target.checked)}
             />
-            <span>Faol</span>
+            <span>Faol — mahsulotlarga tanlash mumkin</span>
           </label>
+          <span className="global-section-modal__hint">
+            Belgini olib tashlasangiz, bu tur yashirin bo‘ladi va yangi mahsulotlarga tanlab bo‘lmaydi.
+          </span>
         </label>
       </div>
       <div className="global-section-modal__actions">
@@ -246,8 +263,8 @@ export default function ProductTypeForm({ visible }) {
           </button>
         </div>
         <p className="global-section-modal__meta">
-          Kod bazada <strong>snake_case</strong> saqlanadi (masalan: <code>smartphones</code>).
-          Title admin va mahsulot tahririda ko‘rinadi.
+          Bu yerda mahsulot turlarini qo‘shasiz va tahrirlaysiz. Har bir turda ichki kod va odamlar
+          ko‘radigan nom bo‘ladi. Qo‘shilgan turlar mahsulot tahrirlashda tanlov ro‘yxatida chiqadi.
         </p>
         {loading ? <p className="global-section-modal__state">Yuklanmoqda...</p> : null}
         {error ? <p className="global-section-modal__error">{error}</p> : null}
@@ -265,9 +282,9 @@ export default function ProductTypeForm({ visible }) {
                 <div>
                   <div className="global-section-modal__saved-name">{row.title}</div>
                   <div className="global-section-modal__meta">
-                    id: {row.id} | code: {row.code}
-                    {row.group ? ` | group: ${row.group}` : ''} | faol: {row.active ? 'ha' : "yo'q"} |
-                    tartib: {row.sortOrder ?? 0}
+                    Tizim kodi: {row.code}
+                    {row.group ? ` | Guruh: ${row.group}` : ''} | Holat:{' '}
+                    {row.active ? 'faol' : "faol emas"} | Tartib: {row.sortOrder ?? 0}
                   </div>
                 </div>
                 <div className="global-section-modal__saved-actions">
