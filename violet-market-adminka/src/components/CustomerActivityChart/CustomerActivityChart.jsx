@@ -158,7 +158,7 @@ export default function CustomerActivityChart({
   data = [],
   filterOptions = CUSTOMER_ACTIVITY_FILTER_OPTIONS,
 }) {
-  const [activeFilter, setActiveFilter] = useState('dau');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const visibleSeries = useMemo(() => {
     if (activeFilter === 'all') {
@@ -174,7 +174,6 @@ export default function CustomerActivityChart({
   );
 
   const hasData = Array.isArray(data) && data.length > 0;
-  const showAllHint = activeFilter === 'all';
 
   return (
     <section className="customer-activity-chart">
@@ -190,12 +189,6 @@ export default function CustomerActivityChart({
       </div>
 
       <CustomerActivityLegend series={CUSTOMER_ACTIVITY_SERIES} activeFilter={activeFilter} />
-
-      {showAllHint ? (
-        <p className="customer-activity-chart__hint">
-          Aniqroq ko&apos;rish uchun alohida tanlang: Kunlik (DAU), 7 kunlik (WAU) yoki Oylik (MAU).
-        </p>
-      ) : null}
 
       <div className="customer-activity-chart__canvas">
         {!hasData ? (

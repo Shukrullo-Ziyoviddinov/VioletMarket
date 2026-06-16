@@ -1,8 +1,8 @@
 export const CUSTOMER_ACTIVITY_FILTER_OPTIONS = [
+  { value: 'all', label: 'Hammasi' },
   { value: 'dau', label: 'Kunlik (DAU)' },
   { value: 'wau', label: '7 kunlik (WAU)' },
   { value: 'mau', label: 'Oylik (MAU)' },
-  { value: 'all', label: 'Hammasi' },
 ];
 
 export const CUSTOMER_ACTIVITY_SERIES = [
