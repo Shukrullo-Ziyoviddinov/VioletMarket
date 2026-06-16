@@ -6,7 +6,7 @@
   border: 1px solid #ece7f3;
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 2px 10px rgba(42, 24, 66, 0.04);
+  box-shadow: 0 4px 18px rgba(42, 24, 66, 0.1);
 }
 
 .customer-activity-chart__header {
