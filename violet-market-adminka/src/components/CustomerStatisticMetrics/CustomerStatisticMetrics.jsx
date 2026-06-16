@@ -13,6 +13,7 @@ export default function CustomerStatisticMetrics({ metrics = CUSTOMER_STATISTIC_
           value={metric.value}
           footerLabel={metric.footerLabel}
           footerHighlight={metric.footerHighlight}
+          footerTone={metric.footerTone}
           showChart={metric.showChart}
         />
       ))}

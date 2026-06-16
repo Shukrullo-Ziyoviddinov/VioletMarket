@@ -1,6 +1,16 @@
-export const CUSTOMER_STATISTIC_VIEW_OPTIONS = [
-  { value: 'historical', label: 'Tarixiy Ma\'lumotlar' },
-  { value: 'current', label: 'Joriy ko\'rinish' },
+const MONTH_NAMES_UZ = [
+  'Yanvar',
+  'Fevral',
+  'Mart',
+  'Aprel',
+  'May',
+  'Iyun',
+  'Iyul',
+  'Avgust',
+  'Sentabr',
+  'Oktabr',
+  'Noyabr',
+  'Dekabr',
 ];
 
 export const CUSTOMER_STATISTIC_DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => ({
@@ -13,17 +23,25 @@ export const CUSTOMER_STATISTIC_WEEK_OPTIONS = Array.from({ length: 52 }, (_, in
   label: String(index + 1),
 }));
 
-export const CUSTOMER_STATISTIC_MONTH_OPTIONS = [
-  { value: '2026-06', label: 'Iyun 2026' },
-  { value: '2026-05', label: 'May 2026' },
-  { value: '2026-04', label: 'Aprel 2026' },
-];
+export const CUSTOMER_STATISTIC_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => {
+  const now = new Date();
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - index, 1));
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const value = `${year}-${String(month).padStart(2, '0')}`;
+  return {
+    value,
+    label: `${MONTH_NAMES_UZ[month - 1]} ${year}`,
+  };
+});
+
+const NOW = new Date();
+const CURRENT_MONTH = `${NOW.getUTCFullYear()}-${String(NOW.getUTCMonth() + 1).padStart(2, '0')}`;
 
 export const CUSTOMER_STATISTIC_DEFAULT_FILTERS = {
-  view: 'historical',
-  day: '4',
-  week: '4',
-  month: '2026-06',
+  day: String(NOW.getUTCDate()),
+  week: '1',
+  month: CURRENT_MONTH,
 };
 
 export const CUSTOMER_STATISTIC_MOCK_METRICS = [
@@ -31,8 +49,9 @@ export const CUSTOMER_STATISTIC_MOCK_METRICS = [
     id: 'registered',
     title: "Ro'yxatdan o'tgan foydalanuvchilar",
     value: '15,200',
-    footerLabel: "Oylik o'sish: ",
+    footerLabel: "O'tgan oydan: ",
     footerHighlight: '+12%',
+    footerTone: 'positive',
     showChart: true,
   },
   {
@@ -41,6 +60,7 @@ export const CUSTOMER_STATISTIC_MOCK_METRICS = [
     value: '2,100',
     footerLabel: "O'tgan kundan: ",
     footerHighlight: '+5%',
+    footerTone: 'positive',
     showChart: false,
   },
   {
@@ -49,6 +69,7 @@ export const CUSTOMER_STATISTIC_MOCK_METRICS = [
     value: '7,500',
     footerLabel: "O'tgan haftadan: ",
     footerHighlight: '+8%',
+    footerTone: 'positive',
     showChart: false,
   },
   {
@@ -57,6 +78,7 @@ export const CUSTOMER_STATISTIC_MOCK_METRICS = [
     value: '14,000',
     footerLabel: "O'tgan oydan: ",
     footerHighlight: '+10%',
+    footerTone: 'positive',
     showChart: false,
   },
 ];

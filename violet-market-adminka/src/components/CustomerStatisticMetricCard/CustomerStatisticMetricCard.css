@@ -59,8 +59,19 @@
 }
 
 .customer-statistic-metric-card__footer-highlight {
-  color: #22c55e;
   font-weight: 600;
+}
+
+.customer-statistic-metric-card__footer-highlight--positive {
+  color: #22c55e;
+}
+
+.customer-statistic-metric-card__footer-highlight--negative {
+  color: #ef4444;
+}
+
+.customer-statistic-metric-card__footer-highlight--neutral {
+  color: #6b7280;
 }
 
 @media (max-width: 768px) {

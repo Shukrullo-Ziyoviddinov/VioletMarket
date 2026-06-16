@@ -7,6 +7,7 @@ const cors = require("cors");
 const config = require("./config");
 const routes = require("./routes");
 const { errorHandler } = require("./middleware/errorHandler");
+const { activityTrackerMiddleware } = require("./middleware/activityTrackerMiddleware");
 
 const app = express();
 const uploadDir = path.resolve(__dirname, "../public/uploads");
@@ -17,6 +18,7 @@ if (!fs.existsSync(uploadDir)) {
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
+app.use(activityTrackerMiddleware);
 app.use("/uploads", express.static(uploadDir));
 // Legacy support: old buildlarda fayllar src/public/uploads ga tushib qolgan bo'lishi mumkin.
 app.use("/uploads", express.static(legacyUploadDir));

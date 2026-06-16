@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
 import {
   CUSTOMER_STATISTIC_DAY_OPTIONS,
@@ -13,6 +13,10 @@ export default function CustomerStatisticFilters({
   onChange,
 }) {
   const [filters, setFilters] = useState(value);
+
+  useEffect(() => {
+    setFilters(value);
+  }, [value]);
 
   const updateFilter = (key, nextValue) => {
     const nextFilters = { ...filters, [key]: nextValue };

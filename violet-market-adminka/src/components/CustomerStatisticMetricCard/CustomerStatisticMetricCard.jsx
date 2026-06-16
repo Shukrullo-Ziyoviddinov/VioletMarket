@@ -32,6 +32,7 @@ export default function CustomerStatisticMetricCard({
   value,
   footerLabel,
   footerHighlight,
+  footerTone = 'positive',
   showChart = false,
 }) {
   const gradientId = useId().replace(/:/g, '');
@@ -55,7 +56,11 @@ export default function CustomerStatisticMetricCard({
             <span className="customer-statistic-metric-card__footer-label">{footerLabel}</span>
           ) : null}
           {footerHighlight ? (
-            <span className="customer-statistic-metric-card__footer-highlight">{footerHighlight}</span>
+            <span
+              className={`customer-statistic-metric-card__footer-highlight customer-statistic-metric-card__footer-highlight--${footerTone}`}
+            >
+              {footerHighlight}
+            </span>
           ) : null}
         </p>
       ) : null}

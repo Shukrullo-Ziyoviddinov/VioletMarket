@@ -4,3 +4,17 @@
   gap: 18px;
   width: 100%;
 }
+
+.customer-statistic-page__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  color: #4a3d5c;
+  font-size: 14px;
+}
+
+.customer-statistic-page__state--error {
+  color: #dc2626;
+  justify-content: flex-start;
+}
