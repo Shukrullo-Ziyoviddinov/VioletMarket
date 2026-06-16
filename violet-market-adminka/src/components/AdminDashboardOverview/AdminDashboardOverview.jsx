@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChartOutlined,
   InboxOutlined,
@@ -11,6 +12,7 @@ import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
 export default function AdminDashboardOverview() {
+  const navigate = useNavigate();
   const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -65,6 +67,8 @@ export default function AdminDashboardOverview() {
           value="210"
           footerLabel="Yangi bugun: "
           footerHighlight="+15"
+          clickable
+          onClick={() => navigate('/customers/statistics')}
         />
         <AdminStatCard
           icon={<ProfileOutlined />}

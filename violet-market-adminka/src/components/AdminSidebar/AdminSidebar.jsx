@@ -24,6 +24,12 @@ const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
 
 const menuItems = [
   { key: 'dashboard', icon: <DashboardOutlined />, label: 'Bosh sahifa', route: '/' },
+  {
+    key: 'customers-statistics',
+    icon: <TeamOutlined />,
+    label: 'Mijozlar va statistika',
+    route: '/customers/statistics',
+  },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
     key: 'products-paused',
@@ -50,6 +56,7 @@ const menuItems = [
 ];
 
 function getSelectedKeyFromPath(pathname) {
+  if (pathname === '/customers/statistics') return 'customers-statistics';
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/products') return 'products';
   return 'dashboard';

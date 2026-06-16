@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from './components/AdminLayout/AdminLayout';
 import AdminDashboardOverview from './components/AdminDashboardOverview/AdminDashboardOverview';
+import CustomerStatisticPage from './pages/CustomerStatisticPage/CustomerStatisticPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 
 function AllProductsPage() {
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AdminLayout />}>
           <Route index element={<AdminDashboardOverview />} />
+          <Route path="customers/statistics" element={<CustomerStatisticPage />} />
           <Route path="products/paused" element={<PausedProductsPage />} />
           <Route path="products" element={<AllProductsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

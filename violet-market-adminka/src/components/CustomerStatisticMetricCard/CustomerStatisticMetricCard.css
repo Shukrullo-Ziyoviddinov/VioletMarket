@@ -1,0 +1,81 @@
+.customer-statistic-metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 168px;
+  padding: 18px 20px;
+  border: 1px solid #ece7f3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(42, 24, 66, 0.04);
+}
+
+.customer-statistic-metric-card__title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.customer-statistic-metric-card__body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+}
+
+.customer-statistic-metric-card__value {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #2a1842;
+  flex-shrink: 0;
+}
+
+.customer-statistic-metric-card__chart {
+  width: 118px;
+  height: 48px;
+  flex: 1;
+  max-width: 118px;
+}
+
+.customer-statistic-metric-card__chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.customer-statistic-metric-card__footer {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.customer-statistic-metric-card__footer-label {
+  color: #4a3d5c;
+  font-weight: 500;
+}
+
+.customer-statistic-metric-card__footer-highlight {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .customer-statistic-metric-card {
+    min-height: auto;
+  }
+
+  .customer-statistic-metric-card__value {
+    font-size: 28px;
+  }
+
+  .customer-statistic-metric-card__chart {
+    width: 96px;
+    max-width: 96px;
+    height: 42px;
+  }
+}
