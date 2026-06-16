@@ -42,6 +42,8 @@ function CustomerActivityLegend({ series, activeFilter }) {
 }
 
 export default function CustomerActivityChart({
+  title = "Ro'yxatdan o'tgan mijozlar faolligi",
+  chartId = 'registered',
   data = CUSTOMER_ACTIVITY_MOCK_DATA,
   filterOptions = CUSTOMER_ACTIVITY_FILTER_OPTIONS,
 }) {
@@ -58,9 +60,7 @@ export default function CustomerActivityChart({
   return (
     <section className="customer-activity-chart">
       <div className="customer-activity-chart__header">
-        <h2 className="customer-activity-chart__title">
-          Ro'yxatdan o'tgan mijozlar faolligi
-        </h2>
+        <h2 className="customer-activity-chart__title">{title}</h2>
 
         <Select
           className="customer-activity-chart__filter"
@@ -79,7 +79,7 @@ export default function CustomerActivityChart({
               {CUSTOMER_ACTIVITY_SERIES.map((item) => (
                 <linearGradient
                   key={item.key}
-                  id={`customer-activity-gradient-${item.key}`}
+                  id={`customer-activity-gradient-${chartId}-${item.key}`}
                   x1="0"
                   y1="0"
                   x2="0"
@@ -132,7 +132,7 @@ export default function CustomerActivityChart({
                 name={item.label}
                 stroke={item.stroke}
                 strokeWidth={2.5}
-                fill={`url(#customer-activity-gradient-${item.key})`}
+                fill={`url(#customer-activity-gradient-${chartId}-${item.key})`}
                 dot={{
                   r: 4,
                   strokeWidth: 2,

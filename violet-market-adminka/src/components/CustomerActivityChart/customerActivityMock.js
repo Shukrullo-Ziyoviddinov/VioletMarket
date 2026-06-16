@@ -40,3 +40,13 @@ export const CUSTOMER_ACTIVITY_MOCK_DATA = [
 ];
 
 export const CUSTOMER_ACTIVITY_Y_TICKS = [0, 2000, 6000, 9000, 12000];
+
+export const CUSTOMER_UNREGISTERED_ACTIVITY_MOCK_DATA = [
+  { label: '1 iyun', dau: 1400, wau: 3100, mau: 800 },
+  { label: '15 iyun', dau: 3800, wau: 5200, mau: 1600 },
+  { label: '27 iyun', dau: 6200, wau: 4800, mau: 2100 },
+  { label: '30 iyun', dau: 4900, wau: 3600, mau: 1500 },
+  { label: '1 iyun', dau: 5800, wau: 4200, mau: 1900 },
+  { label: '3 iyun', dau: 7600, wau: 5400, mau: 2400 },
+  { label: '5 iyun', dau: 6800, wau: 4900, mau: 2200 },
+];

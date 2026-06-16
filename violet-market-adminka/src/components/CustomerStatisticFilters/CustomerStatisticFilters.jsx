@@ -4,7 +4,6 @@ import {
   CUSTOMER_STATISTIC_DAY_OPTIONS,
   CUSTOMER_STATISTIC_DEFAULT_FILTERS,
   CUSTOMER_STATISTIC_MONTH_OPTIONS,
-  CUSTOMER_STATISTIC_VIEW_OPTIONS,
   CUSTOMER_STATISTIC_WEEK_OPTIONS,
 } from './customerStatisticMock';
 import './CustomerStatisticFilters.css';
@@ -25,16 +24,6 @@ export default function CustomerStatisticFilters({
 
   return (
     <div className="customer-statistic-filters">
-      <div className="customer-statistic-filters__item">
-        <span className="customer-statistic-filters__label">Ko&apos;rinishni tanlash:</span>
-        <Select
-          className="customer-statistic-filters__select"
-          value={filters.view}
-          options={CUSTOMER_STATISTIC_VIEW_OPTIONS}
-          onChange={(nextValue) => updateFilter('view', nextValue)}
-        />
-      </div>
-
       <div className="customer-statistic-filters__item">
         <span className="customer-statistic-filters__label">Kun:</span>
         <Select
