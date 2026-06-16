@@ -13,6 +13,21 @@ const {
   toDateKeyFromYmd,
 } = require("../utils/customerStatisticsDate");
 
+const MONTH_LABELS_UZ = [
+  "yanvar",
+  "fevral",
+  "mart",
+  "aprel",
+  "may",
+  "iyun",
+  "iyul",
+  "avgust",
+  "sentabr",
+  "oktabr",
+  "noyabr",
+  "dekabr",
+];
+
 function toNumber(value, fallback = 0) {
   const num = Number(value);
   return Number.isFinite(num) ? num : fallback;
@@ -45,6 +60,94 @@ function resolveTrendTone(value) {
   if (value > 0) return "positive";
   if (value < 0) return "negative";
   return "neutral";
+}
+
+function buildChartKeys(year, month) {
+  const lastDay = getDaysInMonth(year, month);
+  const points = [1, 5, 10, 15, 20, 25, lastDay]
+    .filter((day) => day >= 1 && day <= lastDay);
+  return [...new Set(points)]
+    .sort((a, b) => a - b)
+    .map((day) => toDateKeyFromYmd(year, month, day));
+}
+
+function createEmptyBucket() {
+  return {
+    registered: new Set(),
+    unregistered: new Set(),
+  };
+}
+
+function getWindowKeysInclusive(startKey, endKey) {
+  return getRangeKeys(startKey, addDaysToDateKey(endKey, 1));
+}
+
+function collectUsersInWindow(buckets, keys, bucketType) {
+  const union = new Set();
+  for (const key of keys) {
+    const set = buckets.get(key)?.[bucketType];
+    if (!set) continue;
+    for (const visitorKey of set) {
+      union.add(visitorKey);
+    }
+  }
+  return union.size;
+}
+
+async function buildActivityCharts(year, month) {
+  const monthRange = getMonthRange(year, month);
+  const chartKeys = buildChartKeys(year, month);
+  const minKey = addDaysToDateKey(monthRange.startKey, -6);
+  const monthLastKey = addDaysToDateKey(monthRange.endKey, -1);
+  const queryKeys = getRangeKeys(minKey, addDaysToDateKey(monthLastKey, 1));
+
+  const rows = await UserActivityDaily.find({
+    dateKey: { $in: queryKeys },
+  })
+    .select({ dateKey: 1, visitorKey: 1, isRegistered: 1 })
+    .lean();
+
+  const buckets = new Map();
+  for (const key of queryKeys) {
+    buckets.set(key, createEmptyBucket());
+  }
+
+  for (const row of rows) {
+    const key = String(row?.dateKey || "");
+    if (!key || !buckets.has(key)) continue;
+    const visitorKey = String(row?.visitorKey || "");
+    if (!visitorKey) continue;
+    const type = row?.isRegistered ? "registered" : "unregistered";
+    buckets.get(key)[type].add(visitorKey);
+  }
+
+  const monthLabel = MONTH_LABELS_UZ[Math.max(0, Math.min(11, month - 1))];
+
+  const registered = [];
+  const unregistered = [];
+  for (const key of chartKeys) {
+    const [, , dayRaw] = key.split("-");
+    const day = Number(dayRaw);
+    const dayStart = addDaysToDateKey(key, -6);
+    const wauWindow = getWindowKeysInclusive(dayStart, key);
+    const mauWindow = getWindowKeysInclusive(monthRange.startKey, key);
+
+    registered.push({
+      label: `${day} ${monthLabel}`,
+      dau: collectUsersInWindow(buckets, [key], "registered"),
+      wau: collectUsersInWindow(buckets, wauWindow, "registered"),
+      mau: collectUsersInWindow(buckets, mauWindow, "registered"),
+    });
+
+    unregistered.push({
+      label: `${day} ${monthLabel}`,
+      dau: collectUsersInWindow(buckets, [key], "unregistered"),
+      wau: collectUsersInWindow(buckets, wauWindow, "unregistered"),
+      mau: collectUsersInWindow(buckets, mauWindow, "unregistered"),
+    });
+  }
+
+  return { registered, unregistered };
 }
 
 async function buildCustomerStatistics(filters = {}) {
@@ -102,6 +205,7 @@ async function buildCustomerStatistics(filters = {}) {
   const dauGrowth = calcPercentageChange(dau, prevDau);
   const wauGrowth = calcPercentageChange(wau, prevWau);
   const mauGrowth = calcPercentageChange(mau, prevMau);
+  const charts = await buildActivityCharts(selected.year, selected.month);
 
   return {
     filters: {
@@ -139,6 +243,7 @@ async function buildCustomerStatistics(filters = {}) {
         compareTone: resolveTrendTone(mauGrowth),
       },
     },
+    charts,
   };
 }
 

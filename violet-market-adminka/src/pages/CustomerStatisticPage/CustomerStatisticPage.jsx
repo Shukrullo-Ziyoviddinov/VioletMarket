@@ -60,6 +60,7 @@ export default function CustomerStatisticPage() {
   const { setGlobalLoading } = useGlobalLoader();
   const [filters, setFilters] = useState(CUSTOMER_STATISTIC_DEFAULT_FILTERS);
   const [metrics, setMetrics] = useState([]);
+  const [chartData, setChartData] = useState({ registered: [], unregistered: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const isInitialLoadRef = useRef(true);
@@ -77,8 +78,13 @@ export default function CustomerStatisticPage() {
         setFilters((prev) => ({ ...prev, ...payload.filters }));
       }
       setMetrics(buildMetricsFromApi(payload));
+      setChartData({
+        registered: Array.isArray(payload?.charts?.registered) ? payload.charts.registered : [],
+        unregistered: Array.isArray(payload?.charts?.unregistered) ? payload.charts.unregistered : [],
+      });
     } catch (err) {
       setMetrics([]);
+      setChartData({ registered: [], unregistered: [] });
       setError(err.message || "Statistikani yuklashda xatolik yuz berdi");
     } finally {
       if (useGlobalLoader) {
@@ -137,7 +143,10 @@ export default function CustomerStatisticPage() {
       ) : null}
       {error ? <div className="customer-statistic-page__state customer-statistic-page__state--error">{error}</div> : null}
       <CustomerStatisticMetrics metrics={displayMetrics} />
-      <CustomerActivityChartsSection />
+      <CustomerActivityChartsSection
+        registeredData={chartData.registered}
+        unregisteredData={chartData.unregistered}
+      />
     </section>
   );
 }
