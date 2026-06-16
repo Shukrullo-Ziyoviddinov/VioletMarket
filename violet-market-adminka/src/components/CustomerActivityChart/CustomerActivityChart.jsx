@@ -4,7 +4,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -53,7 +52,6 @@ function buildYAxisConfig(data, seriesKeys) {
     return {
       domain: [0, 4],
       ticks: [0, 1, 2, 3, 4],
-      showLabels: true,
     };
   }
 
@@ -62,7 +60,6 @@ function buildYAxisConfig(data, seriesKeys) {
     return {
       domain: [0, top],
       ticks: Array.from({ length: top + 1 }, (_, index) => index),
-      showLabels: true,
     };
   }
 
@@ -89,7 +86,6 @@ function buildYAxisConfig(data, seriesKeys) {
   return {
     domain: [0, ticks[ticks.length - 1]],
     ticks,
-    showLabels: maxValue <= 20,
   };
 }
 
@@ -265,7 +261,7 @@ export default function CustomerActivityChart({
                   strokeWidth={3}
                   fill={`url(#customer-activity-gradient-${chartId}-${item.key})`}
                   dot={{
-                    r: yAxisConfig.showLabels ? 5 : 4,
+                    r: 4,
                     strokeWidth: 2,
                     fill: item.stroke,
                     stroke: '#ffffff',
@@ -276,17 +272,7 @@ export default function CustomerActivityChart({
                     fill: item.stroke,
                     stroke: '#ffffff',
                   }}
-                >
-                  {yAxisConfig.showLabels ? (
-                    <LabelList
-                      dataKey={item.key}
-                      position="top"
-                      offset={10}
-                      formatter={(value) => formatYAxisTick(value)}
-                      className="customer-activity-chart__value-label"
-                    />
-                  ) : null}
-                </Area>
+                />
               ))}
             </AreaChart>
           </ResponsiveContainer>
