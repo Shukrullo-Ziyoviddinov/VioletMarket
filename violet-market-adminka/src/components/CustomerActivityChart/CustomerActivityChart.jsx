@@ -59,7 +59,7 @@ export default function CustomerActivityChart({
     <section className="customer-activity-chart">
       <div className="customer-activity-chart__header">
         <h2 className="customer-activity-chart__title">
-          Mijozlar Faolligi (Hozirgi Mijozlar)
+          Ro'yxatdan o'tgan mijozlar faolligi
         </h2>
 
         <Select
