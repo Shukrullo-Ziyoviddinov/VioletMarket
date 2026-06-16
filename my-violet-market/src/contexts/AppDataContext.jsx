@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { apiUrl } from "../config/api";
+import { pingSiteActivity } from "../api/activityApi";
 import { buildProductCollections } from "../utils/productCatalog";
 
 const AppDataContext = createContext(null);
@@ -71,6 +72,7 @@ export function AppDataProvider({ children }) {
 
   useEffect(() => {
     load();
+    pingSiteActivity();
   }, [load]);
 
   useEffect(() => {

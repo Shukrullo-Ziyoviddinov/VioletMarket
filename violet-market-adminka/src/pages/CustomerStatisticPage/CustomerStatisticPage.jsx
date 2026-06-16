@@ -110,6 +110,21 @@ export default function CustomerStatisticPage() {
     [setGlobalLoading],
   );
 
+  useEffect(() => {
+    const refreshOnReturn = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadStatistics(filters, { useGlobalLoader: false });
+    };
+
+    window.addEventListener('focus', refreshOnReturn);
+    document.addEventListener('visibilitychange', refreshOnReturn);
+
+    return () => {
+      window.removeEventListener('focus', refreshOnReturn);
+      document.removeEventListener('visibilitychange', refreshOnReturn);
+    };
+  }, [filters, loadStatistics]);
+
   const displayMetrics = useMemo(() => metrics, [metrics]);
 
   return (

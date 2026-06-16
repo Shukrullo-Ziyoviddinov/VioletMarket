@@ -1,3 +1,5 @@
+import { getDefaultCustomerStatisticFilters } from '../../utils/customerStatisticsDate';
+
 const MONTH_NAMES_UZ = [
   'Yanvar',
   'Fevral',
@@ -35,14 +37,7 @@ export const CUSTOMER_STATISTIC_MONTH_OPTIONS = Array.from({ length: 12 }, (_, i
   };
 });
 
-const NOW = new Date();
-const CURRENT_MONTH = `${NOW.getUTCFullYear()}-${String(NOW.getUTCMonth() + 1).padStart(2, '0')}`;
-
-export const CUSTOMER_STATISTIC_DEFAULT_FILTERS = {
-  day: String(NOW.getUTCDate()),
-  week: '1',
-  month: CURRENT_MONTH,
-};
+export const CUSTOMER_STATISTIC_DEFAULT_FILTERS = getDefaultCustomerStatisticFilters();
 
 export const CUSTOMER_STATISTIC_MOCK_METRICS = [
   {

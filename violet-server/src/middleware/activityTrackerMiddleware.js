@@ -2,10 +2,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const { verifyUserToken } = require("../utils/jwt");
 const { UserActivityDaily } = require("../models/userActivityDaily");
-
-function formatDateKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
-}
+const { getStatisticsDateKey } = require("../utils/customerStatisticsDate");
 
 function normalizeForwardedIp(value) {
   const raw = String(value || "").split(",")[0].trim();
@@ -54,7 +51,7 @@ async function storeActivity(req) {
   const userId = req.userId || tryResolveUserId(req);
   const isRegistered = Boolean(userId);
   const visitorKey = isRegistered ? `u:${String(userId)}` : buildGuestVisitorKey(req);
-  const dateKey = formatDateKey(new Date());
+  const dateKey = getStatisticsDateKey(new Date());
 
   await UserActivityDaily.updateOne(
     { dateKey, visitorKey },
