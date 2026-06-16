@@ -2,9 +2,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import AdminModalContext from '../../context/AdminModalContext';
+import GlobalLoaderContext from '../../context/GlobalLoaderContext';
 import { AdminToastProvider } from '../../context/AdminToastContext';
 import { MiniGlobalModalProvider } from '../../context/MiniGlobalModalContext';
 import AdminHeader from '../AdminHeader/AdminHeader';
+import GlobalLoader from '../GlobalLoader/GlobalLoader';
 import AdminSidebar from '../AdminSidebar/AdminSidebar';
 import GlobalSectionModal from '../GlobalSectionModal/GlobalSectionModal';
 import './AdminLayout.css';
@@ -15,6 +17,7 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
 
   const handleSectionSelect = (section) => {
     if (!section) {
@@ -63,29 +66,39 @@ export default function AdminLayout() {
     [openAdminModal, closeModal],
   );
 
+  const globalLoaderValue = useMemo(
+    () => ({
+      setGlobalLoading: setIsGlobalLoading,
+    }),
+    [],
+  );
+
   return (
     <AdminModalContext.Provider value={modalContextValue}>
       <AdminToastProvider>
         <MiniGlobalModalProvider>
-        <Layout className="admin-layout">
-          <Sider
-            collapsible
-            collapsed={collapsed}
-            onCollapse={setCollapsed}
-            width={240}
-            className="admin-layout__sider"
-            trigger={null}
-          >
-            <AdminSidebar collapsed={collapsed} onSelectSection={handleSectionSelect} />
-          </Sider>
-          <Layout>
-            <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
-            <Content className="admin-layout__content">
-              <Outlet />
-            </Content>
-          </Layout>
-        </Layout>
-        <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
+          <GlobalLoaderContext.Provider value={globalLoaderValue}>
+            <Layout className="admin-layout">
+              <Sider
+                collapsible
+                collapsed={collapsed}
+                onCollapse={setCollapsed}
+                width={240}
+                className="admin-layout__sider"
+                trigger={null}
+              >
+                <AdminSidebar collapsed={collapsed} onSelectSection={handleSectionSelect} />
+              </Sider>
+              <Layout>
+                <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+                <Content className="admin-layout__content">
+                  <GlobalLoader active={isGlobalLoading} />
+                  <Outlet />
+                </Content>
+              </Layout>
+            </Layout>
+            <GlobalSectionModal open={isModalOpen} section={activeSection} onClose={closeModal} />
+          </GlobalLoaderContext.Provider>
         </MiniGlobalModalProvider>
       </AdminToastProvider>
     </AdminModalContext.Provider>

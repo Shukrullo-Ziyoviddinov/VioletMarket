@@ -1,0 +1,10 @@
+.global-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(244, 242, 248, 0.78);
+  backdrop-filter: blur(1.5px);
+}

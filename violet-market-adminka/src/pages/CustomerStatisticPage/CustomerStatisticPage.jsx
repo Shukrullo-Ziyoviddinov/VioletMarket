@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Spin } from 'antd';
 import { fetchCustomerStatistics } from '../../api/customerStatisticsAdminApi';
 import CustomerActivityChartsSection from '../../components/CustomerActivityChartsSection/CustomerActivityChartsSection';
@@ -7,6 +7,7 @@ import {
   CUSTOMER_STATISTIC_DEFAULT_FILTERS,
 } from '../../components/CustomerStatisticFilters/customerStatisticMock';
 import CustomerStatisticMetrics from '../../components/CustomerStatisticMetrics/CustomerStatisticMetrics';
+import { useGlobalLoader } from '../../context/GlobalLoaderContext';
 import './CustomerStatisticPage.css';
 
 function formatMetricNumber(value) {
@@ -56,14 +57,20 @@ function buildMetricsFromApi(apiData) {
 }
 
 export default function CustomerStatisticPage() {
+  const { setGlobalLoading } = useGlobalLoader();
   const [filters, setFilters] = useState(CUSTOMER_STATISTIC_DEFAULT_FILTERS);
   const [metrics, setMetrics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const isInitialLoadRef = useRef(true);
 
-  const loadStatistics = useCallback(async (activeFilters) => {
+  const loadStatistics = useCallback(async (activeFilters, options = {}) => {
+    const useGlobalLoader = options?.useGlobalLoader === true;
     setLoading(true);
     setError('');
+    if (useGlobalLoader) {
+      setGlobalLoading(true);
+    }
     try {
       const payload = await fetchCustomerStatistics(activeFilters);
       if (payload?.filters) {
@@ -74,20 +81,33 @@ export default function CustomerStatisticPage() {
       setMetrics([]);
       setError(err.message || "Statistikani yuklashda xatolik yuz berdi");
     } finally {
+      if (useGlobalLoader) {
+        setGlobalLoading(false);
+      }
       setLoading(false);
     }
-  }, []);
+  }, [setGlobalLoading]);
 
   useEffect(() => {
-    loadStatistics(filters);
+    if (isInitialLoadRef.current) {
+      isInitialLoadRef.current = false;
+      loadStatistics(filters, { useGlobalLoader: true });
+    }
   }, [loadStatistics]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFilterChange = useCallback(
     (nextFilters) => {
       setFilters(nextFilters);
-      loadStatistics(nextFilters);
+      loadStatistics(nextFilters, { useGlobalLoader: false });
     },
     [loadStatistics],
+  );
+
+  useEffect(
+    () => () => {
+      setGlobalLoading(false);
+    },
+    [setGlobalLoading],
   );
 
   const displayMetrics = useMemo(() => metrics, [metrics]);

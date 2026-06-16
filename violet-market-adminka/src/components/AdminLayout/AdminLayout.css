@@ -14,6 +14,7 @@
 }
 
 .admin-layout__content {
+  position: relative;
   margin: 0;
   padding: 24px;
   min-height: calc(100vh - 64px);
