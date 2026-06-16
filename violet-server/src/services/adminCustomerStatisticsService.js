@@ -9,6 +9,7 @@ const {
   getPreviousMonth,
   getRangeKeys,
   getStatisticsDateKey,
+  getTashkentYmd,
   parseMonthKey,
   toDateKeyFromYmd,
 } = require("../utils/customerStatisticsDate");
@@ -64,8 +65,20 @@ function resolveTrendTone(value) {
 
 function buildChartKeys(year, month) {
   const lastDay = getDaysInMonth(year, month);
+  const today = getTashkentYmd();
+  let maxDay = lastDay;
+
+  if (year > today.year || (year === today.year && month > today.month)) {
+    return [];
+  }
+
+  if (year === today.year && month === today.month) {
+    maxDay = Math.min(lastDay, today.day);
+  }
+
   const points = [1, 5, 10, 15, 20, 25, lastDay]
-    .filter((day) => day >= 1 && day <= lastDay);
+    .filter((day) => day >= 1 && day <= maxDay);
+
   return [...new Set(points)]
     .sort((a, b) => a - b)
     .map((day) => toDateKeyFromYmd(year, month, day));

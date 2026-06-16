@@ -11,14 +11,56 @@ import {
 } from 'recharts';
 import {
   CUSTOMER_ACTIVITY_FILTER_OPTIONS,
-  CUSTOMER_ACTIVITY_MOCK_DATA,
   CUSTOMER_ACTIVITY_SERIES,
-  CUSTOMER_ACTIVITY_Y_TICKS,
 } from './customerActivityMock';
 import './CustomerActivityChart.css';
 
 function formatYAxisTick(value) {
   return value.toLocaleString('en-US');
+}
+
+function buildYAxisConfig(data, seriesKeys) {
+  let maxValue = 0;
+
+  (Array.isArray(data) ? data : []).forEach((point) => {
+    seriesKeys.forEach((key) => {
+      maxValue = Math.max(maxValue, Number(point?.[key]) || 0);
+    });
+  });
+
+  if (maxValue <= 0) {
+    return {
+      domain: [0, 5],
+      ticks: [0, 1, 2, 3, 4, 5],
+    };
+  }
+
+  const top = Math.max(5, Math.ceil(maxValue * 1.2));
+  let step = 1;
+
+  if (top > 10) step = 2;
+  if (top > 20) step = 5;
+  if (top > 50) step = 10;
+  if (top > 100) step = 20;
+  if (top > 200) step = 50;
+  if (top > 500) step = 100;
+  if (top > 1000) step = 200;
+  if (top > 5000) step = 1000;
+  if (top > 10000) step = 2000;
+
+  const ticks = [];
+  for (let tick = 0; tick <= top; tick += step) {
+    ticks.push(tick);
+  }
+
+  if (ticks[ticks.length - 1] < top) {
+    ticks.push(top);
+  }
+
+  return {
+    domain: [0, ticks[ticks.length - 1]],
+    ticks,
+  };
 }
 
 function CustomerActivityLegend({ series, activeFilter }) {
@@ -44,7 +86,7 @@ function CustomerActivityLegend({ series, activeFilter }) {
 export default function CustomerActivityChart({
   title = "Ro'yxatdan o'tgan mijozlar faolligi",
   chartId = 'registered',
-  data = CUSTOMER_ACTIVITY_MOCK_DATA,
+  data = [],
   filterOptions = CUSTOMER_ACTIVITY_FILTER_OPTIONS,
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
@@ -56,6 +98,13 @@ export default function CustomerActivityChart({
 
     return CUSTOMER_ACTIVITY_SERIES.filter((item) => item.key === activeFilter);
   }, [activeFilter]);
+
+  const yAxisConfig = useMemo(
+    () => buildYAxisConfig(data, visibleSeries.map((item) => item.key)),
+    [data, visibleSeries],
+  );
+
+  const hasData = Array.isArray(data) && data.length > 0;
 
   return (
     <section className="customer-activity-chart">
@@ -73,8 +122,11 @@ export default function CustomerActivityChart({
       <CustomerActivityLegend series={CUSTOMER_ACTIVITY_SERIES} activeFilter={activeFilter} />
 
       <div className="customer-activity-chart__canvas">
-        <ResponsiveContainer width="100%" height={320}>
-          <AreaChart data={data} margin={{ top: 12, right: 8, left: 4, bottom: 0 }}>
+        {!hasData ? (
+          <div className="customer-activity-chart__empty">Tanlangan oy uchun grafik ma&apos;lumoti hali yo&apos;q</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={320}>
+            <AreaChart data={data} margin={{ top: 12, right: 8, left: 4, bottom: 0 }}>
             <defs>
               {CUSTOMER_ACTIVITY_SERIES.map((item) => (
                 <linearGradient
@@ -106,7 +158,8 @@ export default function CustomerActivityChart({
             />
 
             <YAxis
-              ticks={CUSTOMER_ACTIVITY_Y_TICKS}
+              domain={yAxisConfig.domain}
+              ticks={yAxisConfig.ticks}
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#6b5b7d', fontSize: 12, fontWeight: 500 }}
@@ -149,6 +202,7 @@ export default function CustomerActivityChart({
             ))}
           </AreaChart>
         </ResponsiveContainer>
+        )}
       </div>
     </section>
   );
