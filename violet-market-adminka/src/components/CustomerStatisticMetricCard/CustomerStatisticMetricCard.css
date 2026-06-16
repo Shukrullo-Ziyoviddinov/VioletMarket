@@ -1,8 +1,7 @@
 .customer-statistic-metric-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-height: 168px;
+  gap: 4px;
   padding: 18px 20px;
   border: 1px solid #ece7f3;
   border-radius: 16px;
