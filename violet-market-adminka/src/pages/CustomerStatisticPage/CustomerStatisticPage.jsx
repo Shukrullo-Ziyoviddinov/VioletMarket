@@ -5,7 +5,6 @@ import CustomerActivityChartsSection from '../../components/CustomerActivityChar
 import CustomerStatisticFilters from '../../components/CustomerStatisticFilters/CustomerStatisticFilters';
 import {
   CUSTOMER_STATISTIC_DEFAULT_FILTERS,
-  CUSTOMER_STATISTIC_MOCK_METRICS,
 } from '../../components/CustomerStatisticFilters/customerStatisticMock';
 import CustomerStatisticMetrics from '../../components/CustomerStatisticMetrics/CustomerStatisticMetrics';
 import './CustomerStatisticPage.css';
@@ -58,7 +57,7 @@ function buildMetricsFromApi(apiData) {
 
 export default function CustomerStatisticPage() {
   const [filters, setFilters] = useState(CUSTOMER_STATISTIC_DEFAULT_FILTERS);
-  const [metrics, setMetrics] = useState(CUSTOMER_STATISTIC_MOCK_METRICS);
+  const [metrics, setMetrics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -72,6 +71,7 @@ export default function CustomerStatisticPage() {
       }
       setMetrics(buildMetricsFromApi(payload));
     } catch (err) {
+      setMetrics([]);
       setError(err.message || "Statistikani yuklashda xatolik yuz berdi");
     } finally {
       setLoading(false);

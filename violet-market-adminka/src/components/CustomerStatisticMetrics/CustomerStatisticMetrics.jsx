@@ -1,9 +1,8 @@
 import React from 'react';
-import { CUSTOMER_STATISTIC_MOCK_METRICS } from '../CustomerStatisticFilters/customerStatisticMock';
 import CustomerStatisticMetricCard from '../CustomerStatisticMetricCard/CustomerStatisticMetricCard';
 import './CustomerStatisticMetrics.css';
 
-export default function CustomerStatisticMetrics({ metrics = CUSTOMER_STATISTIC_MOCK_METRICS }) {
+export default function CustomerStatisticMetrics({ metrics = [] }) {
   return (
     <div className="customer-statistic-metrics">
       {metrics.map((metric) => (
