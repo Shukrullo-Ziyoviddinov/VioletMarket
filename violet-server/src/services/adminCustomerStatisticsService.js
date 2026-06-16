@@ -76,12 +76,12 @@ function buildChartKeys(year, month) {
     maxDay = Math.min(lastDay, today.day);
   }
 
-  const points = [1, 5, 10, 15, 20, 25, lastDay]
-    .filter((day) => day >= 1 && day <= maxDay);
+  const points = [];
+  for (let day = 1; day <= maxDay; day += 1) {
+    points.push(day);
+  }
 
-  return [...new Set(points)]
-    .sort((a, b) => a - b)
-    .map((day) => toDateKeyFromYmd(year, month, day));
+  return points.map((day) => toDateKeyFromYmd(year, month, day));
 }
 
 function createEmptyBucket() {

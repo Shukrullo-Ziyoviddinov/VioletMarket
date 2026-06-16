@@ -1,28 +1,28 @@
 export const CUSTOMER_ACTIVITY_FILTER_OPTIONS = [
+  { value: 'dau', label: 'Kunlik (DAU)' },
+  { value: 'wau', label: '7 kunlik (WAU)' },
+  { value: 'mau', label: 'Oylik (MAU)' },
   { value: 'all', label: 'Hammasi' },
-  { value: 'dau', label: 'DAU' },
-  { value: 'wau', label: 'WAU' },
-  { value: 'mau', label: 'MAU' },
 ];
 
 export const CUSTOMER_ACTIVITY_SERIES = [
   {
     key: 'dau',
-    label: 'DAU',
+    label: 'Kunlik (DAU)',
     stroke: '#6d28d9',
     fill: '#a78bfa',
     legendColor: '#c4b5fd',
   },
   {
     key: 'wau',
-    label: 'WAU',
+    label: '7 kunlik (WAU)',
     stroke: '#8b5cf6',
     fill: '#a78bfa',
     legendColor: '#8b5cf6',
   },
   {
     key: 'mau',
-    label: 'MAU',
+    label: 'Oylik (MAU)',
     stroke: '#0d9488',
     fill: '#2dd4bf',
     legendColor: '#14b8a6',
