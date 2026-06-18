@@ -9,25 +9,12 @@
   box-shadow: 0 4px 18px rgba(42, 24, 66, 0.1);
 }
 
-.customer-list-section__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .customer-list-section__title {
   margin: 0;
   font-size: 18px;
   line-height: 1.3;
   font-weight: 700;
   color: #2a1842;
-}
-
-.customer-list-section__count {
-  font-size: 13px;
-  font-weight: 600;
-  color: #6b5b7d;
 }
 
 .customer-list-section__table {
@@ -93,11 +80,6 @@
 @media (max-width: 640px) {
   .customer-list-section {
     padding: 16px;
-  }
-
-  .customer-list-section__header {
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .customer-list-section__row {

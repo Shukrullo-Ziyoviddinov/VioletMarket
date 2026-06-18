@@ -148,7 +148,7 @@ export default function CustomerStatisticPage() {
         registeredData={chartData.registered}
         unregisteredData={chartData.unregistered}
       />
-      <CustomerListSection month={filters.month} />
+      <CustomerListSection />
     </section>
   );
 }

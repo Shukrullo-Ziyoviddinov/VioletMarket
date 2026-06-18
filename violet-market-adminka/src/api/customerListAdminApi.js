@@ -12,16 +12,8 @@ async function parseJson(res) {
   return data;
 }
 
-export async function fetchRegisteredCustomers(filters = {}) {
-  const params = new URLSearchParams();
-  if (filters?.month) params.set('month', String(filters.month));
-
-  const query = params.toString();
-  const path = query
-    ? `/api/admin/customers/registered?${query}`
-    : '/api/admin/customers/registered';
-
-  const res = await fetch(apiUrl(path));
+export async function fetchRegisteredCustomers() {
+  const res = await fetch(apiUrl('/api/admin/customers/registered'));
   const payload = await parseJson(res);
 
   return {

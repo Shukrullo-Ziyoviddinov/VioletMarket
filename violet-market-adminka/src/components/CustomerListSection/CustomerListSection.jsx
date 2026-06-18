@@ -9,9 +9,8 @@ function shortenCustomerId(id) {
   return `${raw.slice(0, 8)}...`;
 }
 
-export default function CustomerListSection({ month }) {
+export default function CustomerListSection() {
   const [customers, setCustomers] = useState([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -20,17 +19,15 @@ export default function CustomerListSection({ month }) {
     setError('');
 
     try {
-      const payload = await fetchRegisteredCustomers({ month });
+      const payload = await fetchRegisteredCustomers();
       setCustomers(payload.customers);
-      setTotal(payload.total);
     } catch (err) {
       setCustomers([]);
-      setTotal(0);
       setError(err.message || "Mijozlar ro'yxatini yuklashda xatolik");
     } finally {
       setLoading(false);
     }
-  }, [month]);
+  }, []);
 
   useEffect(() => {
     loadCustomers();
@@ -38,12 +35,7 @@ export default function CustomerListSection({ month }) {
 
   return (
     <section className="customer-list-section">
-      <div className="customer-list-section__header">
-        <h2 className="customer-list-section__title">Mijozlar ro&apos;yxati</h2>
-        {!loading && !error ? (
-          <span className="customer-list-section__count">Jami: {total}</span>
-        ) : null}
-      </div>
+      <h2 className="customer-list-section__title">Mijozlar ro&apos;yxati</h2>
 
       <div className="customer-list-section__table">
         <div className="customer-list-section__row customer-list-section__row--head">

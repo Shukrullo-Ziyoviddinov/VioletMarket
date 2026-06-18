@@ -1,5 +1,4 @@
 const { User } = require("../models/user");
-const { getMonthRange, parseMonthKey } = require("../utils/customerStatisticsDate");
 
 function formatRegisteredDateLabel(date) {
   if (!date) return "—";
@@ -27,31 +26,18 @@ function mapCustomerRow(user) {
   };
 }
 
-async function listRegisteredCustomers(filters = {}) {
-  const query = {};
-  const monthKey = String(filters.month || "").trim();
-
-  if (monthKey) {
-    const { year, month } = parseMonthKey(monthKey);
-    const monthRange = getMonthRange(year, month);
-    query.createdAt = {
-      $gte: new Date(`${monthRange.startKey}T00:00:00+05:00`),
-      $lt: new Date(`${monthRange.endKey}T00:00:00+05:00`),
-    };
-  }
-
+async function listRegisteredCustomers() {
   const [rows, total] = await Promise.all([
-    User.find(query)
+    User.find({})
       .select({ firstName: 1, lastName: 1, createdAt: 1 })
       .sort({ createdAt: -1 })
       .lean(),
-    User.countDocuments(query),
+    User.countDocuments({}),
   ]);
 
   return {
     customers: rows.map(mapCustomerRow),
     total,
-    month: monthKey || null,
   };
 }
 
