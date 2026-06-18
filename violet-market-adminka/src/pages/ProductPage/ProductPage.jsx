@@ -11,6 +11,7 @@ import ProductSellerSearch, {
 import { useAdminModal } from '../../context/AdminModalContext';
 import { useAdminToast } from '../../context/AdminToastContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
+import { useGlobalLoaderOnInitialLoad } from '../../hooks/useGlobalLoaderOnInitialLoad';
 import {
   formatStatNumber,
   getLocalizedText,
@@ -54,6 +55,8 @@ export default function ProductPage({ mode = 'all' }) {
   const [error, setError] = useState('');
   const [openMenuProductId, setOpenMenuProductId] = useState(null);
   const [togglingPauseProductId, setTogglingPauseProductId] = useState(null);
+
+  useGlobalLoaderOnInitialLoad(loading, mode);
 
   const sellers = useMemo(() => collectSellersFromProducts(products), [products]);
 

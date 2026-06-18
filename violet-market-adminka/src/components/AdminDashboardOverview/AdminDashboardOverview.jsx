@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { fetchCustomerDashboardStats } from '../../api/customerStatisticsAdminApi';
 import { fetchProductStats } from '../../api/productsAdminApi';
+import { useGlobalLoaderOnInitialLoad } from '../../hooks/useGlobalLoaderOnInitialLoad';
 import { formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
@@ -18,6 +19,8 @@ export default function AdminDashboardOverview() {
   const [customerStats, setCustomerStats] = useState({ monthlyVisitors: 0, todayVisitors: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [customerStatsLoading, setCustomerStatsLoading] = useState(true);
+
+  useGlobalLoaderOnInitialLoad(statsLoading || customerStatsLoading);
 
   useEffect(() => {
     let cancelled = false;

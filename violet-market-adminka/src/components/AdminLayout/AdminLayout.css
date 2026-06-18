@@ -21,8 +21,17 @@
   background: #f4f2f8;
 }
 
+.admin-layout__content-shell {
+  position: relative;
+  min-height: calc(100vh - 64px - 48px);
+}
+
 @media (max-width: 768px) {
   .admin-layout__content {
     padding: 16px;
+  }
+
+  .admin-layout__content-shell {
+    min-height: calc(100vh - 64px - 32px);
   }
 }

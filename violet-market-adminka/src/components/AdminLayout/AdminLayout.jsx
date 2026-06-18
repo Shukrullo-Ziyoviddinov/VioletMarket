@@ -92,8 +92,10 @@ export default function AdminLayout() {
               <Layout>
                 <AdminHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
                 <Content className="admin-layout__content">
-                  <GlobalLoader active={isGlobalLoading} />
-                  <Outlet />
+                  <div className="admin-layout__content-shell">
+                    <GlobalLoader active={isGlobalLoading} />
+                    <Outlet />
+                  </div>
                 </Content>
               </Layout>
             </Layout>
