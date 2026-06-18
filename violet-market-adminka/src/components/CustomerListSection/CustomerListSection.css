@@ -28,10 +28,28 @@
 .customer-list-section__search {
   width: min(100%, 320px);
   border-radius: 10px;
+  background: #f8f6fc;
+  border: 1px solid #e3d9ef;
+}
+
+.customer-list-section__search:hover,
+.customer-list-section__search.ant-input-affix-wrapper-focused {
+  background: #f3eef9;
+  border-color: #d8c9ea;
 }
 
 .customer-list-section__search .ant-input {
   font-size: 14px;
+  background: #f8f6fc;
+}
+
+.customer-list-section__search.ant-input-affix-wrapper > input.ant-input {
+  background: #f8f6fc;
+}
+
+.customer-list-section__search:hover .ant-input,
+.customer-list-section__search.ant-input-affix-wrapper-focused > input.ant-input {
+  background: #f3eef9;
 }
 
 .customer-list-section__table {
