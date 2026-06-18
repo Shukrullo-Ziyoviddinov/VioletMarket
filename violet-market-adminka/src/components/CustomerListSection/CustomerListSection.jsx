@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Empty, Input, Spin } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { MoreOutlined, SearchOutlined } from '@ant-design/icons';
 import { fetchRegisteredCustomers } from '../../api/customerListAdminApi';
 import { filterCustomersBySearch } from './customerListFuzzySearch';
 import './CustomerListSection.css';
@@ -98,6 +98,13 @@ export default function CustomerListSection() {
               <span>{customer.phone}</span>
               <span>{customer.registeredAtLabel}</span>
               <span>{customer.lastActiveAtLabel || "Ma'lumot yo'q"}</span>
+              <button
+                type="button"
+                className="customer-list-section__menu-btn"
+                aria-label="Mijoz amallari"
+              >
+                <MoreOutlined />
+              </button>
             </div>
           ))
           : null}
