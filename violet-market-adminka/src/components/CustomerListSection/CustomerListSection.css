@@ -25,7 +25,7 @@
 
 .customer-list-section__row {
   display: grid;
-  grid-template-columns: minmax(110px, 1.1fr) minmax(120px, 1.2fr) minmax(120px, 1.2fr) minmax(120px, 1fr);
+  grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(110px, 1fr) minmax(150px, 1.2fr);
   gap: 12px;
   align-items: center;
   padding: 12px 14px;
@@ -70,9 +70,7 @@
   }
 
   .customer-list-section__row--head span:nth-child(1),
-  .customer-list-section__row--head span:nth-child(4),
-  .customer-list-section__row span:nth-child(1),
-  .customer-list-section__row span:nth-child(4) {
+  .customer-list-section__row span:nth-child(1) {
     grid-column: 1 / -1;
   }
 }

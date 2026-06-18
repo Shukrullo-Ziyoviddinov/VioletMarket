@@ -43,6 +43,7 @@ export default function CustomerListSection() {
           <span>Ism</span>
           <span>Familiya</span>
           <span>Sana</span>
+          <span>Oxirgi faollik</span>
         </div>
 
         {loading ? (
@@ -70,6 +71,7 @@ export default function CustomerListSection() {
               <span>{customer.firstName}</span>
               <span>{customer.lastName}</span>
               <span>{customer.registeredAtLabel}</span>
+              <span>{customer.lastActiveAtLabel || "Ma'lumot yo'q"}</span>
             </div>
           ))
           : null}
