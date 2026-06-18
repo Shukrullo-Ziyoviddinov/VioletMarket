@@ -12,6 +12,15 @@ async function parseJson(res) {
   return data;
 }
 
+export async function fetchCustomerDashboardStats() {
+  const res = await fetch(apiUrl('/api/admin/customers/dashboard-stats'));
+  const payload = await parseJson(res);
+  return {
+    monthlyVisitors: Number(payload?.data?.monthlyVisitors) || 0,
+    todayVisitors: Number(payload?.data?.todayVisitors) || 0,
+  };
+}
+
 export async function fetchCustomerStatistics(filters) {
   const params = new URLSearchParams();
   if (filters?.day) params.set('day', String(filters.day));

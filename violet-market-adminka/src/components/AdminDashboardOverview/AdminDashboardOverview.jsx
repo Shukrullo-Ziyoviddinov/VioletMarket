@@ -6,6 +6,7 @@ import {
   ProfileOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import { fetchCustomerDashboardStats } from '../../api/customerStatisticsAdminApi';
 import { fetchProductStats } from '../../api/productsAdminApi';
 import { formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
@@ -14,25 +15,41 @@ import './AdminDashboardOverview.css';
 export default function AdminDashboardOverview() {
   const navigate = useNavigate();
   const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
+  const [customerStats, setCustomerStats] = useState({ monthlyVisitors: 0, todayVisitors: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [customerStatsLoading, setCustomerStatsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadProductStats() {
+    async function loadDashboardStats() {
       setStatsLoading(true);
+      setCustomerStatsLoading(true);
 
-      try {
-        const stats = await fetchProductStats();
-        if (!cancelled) setProductStats(stats);
-      } catch (_error) {
-        if (!cancelled) setProductStats({ total: 0, addedToday: 0 });
-      } finally {
-        if (!cancelled) setStatsLoading(false);
+      const [productResult, customerResult] = await Promise.allSettled([
+        fetchProductStats(),
+        fetchCustomerDashboardStats(),
+      ]);
+
+      if (!cancelled) {
+        if (productResult.status === 'fulfilled') {
+          setProductStats(productResult.value);
+        } else {
+          setProductStats({ total: 0, addedToday: 0 });
+        }
+
+        if (customerResult.status === 'fulfilled') {
+          setCustomerStats(customerResult.value);
+        } else {
+          setCustomerStats({ monthlyVisitors: 0, todayVisitors: 0 });
+        }
+
+        setStatsLoading(false);
+        setCustomerStatsLoading(false);
       }
     }
 
-    loadProductStats();
+    loadDashboardStats();
 
     return () => {
       cancelled = true;
@@ -64,9 +81,11 @@ export default function AdminDashboardOverview() {
           icon={<TeamOutlined />}
           iconTone="blue"
           title="Yangi Mijozlar"
-          value="210"
-          footerLabel="Yangi bugun: "
-          footerHighlight="+15"
+          value={customerStatsLoading ? '...' : formatStatNumber(customerStats.monthlyVisitors)}
+          footerLabel="Bugun saytda: "
+          footerHighlight={
+            customerStatsLoading ? '...' : formatStatNumber(customerStats.todayVisitors)
+          }
           clickable
           onClick={() => navigate('/customers/statistics')}
         />

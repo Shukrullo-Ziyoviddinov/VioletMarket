@@ -260,6 +260,25 @@ async function buildCustomerStatistics(filters = {}) {
   };
 }
 
+async function buildCustomerDashboardStats() {
+  const today = getTashkentYmd();
+  const monthRange = getMonthRange(today.year, today.month);
+  const monthKeys = getRangeKeys(monthRange.startKey, monthRange.endKey);
+  const todayKey = getStatisticsDateKey();
+
+  const [monthlyVisitors, todayVisitors] = await Promise.all([
+    countDistinctVisitorsByKeys(monthKeys),
+    countDistinctVisitorsByKeys([todayKey]),
+  ]);
+
+  return {
+    monthlyVisitors,
+    todayVisitors,
+    month: `${today.year}-${String(today.month).padStart(2, "0")}`,
+  };
+}
+
 module.exports = {
   buildCustomerStatistics,
+  buildCustomerDashboardStats,
 };
