@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Spin } from 'antd';
 import { fetchCustomerStatistics } from '../../api/customerStatisticsAdminApi';
 import CustomerActivityChartsSection from '../../components/CustomerActivityChartsSection/CustomerActivityChartsSection';
+import CustomerListSection from '../../components/CustomerListSection/CustomerListSection';
 import CustomerStatisticFilters from '../../components/CustomerStatisticFilters/CustomerStatisticFilters';
 import {
   CUSTOMER_STATISTIC_DEFAULT_FILTERS,
@@ -147,6 +148,7 @@ export default function CustomerStatisticPage() {
         registeredData={chartData.registered}
         unregisteredData={chartData.unregistered}
       />
+      <CustomerListSection month={filters.month} />
     </section>
   );
 }

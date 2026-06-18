@@ -1,0 +1,106 @@
+.customer-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid #ece7f3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(42, 24, 66, 0.1);
+}
+
+.customer-list-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customer-list-section__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.customer-list-section__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b5b7d;
+}
+
+.customer-list-section__table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customer-list-section__row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.1fr) minmax(120px, 1.2fr) minmax(120px, 1.2fr) minmax(120px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #f0ebf7;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #2a1842;
+}
+
+.customer-list-section__row--head {
+  background: #f8f6fc;
+  border-color: #ece7f3;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a3d5c;
+}
+
+.customer-list-section__id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: #5b4c70;
+}
+
+.customer-list-section__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: #6b5b7d;
+}
+
+.customer-list-section__state--error {
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .customer-list-section__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .customer-list-section__row--head span:nth-child(1),
+  .customer-list-section__row--head span:nth-child(4),
+  .customer-list-section__row span:nth-child(1),
+  .customer-list-section__row span:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .customer-list-section {
+    padding: 16px;
+  }
+
+  .customer-list-section__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .customer-list-section__row {
+    grid-template-columns: 1fr;
+  }
+}
