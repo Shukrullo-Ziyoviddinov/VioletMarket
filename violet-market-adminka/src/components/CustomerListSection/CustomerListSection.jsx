@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Empty, Spin } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Empty, Input, Spin } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { fetchRegisteredCustomers } from '../../api/customerListAdminApi';
+import { filterCustomersBySearch } from './customerListFuzzySearch';
 import './CustomerListSection.css';
 
 function shortenCustomerId(id) {
@@ -13,6 +15,12 @@ export default function CustomerListSection() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCustomers = useMemo(
+    () => filterCustomersBySearch(customers, searchQuery),
+    [customers, searchQuery],
+  );
 
   const loadCustomers = useCallback(async () => {
     setLoading(true);
@@ -35,7 +43,17 @@ export default function CustomerListSection() {
 
   return (
     <section className="customer-list-section">
-      <h2 className="customer-list-section__title">Mijozlar ro&apos;yxati</h2>
+      <div className="customer-list-section__header">
+        <h2 className="customer-list-section__title">Mijozlar ro&apos;yxati</h2>
+        <Input
+          allowClear
+          className="customer-list-section__search"
+          placeholder="Ism, familiya yoki nomer"
+          prefix={<SearchOutlined />}
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+        />
+      </div>
 
       <div className="customer-list-section__table">
         <div className="customer-list-section__row customer-list-section__row--head">
@@ -63,8 +81,14 @@ export default function CustomerListSection() {
           </div>
         ) : null}
 
+        {!loading && !error && customers.length > 0 && filteredCustomers.length === 0 ? (
+          <div className="customer-list-section__state">
+            <Empty description="Qidiruv bo'yicha mijoz topilmadi" />
+          </div>
+        ) : null}
+
         {!loading && !error
-          ? customers.map((customer) => (
+          ? filteredCustomers.map((customer) => (
             <div key={customer.id} className="customer-list-section__row">
               <span className="customer-list-section__id" title={customer.id}>
                 {shortenCustomerId(customer.id)}
