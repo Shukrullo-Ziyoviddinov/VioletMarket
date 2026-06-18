@@ -42,6 +42,7 @@ export default function CustomerListSection() {
           <span>Mijoz ID</span>
           <span>Ism</span>
           <span>Familiya</span>
+          <span>Nomer</span>
           <span>Sana</span>
           <span>Oxirgi faollik</span>
         </div>
@@ -70,6 +71,7 @@ export default function CustomerListSection() {
               </span>
               <span>{customer.firstName}</span>
               <span>{customer.lastName}</span>
+              <span>{customer.phone}</span>
               <span>{customer.registeredAtLabel}</span>
               <span>{customer.lastActiveAtLabel || "Ma'lumot yo'q"}</span>
             </div>

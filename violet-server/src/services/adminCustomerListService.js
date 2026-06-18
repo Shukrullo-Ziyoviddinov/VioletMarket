@@ -46,6 +46,7 @@ function mapCustomerRow(user, lastActivityByUserId) {
     id: userId,
     firstName: String(user.firstName || "").trim() || "—",
     lastName: String(user.lastName || "").trim() || "—",
+    phone: String(user.phone || "").trim() || "—",
     registeredAt: createdAt ? createdAt.toISOString() : null,
     registeredAtLabel: formatRegisteredDateLabel(createdAt),
     lastActiveAt: lastActiveDate ? lastActiveDate.toISOString() : null,
@@ -75,7 +76,7 @@ async function loadLastActivityByUserId() {
 async function listRegisteredCustomers() {
   const [rows, total, lastActivityByUserId] = await Promise.all([
     User.find({})
-      .select({ firstName: 1, lastName: 1, createdAt: 1 })
+      .select({ firstName: 1, lastName: 1, phone: 1, createdAt: 1 })
       .sort({ createdAt: -1 })
       .lean(),
     User.countDocuments({}),
