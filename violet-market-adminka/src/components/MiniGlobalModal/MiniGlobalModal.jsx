@@ -52,9 +52,11 @@ export default function MiniGlobalModal({
           <h2 id="mini-global-modal-title" className="mini-global-modal__title">
             {copy.title}
           </h2>
-          <p id="mini-global-modal-message" className="mini-global-modal__message">
-            {copy.message}
-          </p>
+          {copy.message ? (
+            <p id="mini-global-modal-message" className="mini-global-modal__message">
+              {copy.message}
+            </p>
+          ) : null}
 
           <div className="mini-global-modal__actions">
             <button

@@ -56,3 +56,16 @@ export async function removeFlashCategoryProduct(productId) {
   const data = await parseJson(res);
   return data?.data || null;
 }
+
+export async function updateFlashCategoryDuration(productId, flashDurationHours) {
+  const res = await fetch(
+    apiUrl(`/api/admin/flash-category/products/${encodeURIComponent(productId)}/duration`),
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flashDurationHours }),
+    },
+  );
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}

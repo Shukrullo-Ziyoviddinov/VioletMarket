@@ -176,23 +176,11 @@
   color: #2a1842;
 }
 
-.flash-category-manager__assign-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.flash-category-manager__category-radio {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px 12px;
-}
-
 .flash-category-manager__duration-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 .flash-category-manager__assigned-list {
@@ -203,9 +191,9 @@
 
 .flash-category-manager__assigned-item {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
   gap: 14px;
-  align-items: center;
+  align-items: start;
   padding: 12px;
   border: 1px solid #f0ebf7;
   border-radius: 12px;
@@ -213,8 +201,8 @@
 }
 
 .flash-category-manager__assigned-image {
-  width: 72px;
-  height: 72px;
+  width: 100px;
+  height: 100px;
   border-radius: 12px;
   object-fit: cover;
 }
@@ -234,6 +222,50 @@
   white-space: nowrap;
 }
 
+.flash-category-manager__assigned-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.flash-category-manager__edit-btn {
+  color: #13be4c !important;
+}
+
+.flash-category-manager__edit-btn:hover {
+  background: #ecfdf3 !important;
+  color: #0f9f40 !important;
+}
+
+.flash-category-manager__edit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.flash-category-manager__edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.flash-category-manager__save-btn {
+  background: #13be4c !important;
+  border-color: #13be4c !important;
+}
+
+.flash-category-manager__save-btn:hover {
+  background: #0f9f40 !important;
+  border-color: #0f9f40 !important;
+}
+
 @media (max-width: 900px) {
   .flash-category-manager__search-row,
   .flash-category-manager__selection-row {
@@ -241,11 +273,10 @@
   }
 
   .flash-category-manager__assigned-item {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 100px minmax(0, 1fr);
   }
 
-  .flash-category-manager__assigned-item .ant-btn {
+  .flash-category-manager__assigned-actions {
     grid-column: 1 / -1;
-    justify-self: start;
   }
 }

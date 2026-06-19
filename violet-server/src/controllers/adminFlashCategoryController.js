@@ -31,6 +31,14 @@ const removeFlashProduct = asyncHandler(async (req, res) => {
   res.json({ ok: true, data: result });
 });
 
+const updateFlashDuration = asyncHandler(async (req, res) => {
+  const product = await service.updateFlashDuration(
+    req.params.productId,
+    req.body?.flashDurationHours,
+  );
+  res.json({ ok: true, data: { product } });
+});
+
 module.exports = {
   listCategoryOptions,
   listSellers,
@@ -38,4 +46,5 @@ module.exports = {
   listFlashProducts,
   assignFlashProduct,
   removeFlashProduct,
+  updateFlashDuration,
 };

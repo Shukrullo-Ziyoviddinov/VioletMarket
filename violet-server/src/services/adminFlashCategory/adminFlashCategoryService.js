@@ -181,7 +181,6 @@ async function listFlashProducts() {
 
 async function assignFlashProduct(body) {
   const productId = parseProductId(body?.productId);
-  const categoryName = parseCategoryName(body?.categoryName);
   const flashDurationHours = parseDurationHours(body?.flashDurationHours);
   const flashCategoryName = normalizeFlashCategoryFlag(body?.flashCategoryName);
 
@@ -204,9 +203,42 @@ async function assignFlashProduct(body) {
     { _id: existing._id },
     {
       $set: {
-        categoryName,
         flashDurationHours,
         flashCategoryName: "true",
+      },
+    },
+  );
+
+  const sellerMap = await buildSellerMap();
+  const updated = await findNewestProductDoc(productId);
+  return mapFlashProductRow(updated, sellerMap);
+}
+
+async function updateFlashDuration(productIdRaw, rawDurationHours) {
+  const productId = parseProductId(productIdRaw);
+  const flashDurationHours = parseDurationHours(rawDurationHours);
+
+  if (productId == null) {
+    throw new HttpError(400, "Mahsulot ID noto'g'ri", "INVALID_PRODUCT_ID");
+  }
+  if (flashDurationHours == null) {
+    throw new HttpError(400, "flashDurationHours noto'g'ri", "INVALID_DURATION");
+  }
+
+  const existing = await findNewestProductDoc(productId);
+  if (!existing) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  if (!isFlashCategoryActive(existing)) {
+    throw new HttpError(400, "Mahsulot katta chegirma ro'yxatida emas", "NOT_FLASH_PRODUCT");
+  }
+
+  await Product.updateOne(
+    { _id: existing._id },
+    {
+      $set: {
+        flashDurationHours,
       },
     },
   );
@@ -248,5 +280,6 @@ module.exports = {
   listSellerProducts,
   listFlashProducts,
   assignFlashProduct,
+  updateFlashDuration,
   removeFlashProduct,
 };

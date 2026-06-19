@@ -5,6 +5,12 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  removeFlashProduct: {
+    title: "Katta chegirma mahsulotlari bo'limidan olib tashlashga aminmisiz?",
+    getMessage: () => '',
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
 };
 
 export function resolveMiniGlobalModalPermission(permissionKey, itemName = '') {

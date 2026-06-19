@@ -1,20 +1,39 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Empty, Input, InputNumber, Radio, Spin } from 'antd';
-import { DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Empty, Input, InputNumber, Spin } from 'antd';
+import { DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   assignFlashCategoryProduct,
-  fetchFlashCategoryOptions,
   fetchFlashCategoryProducts,
   fetchFlashCategorySellerProducts,
   fetchFlashCategorySellers,
   removeFlashCategoryProduct,
+  updateFlashCategoryDuration,
 } from '../../api/flashCategoryAdminApi';
 import { useAdminToast } from '../../context/AdminToastContext';
+import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import { getLocalizedText, resolveProductImageUrl } from '../../utils/productDisplay';
 import './FlashCategoryManager.css';
 
 function normalizeSearchText(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function buildSelectionLines(product) {
+  if (!product) return null;
+
+  const lines = [
+    { key: 'title', value: getLocalizedText(product.title, 'uz') },
+  ];
+
+  if (product.price) {
+    lines.push({ key: 'price', value: product.price });
+  }
+
+  if (product.originalPrice) {
+    lines.push({ key: 'originalPrice', value: product.originalPrice });
+  }
+
+  return lines;
 }
 
 function FlashSellerSearch({ sellers, selectedSeller, onSelect, onClear }) {
@@ -203,7 +222,7 @@ function FlashProductSearch({
                   />
                   <span className="flash-category-manager__product-option-info">
                     <strong>{title}</strong>
-                    <span>{product.price}</span>
+                    {product.price ? <span>{product.price}</span> : null}
                     {product.originalPrice ? <span>{product.originalPrice}</span> : null}
                   </span>
                 </button>
@@ -248,38 +267,33 @@ function SelectionCard({ title, imageUrl, lines, emptyText }) {
 
 export default function FlashCategoryManager() {
   const { showSuccess, showError } = useAdminToast();
+  const { openMiniGlobalModal } = useMiniGlobalModal();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [categoryOptions, setCategoryOptions] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [flashProducts, setFlashProducts] = useState([]);
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [sellerProducts, setSellerProducts] = useState([]);
   const [sellerProductsLoading, setSellerProductsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [categoryName, setCategoryName] = useState('products');
   const [flashDurationHours, setFlashDurationHours] = useState(3);
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [editingHours, setEditingHours] = useState(3);
 
   const loadPageData = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      const [options, sellerRows, assignedProducts] = await Promise.all([
-        fetchFlashCategoryOptions(),
+      const [sellerRows, assignedProducts] = await Promise.all([
         fetchFlashCategorySellers(),
         fetchFlashCategoryProducts(),
       ]);
 
-      setCategoryOptions(options);
       setSellers(sellerRows);
       setFlashProducts(assignedProducts);
-      if (options[0]?.value) {
-        setCategoryName((prev) => prev || options[0].value);
-      }
     } catch (err) {
-      setCategoryOptions([]);
       setSellers([]);
       setFlashProducts([]);
       setError(err.message || 'Maʼlumotlarni yuklashda xatolik');
@@ -334,7 +348,6 @@ export default function FlashCategoryManager() {
     try {
       await assignFlashCategoryProduct({
         productId: selectedProduct.id,
-        categoryName,
         flashDurationHours,
         flashCategoryName: 'true',
       });
@@ -349,14 +362,43 @@ export default function FlashCategoryManager() {
     }
   };
 
-  const handleRemove = async (productId) => {
+  const handleRemoveRequest = (product) => {
+    openMiniGlobalModal({
+      permissionKey: 'removeFlashProduct',
+      onConfirm: async () => {
+        try {
+          await removeFlashCategoryProduct(product.id);
+          showSuccess('Mahsulot katta chegirma bo‘limidan olib tashlandi');
+          if (editingProductId === product.id) {
+            setEditingProductId(null);
+          }
+          await loadPageData();
+        } catch (err) {
+          showError(err.message || 'Olib tashlashda xatolik');
+          throw err;
+        }
+      },
+    });
+  };
+
+  const handleStartEdit = (product) => {
+    setEditingProductId(product.id);
+    setEditingHours(Number(product.flashDurationHours) || 1);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+  };
+
+  const handleSaveEdit = async (productId) => {
     setSaving(true);
     try {
-      await removeFlashCategoryProduct(productId);
-      showSuccess('Mahsulot katta chegirma bo‘limidan olib tashlandi');
+      await updateFlashCategoryDuration(productId, editingHours);
+      showSuccess('flashDurationHours yangilandi');
+      setEditingProductId(null);
       await loadPageData();
     } catch (err) {
-      showError(err.message || 'Olib tashlashda xatolik');
+      showError(err.message || 'Saqlashda xatolik');
     } finally {
       setSaving(false);
     }
@@ -415,45 +457,20 @@ export default function FlashCategoryManager() {
           title="Tanlangan mahsulot"
           emptyText="Mahsulot tanlanmagan"
           imageUrl={selectedProduct?.imageUrl || resolveProductImageUrl(selectedProduct?.image)}
-          lines={
-            selectedProduct
-              ? [
-                { key: 'title', value: getLocalizedText(selectedProduct.title, 'uz') },
-                { key: 'price', value: selectedProduct.price || '—' },
-                { key: 'originalPrice', value: selectedProduct.originalPrice || '—' },
-              ]
-              : null
-          }
+          lines={buildSelectionLines(selectedProduct)}
         />
       </div>
 
       <div className="flash-category-manager__assign-card">
         <h3 className="flash-category-manager__assign-title">Biriktirish sozlamalari</h3>
-        <div className="flash-category-manager__assign-fields">
-          <div className="flash-category-manager__category-field">
-            <span className="flash-category-manager__field-label">categoryName</span>
-            <Radio.Group
-              className="flash-category-manager__category-radio"
-              value={categoryName}
-              onChange={(event) => setCategoryName(event.target.value)}
-            >
-              {categoryOptions.map((option) => (
-                <Radio key={option.value} value={option.value}>
-                  {option.label}
-                </Radio>
-              ))}
-            </Radio.Group>
-          </div>
-
-          <div className="flash-category-manager__duration-field">
-            <span className="flash-category-manager__field-label">flashDurationHours</span>
-            <InputNumber
-              min={1}
-              max={72}
-              value={flashDurationHours}
-              onChange={(value) => setFlashDurationHours(Number(value) || 1)}
-            />
-          </div>
+        <div className="flash-category-manager__duration-field">
+          <span className="flash-category-manager__field-label">flashDurationHours</span>
+          <InputNumber
+            min={1}
+            max={72}
+            value={flashDurationHours}
+            onChange={(value) => setFlashDurationHours(Number(value) || 1)}
+          />
         </div>
 
         <Button type="primary" loading={saving} onClick={handleAssign}>
@@ -470,37 +487,79 @@ export default function FlashCategoryManager() {
           <Empty description="Hozircha biriktirilgan mahsulot yo‘q" />
         ) : (
           <div className="flash-category-manager__assigned-list">
-            {flashProducts.map((product) => (
-              <article key={product.id} className="flash-category-manager__assigned-item">
-                <img
-                  className="flash-category-manager__assigned-image"
-                  src={product.imageUrl || resolveProductImageUrl(product.image)}
-                  alt={getLocalizedText(product.title, 'uz')}
-                  loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.src = resolveProductImageUrl('');
-                  }}
-                />
-                <div className="flash-category-manager__assigned-info">
-                  <strong>{getLocalizedText(product.title, 'uz')}</strong>
-                  <span>{getLocalizedText(product.seller?.name, 'uz') || '—'}</span>
-                  <span>{product.price || '—'}</span>
-                  <span>{product.originalPrice || '—'}</span>
-                  <span>
-                    {product.categoryName || '—'} · {product.flashDurationHours || '—'} soat
-                  </span>
-                </div>
-                <Button
-                  danger
-                  type="text"
-                  icon={<DeleteOutlined />}
-                  loading={saving}
-                  onClick={() => handleRemove(product.id)}
-                >
-                  Olib tashlash
-                </Button>
-              </article>
-            ))}
+            {flashProducts.map((product) => {
+              const sellerName = getLocalizedText(product.seller?.name, 'uz');
+              const isEditing = editingProductId === product.id;
+
+              return (
+                <article key={product.id} className="flash-category-manager__assigned-item">
+                  <img
+                    className="flash-category-manager__assigned-image"
+                    src={product.imageUrl || resolveProductImageUrl(product.image)}
+                    alt={getLocalizedText(product.title, 'uz')}
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.src = resolveProductImageUrl('');
+                    }}
+                  />
+                  <div className="flash-category-manager__assigned-info">
+                    <strong>{getLocalizedText(product.title, 'uz')}</strong>
+                    {sellerName ? <span>{sellerName}</span> : null}
+                    {product.price ? <span>{product.price}</span> : null}
+                    {product.originalPrice ? <span>{product.originalPrice}</span> : null}
+                    {product.flashDurationHours ? (
+                      <span>{product.flashDurationHours} soat</span>
+                    ) : null}
+                  </div>
+
+                  <div className="flash-category-manager__assigned-actions">
+                    <Button
+                      danger
+                      type="text"
+                      icon={<DeleteOutlined />}
+                      disabled={saving}
+                      onClick={() => handleRemoveRequest(product)}
+                    >
+                      Olib tashlash
+                    </Button>
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      className="flash-category-manager__edit-btn"
+                      disabled={saving || isEditing}
+                      onClick={() => handleStartEdit(product)}
+                    >
+                      Tahrirlash
+                    </Button>
+
+                    {isEditing ? (
+                      <div className="flash-category-manager__edit-panel">
+                        <span className="flash-category-manager__field-label">flashDurationHours</span>
+                        <InputNumber
+                          min={1}
+                          max={72}
+                          value={editingHours}
+                          onChange={(value) => setEditingHours(Number(value) || 1)}
+                        />
+                        <div className="flash-category-manager__edit-actions">
+                          <Button
+                            type="primary"
+                            className="flash-category-manager__save-btn"
+                            loading={saving}
+                            onClick={() => handleSaveEdit(product.id)}
+                          >
+                            Saqlash
+                          </Button>
+                          <Button disabled={saving} onClick={handleCancelEdit}>
+                            Bekor qilish
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
