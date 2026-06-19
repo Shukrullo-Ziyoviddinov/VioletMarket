@@ -253,10 +253,10 @@
 }
 
 .big-discount-section .product-card .product-labels {
-  top: 10px;
-  bottom: auto;
-  left: 10px;
-  right: auto;
+  top: auto;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
 }
 
 .big-discount-section .product-card .product-label {
