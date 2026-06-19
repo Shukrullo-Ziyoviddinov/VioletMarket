@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from './components/AdminLayout/AdminLayout';
 import AdminDashboardOverview from './components/AdminDashboardOverview/AdminDashboardOverview';
 import CustomerStatisticPage from './pages/CustomerStatisticPage/CustomerStatisticPage';
+import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 
 function AllProductsPage() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="customers/statistics" element={<CustomerStatisticPage />} />
           <Route path="products/paused" element={<PausedProductsPage />} />
           <Route path="products" element={<AllProductsPage />} />
+          <Route path="flash-products" element={<FlashPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

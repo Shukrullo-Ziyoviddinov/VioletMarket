@@ -3628,7 +3628,8 @@
   },
   {
     "id": 64001,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "electronicsCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 3,
     "title": {
       "uz": "Smartfon 50% chegirma 4 tase berda",
@@ -3659,7 +3660,8 @@
   },
   {
     "id": 64002,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "products",
+    "flashCategoryName": "true",
     "flashDurationHours": 2,
     "title": {
       "uz": "Kiyim to'plami 40% stilni edia",
@@ -3690,7 +3692,8 @@
   },
   {
     "id": 64003,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "householdAppliancesCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 4,
     "title": {
       "uz": "Televizor 35% chegirma 7 tase berda",
@@ -3717,7 +3720,8 @@
   },
   {
     "id": 64004,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "accessoriesCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 3,
     "title": {
       "uz": "Soat 45% chegirma va shim 2 tase berda",
@@ -3748,7 +3752,8 @@
   },
   {
     "id": 64005,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "electronicsCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 5,
     "title": {
       "uz": "Fudbolka va shim kamplekt paxtadan",
@@ -3775,7 +3780,8 @@
   },
   {
     "id": 64006,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "accessoriesCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 3,
     "title": {
       "uz": "Sumka 55% chegirma shim va rubashka qo'shemchasega",
@@ -3806,7 +3812,8 @@
   },
   {
     "id": 64007,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "accessoriesCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 2,
     "title": {
       "uz": "Sumka, shim, rubashka komplekt 60% chegermada",
@@ -3837,7 +3844,8 @@
   },
   {
     "id": 64008,
-    "categoryName": "bigDiscountCollection",
+    "categoryName": "accessoriesCollection",
+    "flashCategoryName": "true",
     "flashDurationHours": 4,
     "title": {
       "uz": "Sumka, shim, rubashka komplekt 60% chegermada ",

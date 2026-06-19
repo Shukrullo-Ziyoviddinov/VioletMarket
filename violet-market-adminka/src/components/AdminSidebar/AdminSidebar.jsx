@@ -5,6 +5,7 @@ import {
   ControlOutlined,
   DashboardOutlined,
   FileProtectOutlined,
+  FireOutlined,
   GlobalOutlined,
   InboxOutlined,
   LayoutOutlined,
@@ -32,6 +33,12 @@ const menuItems = [
   },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
+    key: 'flash-products',
+    icon: <FireOutlined />,
+    label: 'Katta chegirma mahsulotlar',
+    route: '/flash-products',
+  },
+  {
     key: 'products-paused',
     icon: <PauseCircleOutlined />,
     label: "Vaqtincha to'xtatilgan",
@@ -58,6 +65,7 @@ const menuItems = [
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/customers/statistics') return 'customers-statistics';
   if (pathname === '/products/paused') return 'products-paused';
+  if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';
   return 'dashboard';
 }

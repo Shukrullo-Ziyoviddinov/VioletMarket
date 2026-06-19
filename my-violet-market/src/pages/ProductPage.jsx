@@ -4,6 +4,7 @@ import { useAppData } from '../contexts/AppDataContext';
 import { useUser } from '../contexts/UserContext';
 import { useSearchHistory } from '../contexts/SearchHistoryContext';
 import { getProductPriceNumber } from '../utils/utils';
+import { isFlashCategoryActive } from '../utils/productCatalog';
 import { searchProducts } from '../api/searchApi';
 import ProductCard from '../components/ProductCard';
 import Filters from '../components/Filters/Filters';
@@ -180,7 +181,7 @@ const ProductPage = () => {
       if (navbarCategoryValueStr) {
         const inNavbarCategory =
           (product.category || '').trim() === navbarCategoryValueStr;
-        if (product.categoryName === 'bigDiscountCollection' && hasCountryBrandFilter) {
+        if (isFlashCategoryActive(product) && hasCountryBrandFilter) {
           const c = (product.countriesCategories || '').toLowerCase();
           const b = (product.brandCategories || '').toLowerCase();
           if (paramCountry && c !== paramCountry.toLowerCase()) return false;
