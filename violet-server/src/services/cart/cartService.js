@@ -3,6 +3,10 @@ const { Product } = require("../../models/product");
 const { HttpError } = require("../../utils/httpError");
 const { recordCheckoutSales } = require("../recommendation/recommendationRankingService");
 const {
+  FLASH_CATEGORY_SECTION_KEY,
+  isFlashCategoryActive,
+} = require("../../utils/flashCategoryProduct");
+const {
   generateInitialUrgencyStock,
   buildNextShowAt,
   buildUrgencyDurationMs,
@@ -666,6 +670,13 @@ async function checkoutCartForUser(userId) {
       sectionKey,
       soldQty: requestedQty,
     });
+    if (isFlashCategoryActive(product)) {
+      rankingMetrics.push({
+        productId,
+        sectionKey: FLASH_CATEGORY_SECTION_KEY,
+        soldQty: requestedQty,
+      });
+    }
   }
   await recordCheckoutSales(rankingMetrics);
 

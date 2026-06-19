@@ -43,17 +43,8 @@ function normalizeFlashCategoryFlag(raw) {
   return "false";
 }
 
-function isFlashCategoryActive(product) {
-  if (normalizeFlashCategoryFlag(product?.flashCategoryName) === "true") {
-    return true;
-  }
-
-  return String(product?.categoryName || "").trim() === "bigDiscountCollection";
-}
-
 module.exports = {
   FLASH_SECTION_CATEGORY_NAMES,
   FLASH_SECTION_CATEGORY_LABELS,
   normalizeFlashCategoryFlag,
-  isFlashCategoryActive,
 };

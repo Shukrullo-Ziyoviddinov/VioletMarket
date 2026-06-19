@@ -1,5 +1,7 @@
 /** Katalog: mahsulotlar massividan bo‘limlar (categoryName bo‘yicha) */
 
+import { sortProductsByFlashCategoryRanking } from './flashCategoryRanking';
+
 export function isFlashCategoryActive(product) {
   const flag = product?.flashCategoryName;
   if (flag === true || flag === 'true') return true;
@@ -33,6 +35,8 @@ export function buildProductCollections(allProducts) {
     travelGearCollection: by("travelGearCollection"),
     householdAppliancesCollection: by("householdAppliancesCollection"),
     allKindsProductsCollection: by("allKindsProductsCollection"),
-    bigDiscountCollection: list.filter((product) => isFlashCategoryActive(product)),
+    bigDiscountCollection: sortProductsByFlashCategoryRanking(
+      list.filter((product) => isFlashCategoryActive(product)),
+    ),
   };
 }

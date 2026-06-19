@@ -8,8 +8,8 @@ const {
   FLASH_SECTION_CATEGORY_NAMES,
   FLASH_SECTION_CATEGORY_LABELS,
   normalizeFlashCategoryFlag,
-  isFlashCategoryActive,
 } = require("./adminFlashCategoryConstants");
+const { isFlashCategoryActive } = require("../../utils/flashCategoryProduct");
 
 function keepNewestProductPerId(products) {
   const seen = new Set();

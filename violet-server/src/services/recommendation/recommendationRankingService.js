@@ -1,4 +1,8 @@
 const { ProductSectionMetric } = require("../../models/productSectionMetric");
+const {
+  FLASH_CATEGORY_SECTION_KEY,
+  isFlashCategoryActive,
+} = require("../../utils/flashCategoryProduct");
 
 function toNonNegativeInt(value, fallback = 0) {
   const n = Number(value);
@@ -182,6 +186,28 @@ function attachGlobalRankingMeta(products, metricsRows) {
   });
 }
 
+function attachFlashCategoryRankingMeta(products, metricsRows) {
+  const list = Array.isArray(products) ? products : [];
+  const metricIndex = buildMetricIndex(metricsRows);
+
+  return list.map((product) => {
+    if (!isFlashCategoryActive(product)) return product;
+
+    const productId = Number(product?.id);
+    const metricKey = `${productId}::${FLASH_CATEGORY_SECTION_KEY}`;
+    const metric = metricIndex.get(metricKey) || { soldCount: 0, lastSoldAtMs: 0 };
+
+    return {
+      ...product,
+      flashCategoryRankingMeta: {
+        soldCount: toNonNegativeNumber(metric.soldCount, 0),
+        lastSoldAtMs: metric.lastSoldAtMs || 0,
+        score: computeRankingScore(product, metric),
+      },
+    };
+  });
+}
+
 async function getSectionMetricsByProductIds(productIds) {
   const ids = (Array.isArray(productIds) ? productIds : [])
     .map((id) => Number(id))
@@ -230,5 +256,7 @@ module.exports = {
   sortProductsBySectionRanking,
   sortProductsByGlobalRanking,
   attachGlobalRankingMeta,
+  attachFlashCategoryRankingMeta,
   recordCheckoutSales,
+  FLASH_CATEGORY_SECTION_KEY,
 };
