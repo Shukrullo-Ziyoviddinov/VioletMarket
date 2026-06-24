@@ -10,7 +10,7 @@ const { Text } = Typography;
 export default function SellerHeader({ collapsed, onToggle }) {
   const { seller } = useSellerAuth();
   const brandName = seller?.shopDisplayName || 'Violet';
-  const profileName = seller?.firstName || 'Admin';
+  const profileName = [seller?.firstName, seller?.lastName].filter(Boolean).join(' ') || 'Admin';
 
   return (
     <Header className="seller-header">
