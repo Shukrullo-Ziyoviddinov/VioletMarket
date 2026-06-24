@@ -4,6 +4,7 @@ const { HttpError } = require("../../utils/httpError");
 const { normalizeEmail, isValidEmail } = require("../../utils/email");
 const { hashPassword, verifyPassword } = require("../../utils/password");
 const { assertValidShopId } = require("../../utils/shopId");
+const { normalizeSellerAccountStatus } = require("../../utils/sellerAccountStatus");
 const {
   signSellerRegistrationToken,
   verifySellerRegistrationToken,
@@ -232,6 +233,7 @@ async function loginSeller({ shopId, password }) {
       firstName: registration.firstName,
       lastName: registration.lastName,
       email: registration.email,
+      accountStatus: normalizeSellerAccountStatus(sellerAccount.status),
     },
   };
 }
@@ -260,6 +262,7 @@ async function getSellerCabinetProfile(shopId) {
       description: sellerAccount.description,
       logo: sellerAccount.logo,
       subscriberCount: sellerAccount.subscriberCount,
+      status: normalizeSellerAccountStatus(sellerAccount.status),
     },
   };
 }

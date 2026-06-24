@@ -1,0 +1,34 @@
+.seller-account-paused-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.seller-account-paused-notice__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ffedd5;
+  color: #ea580c;
+  font-size: 26px;
+}
+
+.seller-account-paused-notice__title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.seller-account-paused-notice__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #5b4d73;
+}

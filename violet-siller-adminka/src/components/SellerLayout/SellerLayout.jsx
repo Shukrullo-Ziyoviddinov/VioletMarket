@@ -3,8 +3,10 @@ import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import GlobalModal from '../GlobalModal/GlobalModal';
 import MarketInfo from '../MarketInfo/MarketInfo';
+import MiniGlobalModal from '../MiniGlobalModal/MiniGlobalModal';
 import SellerHeader from '../SellerHeader/SellerHeader';
 import SellerSidebar from '../SellerSidebar/SellerSidebar';
+import { useSellerPausedNotice } from '../../hooks/useSellerPausedNotice';
 import './SellerLayout.css';
 
 const { Sider, Content } = Layout;
@@ -12,6 +14,7 @@ const { Sider, Content } = Layout;
 export default function SellerLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMarketInfoOpen, setIsMarketInfoOpen] = useState(false);
+  const { isOpen: isPausedNoticeOpen, close: closePausedNotice } = useSellerPausedNotice();
 
   return (
     <Layout className="seller-layout">
@@ -41,6 +44,12 @@ export default function SellerLayout() {
       >
         <MarketInfo />
       </GlobalModal>
+
+      <MiniGlobalModal
+        open={isPausedNoticeOpen}
+        variant="seller-paused"
+        onClose={closePausedNotice}
+      />
     </Layout>
   );
 }
