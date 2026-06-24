@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "seed": "node src/seed/runSeed.js",
+    "seed:sellers": "node src/seed/seedSellersOnly.js",
     "seed:trending": "node src/seed/repairTrendingCategory.js",
     "db:check": "node src/seed/checkDb.js",
     "test": "echo \"Error: no test specified\" && exit 1"

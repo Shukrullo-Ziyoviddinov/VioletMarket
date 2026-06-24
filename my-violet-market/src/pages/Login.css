@@ -25,7 +25,7 @@
 .login-page__logo img {
   display: block;
   width: min(100%, 280px);
-  max-height: 72px;
+  max-height: 90px;
   height: auto;
   object-fit: contain;
 }
