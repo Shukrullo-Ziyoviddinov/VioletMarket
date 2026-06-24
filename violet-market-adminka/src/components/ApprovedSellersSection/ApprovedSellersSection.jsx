@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Empty, Input, Table, Tag, Typography } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Button, Empty, Input, Table, Tag, Typography } from 'antd';
+import { MoreOutlined, SearchOutlined } from '@ant-design/icons';
 import { filterApprovedSellersBySearch } from './approvedSellersSearch';
 import './ApprovedSellersSection.css';
 
@@ -51,6 +51,21 @@ export default function ApprovedSellersSection({ sellers, loading }) {
       dataIndex: 'reviewedAt',
       key: 'reviewedAt',
       render: formatDate,
+    },
+    {
+      title: '',
+      key: 'actions',
+      fixed: 'right',
+      width: 56,
+      align: 'center',
+      render: () => (
+        <Button
+          type="text"
+          className="approved-sellers-section__menu-btn"
+          icon={<MoreOutlined />}
+          aria-label="Sotuvchi amallari"
+        />
+      ),
     },
   ];
 

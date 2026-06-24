@@ -59,6 +59,23 @@
   color: #764ba2;
 }
 
+.approved-sellers-section__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  color: #6b5b7d;
+  font-size: 18px;
+}
+
+.approved-sellers-section__menu-btn:hover {
+  background: #f3eef9 !important;
+  color: #2a1842 !important;
+}
+
 @media (max-width: 768px) {
   .approved-sellers-section__head {
     flex-direction: column;
