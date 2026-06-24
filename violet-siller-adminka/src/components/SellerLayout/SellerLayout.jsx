@@ -6,7 +6,7 @@ import MarketInfo from '../MarketInfo/MarketInfo';
 import MiniGlobalModal from '../MiniGlobalModal/MiniGlobalModal';
 import SellerHeader from '../SellerHeader/SellerHeader';
 import SellerSidebar from '../SellerSidebar/SellerSidebar';
-import { useSellerPausedNotice } from '../../hooks/useSellerPausedNotice';
+import { useSellerCabinetSession } from '../../hooks/useSellerCabinetSession';
 import './SellerLayout.css';
 
 const { Sider, Content } = Layout;
@@ -14,7 +14,7 @@ const { Sider, Content } = Layout;
 export default function SellerLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMarketInfoOpen, setIsMarketInfoOpen] = useState(false);
-  const { isOpen: isPausedNoticeOpen, close: closePausedNotice } = useSellerPausedNotice();
+  const { isPausedNoticeOpen, closePausedNotice } = useSellerCabinetSession();
 
   return (
     <Layout className="seller-layout">

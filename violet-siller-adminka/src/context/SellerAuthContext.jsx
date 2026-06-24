@@ -26,11 +26,17 @@ export function SellerAuthProvider({ children }) {
     localStorage.setItem(SELLER_KEY, JSON.stringify(nextSeller));
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback((options = {}) => {
+    const clearRegistration = options?.clearRegistration === true;
+
     setToken('');
     setSeller(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SELLER_KEY);
+
+    if (clearRegistration) {
+      localStorage.removeItem(REGISTRATION_TOKEN_KEY);
+    }
   }, []);
 
   const value = useMemo(
