@@ -58,3 +58,12 @@ export async function activateSeller(shopId) {
   const payload = await parseJson(res);
   return payload?.data;
 }
+
+export async function deleteSeller(shopId) {
+  const res = await fetch(apiUrl(`/api/admin/sellers/${encodeURIComponent(shopId)}`), {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const payload = await parseJson(res);
+  return payload?.data;
+}

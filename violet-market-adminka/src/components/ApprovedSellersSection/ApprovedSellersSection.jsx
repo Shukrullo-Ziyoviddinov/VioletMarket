@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Empty, Input, message, Table, Tag, Typography } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { activateSeller, pauseSeller } from '../../api/sellersAdminApi';
+import { activateSeller, deleteSeller, pauseSeller } from '../../api/sellersAdminApi';
 import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
 import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
+import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import { filterApprovedSellersBySearch } from './approvedSellersSearch';
 import './ApprovedSellersSection.css';
 
@@ -19,9 +20,11 @@ function getSellerStatus(seller) {
 }
 
 export default function ApprovedSellersSection({ sellers, loading, onChanged }) {
+  const { openMiniGlobalModal } = useMiniGlobalModal();
   const [searchQuery, setSearchQuery] = useState('');
   const [openMenuShopId, setOpenMenuShopId] = useState(null);
   const [togglingShopId, setTogglingShopId] = useState(null);
+  const [deletingShopId, setDeletingShopId] = useState(null);
 
   const filteredSellers = useMemo(
     () => filterApprovedSellersBySearch(sellers, searchQuery),
@@ -48,6 +51,31 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
     } finally {
       setTogglingShopId(null);
     }
+  };
+
+  const handleDeleteSeller = (seller) => {
+    const shopId = seller.shopId;
+    const sellerLabel = seller.shopDisplayName || shopId;
+
+    openMiniGlobalModal({
+      permissionKey: 'deleteSeller',
+      itemName: sellerLabel,
+      onConfirm: async () => {
+        setDeletingShopId(shopId);
+
+        try {
+          await deleteSeller(shopId);
+          message.success('Sotuvchi va bog\'liq ma\'lumotlar o\'chirildi');
+          setOpenMenuShopId(null);
+          onChanged?.();
+        } catch (err) {
+          message.error(err.message || 'Sotuvchini o\'chirib bo\'lmadi');
+          throw err;
+        } finally {
+          setDeletingShopId(null);
+        }
+      },
+    });
   };
 
   const columns = [
@@ -103,9 +131,11 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
           <ApprovedSellerActionsMenu
             isOpen={isOpen}
             status={getSellerStatus(seller)}
+            deleting={deletingShopId === shopId}
             togglingStatus={togglingShopId === shopId}
             onToggle={() => setOpenMenuShopId(isOpen ? null : shopId)}
             onClose={() => setOpenMenuShopId(null)}
+            onDelete={() => handleDeleteSeller(seller)}
             onToggleStatus={() => handleToggleStatus(seller)}
           />
         );

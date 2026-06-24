@@ -1,13 +1,35 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreOutlined, PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  MoreOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import '../ProductCardMenu/ProductCardMenu.css';
 import './ApprovedSellerActionsMenu.css';
 
-function ApprovedSellerActionsDropdown({ style, isPaused, togglingStatus, onToggleStatus }) {
+function ApprovedSellerActionsDropdown({
+  style,
+  isPaused,
+  deleting,
+  togglingStatus,
+  onDelete,
+  onToggleStatus,
+}) {
   return (
     <div className="product-card-menu__dropdown" role="menu" style={style}>
+      <button
+        type="button"
+        role="menuitem"
+        className="product-card-menu__item product-card-menu__item--danger"
+        onClick={onDelete}
+        disabled={deleting || togglingStatus}
+      >
+        <DeleteOutlined aria-hidden="true" />
+        <span>{deleting ? "O'chirilmoqda..." : "O'chirish"}</span>
+      </button>
       <button
         type="button"
         role="menuitem"
@@ -17,7 +39,7 @@ function ApprovedSellerActionsDropdown({ style, isPaused, togglingStatus, onTogg
             : ' approved-seller-actions-menu__item--pause'
         }`}
         onClick={onToggleStatus}
-        disabled={togglingStatus}
+        disabled={deleting || togglingStatus}
       >
         {isPaused ? (
           <PlayCircleOutlined aria-hidden="true" />
@@ -39,9 +61,11 @@ function ApprovedSellerActionsDropdown({ style, isPaused, togglingStatus, onTogg
 export default function ApprovedSellerActionsMenu({
   isOpen = false,
   status = 'active',
+  deleting = false,
   togglingStatus = false,
   onToggle,
   onClose,
+  onDelete,
   onToggleStatus,
 }) {
   const rootRef = useRef(null);
@@ -101,6 +125,11 @@ export default function ApprovedSellerActionsMenu({
     };
   }, [isOpen, onClose]);
 
+  const handleDelete = () => {
+    onClose?.();
+    onDelete?.();
+  };
+
   const handleToggleStatus = () => {
     onClose?.();
     onToggleStatus?.();
@@ -128,7 +157,9 @@ export default function ApprovedSellerActionsMenu({
             <ApprovedSellerActionsDropdown
               style={dropdownStyle}
               isPaused={isPaused}
+              deleting={deleting}
               togglingStatus={togglingStatus}
+              onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}
             />,
             document.body,

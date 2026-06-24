@@ -11,6 +11,7 @@ const {
   pauseProductsForSeller,
   activateProductsForSeller,
 } = require("./sellerProductPauseService");
+const { deleteSellerCompletely } = require("./sellerCascadeDeleteService");
 
 async function getApprovedSellerAccount(shopIdRaw) {
   const shopId = assertValidShopId(shopIdRaw);
@@ -76,7 +77,12 @@ async function activateSeller(shopIdRaw) {
   };
 }
 
+async function deleteSeller(shopIdRaw) {
+  return deleteSellerCompletely(shopIdRaw);
+}
+
 module.exports = {
   pauseSeller,
   activateSeller,
+  deleteSeller,
 };

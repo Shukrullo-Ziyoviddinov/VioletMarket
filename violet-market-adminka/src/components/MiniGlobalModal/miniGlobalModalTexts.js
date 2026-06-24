@@ -5,6 +5,13 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  deleteSeller: {
+    title: "Sotuvchini o'chirishni tasdiqlash",
+    getMessage: (itemName) =>
+      `Chindan ham "${itemName}" sotuvchini o'chirishga aminmisiz? Barcha mahsulotlar ham o'chadi.`,
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
   removeFlashProduct: {
     title: "Katta chegirma mahsulotlari bo'limidan olib tashlashga aminmisiz?",
     getMessage: () => '',

@@ -11,7 +11,13 @@ const activateSeller = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const deleteSeller = asyncHandler(async (req, res) => {
+  const data = await service.deleteSeller(req.params.shopId);
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   pauseSeller,
   activateSeller,
+  deleteSeller,
 };
