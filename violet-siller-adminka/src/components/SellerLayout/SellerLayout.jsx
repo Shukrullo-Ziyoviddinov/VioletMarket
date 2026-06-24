@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
+import GlobalModal from '../GlobalModal/GlobalModal';
+import MarketInfo from '../MarketInfo/MarketInfo';
 import SellerHeader from '../SellerHeader/SellerHeader';
 import SellerSidebar from '../SellerSidebar/SellerSidebar';
 import './SellerLayout.css';
@@ -9,6 +11,7 @@ const { Sider, Content } = Layout;
 
 export default function SellerLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMarketInfoOpen, setIsMarketInfoOpen] = useState(false);
 
   return (
     <Layout className="seller-layout">
@@ -19,7 +22,10 @@ export default function SellerLayout() {
         className="seller-layout__sider"
         trigger={null}
       >
-        <SellerSidebar collapsed={collapsed} />
+        <SellerSidebar
+          collapsed={collapsed}
+          onOpenMarketInfo={() => setIsMarketInfoOpen(true)}
+        />
       </Sider>
       <Layout>
         <SellerHeader collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
@@ -27,6 +33,14 @@ export default function SellerLayout() {
           <Outlet />
         </Content>
       </Layout>
+
+      <GlobalModal
+        open={isMarketInfoOpen}
+        title="Market haqida"
+        onClose={() => setIsMarketInfoOpen(false)}
+      >
+        <MarketInfo />
+      </GlobalModal>
     </Layout>
   );
 }

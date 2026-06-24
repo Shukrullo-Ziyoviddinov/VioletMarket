@@ -264,6 +264,53 @@ async function getSellerCabinetProfile(shopId) {
   };
 }
 
+function trimText(value, fieldLabel, { required = false, maxLength = 2000 } = {}) {
+  const trimmed = String(value ?? "").trim();
+  if (required && !trimmed) {
+    throw new HttpError(400, `${fieldLabel} bo'sh bo'lmasligi kerak`, "VALIDATION_ERROR");
+  }
+  if (trimmed.length > maxLength) {
+    throw new HttpError(400, `${fieldLabel} juda uzun`, "VALIDATION_ERROR");
+  }
+  return trimmed;
+}
+
+async function updateSellerMarketProfile(shopId, payload = {}) {
+  const normalizedShopId = assertValidShopId(shopId);
+  const registration = await SellerRegistration.findOne({
+    shopId: normalizedShopId,
+    status: "approved",
+  });
+  if (!registration) {
+    throw new HttpError(404, "Tasdiqlangan sotuvchi topilmadi", "SELLER_NOT_FOUND");
+  }
+
+  const sellerAccount = await SellerAccount.findOne({ id: normalizedShopId });
+  if (!sellerAccount) {
+    throw new HttpError(404, "Do'kon profili topilmadi", "SELLER_ACCOUNT_NOT_FOUND");
+  }
+
+  if (payload.nameUz !== undefined) {
+    sellerAccount.name.uz = trimText(payload.nameUz, "Do'kon nomi (UZ)", { required: true, maxLength: 120 });
+  }
+  if (payload.nameRu !== undefined) {
+    sellerAccount.name.ru = trimText(payload.nameRu, "Do'kon nomi (RU)", { required: true, maxLength: 120 });
+  }
+  if (payload.descriptionUz !== undefined) {
+    sellerAccount.description.uz = trimText(payload.descriptionUz, "Tavsif (UZ)", { maxLength: 2000 });
+  }
+  if (payload.descriptionRu !== undefined) {
+    sellerAccount.description.ru = trimText(payload.descriptionRu, "Tavsif (RU)", { maxLength: 2000 });
+  }
+  if (payload.logo !== undefined) {
+    const logo = trimText(payload.logo, "Logo", { maxLength: 500 });
+    sellerAccount.logo = logo || "img/vm logo.jpg";
+  }
+
+  await sellerAccount.save();
+  return getSellerCabinetProfile(normalizedShopId);
+}
+
 module.exports = {
   startRegistration,
   verifyRegistrationEmail,
@@ -271,4 +318,5 @@ module.exports = {
   getApplicationStatus,
   loginSeller,
   getSellerCabinetProfile,
+  updateSellerMarketProfile,
 };

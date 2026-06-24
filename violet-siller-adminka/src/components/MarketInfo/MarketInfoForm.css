@@ -1,0 +1,108 @@
+.market-info-form--loading {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.market-info-form__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.market-info-form__readonly {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8f6fb;
+}
+
+.market-info-form__readonly--footer {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.market-info-form__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.market-info-form__icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ece7f3;
+  color: #764ba2;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.market-info-form__icon-wrap--image {
+  background: #e8f0ff;
+  color: #4c5fd5;
+}
+
+.market-info-form__label {
+  display: block;
+  font-size: 12px;
+  color: #7a6f8d;
+  margin-bottom: 2px;
+}
+
+.market-info-form__value {
+  display: block;
+  font-size: 14px;
+  color: #2a1842;
+  font-weight: 500;
+}
+
+.market-info-form__value--muted {
+  font-weight: 400;
+  color: #6b6280;
+}
+
+.market-info-form__field-card {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.market-info-form__field-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.market-info-form__field-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
+.market-info-form__logo-preview {
+  margin-bottom: 12px;
+}
+
+.market-info-form__logo-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid #ece7f3;
+  background: #faf9fc;
+  padding: 8px;
+}
+
+.market-info-form .ant-form-item {
+  margin-bottom: 8px;
+}

@@ -33,6 +33,11 @@ const getCabinetProfile = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateMarketProfile = asyncHandler(async (req, res) => {
+  const data = await sellerAuthService.updateSellerMarketProfile(req.sellerShopId, req.body || {});
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   startRegistration,
   verifyRegistrationEmail,
@@ -40,4 +45,5 @@ module.exports = {
   getApplicationStatus,
   loginSeller,
   getCabinetProfile,
+  updateMarketProfile,
 };

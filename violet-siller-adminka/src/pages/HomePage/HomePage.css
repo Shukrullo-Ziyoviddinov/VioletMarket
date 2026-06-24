@@ -1,15 +1,4 @@
 .home-page__title {
-  margin: 0 0 20px !important;
+  margin: 0 0 12px !important;
   color: #2a1842 !important;
-}
-
-.home-page--loading {
-  min-height: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-page__descriptions {
-  max-width: 720px;
 }

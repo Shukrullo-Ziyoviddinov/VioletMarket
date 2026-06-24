@@ -77,3 +77,31 @@ export async function fetchSellerCabinetProfile(token) {
   const data = await parseJson(res);
   return data?.data;
 }
+
+export async function updateSellerMarketProfile(token, payload) {
+  const res = await fetch(apiUrl('/api/seller-auth/market-profile'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}
+
+export async function uploadSellerMarketImage(token, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch(apiUrl('/api/seller-auth/uploads/image'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  const data = await parseJson(res);
+  return data?.data;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menu } from 'antd';
-import { DashboardOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShopOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './SellerSidebar.css';
 
@@ -8,6 +8,7 @@ const LOGO_SRC = `${process.env.PUBLIC_URL}/img/${encodeURIComponent('vio_previe
 
 const menuItems = [
   { key: 'home', icon: <DashboardOutlined />, label: 'Bosh sahifa', route: '/' },
+  { key: 'market-info', icon: <ShopOutlined />, label: 'Market haqida' },
 ];
 
 function getSelectedKeyFromPath(pathname) {
@@ -15,15 +16,22 @@ function getSelectedKeyFromPath(pathname) {
   return 'home';
 }
 
-export default function SellerSidebar({ collapsed = false }) {
+export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedKey = getSelectedKeyFromPath(location.pathname);
 
   const handleMenuClick = ({ key }) => {
     const selectedItem = menuItems.find((item) => item.key === key);
-    if (selectedItem?.route) {
+    if (!selectedItem) return;
+
+    if (selectedItem.route) {
       navigate(selectedItem.route);
+      return;
+    }
+
+    if (key === 'market-info' && typeof onOpenMarketInfo === 'function') {
+      onOpenMarketInfo();
     }
   };
 
