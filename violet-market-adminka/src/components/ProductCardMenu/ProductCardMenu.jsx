@@ -15,10 +15,13 @@ function ProductCardMenuDropdown({
   isPaused,
   deleting,
   togglingPause,
+  pauseDisabled = false,
   onDelete,
   onEdit,
   onTogglePause,
 }) {
+  const pauseToggleDisabled = pauseDisabled || deleting || togglingPause;
+
   return (
     <div className="product-card-menu__dropdown" role="menu" style={style}>
       <button
@@ -46,9 +49,14 @@ function ProductCardMenuDropdown({
         role="menuitem"
         className={`product-card-menu__item${
           isPaused ? ' product-card-menu__item--activate' : ''
-        }`}
+        }${pauseDisabled ? ' product-card-menu__item--pause-blocked' : ''}`}
         onClick={onTogglePause}
-        disabled={deleting || togglingPause}
+        disabled={pauseToggleDisabled}
+        title={
+          pauseDisabled
+            ? "Sotuvchi vaqtincha to'xtatilgan — mahsulotni alohida boshqarib bo'lmaydi"
+            : undefined
+        }
       >
         {isPaused ? (
           <PlayCircleOutlined aria-hidden="true" />
@@ -72,6 +80,7 @@ export default function ProductCardMenu({
   clientActive = true,
   deleting = false,
   togglingPause = false,
+  pauseDisabled = false,
   onToggle,
   onClose,
   onEdit,
@@ -174,6 +183,7 @@ export default function ProductCardMenu({
               isPaused={isPaused}
               deleting={deleting}
               togglingPause={togglingPause}
+              pauseDisabled={pauseDisabled}
               onDelete={handleDelete}
               onEdit={handleEdit}
               onTogglePause={handleTogglePause}

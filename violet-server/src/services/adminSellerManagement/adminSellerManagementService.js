@@ -7,6 +7,10 @@ const {
   normalizeSellerAccountStatus,
 } = require("../../utils/sellerAccountStatus");
 const { toSellerAccountPublic } = require("./sellerAccountMapper");
+const {
+  pauseProductsForSeller,
+  activateProductsForSeller,
+} = require("./sellerProductPauseService");
 
 async function getApprovedSellerAccount(shopIdRaw) {
   const shopId = assertValidShopId(shopIdRaw);
@@ -51,11 +55,25 @@ async function setSellerAccountStatus(shopIdRaw, nextStatus) {
 }
 
 async function pauseSeller(shopIdRaw) {
-  return setSellerAccountStatus(shopIdRaw, SELLER_ACCOUNT_STATUSES.PAUSED);
+  const { shopId } = await getApprovedSellerAccount(shopIdRaw);
+  const statusResult = await setSellerAccountStatus(shopIdRaw, SELLER_ACCOUNT_STATUSES.PAUSED);
+  const productsResult = await pauseProductsForSeller(shopId);
+
+  return {
+    ...statusResult,
+    products: productsResult,
+  };
 }
 
 async function activateSeller(shopIdRaw) {
-  return setSellerAccountStatus(shopIdRaw, SELLER_ACCOUNT_STATUSES.ACTIVE);
+  const { shopId } = await getApprovedSellerAccount(shopIdRaw);
+  const statusResult = await setSellerAccountStatus(shopIdRaw, SELLER_ACCOUNT_STATUSES.ACTIVE);
+  const productsResult = await activateProductsForSeller(shopId);
+
+  return {
+    ...statusResult,
+    products: productsResult,
+  };
 }
 
 module.exports = {

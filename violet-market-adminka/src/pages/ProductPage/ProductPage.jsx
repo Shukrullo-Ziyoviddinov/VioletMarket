@@ -211,6 +211,7 @@ export default function ProductPage({ mode = 'all' }) {
             const quantity = Number(product.effectiveQuantity) || 0;
             const isMenuOpen = String(openMenuProductId) === String(product.id);
             const isClientActive = product.clientActive !== false;
+            const isSellerPaused = product.seller?.status === 'paused';
 
             return (
               <article
@@ -278,6 +279,7 @@ export default function ProductPage({ mode = 'all' }) {
                       <ProductCardMenu
                         isOpen={isMenuOpen}
                         clientActive={isClientActive}
+                        pauseDisabled={isSellerPaused}
                         togglingPause={String(togglingPauseProductId) === String(product.id)}
                         onToggle={() =>
                           setOpenMenuProductId((current) =>

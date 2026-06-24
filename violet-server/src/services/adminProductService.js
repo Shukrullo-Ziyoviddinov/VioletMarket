@@ -12,6 +12,7 @@ const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
 const { isProductActiveOnClient } = require("../utils/productClientVisibility");
+const { normalizeSellerAccountStatus, isSellerAccountPaused } = require("../utils/sellerAccountStatus");
 
 const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
 const SUPER_NARX_COLOR = "#13BE4C";
@@ -92,6 +93,7 @@ function mapSellerForAdmin(seller) {
     name: seller.name,
     logo,
     logoUrl: resolvePublicAssetUrl(logo),
+    status: normalizeSellerAccountStatus(seller.status),
   };
 }
 
@@ -111,15 +113,35 @@ function mapProductCard(product, sellerMap) {
     sellerId: sellerId || null,
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
     clientActive: isProductActiveOnClient(product),
+    pausedBySeller: Boolean(product.pausedBySeller),
   };
 }
 
 async function buildSellerMap() {
   const sellers = await SellerAccount.find()
-    .select({ id: 1, name: 1, logo: 1 })
+    .select({ id: 1, name: 1, logo: 1, status: 1 })
     .lean();
 
   return new Map(sellers.map((seller) => [seller.id, seller]));
+}
+
+async function assertSellerAllowsProductClientActiveToggle(sellerIdRaw) {
+  const sellerId = String(sellerIdRaw || "").trim();
+  if (!sellerId) return;
+
+  const seller = await SellerAccount.findOne({ id: sellerId })
+    .select({ id: 1, status: 1 })
+    .lean();
+
+  if (!seller) return;
+
+  if (isSellerAccountPaused(seller.status)) {
+    throw new HttpError(
+      403,
+      "Sotuvchi vaqtincha to'xtatilgan. Mahsulotni alohida faollashtirib yoki to'xtatib bo'lmaydi",
+      "SELLER_PAUSED_PRODUCT_TOGGLE_BLOCKED",
+    );
+  }
 }
 
 async function listProductsForAdmin() {
@@ -142,6 +164,7 @@ async function listProductsForAdmin() {
         sizeStock: 1,
         colorStock: 1,
         clientActive: 1,
+        pausedBySeller: 1,
       })
       .sort({ _id: -1 })
       .lean(),
@@ -640,12 +663,23 @@ async function setProductClientActive(productIdRaw, clientActiveRaw) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 
+  await assertSellerAllowsProductClientActiveToggle(existing.sellerId);
+
   const clientActive = clientActiveRaw !== false;
-  await Product.updateMany({ id: productId }, { $set: { clientActive } });
+  await Product.updateMany(
+    { id: productId },
+    {
+      $set: {
+        clientActive,
+        pausedBySeller: false,
+      },
+    },
+  );
 
   return {
     id: productId,
     clientActive,
+    pausedBySeller: false,
   };
 }
 

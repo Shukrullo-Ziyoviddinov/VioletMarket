@@ -2,6 +2,7 @@ const { Product } = require("../../models/product");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { SellerSubscription } = require("../../models/sellerSubscription");
 const { HttpError } = require("../../utils/httpError");
+const { isSellerAccountPaused } = require("../../utils/sellerAccountStatus");
 const { getProductDisplayPrice } = require("../viewedAt/viewedAtHelpers");
 const { getSellerRatingSummary } = require("./sellerRatingService");
 const { CLIENT_ACTIVE_FILTER } = require("../../utils/productClientVisibility");
@@ -18,6 +19,12 @@ async function assertSellerExists(sellerId) {
     throw new HttpError(404, "Sotuvchi topilmadi", "SELLER_NOT_FOUND");
   }
   return seller;
+}
+
+function assertSellerNotPaused(seller) {
+  if (isSellerAccountPaused(seller?.status)) {
+    throw new HttpError(404, "Sotuvchi vaqtincha to'xtatilgan", "SELLER_PAUSED");
+  }
 }
 
 async function getSubscriberCount(sellerId) {
@@ -41,6 +48,7 @@ function sortSellerProducts(products, sort) {
 async function getSellerProfile(sellerIdRaw, userId) {
   const sellerId = parseSellerId(sellerIdRaw);
   const sellerDoc = await assertSellerExists(sellerId);
+  assertSellerNotPaused(sellerDoc);
 
   const [productCount, subscriberCount] = await Promise.all([
     Product.countDocuments({ sellerId, ...CLIENT_ACTIVE_FILTER }),
@@ -68,7 +76,8 @@ async function getSellerProfile(sellerIdRaw, userId) {
 
 async function getSellerProducts(sellerIdRaw, query) {
   const sellerId = parseSellerId(sellerIdRaw);
-  await assertSellerExists(sellerId);
+  const sellerDoc = await assertSellerExists(sellerId);
+  assertSellerNotPaused(sellerDoc);
 
   const { page, limit, skip } = parsePagination(query);
   const sort = parseSort(query?.sort);

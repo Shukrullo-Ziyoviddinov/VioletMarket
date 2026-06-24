@@ -72,6 +72,16 @@
   color: #c2410c;
 }
 
+.product-card-menu__item--pause-blocked,
+.product-card-menu__item--pause-blocked .anticon {
+  color: #a8a29e !important;
+}
+
+.product-card-menu__item--pause-blocked:hover:not(:disabled) {
+  background: transparent;
+  color: #a8a29e !important;
+}
+
 .product-card-menu__trigger {
   color: #8b79a8;
   font-size: 16px;
