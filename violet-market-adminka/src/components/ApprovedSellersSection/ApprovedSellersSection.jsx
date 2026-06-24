@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Button, Empty, Input, Table, Tag, Typography } from 'antd';
-import { MoreOutlined, SearchOutlined } from '@ant-design/icons';
+import { Empty, Input, message, Table, Tag, Typography } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { activateSeller, pauseSeller } from '../../api/sellersAdminApi';
+import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
+import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
 import { filterApprovedSellersBySearch } from './approvedSellersSearch';
 import './ApprovedSellersSection.css';
 
@@ -11,13 +14,41 @@ function formatDate(value) {
   return new Date(value).toLocaleString('uz-UZ');
 }
 
-export default function ApprovedSellersSection({ sellers, loading }) {
+function getSellerStatus(seller) {
+  return seller?.sellerAccount?.status === 'paused' ? 'paused' : 'active';
+}
+
+export default function ApprovedSellersSection({ sellers, loading, onChanged }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [openMenuShopId, setOpenMenuShopId] = useState(null);
+  const [togglingShopId, setTogglingShopId] = useState(null);
 
   const filteredSellers = useMemo(
     () => filterApprovedSellersBySearch(sellers, searchQuery),
     [sellers, searchQuery],
   );
+
+  const handleToggleStatus = async (seller) => {
+    const shopId = seller.shopId;
+    const currentStatus = getSellerStatus(seller);
+    const nextAction = currentStatus === 'paused' ? activateSeller : pauseSeller;
+
+    setTogglingShopId(shopId);
+
+    try {
+      await nextAction(shopId);
+      message.success(
+        currentStatus === 'paused'
+          ? 'Sotuvchi faollashtirildi'
+          : "Sotuvchi vaqtincha to'xtatildi",
+      );
+      onChanged?.();
+    } catch (err) {
+      message.error(err.message || 'Amalni bajarib bo\'lmadi');
+    } finally {
+      setTogglingShopId(null);
+    }
+  };
 
   const columns = [
     {
@@ -47,6 +78,12 @@ export default function ApprovedSellersSection({ sellers, loading }) {
       key: 'email',
     },
     {
+      title: 'Holat',
+      key: 'status',
+      width: 110,
+      render: (_, seller) => <SellerStatusBadge status={getSellerStatus(seller)} />,
+    },
+    {
       title: 'Tasdiqlangan',
       dataIndex: 'reviewedAt',
       key: 'reviewedAt',
@@ -58,14 +95,21 @@ export default function ApprovedSellersSection({ sellers, loading }) {
       fixed: 'right',
       width: 56,
       align: 'center',
-      render: () => (
-        <Button
-          type="text"
-          className="approved-sellers-section__menu-btn"
-          icon={<MoreOutlined />}
-          aria-label="Sotuvchi amallari"
-        />
-      ),
+      render: (_, seller) => {
+        const shopId = seller.shopId;
+        const isOpen = openMenuShopId === shopId;
+
+        return (
+          <ApprovedSellerActionsMenu
+            isOpen={isOpen}
+            status={getSellerStatus(seller)}
+            togglingStatus={togglingShopId === shopId}
+            onToggle={() => setOpenMenuShopId(isOpen ? null : shopId)}
+            onClose={() => setOpenMenuShopId(null)}
+            onToggleStatus={() => handleToggleStatus(seller)}
+          />
+        );
+      },
     },
   ];
 
@@ -100,7 +144,7 @@ export default function ApprovedSellersSection({ sellers, loading }) {
         loading={loading}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
-        scroll={{ x: 900 }}
+        scroll={{ x: 980 }}
       />
     </section>
   );

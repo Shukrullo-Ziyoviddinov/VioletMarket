@@ -1,0 +1,27 @@
+.approved-seller-actions-menu__item--pause,
+.approved-seller-actions-menu__item--pause .anticon {
+  color: #ea580c;
+}
+
+.approved-seller-actions-menu__item--pause:hover:not(:disabled) {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.approved-seller-actions-menu__item--pause:hover:not(:disabled) .anticon {
+  color: #c2410c;
+}
+
+.approved-seller-actions-menu__item--activate,
+.approved-seller-actions-menu__item--activate .anticon {
+  color: #16a34a;
+}
+
+.approved-seller-actions-menu__item--activate:hover:not(:disabled) {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.approved-seller-actions-menu__item--activate:hover:not(:disabled) .anticon {
+  color: #15803d;
+}

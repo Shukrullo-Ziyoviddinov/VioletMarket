@@ -60,7 +60,11 @@ export default function SellersPage() {
         onChanged={() => loadApplications()}
       />
 
-      <ApprovedSellersSection sellers={approved} loading={loading} />
+      <ApprovedSellersSection
+        sellers={approved}
+        loading={loading}
+        onChanged={() => loadApplications()}
+      />
     </section>
   );
 }

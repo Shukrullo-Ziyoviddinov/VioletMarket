@@ -5,6 +5,8 @@ const { HttpError } = require("../../utils/httpError");
 
 const DEFAULT_SELLER_LOGO = "img/vm logo.jpg";
 
+const { toSellerAccountPublic } = require("../adminSellerManagement/sellerAccountMapper");
+
 async function listSellerApplications() {
   const [pending, approvedRegistrations] = await Promise.all([
     SellerRegistration.find({ status: "pending" }).sort({ submittedAt: -1, createdAt: -1 }),
@@ -23,14 +25,7 @@ async function listSellerApplications() {
       const account = accountById.get(registration.shopId);
       return {
         ...toPublicJSON(registration),
-        sellerAccount: account
-          ? {
-              id: account.id,
-              name: account.name,
-              logo: account.logo,
-              subscriberCount: account.subscriberCount,
-            }
-          : null,
+        sellerAccount: toSellerAccountPublic(account),
       };
     }),
   };
@@ -62,6 +57,7 @@ async function approveApplication(applicationId) {
       description: { uz: "", ru: "" },
       logo: DEFAULT_SELLER_LOGO,
       subscriberCount: 0,
+      status: "active",
     });
   }
 
@@ -88,14 +84,7 @@ async function approveApplication(applicationId) {
 
   return {
     application: toPublicJSON(registration),
-    sellerAccount: account
-      ? {
-          id: account.id,
-          name: account.name,
-          logo: account.logo,
-          subscriberCount: account.subscriberCount,
-        }
-      : null,
+    sellerAccount: toSellerAccountPublic(account),
   };
 }
 

@@ -1,0 +1,24 @@
+.seller-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.seller-status-badge--active {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.seller-status-badge--paused {
+  color: #c2410c;
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+}

@@ -40,3 +40,21 @@ export async function rejectSellerApplication(applicationId, reason) {
   const payload = await parseJson(res);
   return payload?.data;
 }
+
+export async function pauseSeller(shopId) {
+  const res = await fetch(apiUrl(`/api/admin/sellers/${encodeURIComponent(shopId)}/pause`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const payload = await parseJson(res);
+  return payload?.data;
+}
+
+export async function activateSeller(shopId) {
+  const res = await fetch(apiUrl(`/api/admin/sellers/${encodeURIComponent(shopId)}/activate`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const payload = await parseJson(res);
+  return payload?.data;
+}
