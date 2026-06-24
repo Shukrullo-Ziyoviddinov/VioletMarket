@@ -1,19 +1,33 @@
 .auth-layout {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: linear-gradient(160deg, #f4f2f8 0%, #ebe4f5 100%);
+  overflow: hidden;
+}
+
+.auth-layout__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: #2a1842;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .auth-layout__card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 480px;
   background: #fff;
   border-radius: 16px;
   padding: 28px 24px 24px;
-  box-shadow: 0 12px 40px rgba(42, 24, 66, 0.1);
+  box-shadow: 0 12px 40px rgba(42, 24, 66, 0.22);
 }
 
 .auth-layout__logo-wrap {
