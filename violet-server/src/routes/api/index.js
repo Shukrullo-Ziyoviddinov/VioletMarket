@@ -42,6 +42,8 @@ const adminUploadRoutes = require("./adminUpload.routes");
 const sellerSubscriptionRoutes = require("./sellerSubscription.routes");
 const commentRoutes = require("./comment.routes");
 const pendingReviewRoutes = require("./pendingReview.routes");
+const sellerAuthRoutes = require("./sellerAuth.routes");
+const adminSellerApplicationsRoutes = require("./adminSellerApplications.routes");
 
 const router = express.Router();
 
@@ -88,5 +90,7 @@ router.use(adminUploadRoutes);
 router.use(sellerSubscriptionRoutes);
 router.use(commentRoutes);
 router.use(pendingReviewRoutes);
+router.use(sellerAuthRoutes);
+router.use(adminSellerApplicationsRoutes);
 
 module.exports = router;

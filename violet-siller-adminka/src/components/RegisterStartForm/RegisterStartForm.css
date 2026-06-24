@@ -1,0 +1,22 @@
+.register-start-form__title {
+  margin: 0 0 8px !important;
+  color: #2a1842 !important;
+}
+
+.register-start-form__subtitle {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.register-start-form__alert {
+  margin-bottom: 16px;
+}
+
+.register-start-form__footer {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+}

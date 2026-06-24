@@ -1,0 +1,19 @@
+.register-verify-form__title {
+  margin: 0 0 8px !important;
+  color: #2a1842 !important;
+}
+
+.register-verify-form__subtitle {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.register-verify-form__alert {
+  margin-bottom: 16px;
+}
+
+.register-verify-form__footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}

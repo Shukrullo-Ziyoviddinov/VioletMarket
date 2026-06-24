@@ -1,0 +1,31 @@
+.application-submit-form__title {
+  margin: 0 0 8px !important;
+  color: #2a1842 !important;
+}
+
+.application-submit-form__subtitle {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.application-submit-form__alert {
+  margin-bottom: 16px;
+}
+
+.application-submit-form__locked:disabled {
+  color: rgba(42, 24, 66, 0.55) !important;
+  background: #f5f3f8 !important;
+  cursor: not-allowed;
+}
+
+.application-submit-form__hint {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.application-submit-form__footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}

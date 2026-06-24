@@ -1,0 +1,27 @@
+.seller-layout {
+  min-height: 100vh;
+}
+
+.seller-layout__sider .ant-layout-sider-children {
+  height: 100%;
+}
+
+.seller-layout__sider {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  box-shadow: 2px 0 12px rgba(26, 18, 37, 0.15);
+}
+
+.seller-layout__content {
+  margin: 0;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+  background: #f4f2f8;
+}
+
+@media (max-width: 768px) {
+  .seller-layout__content {
+    padding: 16px;
+  }
+}

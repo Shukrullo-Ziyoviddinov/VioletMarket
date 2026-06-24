@@ -1,0 +1,10 @@
+.sellers-page__loading {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sellers-page__alert {
+  margin-bottom: 20px;
+}

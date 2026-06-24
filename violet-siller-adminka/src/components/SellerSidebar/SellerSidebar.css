@@ -1,0 +1,57 @@
+.seller-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+  background: #1a1225;
+}
+
+.seller-sidebar__logo {
+  flex-shrink: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seller-sidebar__logo-img {
+  max-width: 100%;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.seller-sidebar__logo-img--collapsed {
+  max-height: 36px;
+  max-width: 56px;
+}
+
+.seller-sidebar__menu {
+  border-inline-end: none !important;
+  padding-top: 12px;
+  --ant-menu-dark-item-selected-bg: #9b4fe7;
+  --ant-menu-dark-item-selected-color: #fff;
+}
+
+.seller-sidebar__menu .ant-menu-item {
+  margin-inline: 8px;
+  width: calc(100% - 16px);
+  border-radius: 8px;
+}
+
+.seller-sidebar__menu .ant-menu-item-selected {
+  background: #9b4fe7 !important;
+}
+
+.seller-sidebar__menu .ant-menu-item-selected .ant-menu-item-icon,
+.seller-sidebar__menu .ant-menu-item-selected .ant-menu-title-content {
+  color: #fff !important;
+}
+
+.seller-sidebar--collapsed .seller-sidebar__logo {
+  padding-inline: 8px;
+}

@@ -1,0 +1,30 @@
+.application-status-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.application-status-card__title {
+  margin: 0 !important;
+  color: #2a1842 !important;
+}
+
+.application-status-card__descriptions {
+  margin-bottom: 16px;
+}
+
+.application-status-card__reason {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.application-status-card__message {
+  margin-bottom: 16px !important;
+}
+
+.application-status-card__actions {
+  display: grid;
+  gap: 10px;
+}

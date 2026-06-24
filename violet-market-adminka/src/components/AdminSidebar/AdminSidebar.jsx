@@ -54,7 +54,7 @@ const menuItems = [
   { key: 'country-seller-banner', icon: <ShopOutlined />, label: 'Davlat seller banner' },
   { key: 'navbar-category', icon: <MenuOutlined />, label: 'Navbar category' },
   { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Product policy' },
-  { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar' },
+  { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar', route: '/sellers' },
   { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },
   { key: 'product-uzb-warehouse-info', icon: <InboxOutlined />, label: "Mahsulot UZB omborida" },
   { key: 'logistics-info', icon: <ControlOutlined />, label: "Logistika ma'lumoti" },
@@ -67,6 +67,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';
+  if (pathname === '/sellers') return 'sellers';
   return 'dashboard';
 }
 

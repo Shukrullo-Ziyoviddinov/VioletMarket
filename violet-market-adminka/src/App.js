@@ -4,6 +4,7 @@ import AdminDashboardOverview from './components/AdminDashboardOverview/AdminDas
 import CustomerStatisticPage from './pages/CustomerStatisticPage/CustomerStatisticPage';
 import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
+import SellersPage from './pages/SellersPage/SellersPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -23,6 +24,7 @@ function App() {
           <Route path="products/paused" element={<PausedProductsPage />} />
           <Route path="products" element={<AllProductsPage />} />
           <Route path="flash-products" element={<FlashPage />} />
+          <Route path="sellers" element={<SellersPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
