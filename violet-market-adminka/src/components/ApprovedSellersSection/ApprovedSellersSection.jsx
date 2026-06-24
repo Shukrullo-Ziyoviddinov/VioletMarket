@@ -1,5 +1,7 @@
-import React from 'react';
-import { Empty, Table, Tag, Typography } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Empty, Input, Table, Tag, Typography } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { filterApprovedSellersBySearch } from './approvedSellersSearch';
 import './ApprovedSellersSection.css';
 
 const { Title, Text } = Typography;
@@ -10,6 +12,13 @@ function formatDate(value) {
 }
 
 export default function ApprovedSellersSection({ sellers, loading }) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSellers = useMemo(
+    () => filterApprovedSellersBySearch(sellers, searchQuery),
+    [sellers, searchQuery],
+  );
+
   const columns = [
     {
       title: "Do'kon ID",
@@ -43,29 +52,39 @@ export default function ApprovedSellersSection({ sellers, loading }) {
       key: 'reviewedAt',
       render: formatDate,
     },
-    {
-      title: 'Obunachilar',
-      key: 'subscriberCount',
-      render: (_, record) => record?.sellerAccount?.subscriberCount ?? 0,
-    },
   ];
+
+  const emptyDescription = searchQuery.trim()
+    ? 'Qidiruv bo\'yicha sotuvchi topilmadi'
+    : "Hozircha tasdiqlangan sotuvchi yo'q";
 
   return (
     <section className="approved-sellers-section">
       <div className="approved-sellers-section__head">
-        <Title level={4} className="approved-sellers-section__title">
-          Tasdiqlangan sotuvchilar
-        </Title>
-        <Text type="secondary">Admin tomonidan tasdiqlangan va faol sotuvchilar</Text>
+        <div className="approved-sellers-section__head-text">
+          <Title level={4} className="approved-sellers-section__title">
+            Tasdiqlangan sotuvchilar
+          </Title>
+          <Text type="secondary">Admin tomonidan tasdiqlangan va faol sotuvchilar</Text>
+        </div>
+
+        <Input
+          allowClear
+          className="approved-sellers-section__search"
+          placeholder="Do'kon nomi, ism yoki familiya"
+          prefix={<SearchOutlined />}
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+        />
       </div>
 
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={sellers}
+        dataSource={filteredSellers}
         loading={loading}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
-        locale={{ emptyText: <Empty description="Hozircha tasdiqlangan sotuvchi yo'q" /> }}
+        locale={{ emptyText: <Empty description={emptyDescription} /> }}
         scroll={{ x: 900 }}
       />
     </section>

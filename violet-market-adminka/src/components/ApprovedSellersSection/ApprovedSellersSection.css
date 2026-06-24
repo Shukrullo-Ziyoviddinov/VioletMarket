@@ -1,8 +1,41 @@
 .approved-sellers-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 16px;
+}
+
+.approved-sellers-section__head-text {
+  min-width: 0;
 }
 
 .approved-sellers-section__title {
   margin: 0 0 4px !important;
   color: #2a1842 !important;
+}
+
+.approved-sellers-section__search {
+  width: min(100%, 340px);
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #f8f6fc;
+  border: 1px solid #e3d9ef;
+}
+
+.approved-sellers-section__search:hover,
+.approved-sellers-section__search.ant-input-affix-wrapper-focused {
+  background: #f3eef9;
+  border-color: #d8c9ea;
+}
+
+@media (max-width: 768px) {
+  .approved-sellers-section__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .approved-sellers-section__search {
+    width: 100%;
+  }
 }
