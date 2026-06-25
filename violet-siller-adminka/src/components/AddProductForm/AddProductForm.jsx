@@ -5,6 +5,7 @@ import { useSellerAuth } from '../../context/SellerAuthContext';
 import AddProductCountriesField from '../AddProductCountriesField/AddProductCountriesField';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
+import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
 import './AddProductForm.css';
 
 const { Text } = Typography;
@@ -19,7 +20,7 @@ const INITIAL_VALUES = {
   discountRu: '',
   video: '',
   category: '',
-  countryCodes: [],
+  countryCode: '',
 };
 
 export default function AddProductForm() {
@@ -86,10 +87,15 @@ export default function AddProductForm() {
 
       <AddProductMainInfoFields values={values} onChange={setValues} />
 
+      <AddProductVideoField
+        value={values.video}
+        onChange={(video) => setValues((current) => ({ ...current, video }))}
+      />
+
       <AddProductCountriesField
-        value={values.countryCodes}
+        value={values.countryCode}
         shippingCountries={shippingCountries}
-        onChange={(countryCodes) => setValues((current) => ({ ...current, countryCodes }))}
+        onChange={(countryCode) => setValues((current) => ({ ...current, countryCode }))}
       />
 
       <div className="add-product-form__footer-note">

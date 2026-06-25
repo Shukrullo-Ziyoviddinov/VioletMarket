@@ -14,33 +14,20 @@ export default function AddProductCountriesField({ value, shippingCountries, onC
     [shippingCountries],
   );
 
-  const handleToggleCode = (code) => {
-    const normalized = String(code);
-    const current = Array.isArray(value) ? value.map(String) : [];
-    const exists = current.includes(normalized);
-
-    if (exists) {
-      onChange(current.filter((item) => item !== normalized));
-      return;
-    }
-
-    onChange([...current, normalized]);
-  };
-
   return (
     <section className="add-product-form__card">
       <DropdownPicker
-        label="Mahsulot hududi (yetkazib berish mamlakati)"
-        hint="Mahsulot qaysi mamlakatdan yetkazib berilishini tanlang. Bir nechta hudud tanlash mumkin. Ro'yxat admin paneldagi «Mahsulot hududi» bo'limidan olinadi."
+        label="Mahsulot qaysi davlatniki?"
+        hint="Mahsulot qaysi davlatga tegishli va qaysi davlatdan mijozgacha yuborilishini bildiradi. Faqat bitta davlat tanlanadi. Ro'yxat admin paneldagi «Mahsulot hududi» bo'limidan olinadi."
         required
-        mode="multiple"
+        mode="single"
         value={value}
         options={pickerOptions}
-        placeholder="Hududlarni tanlang"
-        emptyText="Mahsulot hududlari topilmadi"
+        placeholder="Davlatni tanlang"
+        emptyText="Davlatlar topilmadi"
         isOpen={isOpen}
         onToggle={setIsOpen}
-        onToggleOption={handleToggleCode}
+        onSelect={onChange}
       />
     </section>
   );

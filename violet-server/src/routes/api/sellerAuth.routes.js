@@ -19,6 +19,19 @@ function sellerImageUploadGuard(req, res, next) {
   });
 }
 
+function sellerVideoUploadGuard(req, res, next) {
+  sellerUploadController.uploadSingleVideoMiddleware(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        ok: false,
+        message: err.message || "Video yuklashda xatolik",
+        code: "UPLOAD_ERROR",
+      });
+    }
+    return next();
+  });
+}
+
 router.post("/seller-auth/register/start", controller.startRegistration);
 router.post("/seller-auth/register/verify-email", controller.verifyRegistrationEmail);
 router.post("/seller-auth/register/submit-application", controller.submitApplication);
@@ -36,6 +49,12 @@ router.post(
   sellerAuthMiddleware,
   sellerImageUploadGuard,
   sellerUploadController.uploadSellerImage,
+);
+router.post(
+  "/seller-auth/uploads/video",
+  sellerAuthMiddleware,
+  sellerVideoUploadGuard,
+  sellerUploadController.uploadSellerVideo,
 );
 
 module.exports = router;
