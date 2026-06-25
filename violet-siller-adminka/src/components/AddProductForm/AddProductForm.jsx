@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Spin, Typography } from 'antd';
 import { fetchSellerProductFormOptions } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
+import AddProductClassificationFields from '../AddProductClassificationFields/AddProductClassificationFields';
 import AddProductCountriesField from '../AddProductCountriesField/AddProductCountriesField';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
@@ -21,6 +22,10 @@ const INITIAL_VALUES = {
   video: '',
   category: '',
   countryCode: '',
+  productType: '',
+  productCountry: '',
+  brandCategories: '',
+  countriesCategories: '',
 };
 
 export default function AddProductForm() {
@@ -28,6 +33,8 @@ export default function AddProductForm() {
   const [values, setValues] = useState(INITIAL_VALUES);
   const [sectionOptions, setSectionOptions] = useState([]);
   const [shippingCountries, setShippingCountries] = useState([]);
+  const [productTypes, setProductTypes] = useState([]);
+  const [filterValues, setFilterValues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -49,6 +56,8 @@ export default function AddProductForm() {
 
         setSectionOptions(Array.isArray(data?.sectionOptions) ? data.sectionOptions : []);
         setShippingCountries(Array.isArray(data?.shippingCountries) ? data.shippingCountries : []);
+        setProductTypes(Array.isArray(data?.productTypes) ? data.productTypes : []);
+        setFilterValues(Array.isArray(data?.filterValues) ? data.filterValues : []);
       } catch (err) {
         if (!cancelled) {
           setError(err.message || 'Forma ma\'lumotlarini yuklab bo\'lmadi');
@@ -98,9 +107,17 @@ export default function AddProductForm() {
         onChange={(countryCode) => setValues((current) => ({ ...current, countryCode }))}
       />
 
+      <AddProductClassificationFields
+        values={values}
+        productTypes={productTypes}
+        filterValues={filterValues}
+        onChange={setValues}
+      />
+
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          1-bosqich: faqat asosiy maydonlar. Saqlash va qolgan maydonlar keyingi bosqichda qo&apos;shiladi.
+          2-bosqich: mahsulot turi, ishlab chiqarilgan davlat, brend va davlat kategoriyasi qo&apos;shildi.
+          Saqlash va qolgan maydonlar keyingi bosqichda qo&apos;shiladi.
         </Text>
       </div>
     </div>
