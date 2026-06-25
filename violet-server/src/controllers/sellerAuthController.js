@@ -23,6 +23,11 @@ const getApplicationStatus = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getSellerCountryOptions = asyncHandler(async (_req, res) => {
+  const data = await sellerAuthService.getSellerCountryOptions();
+  res.json({ ok: true, data });
+});
+
 const loginSeller = asyncHandler(async (req, res) => {
   const data = await sellerAuthService.loginSeller(req.body || {});
   res.json({ ok: true, data });
@@ -43,6 +48,7 @@ module.exports = {
   verifyRegistrationEmail,
   submitApplication,
   getApplicationStatus,
+  getSellerCountryOptions,
   loginSeller,
   getCabinetProfile,
   updateMarketProfile,

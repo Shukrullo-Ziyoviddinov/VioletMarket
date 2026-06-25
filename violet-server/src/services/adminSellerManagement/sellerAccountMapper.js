@@ -6,6 +6,7 @@ function toSellerAccountPublic(account) {
   return {
     id: account.id,
     name: account.name,
+    sellerCountry: account.sellerCountry || "",
     logo: account.logo,
     subscriberCount: account.subscriberCount,
     status: normalizeSellerAccountStatus(account.status),

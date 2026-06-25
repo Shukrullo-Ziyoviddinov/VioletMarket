@@ -1,6 +1,9 @@
 /** Xitoy ombori — faqat `sellerCountry: "China"` */
-export function isChinaWarehouseProduct(product) {
-  return String(product?.sellerCountry ?? '').trim().toLowerCase() === 'china';
+export function isChinaWarehouseProduct(product, getSellerById) {
+  const sellerId = String(product?.sellerId || '').trim();
+  if (!sellerId || typeof getSellerById !== 'function') return false;
+  const seller = getSellerById(sellerId);
+  return String(seller?.sellerCountry || '').trim().toLowerCase() === 'china';
 }
 
 const COUNTRY_CODE_ALIASES = {
@@ -43,8 +46,11 @@ export function normalizeProductCountries(productOrItem) {
 }
 
 /** O'zbekiston ombori — `countries` ichida `uzb` */
-export function isUzWarehouseProduct(product) {
-  return normalizeProductCountries(product).includes('uzb');
+export function isUzWarehouseProduct(product, getSellerById) {
+  const sellerId = String(product?.sellerId || '').trim();
+  if (!sellerId || typeof getSellerById !== 'function') return false;
+  const seller = getSellerById(sellerId);
+  return String(seller?.sellerCountry || '').trim().toLowerCase() === 'uzb';
 }
 
 /** Faqat berilgan davlat ombori — `countries` faqat shu davlat */

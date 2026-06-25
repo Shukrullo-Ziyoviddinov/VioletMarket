@@ -49,6 +49,7 @@ async function seedSellerRegistrationsMany() {
           email: String(item.email).trim().toLowerCase(),
           emailVerified: Boolean(item.emailVerified),
           shopDisplayName: item.shopDisplayName,
+          sellerCountry: String(item.sellerCountry || "").trim().toLowerCase(),
           shopId: item.shopId,
           passwordHash: hashPassword(item.demoPassword),
           status: item.status || "approved",

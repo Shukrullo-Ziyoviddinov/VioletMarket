@@ -17,7 +17,6 @@
     "countries": [
       "USA"
     ],
-    "sellerCountry": "China",
     "productType": "shim",
     "productCountry": "USA",
     "brandCategories": "nike",

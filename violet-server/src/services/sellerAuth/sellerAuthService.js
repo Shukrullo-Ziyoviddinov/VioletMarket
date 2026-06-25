@@ -6,6 +6,10 @@ const { hashPassword, verifyPassword } = require("../../utils/password");
 const { assertValidShopId } = require("../../utils/shopId");
 const { normalizeSellerAccountStatus } = require("../../utils/sellerAccountStatus");
 const {
+  assertValidSellerCountry,
+  listSellerCountryOptions,
+} = require("../../utils/sellerCountry");
+const {
   signSellerRegistrationToken,
   verifySellerRegistrationToken,
   signSellerToken,
@@ -46,10 +50,11 @@ function getRegistrationTokenFromRequest(req) {
   return String(req.body?.registrationToken || "").trim();
 }
 
-async function startRegistration({ firstName, lastName, email }) {
+async function startRegistration({ firstName, lastName, email, sellerCountry }) {
   const normalizedEmail = assertValidEmail(email);
   const safeFirstName = assertValidName(firstName, "Ism");
   const safeLastName = assertValidName(lastName, "Familiya");
+  const normalizedSellerCountry = await assertValidSellerCountry(sellerCountry);
 
   let registration = await SellerRegistration.findOne({ email: normalizedEmail });
 
@@ -70,12 +75,14 @@ async function startRegistration({ firstName, lastName, email }) {
       firstName: safeFirstName,
       lastName: safeLastName,
       email: normalizedEmail,
+      sellerCountry: normalizedSellerCountry,
       status: "draft",
       emailVerified: false,
     });
   } else {
     registration.firstName = safeFirstName;
     registration.lastName = safeLastName;
+    registration.sellerCountry = normalizedSellerCountry;
     registration.emailVerified = false;
     if (registration.status === "rejected") {
       registration.status = "draft";
@@ -233,6 +240,7 @@ async function loginSeller({ shopId, password }) {
       firstName: registration.firstName,
       lastName: registration.lastName,
       email: registration.email,
+      sellerCountry: registration.sellerCountry || "",
       accountStatus: normalizeSellerAccountStatus(sellerAccount.status),
     },
   };
@@ -260,6 +268,7 @@ async function getSellerCabinetProfile(shopId) {
       id: sellerAccount.id,
       name: sellerAccount.name,
       description: sellerAccount.description,
+      sellerCountry: sellerAccount.sellerCountry || "",
       logo: sellerAccount.logo,
       subscriberCount: sellerAccount.subscriberCount,
       status: normalizeSellerAccountStatus(sellerAccount.status),
@@ -314,12 +323,25 @@ async function updateSellerMarketProfile(shopId, payload = {}) {
   return getSellerCabinetProfile(normalizedShopId);
 }
 
+async function getSellerCountryOptions() {
+  const rows = await listSellerCountryOptions();
+  return {
+    countries: rows.map((row) => ({
+      id: row.id,
+      code: String(row.code || "").trim(),
+      name: row.name,
+      sortOrder: row.sortOrder,
+    })),
+  };
+}
+
 module.exports = {
   startRegistration,
   verifyRegistrationEmail,
   submitApplication,
   getApplicationStatus,
   loginSeller,
+  getSellerCountryOptions,
   getSellerCabinetProfile,
   updateSellerMarketProfile,
 };

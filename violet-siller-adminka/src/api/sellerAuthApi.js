@@ -23,6 +23,12 @@ export async function startSellerRegistration(payload) {
   return data?.data;
 }
 
+export async function fetchSellerRegistrationCountries() {
+  const res = await fetch(apiUrl('/api/seller-auth/register/countries'));
+  const data = await parseJson(res);
+  return Array.isArray(data?.data?.countries) ? data.data.countries : [];
+}
+
 export async function verifySellerEmail(payload) {
   const res = await fetch(apiUrl('/api/seller-auth/register/verify-email'), {
     method: 'POST',

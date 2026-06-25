@@ -42,6 +42,7 @@ async function approveApplication(applicationId) {
   }
 
   const displayName = registration.shopDisplayName || registration.shopId;
+  const sellerCountry = String(registration.sellerCountry || "uzb").trim().toLowerCase();
 
   const existingAccount = await SellerAccount.findOne({ id: registration.shopId });
   if (existingAccount) {
@@ -49,12 +50,14 @@ async function approveApplication(applicationId) {
       uz: displayName,
       ru: displayName,
     };
+    existingAccount.sellerCountry = sellerCountry;
     await existingAccount.save();
   } else {
     await SellerAccount.create({
       id: registration.shopId,
       name: { uz: displayName, ru: displayName },
       description: { uz: "", ru: "" },
+      sellerCountry,
       logo: DEFAULT_SELLER_LOGO,
       subscriberCount: 0,
       status: "active",

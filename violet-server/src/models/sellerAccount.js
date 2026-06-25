@@ -13,6 +13,7 @@ const sellerAccountSchema = new mongoose.Schema(
       uz: { type: String, default: "", trim: true },
       ru: { type: String, default: "", trim: true },
     },
+    sellerCountry: { type: String, required: true, trim: true, lowercase: true, index: true },
     logo: { type: String, required: true, trim: true },
     subscriberCount: { type: Number, default: 0 },
     status: {

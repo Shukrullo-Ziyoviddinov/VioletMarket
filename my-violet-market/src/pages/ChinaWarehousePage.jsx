@@ -47,7 +47,7 @@ const filterByGenre = (list, genres) => {
 
 const ChinaWarehousePage = () => {
   const { t } = useTranslation();
-  const { allProducts, loading, error } = useAppData();
+  const { allProducts, loading, error, getSellerById } = useAppData();
   const catalog = allProducts || [];
   const appLoading = loading && !error;
   const [priceRange, setPriceRange] = useState(null);
@@ -58,8 +58,8 @@ const ChinaWarehousePage = () => {
   const [selectedGenres, setSelectedGenres] = useState([]);
 
   const categoryProducts = useMemo(
-    () => catalog.filter(isChinaWarehouseProduct),
-    [catalog]
+    () => catalog.filter((product) => isChinaWarehouseProduct(product, getSellerById)),
+    [catalog, getSellerById]
   );
 
   const isBooksCategory = useMemo(

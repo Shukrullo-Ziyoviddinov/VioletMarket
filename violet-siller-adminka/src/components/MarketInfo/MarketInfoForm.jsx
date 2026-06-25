@@ -179,6 +179,17 @@ export default function MarketInfoForm() {
               <Text className="market-info-form__value">{account?.subscriberCount ?? 0}</Text>
             </div>
           </div>
+          <div className="market-info-form__row">
+            <div className="market-info-form__icon-wrap">
+              <GlobalOutlined />
+            </div>
+            <div>
+              <Text className="market-info-form__label">Sotuvchi davlati</Text>
+              <Text className="market-info-form__value">
+                {String(account?.sellerCountry || '').toUpperCase() || '—'}
+              </Text>
+            </div>
+          </div>
         </div>
 
         <div className="market-info-form__field-card">

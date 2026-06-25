@@ -304,6 +304,7 @@ async function seedSellerRegistrationsMany() {
           email: String(item.email).trim().toLowerCase(),
           emailVerified: Boolean(item.emailVerified),
           shopDisplayName: item.shopDisplayName,
+          sellerCountry: String(item.sellerCountry || "").trim().toLowerCase(),
           shopId: item.shopId,
           passwordHash: hashPassword(item.demoPassword),
           status: item.status || "approved",
@@ -460,7 +461,8 @@ async function seedProducts() {
       continue;
     }
     seenIds.add(p.id);
-    uniqueProducts.push(p);
+    const { sellerCountry: _legacySellerCountry, ...rest } = p;
+    uniqueProducts.push(rest);
   }
 
   if (duplicateIds) {
@@ -497,11 +499,7 @@ async function seedProducts() {
     { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
   );
 
-  const chinaSellerCount = uniqueProducts.filter(
-    (p) => String(p.sellerCountry || "").trim().toLowerCase() === "china"
-  ).length;
   console.log(`Products inserted: ${uniqueProducts.length} (JSON jami: ${raw.length}, takrorlar chiqarildi)`);
-  console.log(`sellerCountry=China: ${chinaSellerCount} ta mahsulot`);
 }
 
 async function logDbSummary() {

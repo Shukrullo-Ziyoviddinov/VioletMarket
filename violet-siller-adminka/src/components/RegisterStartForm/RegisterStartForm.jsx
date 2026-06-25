@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Alert, Button, Form, Input, Typography } from 'antd';
+import { Alert, Button, Form, Input, Select, Typography } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { startSellerRegistration } from '../../api/sellerAuthApi';
+import {
+  fetchSellerRegistrationCountries,
+  startSellerRegistration,
+} from '../../api/sellerAuthApi';
 import './RegisterStartForm.css';
 
 const { Title, Text } = Typography;
@@ -10,7 +13,38 @@ export default function RegisterStartForm() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [countriesLoading, setCountriesLoading] = useState(true);
+  const [countryOptions, setCountryOptions] = useState([]);
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function loadCountries() {
+      setCountriesLoading(true);
+      try {
+        const rows = await fetchSellerRegistrationCountries();
+        if (cancelled) return;
+        setCountryOptions(
+          rows.map((row) => ({
+            value: String(row.code || ''),
+            label: row?.name?.uz || row.code,
+          })),
+        );
+      } catch (_error) {
+        if (!cancelled) {
+          setCountryOptions([]);
+        }
+      } finally {
+        if (!cancelled) setCountriesLoading(false);
+      }
+    }
+
+    loadCountries();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (values) => {
     setLoading(true);
@@ -51,6 +85,21 @@ export default function RegisterStartForm() {
           rules={[{ required: true, message: 'Familiyani kiriting' }, { min: 2, message: 'Kamida 2 ta belgi' }]}
         >
           <Input placeholder="Familiyangiz" size="large" />
+        </Form.Item>
+
+        <Form.Item
+          label="Sotuvchi davlati"
+          name="sellerCountry"
+          rules={[{ required: true, message: 'Davlatni tanlang' }]}
+        >
+          <Select
+            size="large"
+            loading={countriesLoading}
+            placeholder="Sotuvchi davlatini tanlang"
+            options={countryOptions}
+            showSearch
+            optionFilterProp="label"
+          />
         </Form.Item>
 
         <Form.Item

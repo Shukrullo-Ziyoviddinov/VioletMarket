@@ -7,6 +7,7 @@ const sellerRegistrationSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, trim: true, lowercase: true, index: true },
     emailVerified: { type: Boolean, default: false },
     shopDisplayName: { type: String, trim: true, default: "" },
+    sellerCountry: { type: String, trim: true, lowercase: true, default: "" },
     shopId: { type: String, trim: true, lowercase: true, sparse: true, unique: true, index: true },
     passwordHash: { type: String, default: "" },
     status: {
@@ -38,6 +39,7 @@ function toPublicJSON(doc) {
     email: doc.email,
     emailVerified: Boolean(doc.emailVerified),
     shopDisplayName: doc.shopDisplayName || "",
+    sellerCountry: doc.sellerCountry || "",
     shopId: doc.shopId || "",
     status: doc.status,
     rejectionReason: doc.rejectionReason || "",

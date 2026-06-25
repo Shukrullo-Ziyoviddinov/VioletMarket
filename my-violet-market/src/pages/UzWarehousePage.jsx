@@ -47,7 +47,7 @@ const filterByGenre = (list, genres) => {
 
 const UzWarehousePage = () => {
   const { t } = useTranslation();
-  const { allProducts, loading, error } = useAppData();
+  const { allProducts, loading, error, getSellerById } = useAppData();
   const catalog = allProducts || [];
   const appLoading = loading && !error;
   const [priceRange, setPriceRange] = useState(null);
@@ -57,7 +57,10 @@ const UzWarehousePage = () => {
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
 
-  const categoryProducts = useMemo(() => catalog.filter(isUzWarehouseProduct), [catalog]);
+  const categoryProducts = useMemo(
+    () => catalog.filter((product) => isUzWarehouseProduct(product, getSellerById)),
+    [catalog, getSellerById],
+  );
 
   const isBooksCategory = useMemo(
     () => categoryProducts.some((p) => (p.category || '').trim() === 'Kitoblar'),

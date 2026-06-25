@@ -33,6 +33,7 @@ function sellerVideoUploadGuard(req, res, next) {
 }
 
 router.post("/seller-auth/register/start", controller.startRegistration);
+router.get("/seller-auth/register/countries", controller.getSellerCountryOptions);
 router.post("/seller-auth/register/verify-email", controller.verifyRegistrationEmail);
 router.post("/seller-auth/register/submit-application", controller.submitApplication);
 router.get("/seller-auth/application-status", controller.getApplicationStatus);
