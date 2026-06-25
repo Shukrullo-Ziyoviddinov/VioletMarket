@@ -5,7 +5,6 @@ import {
   rejectSellerApplication,
 } from '../../api/sellersAdminApi';
 import { useAdminToast } from '../../context/AdminToastContext';
-import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
 import {
   buildActionsColumn,
   buildEmailColumn,
@@ -119,9 +118,6 @@ export default function SellerApplicationsSection({ applications, loading, onCha
         dataSource={applications}
         loading={loading}
         pagination={false}
-        expandable={{
-          expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
-        }}
         locale={{ emptyText: <Empty description="Hozircha yangi ariza yo'q" /> }}
         scroll={{ x: getSellersTableScrollX(PENDING_COLUMN_KEYS) }}
       />

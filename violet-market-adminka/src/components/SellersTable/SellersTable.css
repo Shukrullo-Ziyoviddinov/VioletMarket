@@ -20,26 +20,3 @@
 .sellers-admin-table .ant-table-thead > tr > th.sellers-table__col-fit .ant-table-column-title {
   white-space: nowrap;
 }
-
-.sellers-admin-table .ant-table-expanded-row > .ant-table-cell {
-  padding: 8px 12px !important;
-}
-
-.sellers-table__expanded {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.sellers-table__expanded-label {
-  font-weight: 600;
-  color: #2a1842;
-}
-
-.sellers-table__expanded-value {
-  font-weight: 500;
-  color: #4a3d5c;
-  text-transform: lowercase;
-}

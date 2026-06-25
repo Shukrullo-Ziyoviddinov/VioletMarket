@@ -4,7 +4,6 @@ import { SearchOutlined } from '@ant-design/icons';
 import { activateSeller, deleteSeller, pauseSeller } from '../../api/sellersAdminApi';
 import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
 import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
-import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
   buildEmailColumn,
@@ -160,9 +159,6 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
         dataSource={filteredSellers}
         loading={loading}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
-        expandable={{
-          expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
-        }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
         scroll={{ x: getSellersTableScrollX(APPROVED_COLUMN_KEYS) }}
       />
