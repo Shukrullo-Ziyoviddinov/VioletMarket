@@ -119,7 +119,7 @@ export default function SellerApplicationsSection({ applications, loading, onCha
         loading={loading}
         pagination={false}
         locale={{ emptyText: <Empty description="Hozircha yangi ariza yo'q" /> }}
-        scroll={{ x: getSellersTableScrollX(PENDING_COLUMN_KEYS) }}
+        scroll={applications.length ? { x: getSellersTableScrollX(PENDING_COLUMN_KEYS) } : undefined}
       />
     </section>
   );

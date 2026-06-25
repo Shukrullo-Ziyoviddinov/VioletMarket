@@ -160,7 +160,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
         loading={loading}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
-        scroll={{ x: getSellersTableScrollX(APPROVED_COLUMN_KEYS) }}
+        scroll={filteredSellers.length ? { x: getSellersTableScrollX(APPROVED_COLUMN_KEYS) } : undefined}
       />
     </section>
   );

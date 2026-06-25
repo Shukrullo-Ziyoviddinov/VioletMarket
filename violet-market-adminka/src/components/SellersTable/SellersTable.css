@@ -20,3 +20,8 @@
 .sellers-admin-table .ant-table-thead > tr > th.sellers-table__col-fit .ant-table-column-title {
   white-space: nowrap;
 }
+
+.sellers-admin-table .ant-table-empty .ant-table-content,
+.sellers-admin-table .ant-table-empty .ant-table-body {
+  overflow-x: hidden !important;
+}
