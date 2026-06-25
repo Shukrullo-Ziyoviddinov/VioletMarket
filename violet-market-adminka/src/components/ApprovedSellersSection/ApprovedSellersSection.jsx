@@ -4,8 +4,15 @@ import { SearchOutlined } from '@ant-design/icons';
 import { activateSeller, deleteSeller, pauseSeller } from '../../api/sellersAdminApi';
 import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
 import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
+import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
+import {
+  formatSellerCountry,
+  getSellerCountryCode,
+  getSellerCountryTagColor,
+} from '../../utils/sellerCountryDisplay';
 import { filterApprovedSellersBySearch } from './approvedSellersSearch';
+import '../SellersTable/SellersTable.css';
 import './ApprovedSellersSection.css';
 
 const { Title, Text } = Typography;
@@ -106,6 +113,16 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
       key: 'email',
     },
     {
+      title: 'Sotuvchi davlati',
+      key: 'sellerCountry',
+      width: 120,
+      render: (_, seller) => {
+        const country = getSellerCountryCode(seller);
+        if (!country) return '—';
+        return <Tag color={getSellerCountryTagColor(country)}>{formatSellerCountry(country)}</Tag>;
+      },
+    },
+    {
       title: 'Holat',
       key: 'status',
       width: 110,
@@ -168,13 +185,18 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
       </div>
 
       <Table
+        className="sellers-admin-table"
         rowKey="id"
+        size="small"
         columns={columns}
         dataSource={filteredSellers}
         loading={loading}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
+        expandable={{
+          expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
+        }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
-        scroll={{ x: 980 }}
+        scroll={{ x: 1100 }}
       />
     </section>
   );

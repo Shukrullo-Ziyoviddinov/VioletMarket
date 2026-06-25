@@ -5,6 +5,13 @@ import {
   rejectSellerApplication,
 } from '../../api/sellersAdminApi';
 import { useAdminToast } from '../../context/AdminToastContext';
+import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
+import {
+  formatSellerCountry,
+  getSellerCountryCode,
+  getSellerCountryTagColor,
+} from '../../utils/sellerCountryDisplay';
+import '../SellersTable/SellersTable.css';
 import './SellerApplicationsSection.css';
 
 const { Title, Text } = Typography;
@@ -75,7 +82,18 @@ export default function SellerApplicationsSection({ applications, loading, onCha
       title: "Do'kon ID",
       dataIndex: 'shopId',
       key: 'shopId',
+      width: 110,
       render: (value) => <Tag color="purple">{value}</Tag>,
+    },
+    {
+      title: 'Sotuvchi davlati',
+      key: 'sellerCountry',
+      width: 120,
+      render: (_, record) => {
+        const country = getSellerCountryCode(record);
+        if (!country) return '—';
+        return <Tag color={getSellerCountryTagColor(country)}>{formatSellerCountry(country)}</Tag>;
+      },
     },
     {
       title: 'Yuborilgan',
@@ -121,13 +139,18 @@ export default function SellerApplicationsSection({ applications, loading, onCha
       </div>
 
       <Table
+        className="sellers-admin-table"
         rowKey="id"
+        size="small"
         columns={columns}
         dataSource={applications}
         loading={loading}
         pagination={false}
+        expandable={{
+          expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
+        }}
         locale={{ emptyText: <Empty description="Hozircha yangi ariza yo'q" /> }}
-        scroll={{ x: 980 }}
+        scroll={{ x: 1100 }}
       />
     </section>
   );
