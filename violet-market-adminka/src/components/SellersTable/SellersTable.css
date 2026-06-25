@@ -1,9 +1,24 @@
+.sellers-admin-table .ant-table {
+  table-layout: fixed;
+}
+
 .sellers-admin-table .ant-table-cell {
-  padding: 6px 8px !important;
+  padding: 8px 12px !important;
+  vertical-align: middle;
 }
 
 .sellers-admin-table .ant-table-thead > tr > th {
-  padding: 8px 8px !important;
+  padding: 10px 12px !important;
+  font-weight: 600;
+}
+
+.sellers-admin-table .ant-table-thead > tr > th.sellers-table__col-fit,
+.sellers-admin-table .ant-table-tbody > tr > td.sellers-table__col-fit {
+  white-space: nowrap;
+}
+
+.sellers-admin-table .ant-table-thead > tr > th.sellers-table__col-fit .ant-table-column-title {
+  white-space: nowrap;
 }
 
 .sellers-admin-table .ant-table-expanded-row > .ant-table-cell {

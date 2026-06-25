@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Button, Empty, Popconfirm, Space, Table, Tag, Typography } from 'antd';
+import { Button, Empty, Popconfirm, Space, Table, Typography } from 'antd';
 import {
   approveSellerApplication,
   rejectSellerApplication,
@@ -7,19 +7,31 @@ import {
 import { useAdminToast } from '../../context/AdminToastContext';
 import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
 import {
-  formatSellerCountry,
-  getSellerCountryCode,
-  getSellerCountryTagColor,
-} from '../../utils/sellerCountryDisplay';
+  buildActionsColumn,
+  buildEmailColumn,
+  buildFirstNameColumn,
+  buildLastNameColumn,
+  buildSellerCountryColumn,
+  buildShopDisplayNameColumn,
+  buildShopIdColumn,
+  buildSubmittedAtColumn,
+  getSellersTableScrollX,
+} from '../SellersTable/sellersTableColumns';
 import '../SellersTable/SellersTable.css';
 import './SellerApplicationsSection.css';
 
 const { Title, Text } = Typography;
 
-function formatDate(value) {
-  if (!value) return '—';
-  return new Date(value).toLocaleString('uz-UZ');
-}
+const PENDING_COLUMN_KEYS = [
+  'firstName',
+  'lastName',
+  'email',
+  'shopDisplayName',
+  'shopId',
+  'sellerCountry',
+  'submittedAt',
+  'actions',
+];
 
 export default function SellerApplicationsSection({ applications, loading, onChanged }) {
   const { showToast } = useAdminToast();
@@ -58,75 +70,35 @@ export default function SellerApplicationsSection({ applications, loading, onCha
   );
 
   const columns = [
-    {
-      title: 'Ism',
-      dataIndex: 'firstName',
-      key: 'firstName',
-    },
-    {
-      title: 'Familiya',
-      dataIndex: 'lastName',
-      key: 'lastName',
-    },
-    {
-      title: 'Gmail',
-      dataIndex: 'email',
-      key: 'email',
-    },
-    {
-      title: "Do'kon nomi",
-      dataIndex: 'shopDisplayName',
-      key: 'shopDisplayName',
-    },
-    {
-      title: "Do'kon ID",
-      dataIndex: 'shopId',
-      key: 'shopId',
-      width: 110,
-      render: (value) => <Tag color="purple">{value}</Tag>,
-    },
-    {
-      title: 'Sotuvchi davlati',
-      key: 'sellerCountry',
-      width: 120,
-      render: (_, record) => {
-        const country = getSellerCountryCode(record);
-        if (!country) return '—';
-        return <Tag color={getSellerCountryTagColor(country)}>{formatSellerCountry(country)}</Tag>;
-      },
-    },
-    {
-      title: 'Yuborilgan',
-      dataIndex: 'submittedAt',
-      key: 'submittedAt',
-      render: formatDate,
-    },
-    {
-      title: 'Amallar',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            size="small"
-            loading={actionId === record.id}
-            onClick={() => handleApprove(record.id)}
-          >
-            Tasdiqlash
+    buildFirstNameColumn(),
+    buildLastNameColumn(),
+    buildEmailColumn(),
+    buildShopDisplayNameColumn(),
+    buildShopIdColumn(),
+    buildSellerCountryColumn(),
+    buildSubmittedAtColumn(),
+    buildActionsColumn((_, record) => (
+      <Space size={8}>
+        <Button
+          type="primary"
+          size="small"
+          loading={actionId === record.id}
+          onClick={() => handleApprove(record.id)}
+        >
+          Tasdiqlash
+        </Button>
+        <Popconfirm
+          title="Arizani rad etasizmi?"
+          okText="Ha"
+          cancelText="Yo'q"
+          onConfirm={() => handleReject(record.id)}
+        >
+          <Button danger size="small" loading={actionId === record.id}>
+            Bekor qilish
           </Button>
-          <Popconfirm
-            title="Arizani rad etasizmi?"
-            okText="Ha"
-            cancelText="Yo'q"
-            onConfirm={() => handleReject(record.id)}
-          >
-            <Button danger size="small" loading={actionId === record.id}>
-              Bekor qilish
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+        </Popconfirm>
+      </Space>
+    )),
   ];
 
   return (
@@ -142,6 +114,7 @@ export default function SellerApplicationsSection({ applications, loading, onCha
         className="sellers-admin-table"
         rowKey="id"
         size="small"
+        tableLayout="fixed"
         columns={columns}
         dataSource={applications}
         loading={loading}
@@ -150,7 +123,7 @@ export default function SellerApplicationsSection({ applications, loading, onCha
           expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
         }}
         locale={{ emptyText: <Empty description="Hozircha yangi ariza yo'q" /> }}
-        scroll={{ x: 1100 }}
+        scroll={{ x: getSellersTableScrollX(PENDING_COLUMN_KEYS) }}
       />
     </section>
   );

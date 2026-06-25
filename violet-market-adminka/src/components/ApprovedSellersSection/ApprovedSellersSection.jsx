@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Empty, Input, message, Table, Tag, Typography } from 'antd';
+import { Empty, Input, message, Table, Typography } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { activateSeller, deleteSeller, pauseSeller } from '../../api/sellersAdminApi';
 import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
@@ -7,20 +7,34 @@ import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
 import SellerTableExpandedRow from '../SellerTableExpandedRow/SellerTableExpandedRow';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
-  formatSellerCountry,
-  getSellerCountryCode,
-  getSellerCountryTagColor,
-} from '../../utils/sellerCountryDisplay';
+  buildEmailColumn,
+  buildFirstNameColumn,
+  buildLastNameColumn,
+  buildMenuActionsColumn,
+  buildReviewedAtColumn,
+  buildSellerCountryColumn,
+  buildShopDisplayNameColumn,
+  buildShopIdColumn,
+  buildStatusColumn,
+  getSellersTableScrollX,
+} from '../SellersTable/sellersTableColumns';
 import { filterApprovedSellersBySearch } from './approvedSellersSearch';
 import '../SellersTable/SellersTable.css';
 import './ApprovedSellersSection.css';
 
 const { Title, Text } = Typography;
 
-function formatDate(value) {
-  if (!value) return '—';
-  return new Date(value).toLocaleString('uz-UZ');
-}
+const APPROVED_COLUMN_KEYS = [
+  'firstName',
+  'lastName',
+  'email',
+  'shopDisplayName',
+  'shopId',
+  'sellerCountry',
+  'status',
+  'reviewedAt',
+  'menuActions',
+];
 
 function getSellerStatus(seller) {
   return seller?.sellerAccount?.status === 'paused' ? 'paused' : 'active';
@@ -86,78 +100,31 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
   };
 
   const columns = [
-    {
-      title: "Do'kon ID",
-      dataIndex: 'shopId',
-      key: 'shopId',
-      render: (value) => <Tag color="purple">{value}</Tag>,
-    },
-    {
-      title: "Do'kon nomi",
-      dataIndex: 'shopDisplayName',
-      key: 'shopDisplayName',
-    },
-    {
-      title: 'Ism',
-      dataIndex: 'firstName',
-      key: 'firstName',
-    },
-    {
-      title: 'Familiya',
-      dataIndex: 'lastName',
-      key: 'lastName',
-    },
-    {
-      title: 'Gmail',
-      dataIndex: 'email',
-      key: 'email',
-    },
-    {
-      title: 'Sotuvchi davlati',
-      key: 'sellerCountry',
-      width: 120,
-      render: (_, seller) => {
-        const country = getSellerCountryCode(seller);
-        if (!country) return '—';
-        return <Tag color={getSellerCountryTagColor(country)}>{formatSellerCountry(country)}</Tag>;
-      },
-    },
-    {
-      title: 'Holat',
-      key: 'status',
-      width: 110,
-      render: (_, seller) => <SellerStatusBadge status={getSellerStatus(seller)} />,
-    },
-    {
-      title: 'Tasdiqlangan',
-      dataIndex: 'reviewedAt',
-      key: 'reviewedAt',
-      render: formatDate,
-    },
-    {
-      title: '',
-      key: 'actions',
-      fixed: 'right',
-      width: 56,
-      align: 'center',
-      render: (_, seller) => {
-        const shopId = seller.shopId;
-        const isOpen = openMenuShopId === shopId;
+    buildFirstNameColumn(),
+    buildLastNameColumn(),
+    buildEmailColumn(),
+    buildShopDisplayNameColumn(),
+    buildShopIdColumn(),
+    buildSellerCountryColumn(),
+    buildStatusColumn((_, seller) => <SellerStatusBadge status={getSellerStatus(seller)} />),
+    buildReviewedAtColumn(),
+    buildMenuActionsColumn((_, seller) => {
+      const shopId = seller.shopId;
+      const isOpen = openMenuShopId === shopId;
 
-        return (
-          <ApprovedSellerActionsMenu
-            isOpen={isOpen}
-            status={getSellerStatus(seller)}
-            deleting={deletingShopId === shopId}
-            togglingStatus={togglingShopId === shopId}
-            onToggle={() => setOpenMenuShopId(isOpen ? null : shopId)}
-            onClose={() => setOpenMenuShopId(null)}
-            onDelete={() => handleDeleteSeller(seller)}
-            onToggleStatus={() => handleToggleStatus(seller)}
-          />
-        );
-      },
-    },
+      return (
+        <ApprovedSellerActionsMenu
+          isOpen={isOpen}
+          status={getSellerStatus(seller)}
+          deleting={deletingShopId === shopId}
+          togglingStatus={togglingShopId === shopId}
+          onToggle={() => setOpenMenuShopId(isOpen ? null : shopId)}
+          onClose={() => setOpenMenuShopId(null)}
+          onDelete={() => handleDeleteSeller(seller)}
+          onToggleStatus={() => handleToggleStatus(seller)}
+        />
+      );
+    }),
   ];
 
   const emptyDescription = searchQuery.trim()
@@ -188,6 +155,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
         className="sellers-admin-table"
         rowKey="id"
         size="small"
+        tableLayout="fixed"
         columns={columns}
         dataSource={filteredSellers}
         loading={loading}
@@ -196,7 +164,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
           expandedRowRender: (record) => <SellerTableExpandedRow record={record} />,
         }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
-        scroll={{ x: 1100 }}
+        scroll={{ x: getSellersTableScrollX(APPROVED_COLUMN_KEYS) }}
       />
     </section>
   );
