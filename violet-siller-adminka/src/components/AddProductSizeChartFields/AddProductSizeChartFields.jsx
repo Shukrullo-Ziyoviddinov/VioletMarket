@@ -177,27 +177,23 @@ export default function AddProductSizeChartFields({ values, onChange }) {
     });
   };
 
-  const handleGuideImageChange = (localId, patch) => {
+  const handleGuideImageChange = (patch) => {
+    const first = guideImages[0];
+    if (!first) {
+      onChange({
+        ...values,
+        sizeChartGuideImages: [{ ...createGuideImageRow(values.sizeChartTypeSize), ...patch }],
+      });
+      return;
+    }
+
     onChange({
       ...values,
-      sizeChartGuideImages: updateListItem(guideImages, localId, patch),
+      sizeChartGuideImages: updateListItem(guideImages, first.localId, patch),
     });
   };
 
-  const addGuideImage = () => {
-    onChange({
-      ...values,
-      sizeChartGuideImages: [...guideImages, createGuideImageRow(values.sizeChartTypeSize)],
-    });
-  };
-
-  const removeGuideImage = (localId) => {
-    if (guideImages.length <= 1) return;
-    onChange({
-      ...values,
-      sizeChartGuideImages: guideImages.filter((item) => item.localId !== localId),
-    });
-  };
+  const guideImage = guideImages[0] ?? createGuideImageRow(values.sizeChartTypeSize);
 
   return (
     <section className="add-product-form__card add-product-size-chart">
@@ -405,78 +401,43 @@ export default function AddProductSizeChartFields({ values, onChange }) {
       </div>
 
       <div className="add-product-size-chart__section">
-        <div className="add-product-size-chart__section-head">
-          <div>
-            <h4 className="add-product-size-chart__section-title">O&apos;lchov sxemasi</h4>
-            <p className="add-product-size-chart__section-desc">
-              Mijozga qayerdan o&apos;lchash kerakligini ko&apos;rsatadigan rasm/sxema. Agar maxsus
-              rasm yuklamasangiz, sayt tanlangan tur bo&apos;yicha tayyor sxemani o&apos;zi qo&apos;yadi.
-            </p>
-          </div>
-          <Button type="dashed" icon={<PlusOutlined />} onClick={addGuideImage}>
-            Yana
-          </Button>
-        </div>
+        <h4 className="add-product-size-chart__section-title">O&apos;lchov sxemasi</h4>
+        <p className="add-product-size-chart__section-desc add-product-size-chart__section-desc--block">
+          Mijozga qayerdan o&apos;lchash kerakligini ko&apos;rsatadigan sxema. Yuqorida tanlangan
+          mahsulot turiga mos rasm sayt o&apos;zi qo&apos;yadi — bu yerda faqat sxema nomini
+          (ixtiyoriy) yozasiz.
+        </p>
 
-        {guideImages.map((item, index) => (
-          <div key={item.localId} className="add-product-size-chart__column-card">
-            <div className="add-product-size-chart__column-head">
-              <span className="add-product-size-chart__column-index">Sxema #{index + 1}</span>
-              {guideImages.length > 1 ? (
-                <Button type="link" danger onClick={() => removeGuideImage(item.localId)}>
-                  O&apos;chirish
-                </Button>
-              ) : null}
-            </div>
-
-            <div className="add-product-size-chart__guide-row">
-              <TypeSizeDropdownField
-                fieldKey={`guide-${item.localId}`}
-                openKey={openKey}
-                onOpenKeyChange={setOpenKey}
-                label="Sxema turi"
-                hint="Qaysi o'lchov sxemasi ishlatiladi. Odatda yuqoridagi mahsulot turiga mos tanlang."
-                value={item.typeSize || values.sizeChartTypeSize}
-                onSelect={(nextTypeSize) =>
-                  handleGuideImageChange(item.localId, { typeSize: nextTypeSize })
-                }
+        <div className="add-product-size-chart__column-card add-product-size-chart__guide-card">
+          <FieldRow>
+            <FieldBlock
+              label="Sxema nomi (O'zbekcha)"
+              hint="Masalan «Oyoq o'lchovi». Ko'p hollarda saytda alohida sarlavha sifatida chiqmasligi mumkin."
+              className="add-product-form__field--in-row"
+              alignInput
+            >
+              <Input
+                size="large"
+                placeholder="Oyoq o'lchovi"
+                value={guideImage.titleUz}
+                onChange={(event) => handleGuideImageChange({ titleUz: event.target.value })}
               />
-
-              <div className="add-product-size-chart__title-pair">
-                <FieldBlock
-                  label="Sxema nomi (O'zbekcha)"
-                  hint="Rasm uchun qo'shimcha nom (masalan «Oyoq o'lchovi»). Ko'p hollarda saytda alohida sarlavha sifatida chiqmasligi mumkin — lekin ma'lumot sifatida saqlanadi."
-                  className="add-product-form__field--in-row"
-                  alignInput
-                >
-                  <Input
-                    size="large"
-                    placeholder="Oyoq o'lchovi"
-                    value={item.titleUz}
-                    onChange={(event) =>
-                      handleGuideImageChange(item.localId, { titleUz: event.target.value })
-                    }
-                  />
-                </FieldBlock>
-                <FieldBlock
-                  label="Sxema nomi (Ruscha)"
-                  hint="Rus tilidagi sxema nomi."
-                  className="add-product-form__field--in-row"
-                  alignInput
-                >
-                  <Input
-                    size="large"
-                    placeholder="Измерение стопы"
-                    value={item.titleRu}
-                    onChange={(event) =>
-                      handleGuideImageChange(item.localId, { titleRu: event.target.value })
-                    }
-                  />
-                </FieldBlock>
-              </div>
-            </div>
-          </div>
-        ))}
+            </FieldBlock>
+            <FieldBlock
+              label="Sxema nomi (Ruscha)"
+              hint="Rus tilidagi sxema nomi."
+              className="add-product-form__field--in-row"
+              alignInput
+            >
+              <Input
+                size="large"
+                placeholder="Измерение стопы"
+                value={guideImage.titleRu}
+                onChange={(event) => handleGuideImageChange({ titleRu: event.target.value })}
+              />
+            </FieldBlock>
+          </FieldRow>
+        </div>
       </div>
     </section>
   );

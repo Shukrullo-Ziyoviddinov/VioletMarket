@@ -160,6 +160,18 @@
   gap: 4px;
 }
 
+.add-product-size-chart__section-desc--block {
+  margin-bottom: 12px;
+}
+
+.add-product-size-chart__guide-card {
+  margin-top: 0;
+}
+
+.add-product-size-chart__guide-card .add-product-form__row {
+  margin-top: 0;
+}
+
 .add-product-size-chart__guide-row {
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.6fr);
