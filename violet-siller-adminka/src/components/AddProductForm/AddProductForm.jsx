@@ -20,6 +20,7 @@ const INITIAL_VALUES = {
   discountUz: '',
   discountRu: '',
   video: '',
+  masterCategoryId: '',
   category: '',
   countryCode: '',
   productType: '',
@@ -35,6 +36,7 @@ export default function AddProductForm() {
   const [shippingCountries, setShippingCountries] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
   const [filterValues, setFilterValues] = useState([]);
+  const [masterCategories, setMasterCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -58,6 +60,7 @@ export default function AddProductForm() {
         setShippingCountries(Array.isArray(data?.shippingCountries) ? data.shippingCountries : []);
         setProductTypes(Array.isArray(data?.productTypes) ? data.productTypes : []);
         setFilterValues(Array.isArray(data?.filterValues) ? data.filterValues : []);
+        setMasterCategories(Array.isArray(data?.masterCategories) ? data.masterCategories : []);
       } catch (err) {
         if (!cancelled) {
           setError(err.message || 'Forma ma\'lumotlarini yuklab bo\'lmadi');
@@ -109,6 +112,7 @@ export default function AddProductForm() {
 
       <AddProductClassificationFields
         values={values}
+        masterCategories={masterCategories}
         productTypes={productTypes}
         filterValues={filterValues}
         onChange={setValues}

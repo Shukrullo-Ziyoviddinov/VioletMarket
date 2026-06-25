@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
+import './AddProductClassificationFields.css';
 
 function formatFilterLabel(value) {
   const normalized = String(value || '').trim();
@@ -19,9 +20,10 @@ function FilterDropdownField({
   placeholder,
   emptyText,
   onSelect,
+  className = '',
 }) {
   return (
-    <div className="add-product-form__field">
+    <div className={`add-product-form__field add-product-classification__field ${className}`.trim()}>
       <DropdownPicker
         label={label}
         hint={hint}
@@ -41,11 +43,22 @@ function FilterDropdownField({
 
 export default function AddProductClassificationFields({
   values,
+  masterCategories,
   productTypes,
   filterValues,
   onChange,
 }) {
   const [openKey, setOpenKey] = useState('');
+
+  const masterCategoryOptions = useMemo(
+    () =>
+      (Array.isArray(masterCategories) ? masterCategories : []).map((row) => ({
+        value: String(row.id),
+        label: row?.name?.uz || String(row.id),
+        subLabel: row?.name?.ru || '',
+      })),
+    [masterCategories],
+  );
 
   const productTypeOptions = useMemo(
     () =>
@@ -83,65 +96,100 @@ export default function AddProductClassificationFields({
     onChange({ ...values, [key]: nextValue });
   };
 
+  const handleMasterCategorySelect = (selectedId) => {
+    const matched = (Array.isArray(masterCategories) ? masterCategories : []).find(
+      (item) => String(item.id) === String(selectedId),
+    );
+
+    onChange({
+      ...values,
+      masterCategoryId: String(selectedId),
+      category: matched?.name?.uz || '',
+    });
+  };
+
   return (
-    <section className="add-product-form__card">
-      <h3 className="add-product-form__card-title">Mahsulot klassifikatsiyasi</h3>
+    <section className="add-product-form__card add-product-classification">
+      <h3 className="add-product-form__card-title">Mahsulot kategoriyasi va klassifikatsiyasi</h3>
 
-      <FilterDropdownField
-        fieldKey="productType"
-        openKey={openKey}
-        onOpenKeyChange={setOpenKey}
-        label="Mahsulot turi"
-        hint="Mahsulot qaysi turga kirishini tanlang. Ro'yxat admin paneldagi «Mahsulot turlari» bo'limidan olinadi."
-        required
-        value={values.productType}
-        options={productTypeOptions}
-        placeholder="Mahsulot turini tanlang"
-        emptyText="Mahsulot turlari topilmadi"
-        onSelect={setField('productType')}
-      />
+      <div className="add-product-classification__row add-product-classification__row--2">
+        <FilterDropdownField
+          fieldKey="masterCategoryId"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Mahsulot kategoriyasi"
+          hint="Mahsulot qaysi asosiy kategoriyaga tegishli ekanini tanlang."
+          required
+          value={values.masterCategoryId}
+          options={masterCategoryOptions}
+          placeholder="Kategoriyani tanlang"
+          emptyText="Kategoriyalar topilmadi"
+          onSelect={handleMasterCategorySelect}
+          className="add-product-classification__field--compact"
+        />
 
-      <FilterDropdownField
-        fieldKey="productCountry"
-        openKey={openKey}
-        onOpenKeyChange={setOpenKey}
-        label="Ishlab chiqarilgan davlat (Made in)"
-        hint="Mahsulot qaysi davlatda ishlab chiqarilganini bildiradi. Faqat bitta davlat tanlanadi."
-        required
-        value={values.productCountry}
-        options={countryFilterOptions}
-        placeholder="Davlatni tanlang"
-        emptyText="Davlatlar topilmadi"
-        onSelect={setField('productCountry')}
-      />
+        <FilterDropdownField
+          fieldKey="productType"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Mahsulot turi"
+          hint="Mahsulot qaysi turga kirishini tanlang."
+          required
+          value={values.productType}
+          options={productTypeOptions}
+          placeholder="Mahsulot turini tanlang"
+          emptyText="Mahsulot turlari topilmadi"
+          onSelect={setField('productType')}
+          className="add-product-classification__field--compact"
+        />
+      </div>
 
-      <FilterDropdownField
-        fieldKey="brandCategories"
-        openKey={openKey}
-        onOpenKeyChange={setOpenKey}
-        label="Brend"
-        hint="Mahsulot qaysi brendga tegishli ekanini tanlang. Ro'yxat admin paneldagi filter qiymatlaridan olinadi."
-        required
-        value={values.brandCategories}
-        options={brandFilterOptions}
-        placeholder="Brendni tanlang"
-        emptyText="Brendlar topilmadi"
-        onSelect={setField('brandCategories')}
-      />
+      <div className="add-product-classification__row add-product-classification__row--3">
+        <FilterDropdownField
+          fieldKey="productCountry"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Ishlab chiqarilgan davlat (Made in)"
+          hint="Mahsulot qaysi davlatda ishlab chiqarilganini bildiradi."
+          required
+          value={values.productCountry}
+          options={countryFilterOptions}
+          placeholder="Davlatni tanlang"
+          emptyText="Davlatlar topilmadi"
+          onSelect={setField('productCountry')}
+          className="add-product-classification__field--compact"
+        />
 
-      <FilterDropdownField
-        fieldKey="countriesCategories"
-        openKey={openKey}
-        onOpenKeyChange={setOpenKey}
-        label="Davlat bo'yicha kategoriya"
-        hint="Mahsulot qaysi davlat kategoriyasiga mos kelishini tanlang. Katalog filtri uchun ishlatiladi."
-        required
-        value={values.countriesCategories}
-        options={countryFilterOptions}
-        placeholder="Kategoriyani tanlang"
-        emptyText="Kategoriyalar topilmadi"
-        onSelect={setField('countriesCategories')}
-      />
+        <FilterDropdownField
+          fieldKey="brandCategories"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Brend"
+          hint="Mahsulot qaysi brendga tegishli ekanini tanlang."
+          required
+          value={values.brandCategories}
+          options={brandFilterOptions}
+          placeholder="Brendni tanlang"
+          emptyText="Brendlar topilmadi"
+          onSelect={setField('brandCategories')}
+          className="add-product-classification__field--compact"
+        />
+
+        <FilterDropdownField
+          fieldKey="countriesCategories"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Davlat bo'yicha kategoriya"
+          hint="Mahsulot qaysi davlat kategoriyasiga mos kelishini tanlang."
+          required
+          value={values.countriesCategories}
+          options={countryFilterOptions}
+          placeholder="Kategoriyani tanlang"
+          emptyText="Kategoriyalar topilmadi"
+          onSelect={setField('countriesCategories')}
+          className="add-product-classification__field--compact"
+        />
+      </div>
     </section>
   );
 }

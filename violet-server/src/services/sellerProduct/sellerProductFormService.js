@@ -1,5 +1,6 @@
 const { ShippingCountry } = require("../../models/shippingCountry");
 const { BrandCountryFilterValue } = require("../../models/brandCountryFilterValue");
+const { MasterCategory } = require("../../models/masterCategory");
 const { listProductTypes } = require("../adminProductTypeService");
 const {
   FLASH_SECTION_CATEGORY_NAMES,
@@ -32,6 +33,18 @@ async function listBrandCountryFilterValuesForSeller() {
   }));
 }
 
+async function listMasterCategoriesForSeller() {
+  const rows = await MasterCategory.find()
+    .sort({ id: 1 })
+    .select({ id: 1, name: 1 })
+    .lean();
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+  }));
+}
+
 function listProductSectionOptions() {
   return FLASH_SECTION_CATEGORY_NAMES.map((value) => ({
     value,
@@ -40,12 +53,14 @@ function listProductSectionOptions() {
 }
 
 async function getSellerProductFormOptions() {
-  const [shippingCountries, sectionOptions, productTypeRows, filterValues] = await Promise.all([
-    listActiveShippingCountriesForSeller(),
-    Promise.resolve(listProductSectionOptions()),
-    listProductTypes({ activeOnly: true }),
-    listBrandCountryFilterValuesForSeller(),
-  ]);
+  const [shippingCountries, sectionOptions, productTypeRows, filterValues, masterCategories] =
+    await Promise.all([
+      listActiveShippingCountriesForSeller(),
+      Promise.resolve(listProductSectionOptions()),
+      listProductTypes({ activeOnly: true }),
+      listBrandCountryFilterValuesForSeller(),
+      listMasterCategoriesForSeller(),
+    ]);
 
   return {
     sectionOptions,
@@ -56,6 +71,7 @@ async function getSellerProductFormOptions() {
       group: String(row.group || "").trim(),
     })),
     filterValues,
+    masterCategories,
   };
 }
 

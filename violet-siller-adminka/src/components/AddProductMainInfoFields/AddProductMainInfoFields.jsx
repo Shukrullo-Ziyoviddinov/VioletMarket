@@ -1,8 +1,6 @@
 import React from 'react';
 import { Input } from 'antd';
 
-const { TextArea } = Input;
-
 function FieldBlock({ label, hint, required = false, children, className = '' }) {
   return (
     <div className={`add-product-form__field ${className}`.trim()}>
@@ -96,19 +94,6 @@ export default function AddProductMainInfoFields({ values, onChange }) {
           />
         </FieldBlock>
       </FieldRow>
-
-      <FieldBlock
-        label="Mahsulot kategoriyasi"
-        hint="Mahsulot turkumi yoki kategoriya nomi. Masalan: Ayollar kiyimi, Elektronika"
-        required
-      >
-        <TextArea
-          rows={2}
-          placeholder="Ayollar kiyimi"
-          value={values.category}
-          onChange={setField('category')}
-        />
-      </FieldBlock>
     </section>
   );
 }

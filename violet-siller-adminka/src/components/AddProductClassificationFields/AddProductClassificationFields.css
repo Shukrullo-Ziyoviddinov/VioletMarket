@@ -1,0 +1,38 @@
+.add-product-classification__row {
+  display: grid;
+  gap: 16px;
+}
+
+.add-product-classification__row + .add-product-classification__row {
+  margin-top: 18px;
+}
+
+.add-product-classification__row--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.add-product-classification__row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.add-product-classification__field {
+  margin-top: 0 !important;
+  min-width: 0;
+}
+
+.add-product-classification__field--compact .dropdown-picker__hint {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .add-product-classification__row--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .add-product-classification__row--2,
+  .add-product-classification__row--3 {
+    grid-template-columns: 1fr;
+  }
+}
