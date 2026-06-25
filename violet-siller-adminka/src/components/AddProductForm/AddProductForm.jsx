@@ -125,7 +125,7 @@ export default function AddProductForm() {
 
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          4-bosqich: mahsulot tavsifi (description) qo&apos;shildi. Saqlash va qolgan maydonlar
+          4-bosqich: mahsulot tavsifi va tavsif rasmlari qo&apos;shildi. Saqlash va qolgan maydonlar
           keyingi bosqichda qo&apos;shiladi.
         </Text>
       </div>

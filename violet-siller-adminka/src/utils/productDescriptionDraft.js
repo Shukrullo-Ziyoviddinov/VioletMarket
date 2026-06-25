@@ -33,6 +33,7 @@ export function getInitialDescriptionFormFields() {
     technicalHeadingUz: '',
     technicalHeadingRu: '',
     technicalSpecs: [createTechnicalSpecRow()],
+    descriptionImages: [],
   };
 }
 

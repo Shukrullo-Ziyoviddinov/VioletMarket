@@ -6,6 +6,7 @@ import {
   createMainFeatureRow,
   createTechnicalSpecRow,
 } from '../../utils/productDescriptionDraft';
+import AddProductDescriptionImagesField from '../AddProductDescriptionImagesField/AddProductDescriptionImagesField';
 import './AddProductDescriptionFields.css';
 
 const { TextArea } = Input;
@@ -282,6 +283,11 @@ export default function AddProductDescriptionFields({ values, onChange }) {
           </div>
         ))}
       </div>
+
+      <AddProductDescriptionImagesField
+        images={values.descriptionImages}
+        onChange={(descriptionImages) => onChange({ ...values, descriptionImages })}
+      />
     </section>
   );
 }

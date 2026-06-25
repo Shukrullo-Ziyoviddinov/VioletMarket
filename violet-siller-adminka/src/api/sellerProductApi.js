@@ -139,3 +139,57 @@ export function uploadSellerProductVideo(token, file, onProgress, onPhaseChange)
     xhr.send(formData);
   });
 }
+
+export function uploadSellerProductImage(token, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error('Rasm fayli topilmadi'));
+      return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', apiUrl('/api/seller-auth/uploads/image'));
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    xhr.upload.onprogress = (event) => {
+      const totalBytes = event.total > 0 ? event.total : file.size;
+      if (!totalBytes) return;
+      const rawPercent = Math.round((event.loaded / totalBytes) * 100);
+      const percent = Math.max(0, Math.min(99, rawPercent));
+      if (typeof onProgress === 'function') {
+        onProgress(percent);
+      }
+    };
+
+    xhr.onload = () => {
+      let payload = {};
+      try {
+        payload = JSON.parse(xhr.responseText || '{}');
+      } catch (_error) {
+        payload = {};
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const uploadedPath = payload?.data?.path || '';
+        if (!uploadedPath) {
+          reject(new Error('Server rasm manzilini qaytarmadi'));
+          return;
+        }
+        if (typeof onProgress === 'function') {
+          onProgress(100);
+        }
+        resolve(uploadedPath);
+        return;
+      }
+
+      reject(new Error(payload?.message || `Upload xatosi (${xhr.status})`));
+    };
+
+    xhr.onerror = () => reject(new Error('Upload davomida tarmoq xatoligi'));
+    xhr.onabort = () => reject(new Error('Upload to‘xtatildi'));
+
+    const formData = new FormData();
+    formData.append('image', file);
+    xhr.send(formData);
+  });
+}
