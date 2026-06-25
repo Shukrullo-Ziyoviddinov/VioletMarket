@@ -8,6 +8,8 @@ import AddProductDetailsFields from '../AddProductDetailsFields/AddProductDetail
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
 import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
+import AddProductSizeChartFields from '../AddProductSizeChartFields/AddProductSizeChartFields';
+import { getInitialSizeChartFormFields } from '../../utils/sizeChartDraft';
 import { getInitialDescriptionFormFields } from '../../utils/productDescriptionDraft';
 import './AddProductForm.css';
 
@@ -33,6 +35,7 @@ const INITIAL_VALUES = {
   labelTypes: [],
   chegirmaPercent: '',
   ...getInitialDescriptionFormFields(),
+  ...getInitialSizeChartFormFields(),
 };
 
 export default function AddProductForm() {
@@ -123,9 +126,11 @@ export default function AddProductForm() {
 
       <AddProductDescriptionFields values={values} onChange={setValues} />
 
+      <AddProductSizeChartFields values={values} onChange={setValues} />
+
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          4-bosqich: mahsulot tavsifi va tavsif rasmlari qo&apos;shildi. Saqlash va qolgan maydonlar
+          5-bosqich: o&apos;lcham jadvali (sizeChart) qo&apos;shildi. Saqlash va qolgan maydonlar
           keyingi bosqichda qo&apos;shiladi.
         </Text>
       </div>

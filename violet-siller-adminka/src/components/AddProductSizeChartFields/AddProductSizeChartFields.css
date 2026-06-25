@@ -1,0 +1,122 @@
+.add-product-size-chart__readonly {
+  background: #f5f2fa !important;
+  color: #4a3d5c !important;
+  cursor: not-allowed;
+}
+
+.add-product-size-chart__type-title-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.6fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.add-product-size-chart__title-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.add-product-size-chart__field {
+  margin-top: 0 !important;
+  min-width: 0;
+}
+
+.add-product-size-chart__field--compact .dropdown-picker__hint {
+  display: none;
+}
+
+.add-product-size-chart__section {
+  margin-top: 20px;
+}
+
+.add-product-size-chart__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.add-product-size-chart__section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.add-product-size-chart__column-card {
+  padding: 14px;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  background: #fcfbfe;
+}
+
+.add-product-size-chart__column-card + .add-product-size-chart__column-card {
+  margin-top: 12px;
+}
+
+.add-product-size-chart__column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.add-product-size-chart__column-index {
+  font-size: 13px;
+  font-weight: 700;
+  color: #764ba2;
+}
+
+.add-product-size-chart__values-block {
+  margin-top: 14px;
+}
+
+.add-product-size-chart__values-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.add-product-size-chart__values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.add-product-size-chart__value-row {
+  display: grid;
+  gap: 4px;
+}
+
+.add-product-size-chart__guide-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.6fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.add-product-size-chart__column-card .add-product-form__row {
+  margin-top: 0;
+}
+
+@media (max-width: 1100px) {
+  .add-product-size-chart__type-title-row,
+  .add-product-size-chart__guide-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .add-product-size-chart__title-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .add-product-size-chart__values-grid {
+    grid-template-columns: 1fr;
+  }
+}
