@@ -1,0 +1,186 @@
+.add-product-details__labels {
+  margin-top: 20px;
+}
+
+.add-product-details__label-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.add-product-details__label-option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e4d9f2;
+  border-radius: 12px;
+  background: #fcfbfe;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.add-product-details__label-option:hover {
+  border-color: #c9b6e3;
+  background: #faf8fd;
+}
+
+.add-product-details__label-option--selected {
+  border-color: #764ba2;
+  background: #f7f2fc;
+  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.12);
+}
+
+.add-product-details__label-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.add-product-details__label-radio {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  border: 2px solid #c9b6e3;
+  border-radius: 50%;
+  background: #fff;
+  position: relative;
+}
+
+.add-product-details__label-option--selected .add-product-details__label-radio {
+  border-color: #764ba2;
+}
+
+.add-product-details__label-option--selected .add-product-details__label-radio::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #764ba2;
+}
+
+.add-product-details__label-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.add-product-details__label-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.add-product-details__label-hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b6280;
+}
+
+.add-product-details__chegirma-field {
+  margin-top: 16px;
+  max-width: 220px;
+}
+
+.add-product-details__preview {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8f6fb;
+  border: 1px dashed #d8c9ef;
+}
+
+.add-product-details__preview-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
+.add-product-details__preview-empty {
+  margin: 0;
+  font-size: 13px;
+  color: #8a7aa3;
+}
+
+.add-product-details__preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.add-product-details__preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--label-bg, #666);
+  white-space: nowrap;
+}
+
+.add-product-details__preview-chip i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.add-product-details__preview-chip .animated-hourglass {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.add-product-details__preview-chip .animated-hourglass::before {
+  content: '⏳';
+  display: block;
+  font-size: 11px;
+  line-height: 1;
+  animation: add-product-hourglass-flip 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.add-product-details__preview-chip i.bx.bxs-hot {
+  animation: add-product-hot-pulse 1.5s ease-in-out infinite;
+  color: #ff4444;
+}
+
+@keyframes add-product-hourglass-flip {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  70% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes add-product-hot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 900px) {
+  .add-product-details__label-options {
+    grid-template-columns: 1fr;
+  }
+}

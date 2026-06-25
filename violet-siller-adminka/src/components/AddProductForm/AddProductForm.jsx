@@ -3,6 +3,7 @@ import { Alert, Spin, Typography } from 'antd';
 import { fetchSellerProductFormOptions } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import AddProductClassificationFields from '../AddProductClassificationFields/AddProductClassificationFields';
+import AddProductDetailsFields from '../AddProductDetailsFields/AddProductDetailsFields';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
 import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
@@ -26,6 +27,9 @@ const INITIAL_VALUES = {
   productCountry: '',
   brandCategories: '',
   countriesCategories: '',
+  weight: '',
+  labelTypes: [],
+  chegirmaPercent: '',
 };
 
 export default function AddProductForm() {
@@ -112,10 +116,12 @@ export default function AddProductForm() {
         onChange={setValues}
       />
 
+      <AddProductDetailsFields values={values} onChange={setValues} />
+
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          2-bosqich: mahsulot turi, ishlab chiqarilgan davlat, brend va davlat kategoriyasi qo&apos;shildi.
-          Saqlash va qolgan maydonlar keyingi bosqichda qo&apos;shiladi.
+          3-bosqich: og&apos;irlik va yorliqlar qo&apos;shildi. Saqlash va qolgan maydonlar keyingi
+          bosqichda qo&apos;shiladi.
         </Text>
       </div>
     </div>
