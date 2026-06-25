@@ -37,7 +37,10 @@ function ProductLabelPreview({ labels }) {
 }
 
 export default function AddProductDetailsFields({ values, onChange }) {
-  const selectedTypes = Array.isArray(values.labelTypes) ? values.labelTypes : [];
+  const selectedTypes = useMemo(
+    () => (Array.isArray(values.labelTypes) ? values.labelTypes : []),
+    [values.labelTypes],
+  );
   const previewLabels = useMemo(
     () =>
       buildProductLabelsFromDraft({
