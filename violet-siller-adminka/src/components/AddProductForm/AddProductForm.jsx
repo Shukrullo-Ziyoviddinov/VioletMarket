@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Spin, Typography } from 'antd';
 import { fetchSellerProductFormOptions } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
+import AddProductDescriptionFields from '../AddProductDescriptionFields/AddProductDescriptionFields';
 import AddProductClassificationFields from '../AddProductClassificationFields/AddProductClassificationFields';
 import AddProductDetailsFields from '../AddProductDetailsFields/AddProductDetailsFields';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
 import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
+import { getInitialDescriptionFormFields } from '../../utils/productDescriptionDraft';
 import './AddProductForm.css';
 
 const { Text } = Typography;
@@ -30,6 +32,7 @@ const INITIAL_VALUES = {
   weight: '',
   labelTypes: [],
   chegirmaPercent: '',
+  ...getInitialDescriptionFormFields(),
 };
 
 export default function AddProductForm() {
@@ -118,10 +121,12 @@ export default function AddProductForm() {
 
       <AddProductDetailsFields values={values} onChange={setValues} />
 
+      <AddProductDescriptionFields values={values} onChange={setValues} />
+
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          3-bosqich: og&apos;irlik va yorliqlar qo&apos;shildi. Saqlash va qolgan maydonlar keyingi
-          bosqichda qo&apos;shiladi.
+          4-bosqich: mahsulot tavsifi (description) qo&apos;shildi. Saqlash va qolgan maydonlar
+          keyingi bosqichda qo&apos;shiladi.
         </Text>
       </div>
     </div>

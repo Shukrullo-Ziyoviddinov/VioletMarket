@@ -35,7 +35,7 @@
     ],
     "description": [
       {
-        "title": {
+        "description": {
           "uz": "Mahsulot haqida",
           "ru": "О товаре"
         },
