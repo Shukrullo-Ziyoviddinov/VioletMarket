@@ -46,6 +46,7 @@ export default function AddProductClassificationFields({
   masterCategories,
   productTypes,
   filterValues,
+  shippingCountries,
   onChange,
 }) {
   const [openKey, setOpenKey] = useState('');
@@ -68,6 +69,16 @@ export default function AddProductClassificationFields({
         subLabel: row.group || '',
       })),
     [productTypes],
+  );
+
+  const shippingCountryOptions = useMemo(
+    () =>
+      (Array.isArray(shippingCountries) ? shippingCountries : []).map((row) => ({
+        value: row.code,
+        label: row?.name?.uz || row.code,
+        subLabel: row?.name?.ru || '',
+      })),
+    [shippingCountries],
   );
 
   const countryFilterOptions = useMemo(
@@ -112,7 +123,7 @@ export default function AddProductClassificationFields({
     <section className="add-product-form__card add-product-classification">
       <h3 className="add-product-form__card-title">Mahsulot kategoriyasi va klassifikatsiyasi</h3>
 
-      <div className="add-product-classification__row add-product-classification__row--2">
+      <div className="add-product-classification__row add-product-classification__row--3">
         <FilterDropdownField
           fieldKey="masterCategoryId"
           openKey={openKey}
@@ -140,6 +151,21 @@ export default function AddProductClassificationFields({
           placeholder="Mahsulot turini tanlang"
           emptyText="Mahsulot turlari topilmadi"
           onSelect={setField('productType')}
+          className="add-product-classification__field--compact"
+        />
+
+        <FilterDropdownField
+          fieldKey="countryCode"
+          openKey={openKey}
+          onOpenKeyChange={setOpenKey}
+          label="Mahsulot qaysi davlatniki?"
+          hint="Mahsulot qaysi davlatga tegishli va qaysi davlatdan mijozgacha yuborilishini bildiradi."
+          required
+          value={values.countryCode}
+          options={shippingCountryOptions}
+          placeholder="Davlatni tanlang"
+          emptyText="Davlatlar topilmadi"
+          onSelect={setField('countryCode')}
           className="add-product-classification__field--compact"
         />
       </div>

@@ -3,7 +3,6 @@ import { Alert, Spin, Typography } from 'antd';
 import { fetchSellerProductFormOptions } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import AddProductClassificationFields from '../AddProductClassificationFields/AddProductClassificationFields';
-import AddProductCountriesField from '../AddProductCountriesField/AddProductCountriesField';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
 import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
@@ -104,17 +103,12 @@ export default function AddProductForm() {
         onChange={(video) => setValues((current) => ({ ...current, video }))}
       />
 
-      <AddProductCountriesField
-        value={values.countryCode}
-        shippingCountries={shippingCountries}
-        onChange={(countryCode) => setValues((current) => ({ ...current, countryCode }))}
-      />
-
       <AddProductClassificationFields
         values={values}
         masterCategories={masterCategories}
         productTypes={productTypes}
         filterValues={filterValues}
+        shippingCountries={shippingCountries}
         onChange={setValues}
       />
 
