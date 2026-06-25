@@ -47,13 +47,45 @@
   display: grid;
   grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.6fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .add-product-size-chart__title-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  align-items: stretch;
+  height: 100%;
+}
+
+.add-product-size-chart__field--align-input {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.add-product-size-chart__field--align-input .add-product-size-chart__field-meta {
+  flex: 1 1 auto;
+}
+
+.add-product-size-chart__field--align-input .add-product-size-chart__field-control {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.add-product-size-chart__field--align-input.add-product-form__field--in-row .add-product-form__field-hint {
+  display: block;
+}
+
+.add-product-size-chart__field--align-input .dropdown-picker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.add-product-size-chart__field--align-input .dropdown-picker__trigger {
+  margin-top: auto;
 }
 
 .add-product-size-chart__field {
@@ -132,7 +164,11 @@
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.6fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.add-product-size-chart__column-card .add-product-form__row-grid {
+  align-items: stretch;
 }
 
 .add-product-size-chart__column-card .add-product-form__row {

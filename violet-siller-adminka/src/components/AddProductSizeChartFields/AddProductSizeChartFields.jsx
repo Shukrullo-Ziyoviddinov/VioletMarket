@@ -10,14 +10,37 @@ import {
 } from '../../utils/sizeChartDraft';
 import './AddProductSizeChartFields.css';
 
-function FieldBlock({ label, hint, required = false, children, className = '' }) {
-  return (
-    <div className={`add-product-form__field ${className}`.trim()}>
+function FieldBlock({ label, hint, required = false, children, className = '', alignInput = false }) {
+  const fieldClassName = [
+    'add-product-form__field',
+    alignInput ? 'add-product-size-chart__field--align-input' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const meta = (
+    <>
       <label className="add-product-form__field-label">
         {label}
         {required ? <span className="add-product-form__required">*</span> : null}
       </label>
       {hint ? <p className="add-product-form__field-hint">{hint}</p> : null}
+    </>
+  );
+
+  if (alignInput) {
+    return (
+      <div className={fieldClassName}>
+        <div className="add-product-size-chart__field-meta">{meta}</div>
+        <div className="add-product-size-chart__field-control">{children}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={fieldClassName}>
+      {meta}
       {children}
     </div>
   );
@@ -43,7 +66,7 @@ function TypeSizeDropdownField({
   onSelect,
 }) {
   return (
-    <div className="add-product-form__field add-product-size-chart__field">
+    <div className="add-product-form__field add-product-size-chart__field add-product-size-chart__field--align-input">
       <DropdownPicker
         label={label}
         hint={hint}
@@ -201,7 +224,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
             label="Jadval sarlavhasi (O'zbekcha)"
             hint="Mijoz ko'radigan asosiy nom. Masalan: «Oyoq kiyim o'lcham jadvali»."
             required
-            className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+            className="add-product-form__field--in-row"
+            alignInput
           >
             <Input
               size="large"
@@ -214,7 +238,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
             label="Jadval sarlavhasi (Ruscha)"
             hint="Rus tilidagi xaridorlar uchun xuddi shu sarlavha."
             required
-            className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+            className="add-product-form__field--in-row"
+            alignInput
           >
             <Input
               size="large"
@@ -230,7 +255,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
         <FieldBlock
           label="Ko'rsatma matni (O'zbekcha)"
           hint="Jadval ustida yoki yonida chiqadigan qisqa yo'riqnoma."
-          className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+          className="add-product-form__field--in-row"
+          alignInput
         >
           <Input.TextArea
             rows={3}
@@ -242,7 +268,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
         <FieldBlock
           label="Ko'rsatma matni (Ruscha)"
           hint="Rus tilidagi xaridorlar uchun xuddi shu ko'rsatma."
-          className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+          className="add-product-form__field--in-row"
+          alignInput
         >
           <Input.TextArea
             rows={3}
@@ -287,7 +314,7 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                   Bu ustun nomi doimiy — mijoz jadvalda «O&apos;lcham» deb ko&apos;radi. O&apos;zgartirish shart emas.
                 </p>
                 <FieldRow>
-                  <FieldBlock label="Ustun nomi (O'zbekcha)" className="add-product-form__field--in-row">
+                  <FieldBlock label="Ustun nomi (O'zbekcha)" className="add-product-form__field--in-row" alignInput>
                     <Input
                       size="large"
                       readOnly
@@ -295,7 +322,7 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                       className="add-product-size-chart__readonly"
                     />
                   </FieldBlock>
-                  <FieldBlock label="Ustun nomi (Ruscha)" className="add-product-form__field--in-row">
+                  <FieldBlock label="Ustun nomi (Ruscha)" className="add-product-form__field--in-row" alignInput>
                     <Input
                       size="large"
                       readOnly
@@ -310,7 +337,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                 <FieldBlock
                   label="Ustun nomi (O'zbekcha)"
                   hint="Jadvalda bu ustun qanday nom bilan chiqadi. Masalan: Bo'yi, Ko'krak eni."
-                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                  className="add-product-form__field--in-row"
+                  alignInput
                 >
                   <Input
                     size="large"
@@ -322,7 +350,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                 <FieldBlock
                   label="Ustun nomi (Ruscha)"
                   hint="Rus tilidagi ustun nomi."
-                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                  className="add-product-form__field--in-row"
+                  alignInput
                 >
                   <Input
                     size="large"
@@ -417,7 +446,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                 <FieldBlock
                   label="Sxema nomi (O'zbekcha)"
                   hint="Rasm uchun qo'shimcha nom (masalan «Oyoq o'lchovi»). Ko'p hollarda saytda alohida sarlavha sifatida chiqmasligi mumkin — lekin ma'lumot sifatida saqlanadi."
-                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                  className="add-product-form__field--in-row"
+                  alignInput
                 >
                   <Input
                     size="large"
@@ -431,7 +461,8 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                 <FieldBlock
                   label="Sxema nomi (Ruscha)"
                   hint="Rus tilidagi sxema nomi."
-                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                  className="add-product-form__field--in-row"
+                  alignInput
                 >
                   <Input
                     size="large"
