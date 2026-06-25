@@ -6,6 +6,7 @@ import SellerLayout from './components/SellerLayout/SellerLayout';
 import ApplicationStatusPage from './pages/ApplicationStatusPage/ApplicationStatusPage';
 import ApplicationSubmitPage from './pages/ApplicationSubmitPage/ApplicationSubmitPage';
 import HomePage from './pages/HomePage/HomePage';
+import AddProductsPage from './pages/AddProductsPage/AddProductsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterStartPage from './pages/RegisterStartPage/RegisterStartPage';
 import RegisterVerifyPage from './pages/RegisterVerifyPage/RegisterVerifyPage';
@@ -25,6 +26,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<SellerLayout />}>
             <Route index element={<HomePage />} />
+            <Route path="products/add" element={<AddProductsPage />} />
           </Route>
         </Route>
 

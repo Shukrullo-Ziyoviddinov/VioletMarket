@@ -1,5 +1,6 @@
 const express = require("express");
 const controller = require("../../controllers/sellerAuthController");
+const sellerProductController = require("../../controllers/sellerProductController");
 const sellerUploadController = require("../../controllers/sellerUploadController");
 const { sellerAuthMiddleware } = require("../../middleware/sellerAuthMiddleware");
 
@@ -24,6 +25,11 @@ router.post("/seller-auth/register/submit-application", controller.submitApplica
 router.get("/seller-auth/application-status", controller.getApplicationStatus);
 router.post("/seller-auth/login", controller.loginSeller);
 router.get("/seller-auth/me", sellerAuthMiddleware, controller.getCabinetProfile);
+router.get(
+  "/seller-auth/product-form/options",
+  sellerAuthMiddleware,
+  sellerProductController.getProductFormOptions,
+);
 router.patch("/seller-auth/market-profile", sellerAuthMiddleware, controller.updateMarketProfile);
 router.post(
   "/seller-auth/uploads/image",
