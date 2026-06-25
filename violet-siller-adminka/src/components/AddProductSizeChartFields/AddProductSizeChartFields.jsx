@@ -37,15 +37,16 @@ function TypeSizeDropdownField({
   openKey,
   onOpenKeyChange,
   label,
+  hint,
   required = false,
   value,
   onSelect,
-  className = '',
 }) {
   return (
-    <div className={`add-product-form__field add-product-size-chart__field ${className}`.trim()}>
+    <div className="add-product-form__field add-product-size-chart__field">
       <DropdownPicker
         label={label}
+        hint={hint}
         required={required}
         mode="single"
         value={value}
@@ -177,22 +178,31 @@ export default function AddProductSizeChartFields({ values, onChange }) {
 
   return (
     <section className="add-product-form__card add-product-size-chart">
-      <h3 className="add-product-form__card-title">O&apos;lcham jadvali (sizeChart)</h3>
+      <h3 className="add-product-form__card-title">O&apos;lcham jadvali</h3>
+      <p className="add-product-size-chart__intro">
+        Mijoz mahsulot sahifasida o&apos;lcham tanlashda foydalanadigan jadval va sxema. Har bir
+        maydon ostidagi izoh nima yozish kerakligini tushuntiradi.
+      </p>
 
       <div className="add-product-size-chart__type-title-row">
         <TypeSizeDropdownField
           fieldKey="sizeChartTypeSize"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="O'lcham turi (typeSize)"
+          label="Mahsulot o'lcham turi"
+          hint="Mahsulot qaysi turda o'lchanadi: oyoq kiyimi, tana (yuqori) kiyim yoki shim. Saytda shu turga mos o'lchov sxemasi chiqadi."
           required
           value={values.sizeChartTypeSize}
           onSelect={handleTypeSizeChange}
-          className="add-product-size-chart__field--compact"
         />
 
         <div className="add-product-size-chart__title-pair">
-          <FieldBlock label="Sarlavha (O'zbekcha)" required className="add-product-form__field--in-row">
+          <FieldBlock
+            label="Jadval sarlavhasi (O'zbekcha)"
+            hint="Mijoz ko'radigan asosiy nom. Masalan: «Oyoq kiyim o'lcham jadvali»."
+            required
+            className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+          >
             <Input
               size="large"
               placeholder="Oyoq kiyim o'lcham jadvali"
@@ -200,7 +210,12 @@ export default function AddProductSizeChartFields({ values, onChange }) {
               onChange={setField('sizeChartTitleUz')}
             />
           </FieldBlock>
-          <FieldBlock label="Sarlavha (Ruscha)" required className="add-product-form__field--in-row">
+          <FieldBlock
+            label="Jadval sarlavhasi (Ruscha)"
+            hint="Rus tilidagi xaridorlar uchun xuddi shu sarlavha."
+            required
+            className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+          >
             <Input
               size="large"
               placeholder="Таблица размеров обуви"
@@ -211,8 +226,12 @@ export default function AddProductSizeChartFields({ values, onChange }) {
         </div>
       </div>
 
-      <FieldRow hint="Mijozga o'lchamni qanday tanlashni tushuntiring.">
-        <FieldBlock label="Ko'rsatma (O'zbekcha)" className="add-product-form__field--in-row">
+      <FieldRow hint="Mijozga o'lchamni qanday tanlash kerakligini oddiy tilda yozing — masalan oyoq uzunligini o'lchash va jadvaldan mos raqamni topish.">
+        <FieldBlock
+          label="Ko'rsatma matni (O'zbekcha)"
+          hint="Jadval ustida yoki yonida chiqadigan qisqa yo'riqnoma."
+          className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+        >
           <Input.TextArea
             rows={3}
             placeholder="Oyoq uzunligini o'lchab, jadvaldagi mos EU o'lchamni tanlang."
@@ -220,7 +239,11 @@ export default function AddProductSizeChartFields({ values, onChange }) {
             onChange={setField('sizeChartInstructionUz')}
           />
         </FieldBlock>
-        <FieldBlock label="Ko'rsatma (Ruscha)" className="add-product-form__field--in-row">
+        <FieldBlock
+          label="Ko'rsatma matni (Ruscha)"
+          hint="Rus tilidagi xaridorlar uchun xuddi shu ko'rsatma."
+          className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+        >
           <Input.TextArea
             rows={3}
             placeholder="Измерьте длину стопы и выберите соответствующий размер EU в таблице."
@@ -232,7 +255,14 @@ export default function AddProductSizeChartFields({ values, onChange }) {
 
       <div className="add-product-size-chart__section">
         <div className="add-product-size-chart__section-head">
-          <h4 className="add-product-size-chart__section-title">O&apos;lchov ustunlari (measureColumns)</h4>
+          <div>
+            <h4 className="add-product-size-chart__section-title">O&apos;lcham jadvali (ustunlar)</h4>
+            <p className="add-product-size-chart__section-desc">
+              Bu yerda jadvaldagi raqamlar yoziladi. Birinchi ustun doim «O&apos;lcham» (S, M, L
+              yoki 36, 37, 38). Qolgan ustunlarga masalan bo&apos;yi, ko&apos;krak eni kabi
+              nomlar qo&apos;shasiz.
+            </p>
+          </div>
           <Button type="dashed" icon={<PlusOutlined />} onClick={addMeasureColumn}>
             Ustun qo&apos;shish
           </Button>
@@ -241,7 +271,9 @@ export default function AddProductSizeChartFields({ values, onChange }) {
         {measureColumns.map((column, columnIndex) => (
           <div key={column.localId} className="add-product-size-chart__column-card">
             <div className="add-product-size-chart__column-head">
-              <span className="add-product-size-chart__column-index">Ustun #{columnIndex + 1}</span>
+              <span className="add-product-size-chart__column-index">
+                {column.isFixedLabel ? 'Asosiy o\'lcham ustuni' : `Qo'shimcha ustun #${columnIndex}`}
+              </span>
               {!column.isFixedLabel ? (
                 <Button type="link" danger onClick={() => removeMeasureColumn(column.localId)}>
                   O&apos;chirish
@@ -250,27 +282,36 @@ export default function AddProductSizeChartFields({ values, onChange }) {
             </div>
 
             {column.isFixedLabel ? (
-              <FieldRow>
-                <FieldBlock label="Label (O'zbekcha)" className="add-product-form__field--in-row">
-                  <Input
-                    size="large"
-                    readOnly
-                    value={SIZE_COLUMN_FIXED_LABEL.uz}
-                    className="add-product-size-chart__readonly"
-                  />
-                </FieldBlock>
-                <FieldBlock label="Label (Ruscha)" className="add-product-form__field--in-row">
-                  <Input
-                    size="large"
-                    readOnly
-                    value={SIZE_COLUMN_FIXED_LABEL.ru}
-                    className="add-product-size-chart__readonly"
-                  />
-                </FieldBlock>
-              </FieldRow>
+              <>
+                <p className="add-product-size-chart__column-note">
+                  Bu ustun nomi doimiy — mijoz jadvalda «O&apos;lcham» deb ko&apos;radi. O&apos;zgartirish shart emas.
+                </p>
+                <FieldRow>
+                  <FieldBlock label="Ustun nomi (O'zbekcha)" className="add-product-form__field--in-row">
+                    <Input
+                      size="large"
+                      readOnly
+                      value={SIZE_COLUMN_FIXED_LABEL.uz}
+                      className="add-product-size-chart__readonly"
+                    />
+                  </FieldBlock>
+                  <FieldBlock label="Ustun nomi (Ruscha)" className="add-product-form__field--in-row">
+                    <Input
+                      size="large"
+                      readOnly
+                      value={SIZE_COLUMN_FIXED_LABEL.ru}
+                      className="add-product-size-chart__readonly"
+                    />
+                  </FieldBlock>
+                </FieldRow>
+              </>
             ) : (
               <FieldRow>
-                <FieldBlock label="Label (O'zbekcha)" className="add-product-form__field--in-row">
+                <FieldBlock
+                  label="Ustun nomi (O'zbekcha)"
+                  hint="Jadvalda bu ustun qanday nom bilan chiqadi. Masalan: Bo'yi, Ko'krak eni."
+                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                >
                   <Input
                     size="large"
                     placeholder="Bo'yi"
@@ -278,7 +319,11 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                     onChange={handleMeasureColumnLabelChange(column.localId, 'labelUz')}
                   />
                 </FieldBlock>
-                <FieldBlock label="Label (Ruscha)" className="add-product-form__field--in-row">
+                <FieldBlock
+                  label="Ustun nomi (Ruscha)"
+                  hint="Rus tilidagi ustun nomi."
+                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                >
                   <Input
                     size="large"
                     placeholder="Длина"
@@ -291,7 +336,14 @@ export default function AddProductSizeChartFields({ values, onChange }) {
 
             <div className="add-product-size-chart__values-block">
               <div className="add-product-size-chart__values-head">
-                <span className="add-product-form__field-label">Qiymatlar (values)</span>
+                <div>
+                  <span className="add-product-form__field-label">O&apos;lcham qiymatlari</span>
+                  <p className="add-product-size-chart__values-hint">
+                    {column.isFixedLabel
+                      ? 'Har bir qator uchun bitta o\'lcham yozing: 36, 37, S, M, L va hokazo. «Yana» bilan yangi o\'lcham qo\'shing.'
+                      : 'Bu ustundagi raqamlar. Birinchi ustundagi har bir o\'lcham uchun mos qiymat yozing (masalan bo\'yi: 22.5, 23, 24).'}
+                  </p>
+                </div>
                 <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addMeasureValue(column.localId)}>
                   Yana
                 </Button>
@@ -300,10 +352,13 @@ export default function AddProductSizeChartFields({ values, onChange }) {
               <div className="add-product-size-chart__values-grid">
                 {(column.values || []).map((value, valueIndex) => (
                   <div key={`${column.localId}-value-${valueIndex}`} className="add-product-size-chart__value-row">
+                    <span className="add-product-size-chart__value-label">
+                      {columnIndex === 0 ? `${valueIndex + 1}-o'lcham` : `${valueIndex + 1}-qiymat`}
+                    </span>
                     <Input
                       size="large"
                       inputMode="decimal"
-                      placeholder="36"
+                      placeholder={column.isFixedLabel ? '36' : '22.5'}
                       value={value}
                       onChange={handleMeasureValueChange(column.localId, valueIndex)}
                     />
@@ -322,7 +377,13 @@ export default function AddProductSizeChartFields({ values, onChange }) {
 
       <div className="add-product-size-chart__section">
         <div className="add-product-size-chart__section-head">
-          <h4 className="add-product-size-chart__section-title">Sxema rasmlari (guideImages)</h4>
+          <div>
+            <h4 className="add-product-size-chart__section-title">O&apos;lchov sxemasi</h4>
+            <p className="add-product-size-chart__section-desc">
+              Mijozga qayerdan o&apos;lchash kerakligini ko&apos;rsatadigan rasm/sxema. Agar maxsus
+              rasm yuklamasangiz, sayt tanlangan tur bo&apos;yicha tayyor sxemani o&apos;zi qo&apos;yadi.
+            </p>
+          </div>
           <Button type="dashed" icon={<PlusOutlined />} onClick={addGuideImage}>
             Yana
           </Button>
@@ -331,7 +392,7 @@ export default function AddProductSizeChartFields({ values, onChange }) {
         {guideImages.map((item, index) => (
           <div key={item.localId} className="add-product-size-chart__column-card">
             <div className="add-product-size-chart__column-head">
-              <span className="add-product-size-chart__column-index">#{index + 1}</span>
+              <span className="add-product-size-chart__column-index">Sxema #{index + 1}</span>
               {guideImages.length > 1 ? (
                 <Button type="link" danger onClick={() => removeGuideImage(item.localId)}>
                   O&apos;chirish
@@ -344,16 +405,20 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                 fieldKey={`guide-${item.localId}`}
                 openKey={openKey}
                 onOpenKeyChange={setOpenKey}
-                label="typeSize"
+                label="Sxema turi"
+                hint="Qaysi o'lchov sxemasi ishlatiladi. Odatda yuqoridagi mahsulot turiga mos tanlang."
                 value={item.typeSize || values.sizeChartTypeSize}
                 onSelect={(nextTypeSize) =>
                   handleGuideImageChange(item.localId, { typeSize: nextTypeSize })
                 }
-                className="add-product-size-chart__field--compact"
               />
 
               <div className="add-product-size-chart__title-pair">
-                <FieldBlock label="title (O'zbekcha)" className="add-product-form__field--in-row">
+                <FieldBlock
+                  label="Sxema nomi (O'zbekcha)"
+                  hint="Rasm uchun qo'shimcha nom (masalan «Oyoq o'lchovi»). Ko'p hollarda saytda alohida sarlavha sifatida chiqmasligi mumkin — lekin ma'lumot sifatida saqlanadi."
+                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                >
                   <Input
                     size="large"
                     placeholder="Oyoq o'lchovi"
@@ -363,7 +428,11 @@ export default function AddProductSizeChartFields({ values, onChange }) {
                     }
                   />
                 </FieldBlock>
-                <FieldBlock label="title (Ruscha)" className="add-product-form__field--in-row">
+                <FieldBlock
+                  label="Sxema nomi (Ruscha)"
+                  hint="Rus tilidagi sxema nomi."
+                  className="add-product-form__field--in-row add-product-size-chart__field--with-hint"
+                >
                   <Input
                     size="large"
                     placeholder="Измерение стопы"
