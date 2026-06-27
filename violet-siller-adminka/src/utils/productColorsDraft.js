@@ -32,7 +32,42 @@ export function getInitialColorsFormFields() {
   return {
     mainImage: '',
     thumbnails: [],
+    productThumbnailsBackup: [],
     colors: [],
+  };
+}
+
+/**
+ * Ranglar qo'shilganda tashqi thumbnails yashiriladi, lekin o'chirilmaydi.
+ * Barcha ranglar olib tashlanganda oldingi thumbnails qayta tiklanadi.
+ */
+export function applyColorsChange(values, nextColors) {
+  const prevColors = Array.isArray(values?.colors) ? values.colors : [];
+  const prevHadColors = prevColors.length > 0;
+  const nextHasColors = nextColors.length > 0;
+
+  const currentThumbnails = Array.isArray(values?.thumbnails) ? values.thumbnails : [];
+  let thumbnails = currentThumbnails;
+  let productThumbnailsBackup = Array.isArray(values?.productThumbnailsBackup)
+    ? values.productThumbnailsBackup
+    : [];
+
+  if (!prevHadColors && nextHasColors && currentThumbnails.length > 0) {
+    productThumbnailsBackup = [...currentThumbnails];
+  }
+
+  if (prevHadColors && !nextHasColors) {
+    if (productThumbnailsBackup.length > 0) {
+      thumbnails = [...productThumbnailsBackup];
+    }
+    productThumbnailsBackup = [];
+  }
+
+  return {
+    ...values,
+    colors: nextColors,
+    thumbnails,
+    productThumbnailsBackup,
   };
 }
 

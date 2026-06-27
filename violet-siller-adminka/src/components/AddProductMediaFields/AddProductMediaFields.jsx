@@ -22,6 +22,11 @@ export default function AddProductMediaFields({ values, onChange }) {
   const [videoError, setVideoError] = useState('');
 
   const hasColors = Array.isArray(values.colors) && values.colors.length > 0;
+  const savedThumbnailsCount = (
+    hasColors
+      ? values.productThumbnailsBackup
+      : values.thumbnails
+  )?.length || 0;
   const previewUrl = toAbsoluteVideoUrl(values.video);
   const progressLabel =
     uploadPhase === 'verifying' ? "Serverga saqlanmoqda..." : 'Video yuklanmoqda...';
@@ -71,11 +76,14 @@ export default function AddProductMediaFields({ values, onChange }) {
 
       <div className="add-product-media-fields__grid">
         <div className="add-product-media-fields__column">
-          <h4 className="add-product-media-fields__column-title">Mahsulot videosi</h4>
-          <p className="add-product-media-fields__column-hint">
-            Ixtiyoriy. Mahsulot sahifasida ko&apos;rsatiladigan qisqa video.
-          </p>
+          <div className="add-product-media-fields__column-header">
+            <h4 className="add-product-media-fields__column-title">Mahsulot videosi</h4>
+            <p className="add-product-media-fields__column-hint">
+              Ixtiyoriy. Mahsulot sahifasida ko&apos;rsatiladigan qisqa video.
+            </p>
+          </div>
 
+          <div className="add-product-media-fields__upload-slot">
           <input
             ref={fileInputRef}
             type="file"
@@ -115,40 +123,54 @@ export default function AddProductMediaFields({ values, onChange }) {
           ) : null}
 
           {videoError ? <p className="add-product-media-fields__error">{videoError}</p> : null}
+          </div>
         </div>
 
         <div className="add-product-media-fields__column">
-          <h4 className="add-product-media-fields__column-title">Mahsulot asosiy rasmi</h4>
-          <p className="add-product-media-fields__column-hint">
-            Majburiy. Katalog va mahsulot sahifasidagi asosiy rasm — rang tanlovi bo&apos;lmasa ham
-            shu ko&apos;rinadi.
-          </p>
+          <div className="add-product-media-fields__column-header">
+            <h4 className="add-product-media-fields__column-title">Mahsulot asosiy rasmi</h4>
+            <p className="add-product-media-fields__column-hint">
+              Majburiy. Katalog va mahsulot sahifasidagi asosiy rasm — rang tanlovi bo&apos;lmasa ham
+              shu ko&apos;rinadi.
+            </p>
+          </div>
+
+          <div className="add-product-media-fields__upload-slot">
           <ProductImageUploadField
             value={values.mainImage}
             onChange={(path) => setField('mainImage', path)}
             title="Asosiy rasm yuklash"
             hint="Mahsulotning eng yaxshi bitta fotosurati"
-            compact
+            className="add-product-media-fields__image-upload"
           />
+          </div>
         </div>
       </div>
 
-      {!hasColors ? (
-        <div className="add-product-media-fields__thumbnails">
-          <ProductThumbnailsUploadField
-            images={values.thumbnails}
-            onChange={(nextImages) => setField('thumbnails', nextImages)}
-            title="Mahsulot galereya rasmlari (thumbnails)"
-            hint="Rang tanlovi yo‘q mahsulotlarda galereya shu yerdan olinadi. Birinchi rasm asosiy rasmdan keyin ko‘rinadi."
-            slotHints={['1-qo‘shimcha rasm', ...PRODUCT_THUMBNAIL_HINTS]}
-          />
-        </div>
-      ) : (
+      <div
+        className={`add-product-media-fields__thumbnails${
+          hasColors ? ' add-product-media-fields__thumbnails--hidden' : ''
+        }`}
+        aria-hidden={hasColors}
+      >
+        <ProductThumbnailsUploadField
+          images={values.thumbnails}
+          onChange={(nextImages) => setField('thumbnails', nextImages)}
+          title="Mahsulot galereya rasmlari (thumbnails)"
+          hint="Rang tanlovi yo‘q mahsulotlarda galereya shu yerdan olinadi. Birinchi rasm asosiy rasmdan keyin ko‘rinadi."
+          slotHints={['1-qo‘shimcha rasm', ...PRODUCT_THUMBNAIL_HINTS]}
+        />
+      </div>
+
+      {hasColors ? (
         <p className="add-product-media-fields__colors-note">
-          Ranglar qo&apos;shilgan — galereya rasmlari har bir rang bloki ichida alohida yuklanadi.
-          Yuqoridagi asosiy rasm mahsulotning umumiy kartochka rasmi bo&apos;lib qoladi.
+          Ranglar qo&apos;shilgan — galereya rasmlari vaqtincha yashirildi. Har bir rang uchun rasmlar
+          rang bloki ichida yuklanadi.
+          {savedThumbnailsCount > 0
+            ? ` Oldin kiritilgan ${savedThumbnailsCount} ta galereya rasmi saqlanib turibdi — barcha ranglar o'chirilsa qayta ko'rinadi.`
+            : null}
         </p>
-      )}
+      ) : null}
     </section>
   );
 }

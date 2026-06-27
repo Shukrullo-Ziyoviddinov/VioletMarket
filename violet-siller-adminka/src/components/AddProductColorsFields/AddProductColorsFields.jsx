@@ -5,7 +5,7 @@ import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import ProductImageUploadField from '../ProductImageUploadField/ProductImageUploadField';
 import ProductThumbnailsUploadField from '../ProductThumbnailsUploadField/ProductThumbnailsUploadField';
 import { COLOR_FILTER_OPTIONS } from '../../utils/colorFilterPresets';
-import { createColorDraft, createSizeStockRow } from '../../utils/productColorsDraft';
+import { createColorDraft, createSizeStockRow, applyColorsChange } from '../../utils/productColorsDraft';
 import './AddProductColorsFields.css';
 
 const COLOR_THUMBNAIL_HINTS = [
@@ -72,17 +72,11 @@ export default function AddProductColorsFields({ values, onChange }) {
   );
 
   const addColor = () => {
-    onChange({
-      ...values,
-      colors: [...colors, createColorDraft()],
-    });
+    onChange(applyColorsChange(values, [...colors, createColorDraft()]));
   };
 
   const removeColor = (localId) => {
-    onChange({
-      ...values,
-      colors: colors.filter((color) => color.localId !== localId),
-    });
+    onChange(applyColorsChange(values, colors.filter((color) => color.localId !== localId)));
   };
 
   const changeColorField = (localId, field, fieldValue) => {

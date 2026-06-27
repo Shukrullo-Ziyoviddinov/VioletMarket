@@ -12,6 +12,7 @@ export default function ProductImageUploadField({
   title = 'Rasm yuklash',
   hint = 'Telefon yoki kompyuterdan tanlash uchun bosing',
   compact = false,
+  className = '',
 }) {
   const { token } = useSellerAuth();
   const fileInputRef = useRef(null);
@@ -47,7 +48,11 @@ export default function ProductImageUploadField({
   };
 
   return (
-    <div className={`product-image-upload${compact ? ' product-image-upload--compact' : ''}`}>
+    <div
+      className={`product-image-upload${compact ? ' product-image-upload--compact' : ''}${
+        className ? ` ${className}` : ''
+      }`}
+    >
       <input
         ref={fileInputRef}
         type="file"
