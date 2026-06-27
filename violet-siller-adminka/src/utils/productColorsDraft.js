@@ -12,6 +12,16 @@ export function createSizeStockRow(label = '', quantity = '') {
   };
 }
 
+export function createModelStockRow(label = '', quantity = '', price = '', originalPrice = '') {
+  return {
+    localId: createLocalId('model-stock'),
+    label: String(label || ''),
+    quantity: quantity === '' || quantity == null ? '' : String(quantity),
+    price: String(price || ''),
+    originalPrice: String(originalPrice || ''),
+  };
+}
+
 export function createColorDraft() {
   return {
     localId: createLocalId('color'),
@@ -19,6 +29,7 @@ export function createColorDraft() {
     nameRu: '',
     colorFilter: '',
     sizeStockRows: [createSizeStockRow()],
+    modelStockRows: [],
     price: '',
     originalPrice: '',
     discountUz: '',
@@ -84,6 +95,25 @@ function buildSizeStockObject(rows) {
   return result;
 }
 
+function buildModelStockObject(rows) {
+  const result = {};
+
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
+    const label = String(row?.label || '').trim();
+    const quantity = Number(row?.quantity);
+    if (!label || !Number.isFinite(quantity)) return;
+
+    const entry = { quantity: Math.max(0, Math.floor(quantity)) };
+    const price = String(row?.price || '').trim();
+    const originalPrice = String(row?.originalPrice || '').trim();
+    if (price) entry.price = price;
+    if (originalPrice) entry.originalPrice = originalPrice;
+    result[label] = entry;
+  });
+
+  return result;
+}
+
 function buildOptionalDiscount(discountUz, discountRu) {
   const uz = String(discountUz || '').trim();
   const ru = String(discountRu || '').trim();
@@ -96,6 +126,7 @@ function buildColorPayload(color) {
   const nameRu = String(color?.nameRu || '').trim();
   const colorFilter = String(color?.colorFilter || '').trim();
   const sizeStock = buildSizeStockObject(color?.sizeStockRows);
+  const modelStock = buildModelStockObject(color?.modelStockRows);
   const price = String(color?.price || '').trim();
   const originalPrice = String(color?.originalPrice || '').trim();
   const mainImage = String(color?.mainImage || '').trim();
@@ -112,15 +143,23 @@ function buildColorPayload(color) {
     originalPrice ||
     mainImage ||
     thumbnails.length > 0 ||
-    Object.keys(sizeStock).length > 0;
+    Object.keys(sizeStock).length > 0 ||
+    Object.keys(modelStock).length > 0;
 
   if (!hasContent) return null;
 
   const payload = {
     name: { uz: nameUz, ru: nameRu },
     colorFilter: isValidColorFilter(colorFilter) ? colorFilter : colorFilter,
-    sizeStock,
   };
+
+  if (Object.keys(sizeStock).length > 0) {
+    payload.sizeStock = sizeStock;
+  }
+
+  if (Object.keys(modelStock).length > 0) {
+    payload.modelStock = modelStock;
+  }
 
   if (price) payload.price = price;
   if (originalPrice) payload.originalPrice = originalPrice;

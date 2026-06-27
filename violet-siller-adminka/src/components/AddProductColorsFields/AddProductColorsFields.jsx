@@ -5,7 +5,7 @@ import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import ProductImageUploadField from '../ProductImageUploadField/ProductImageUploadField';
 import ProductThumbnailsUploadField from '../ProductThumbnailsUploadField/ProductThumbnailsUploadField';
 import { COLOR_FILTER_OPTIONS } from '../../utils/colorFilterPresets';
-import { createColorDraft, createSizeStockRow, applyColorsChange } from '../../utils/productColorsDraft';
+import { createColorDraft, createSizeStockRow, createModelStockRow, applyColorsChange } from '../../utils/productColorsDraft';
 import './AddProductColorsFields.css';
 
 const COLOR_THUMBNAIL_HINTS = [
@@ -128,13 +128,54 @@ export default function AddProductColorsFields({ values, onChange }) {
     });
   };
 
+  const changeModelStockRow = (localId, rowLocalId, patch) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          modelStockRows: (color.modelStockRows || []).map((row) =>
+            row.localId === rowLocalId ? { ...row, ...patch } : row,
+          ),
+        };
+      }),
+    });
+  };
+
+  const addModelStockRow = (localId) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          modelStockRows: [...(color.modelStockRows || []), createModelStockRow()],
+        };
+      }),
+    });
+  };
+
+  const removeModelStockRow = (localId, rowLocalId) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          modelStockRows: (color.modelStockRows || []).filter((row) => row.localId !== rowLocalId),
+        };
+      }),
+    });
+  };
+
   return (
     <section className="add-product-form__card add-product-colors">
       <h3 className="add-product-form__card-title">Ranglar va ombor</h3>
       <p className="add-product-colors__intro">
-        Agar mahsulot bir nechta rangda bo&apos;lsa, har bir rang uchun alohida narx, ombor va
-        rasmlar kiriting. Rang tanlovi bo&apos;lmagan mahsulotlar uchun bu bo&apos;limni bo&apos;sh
-        qoldirishingiz mumkin.
+        Agar mahsulot bir nechta rangda bo&apos;lsa, har bir rang uchun alohida ombor va rasmlar
+        kiriting. Kiyimlar uchun <strong>o&apos;lcham (sizeStock)</strong>, telefon/komplekt
+        mahsulotlar uchun <strong>model (modelStock)</strong> — faqat kerakli qismni to&apos;ldiring.
       </p>
 
       <div className="add-product-colors__toolbar">
@@ -206,13 +247,14 @@ export default function AddProductColorsFields({ values, onChange }) {
             />
           </div>
 
-          <div className="add-product-colors__section">
+          <div className="add-product-colors__section add-product-colors__section--size">
             <div className="add-product-colors__section-head">
               <div>
                 <h4 className="add-product-colors__section-title">O&apos;lcham va miqdor (sizeStock)</h4>
                 <p className="add-product-colors__section-desc">
-                  Har bir qator: o&apos;lcham nomi (S, M, L, 38…) va shu o&apos;lchamdan nechta
-                  dona borligi.
+                  Kiyim va o&apos;lchamli mahsulotlar uchun. Har bir qator: o&apos;lcham (S, M, L,
+                  38…) va nechta dona borligi. Telefon yoki model bo&apos;yicha sotilsa, bu qismni
+                  bo&apos;sh qoldiring.
                 </p>
               </div>
               <Button
@@ -276,7 +318,114 @@ export default function AddProductColorsFields({ values, onChange }) {
             </div>
           </div>
 
-          <FieldRow hint="Har bir rang uchun alohida narx va chegirma ko'rsatilishi mumkin.">
+          <div className="add-product-colors__section add-product-colors__section--model">
+            <div className="add-product-colors__section-head">
+              <div>
+                <h4 className="add-product-colors__section-title">Model va narx (modelStock)</h4>
+                <p className="add-product-colors__section-desc">
+                  Telefon, planshet va model nomi bilan sotiladigan mahsulotlar uchun. Har bir
+                  qatorda model nomi (S20, A30…), miqdor va shu model uchun narxlar. Kiyim
+                  mahsulotlarida bu qism kerak emas.
+                </p>
+              </div>
+              <Button
+                type="dashed"
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => addModelStockRow(color.localId)}
+              >
+                Yana
+              </Button>
+            </div>
+
+            {(color.modelStockRows || []).length === 0 ? (
+              <p className="add-product-colors__section-empty">
+                Model qatori yo&apos;q. «Yana» tugmasini bosing — masalan S20, S24 ULTRA.
+              </p>
+            ) : null}
+
+            <div className="add-product-colors__model-stock-list">
+              {(color.modelStockRows || []).map((row, rowIndex) => (
+                <div key={row.localId} className="add-product-colors__model-stock-row">
+                  <FieldBlock
+                    label={`Model ${rowIndex + 1}`}
+                    hint="Model nomi. Masalan: S20, A30, S24 ULTRA."
+                    className="add-product-colors__model-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="S20"
+                      value={row.label}
+                      onChange={(event) =>
+                        changeModelStockRow(color.localId, row.localId, {
+                          label: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Miqdor"
+                    hint="Shu modeldan nechta dona bor."
+                    className="add-product-colors__model-field"
+                  >
+                    <Input
+                      size="large"
+                      inputMode="numeric"
+                      placeholder="1"
+                      value={row.quantity}
+                      onChange={(event) =>
+                        changeModelStockRow(color.localId, row.localId, {
+                          quantity: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Narxi"
+                    hint="Shu modelning sotuv narxi."
+                    className="add-product-colors__model-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="70000UZS"
+                      value={row.price}
+                      onChange={(event) =>
+                        changeModelStockRow(color.localId, row.localId, {
+                          price: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Eski narxi"
+                    hint="Chegirma bo'lsa, chizilgan eski narx."
+                    className="add-product-colors__model-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="70000UZS"
+                      value={row.originalPrice}
+                      onChange={(event) =>
+                        changeModelStockRow(color.localId, row.localId, {
+                          originalPrice: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <Button
+                    type="link"
+                    danger
+                    className="add-product-colors__model-remove"
+                    onClick={() => removeModelStockRow(color.localId, row.localId)}
+                  >
+                    O&apos;chirish
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FieldRow hint="Kiyim (sizeStock) mahsulotlarida har bir rang uchun umumiy narx shu yerda. modelStock ishlatilsa, narx har model qatorida yoziladi — bu maydon ixtiyoriy.">
             <FieldBlock
               label="Narxi (shu rang uchun)"
               hint="Mijoz shu rangni tanlaganda ko'radigan narx."
