@@ -1,0 +1,131 @@
+.product-thumbnails-upload__head {
+  margin-bottom: 14px;
+}
+
+.product-thumbnails-upload__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.product-thumbnails-upload__hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b6280;
+}
+
+.product-thumbnails-upload__hidden-input {
+  display: none;
+}
+
+.product-thumbnails-upload__dropzone {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1.5px dashed #c9b6e3;
+  border-radius: 14px;
+  background: #faf8fd;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.product-thumbnails-upload__dropzone:hover:not(:disabled) {
+  border-color: #764ba2;
+  background: #f3ebfd;
+}
+
+.product-thumbnails-upload__dropzone:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.product-thumbnails-upload__icon-wrap {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #ece7f3;
+  color: #764ba2;
+  font-size: 22px;
+}
+
+.product-thumbnails-upload__text-wrap {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.product-thumbnails-upload__text-wrap strong {
+  font-size: 15px;
+  color: #2a1842;
+}
+
+.product-thumbnails-upload__text-wrap span {
+  font-size: 13px;
+  color: #6b6280;
+}
+
+.product-thumbnails-upload__picture-icon {
+  flex-shrink: 0;
+  font-size: 24px;
+  color: #9b4fe7;
+}
+
+.product-thumbnails-upload .upload-progress-bar {
+  margin-top: 14px;
+}
+
+.product-thumbnails-upload__error {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.product-thumbnails-upload__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.product-thumbnails-upload__item {
+  display: grid;
+  gap: 6px;
+}
+
+.product-thumbnails-upload__slot-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #764ba2;
+}
+
+.product-thumbnails-upload__preview {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ece7f3;
+  background: #f8f6fb;
+}
+
+.product-thumbnails-upload__remove {
+  justify-self: start;
+  padding-inline: 0 !important;
+}
+
+.product-thumbnails-upload__path {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #8a7aa3;
+  word-break: break-all;
+}

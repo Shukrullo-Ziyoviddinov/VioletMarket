@@ -10,12 +10,14 @@ import AddProductClassificationFields from '../AddProductClassificationFields/Ad
 import AddProductDetailsFields from '../AddProductDetailsFields/AddProductDetailsFields';
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
-import AddProductVideoField from '../AddProductVideoField/AddProductVideoField';
+import AddProductMediaFields from '../AddProductMediaFields/AddProductMediaFields';
 import AddProductSizeChartFields from '../AddProductSizeChartFields/AddProductSizeChartFields';
 import AddProductRelatedGroupsFields from '../AddProductRelatedGroupsFields/AddProductRelatedGroupsFields';
+import AddProductColorsFields from '../AddProductColorsFields/AddProductColorsFields';
 import { getInitialSizeChartFormFields } from '../../utils/sizeChartDraft';
 import { getInitialDescriptionFormFields } from '../../utils/productDescriptionDraft';
 import { getInitialRelatedGroupsFormFields } from '../../utils/relatedGroupsDraft';
+import { getInitialColorsFormFields } from '../../utils/productColorsDraft';
 import './AddProductForm.css';
 
 const { Text } = Typography;
@@ -42,6 +44,7 @@ const INITIAL_VALUES = {
   ...getInitialDescriptionFormFields(),
   ...getInitialSizeChartFormFields(),
   ...getInitialRelatedGroupsFormFields(),
+  ...getInitialColorsFormFields(),
 };
 
 export default function AddProductForm() {
@@ -124,10 +127,7 @@ export default function AddProductForm() {
 
       <AddProductMainInfoFields values={values} onChange={setValues} />
 
-      <AddProductVideoField
-        value={values.video}
-        onChange={(video) => setValues((current) => ({ ...current, video }))}
-      />
+      <AddProductMediaFields values={values} onChange={setValues} />
 
       <AddProductClassificationFields
         values={values}
@@ -142,6 +142,8 @@ export default function AddProductForm() {
 
       <AddProductDescriptionFields values={values} onChange={setValues} />
 
+      <AddProductColorsFields values={values} onChange={setValues} />
+
       <AddProductSizeChartFields values={values} onChange={setValues} />
 
       <AddProductRelatedGroupsFields
@@ -153,8 +155,8 @@ export default function AddProductForm() {
 
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          6-bosqich: stil g&apos;oyalari (relatedGroups) qo&apos;shildi. Saqlash va qolgan maydonlar
-          keyingi bosqichda qo&apos;shiladi.
+          7-bosqich: ranglar (colors), asosiy rasm va galereya qo&apos;shildi. Saqlash keyingi
+          bosqichda qo&apos;shiladi.
         </Text>
       </div>
     </div>
