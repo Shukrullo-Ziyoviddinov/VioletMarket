@@ -221,9 +221,11 @@ export default function AddProductColorsFields({ values, onChange }) {
       <h3 className="add-product-form__card-title">Ranglar va ombor</h3>
       <p className="add-product-colors__intro">
         Agar mahsulot bir nechta rangda bo&apos;lsa, har bir rang uchun alohida ombor va rasmlar
-        kiriting. Kiyimlar uchun <strong>o&apos;lcham (sizeStock)</strong>, telefon modeli uchun{' '}
-        <strong>model (modelStock)</strong>, xotira hajmi uchun{' '}
-        <strong>storage (storageStock)</strong> — faqat kerakli qismni to&apos;ldiring.
+        kiriting. Bitta rang yoki rangsiz mahsulot uchun omborni yuqoridagi{' '}
+        <strong>Mahsulot ombori</strong> bo&apos;limida to&apos;ldiring. Bir nechta rangda —
+        kiyimlar uchun <strong>sizeStock</strong>, telefon modeli uchun <strong>modelStock</strong>,
+        xotira uchun <strong>storageStock</strong>; kerakli qismlarni bir vaqtda ham to&apos;ldirish
+        mumkin.
       </p>
 
       <div className="add-product-colors__toolbar">

@@ -11,6 +11,7 @@ import AddProductDetailsFields from '../AddProductDetailsFields/AddProductDetail
 import AddProductMainInfoFields from '../AddProductMainInfoFields/AddProductMainInfoFields';
 import AddProductSectionField from '../AddProductSectionField/AddProductSectionField';
 import AddProductMediaFields from '../AddProductMediaFields/AddProductMediaFields';
+import AddProductStockFields from '../AddProductStockFields/AddProductStockFields';
 import AddProductSizeChartFields from '../AddProductSizeChartFields/AddProductSizeChartFields';
 import AddProductRelatedGroupsFields from '../AddProductRelatedGroupsFields/AddProductRelatedGroupsFields';
 import AddProductColorsFields from '../AddProductColorsFields/AddProductColorsFields';
@@ -129,6 +130,8 @@ export default function AddProductForm() {
 
       <AddProductMediaFields values={values} onChange={setValues} />
 
+      <AddProductStockFields values={values} onChange={setValues} />
+
       <AddProductClassificationFields
         values={values}
         masterCategories={masterCategories}
@@ -155,8 +158,8 @@ export default function AddProductForm() {
 
       <div className="add-product-form__footer-note">
         <Text type="secondary">
-          7-bosqich: ranglar (colors), asosiy rasm va galereya qo&apos;shildi. Saqlash keyingi
-          bosqichda qo&apos;shiladi.
+          8-bosqich: rangsiz mahsulot uchun tashqi ombor (sizeStock, modelStock, storageStock)
+          qo&apos;shildi. Saqlash keyingi bosqichda qo&apos;shiladi.
         </Text>
       </div>
     </div>

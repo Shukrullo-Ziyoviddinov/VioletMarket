@@ -1,36 +1,28 @@
 import { isValidColorFilter } from './colorFilterPresets';
+import {
+  createSizeStockRow,
+  createModelStockRow,
+  createStorageStockRow,
+  buildSizeStockObject,
+  buildModelStockObject,
+  buildStorageStockObject,
+  buildProductStockPayload,
+  getInitialProductStockFormFields,
+  hasProductStockFormData,
+  snapshotProductStock,
+  restoreProductStockFromBackup,
+} from './productStockDraft';
 
 function createLocalId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function createSizeStockRow(label = '', quantity = '') {
-  return {
-    localId: createLocalId('size-stock'),
-    label: String(label || ''),
-    quantity: quantity === '' || quantity == null ? '' : String(quantity),
-  };
-}
-
-export function createModelStockRow(label = '', quantity = '', price = '', originalPrice = '') {
-  return {
-    localId: createLocalId('model-stock'),
-    label: String(label || ''),
-    quantity: quantity === '' || quantity == null ? '' : String(quantity),
-    price: String(price || ''),
-    originalPrice: String(originalPrice || ''),
-  };
-}
-
-export function createStorageStockRow(label = '', quantity = '', price = '', originalPrice = '') {
-  return {
-    localId: createLocalId('storage-stock'),
-    label: String(label || ''),
-    quantity: quantity === '' || quantity == null ? '' : String(quantity),
-    price: String(price || ''),
-    originalPrice: String(originalPrice || ''),
-  };
-}
+export {
+  createSizeStockRow,
+  createModelStockRow,
+  createStorageStockRow,
+  getInitialProductStockFormFields,
+};
 
 export function createColorDraft() {
   return {
@@ -56,12 +48,13 @@ export function getInitialColorsFormFields() {
     thumbnails: [],
     productThumbnailsBackup: [],
     colors: [],
+    ...getInitialProductStockFormFields(),
   };
 }
 
 /**
- * Ranglar qo'shilganda tashqi thumbnails yashiriladi, lekin o'chirilmaydi.
- * Barcha ranglar olib tashlanganda oldingi thumbnails qayta tiklanadi.
+ * Ranglar qo'shilganda tashqi thumbnails va ombor yashiriladi, lekin o'chirilmaydi.
+ * Barcha ranglar olib tashlanganda oldingi ma'lumotlar qayta tiklanadi.
  */
 export function applyColorsChange(values, nextColors) {
   const prevColors = Array.isArray(values?.colors) ? values.colors : [];
@@ -74,8 +67,17 @@ export function applyColorsChange(values, nextColors) {
     ? values.productThumbnailsBackup
     : [];
 
+  let sizeStockRows = Array.isArray(values?.sizeStockRows) ? values.sizeStockRows : [];
+  let modelStockRows = Array.isArray(values?.modelStockRows) ? values.modelStockRows : [];
+  let storageStockRows = Array.isArray(values?.storageStockRows) ? values.storageStockRows : [];
+  let productStockBackup = values?.productStockBackup ?? null;
+
   if (!prevHadColors && nextHasColors && currentThumbnails.length > 0) {
     productThumbnailsBackup = [...currentThumbnails];
+  }
+
+  if (!prevHadColors && nextHasColors && hasProductStockFormData(values)) {
+    productStockBackup = snapshotProductStock(values);
   }
 
   if (prevHadColors && !nextHasColors) {
@@ -83,6 +85,12 @@ export function applyColorsChange(values, nextColors) {
       thumbnails = [...productThumbnailsBackup];
     }
     productThumbnailsBackup = [];
+
+    const restoredStock = restoreProductStockFromBackup(productStockBackup);
+    sizeStockRows = restoredStock.sizeStockRows;
+    modelStockRows = restoredStock.modelStockRows;
+    storageStockRows = restoredStock.storageStockRows;
+    productStockBackup = restoredStock.productStockBackup;
   }
 
   return {
@@ -90,47 +98,11 @@ export function applyColorsChange(values, nextColors) {
     colors: nextColors,
     thumbnails,
     productThumbnailsBackup,
+    sizeStockRows,
+    modelStockRows,
+    storageStockRows,
+    productStockBackup,
   };
-}
-
-function buildSizeStockObject(rows) {
-  const result = {};
-
-  (Array.isArray(rows) ? rows : []).forEach((row) => {
-    const label = String(row?.label || '').trim();
-    const quantity = Number(row?.quantity);
-    if (!label || !Number.isFinite(quantity)) return;
-    result[label] = { quantity: Math.max(0, Math.floor(quantity)) };
-  });
-
-  return result;
-}
-
-function buildLabeledStockObject(rows) {
-  const result = {};
-
-  (Array.isArray(rows) ? rows : []).forEach((row) => {
-    const label = String(row?.label || '').trim();
-    const quantity = Number(row?.quantity);
-    if (!label || !Number.isFinite(quantity)) return;
-
-    const entry = { quantity: Math.max(0, Math.floor(quantity)) };
-    const price = String(row?.price || '').trim();
-    const originalPrice = String(row?.originalPrice || '').trim();
-    if (price) entry.price = price;
-    if (originalPrice) entry.originalPrice = originalPrice;
-    result[label] = entry;
-  });
-
-  return result;
-}
-
-function buildModelStockObject(rows) {
-  return buildLabeledStockObject(rows);
-}
-
-function buildStorageStockObject(rows) {
-  return buildLabeledStockObject(rows);
 }
 
 function buildOptionalDiscount(discountUz, discountRu) {
@@ -208,10 +180,13 @@ export function buildColorsPayload(values) {
         .map((path) => String(path || '').trim())
         .filter(Boolean);
 
+  const stockPayload = hasColors ? {} : buildProductStockPayload(values);
+
   return {
     mainImage,
     image: mainImage || undefined,
     thumbnails,
     colors,
+    ...stockPayload,
   };
 }

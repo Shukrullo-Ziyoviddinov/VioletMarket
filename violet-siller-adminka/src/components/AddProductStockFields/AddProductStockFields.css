@@ -1,0 +1,119 @@
+.add-product-stock__intro,
+.add-product-stock__hidden-note {
+  margin: -8px 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b6280;
+}
+
+.add-product-stock__hidden-note {
+  margin-bottom: 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8f5fc;
+}
+
+.add-product-stock__section + .add-product-stock__section {
+  margin-top: 16px;
+}
+
+.add-product-stock__section--model,
+.add-product-stock__section--storage {
+  padding-top: 16px;
+  border-top: 1px dashed #d8c9ef;
+}
+
+.add-product-stock__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.add-product-stock__section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.add-product-stock__section-desc {
+  margin: 4px 0 0;
+  max-width: 640px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b6280;
+}
+
+.add-product-stock__section-empty {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8f5fc;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b6280;
+}
+
+.add-product-stock__size-list,
+.add-product-stock__variant-list {
+  display: grid;
+  gap: 12px;
+}
+
+.add-product-stock__size-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.add-product-stock__variant-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.65fr) minmax(0, 0.9fr) minmax(0, 0.9fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid #e3ddf0;
+  border-radius: 10px;
+  background: #f8f5fc;
+}
+
+.add-product-stock__field {
+  margin-top: 0 !important;
+}
+
+.add-product-stock__remove {
+  margin-bottom: 6px;
+  padding-inline: 0 !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .add-product-stock__variant-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .add-product-stock__remove {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .add-product-stock__size-row,
+  .add-product-stock__variant-row {
+    grid-template-columns: 1fr;
+  }
+
+  .add-product-stock__remove {
+    margin-bottom: 0;
+    justify-self: start;
+  }
+}
