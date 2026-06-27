@@ -5,7 +5,13 @@ import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import ProductImageUploadField from '../ProductImageUploadField/ProductImageUploadField';
 import ProductThumbnailsUploadField from '../ProductThumbnailsUploadField/ProductThumbnailsUploadField';
 import { COLOR_FILTER_OPTIONS } from '../../utils/colorFilterPresets';
-import { createColorDraft, createSizeStockRow, createModelStockRow, applyColorsChange } from '../../utils/productColorsDraft';
+import {
+  createColorDraft,
+  createSizeStockRow,
+  createModelStockRow,
+  createStorageStockRow,
+  applyColorsChange,
+} from '../../utils/productColorsDraft';
 import './AddProductColorsFields.css';
 
 const COLOR_THUMBNAIL_HINTS = [
@@ -169,13 +175,55 @@ export default function AddProductColorsFields({ values, onChange }) {
     });
   };
 
+  const changeStorageStockRow = (localId, rowLocalId, patch) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          storageStockRows: (color.storageStockRows || []).map((row) =>
+            row.localId === rowLocalId ? { ...row, ...patch } : row,
+          ),
+        };
+      }),
+    });
+  };
+
+  const addStorageStockRow = (localId) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          storageStockRows: [...(color.storageStockRows || []), createStorageStockRow()],
+        };
+      }),
+    });
+  };
+
+  const removeStorageStockRow = (localId, rowLocalId) => {
+    onChange({
+      ...values,
+      colors: colors.map((color) => {
+        if (color.localId !== localId) return color;
+        return {
+          ...color,
+          storageStockRows: (color.storageStockRows || []).filter((row) => row.localId !== rowLocalId),
+        };
+      }),
+    });
+  };
+
   return (
     <section className="add-product-form__card add-product-colors">
       <h3 className="add-product-form__card-title">Ranglar va ombor</h3>
       <p className="add-product-colors__intro">
         Agar mahsulot bir nechta rangda bo&apos;lsa, har bir rang uchun alohida ombor va rasmlar
-        kiriting. Kiyimlar uchun <strong>o&apos;lcham (sizeStock)</strong>, telefon/komplekt
-        mahsulotlar uchun <strong>model (modelStock)</strong> — faqat kerakli qismni to&apos;ldiring.
+        kiriting. Kiyimlar uchun <strong>o&apos;lcham (sizeStock)</strong>, telefon modeli uchun{' '}
+        <strong>model (modelStock)</strong>, xotira hajmi uchun{' '}
+        <strong>storage (storageStock)</strong> — faqat kerakli qismni to&apos;ldiring.
       </p>
 
       <div className="add-product-colors__toolbar">
@@ -425,7 +473,114 @@ export default function AddProductColorsFields({ values, onChange }) {
             </div>
           </div>
 
-          <FieldRow hint="Kiyim (sizeStock) mahsulotlarida har bir rang uchun umumiy narx shu yerda. modelStock ishlatilsa, narx har model qatorida yoziladi — bu maydon ixtiyoriy.">
+          <div className="add-product-colors__section add-product-colors__section--storage">
+            <div className="add-product-colors__section-head">
+              <div>
+                <h4 className="add-product-colors__section-title">Xotira va narx (storageStock)</h4>
+                <p className="add-product-colors__section-desc">
+                  Telefon va xotira hajmi bo&apos;yicha sotiladigan mahsulotlar uchun. Har bir
+                  qatorda xotira kombinatsiyasi (12/256 — RAM/GB), miqdor va shu variant uchun
+                  narxlar. Kiyim yoki model bo&apos;yicha sotilsa, bu qismni bo&apos;sh qoldiring.
+                </p>
+              </div>
+              <Button
+                type="dashed"
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => addStorageStockRow(color.localId)}
+              >
+                Yana
+              </Button>
+            </div>
+
+            {(color.storageStockRows || []).length === 0 ? (
+              <p className="add-product-colors__section-empty">
+                Xotira qatori yo&apos;q. «Yana» tugmasini bosing — masalan 12/256, 8/128.
+              </p>
+            ) : null}
+
+            <div className="add-product-colors__storage-stock-list">
+              {(color.storageStockRows || []).map((row, rowIndex) => (
+                <div key={row.localId} className="add-product-colors__storage-stock-row">
+                  <FieldBlock
+                    label={`Xotira ${rowIndex + 1}`}
+                    hint="Xotira nomi. Masalan: 12/256, 8/128 (RAM/GB)."
+                    className="add-product-colors__storage-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="12/256"
+                      value={row.label}
+                      onChange={(event) =>
+                        changeStorageStockRow(color.localId, row.localId, {
+                          label: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Miqdor"
+                    hint="Shu xotira variantidan nechta dona bor."
+                    className="add-product-colors__storage-field"
+                  >
+                    <Input
+                      size="large"
+                      inputMode="numeric"
+                      placeholder="1"
+                      value={row.quantity}
+                      onChange={(event) =>
+                        changeStorageStockRow(color.localId, row.localId, {
+                          quantity: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Narxi"
+                    hint="Shu xotira varianti uchun sotuv narxi."
+                    className="add-product-colors__storage-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="$10"
+                      value={row.price}
+                      onChange={(event) =>
+                        changeStorageStockRow(color.localId, row.localId, {
+                          price: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <FieldBlock
+                    label="Eski narxi"
+                    hint="Chegirma bo'lsa, chizilgan eski narx."
+                    className="add-product-colors__storage-field"
+                  >
+                    <Input
+                      size="large"
+                      placeholder="$10"
+                      value={row.originalPrice}
+                      onChange={(event) =>
+                        changeStorageStockRow(color.localId, row.localId, {
+                          originalPrice: event.target.value,
+                        })
+                      }
+                    />
+                  </FieldBlock>
+                  <Button
+                    type="link"
+                    danger
+                    className="add-product-colors__storage-remove"
+                    onClick={() => removeStorageStockRow(color.localId, row.localId)}
+                  >
+                    O&apos;chirish
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FieldRow hint="Kiyim (sizeStock) mahsulotlarida har bir rang uchun umumiy narx shu yerda. modelStock yoki storageStock ishlatilsa, narx har qatorda yoziladi — bu maydon ixtiyoriy.">
             <FieldBlock
               label="Narxi (shu rang uchun)"
               hint="Mijoz shu rangni tanlaganda ko'radigan narx."
