@@ -111,7 +111,7 @@ export default function AddProductSizeChartFields({ values, onChange }) {
       sizeChartTypeSize: nextTypeSize,
       sizeChartGuideImages: guideImages.map((item) => ({
         ...item,
-        typeSize: item.typeSize || nextTypeSize,
+        typeSize: nextTypeSize,
       })),
     });
   };

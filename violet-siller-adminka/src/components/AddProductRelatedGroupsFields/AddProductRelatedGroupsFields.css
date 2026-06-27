@@ -1,0 +1,102 @@
+.add-product-related-groups__intro {
+  margin: -8px 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b6280;
+}
+
+.add-product-related-groups__toolbar {
+  margin-bottom: 14px;
+}
+
+.add-product-related-groups__meta,
+.add-product-related-groups__empty {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b6280;
+}
+
+.add-product-related-groups__card {
+  padding: 14px;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  background: #fcfbfe;
+}
+
+.add-product-related-groups__card + .add-product-related-groups__card {
+  margin-top: 12px;
+}
+
+.add-product-related-groups__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.add-product-related-groups__card-index {
+  font-size: 13px;
+  font-weight: 700;
+  color: #764ba2;
+}
+
+.add-product-related-groups__card .add-product-form__row {
+  margin-top: 0;
+}
+
+.add-product-related-groups__field--align-input {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.add-product-related-groups__field--align-input .add-product-related-groups__field-meta {
+  flex: 1 1 auto;
+}
+
+.add-product-related-groups__field--align-input .add-product-related-groups__field-control {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.add-product-related-groups__field--align-input.add-product-form__field--in-row .add-product-form__field-hint {
+  display: block;
+}
+
+.add-product-related-groups__card .add-product-form__row-grid {
+  align-items: stretch;
+}
+
+.add-product-related-groups__products {
+  margin-top: 16px;
+}
+
+.add-product-related-groups__products-head {
+  margin-bottom: 10px;
+}
+
+.add-product-related-groups__product-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.add-product-related-groups__remove-product {
+  padding-left: 0;
+  height: auto;
+}
+
+@media (max-width: 1100px) {
+  .add-product-related-groups__product-slots {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .add-product-related-groups__product-slots {
+    grid-template-columns: 1fr;
+  }
+}

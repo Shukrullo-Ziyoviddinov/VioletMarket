@@ -1,6 +1,7 @@
 const { ShippingCountry } = require("../../models/shippingCountry");
 const { BrandCountryFilterValue } = require("../../models/brandCountryFilterValue");
 const { MasterCategory } = require("../../models/masterCategory");
+const { Product } = require("../../models/product");
 const { listProductTypes } = require("../adminProductTypeService");
 const {
   FLASH_SECTION_CATEGORY_NAMES,
@@ -52,6 +53,35 @@ function listProductSectionOptions() {
   }));
 }
 
+function keepNewestProductPerId(products) {
+  const seen = new Set();
+  const unique = [];
+
+  for (const product of Array.isArray(products) ? products : []) {
+    const key = String(product?.id ?? "");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(product);
+  }
+
+  return unique;
+}
+
+async function listSellerRelatedProductPickerOptions(sellerShopId) {
+  const sellerId = String(sellerShopId || "").trim();
+  if (!sellerId) return [];
+
+  const rows = await Product.find({ sellerId })
+    .select({ id: 1, title: 1, sellerId: 1 })
+    .sort({ _id: -1 })
+    .lean();
+
+  return keepNewestProductPerId(rows).map((product) => ({
+    id: product.id,
+    title: product.title || { uz: "", ru: "" },
+  }));
+}
+
 async function getSellerProductFormOptions() {
   const [shippingCountries, sectionOptions, productTypeRows, filterValues, masterCategories] =
     await Promise.all([
@@ -77,4 +107,5 @@ async function getSellerProductFormOptions() {
 
 module.exports = {
   getSellerProductFormOptions,
+  listSellerRelatedProductPickerOptions,
 };

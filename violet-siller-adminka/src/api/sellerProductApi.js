@@ -23,6 +23,16 @@ export async function fetchSellerProductFormOptions(token) {
   return data?.data;
 }
 
+export async function fetchSellerRelatedProductPickerOptions(token) {
+  const res = await fetch(apiUrl('/api/seller-auth/product-form/related-picker'), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await parseJson(res);
+  return Array.isArray(data?.data?.options) ? data.data.options : [];
+}
+
 function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);

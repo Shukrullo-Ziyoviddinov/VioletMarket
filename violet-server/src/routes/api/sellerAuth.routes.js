@@ -44,6 +44,11 @@ router.get(
   sellerAuthMiddleware,
   sellerProductController.getProductFormOptions,
 );
+router.get(
+  "/seller-auth/product-form/related-picker",
+  sellerAuthMiddleware,
+  sellerProductController.getRelatedProductPickerOptions,
+);
 router.patch("/seller-auth/market-profile", sellerAuthMiddleware, controller.updateMarketProfile);
 router.post(
   "/seller-auth/uploads/image",
