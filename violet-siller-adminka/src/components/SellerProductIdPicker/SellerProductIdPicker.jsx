@@ -75,11 +75,14 @@ export default function SellerProductIdPicker({
           {filtered.length === 0 ? (
             <p className="seller-product-id-picker__empty">Mahsulot topilmadi</p>
           ) : (
-            filtered.map((item) => (
+            filtered.map((item) => {
+              const isSelected = Number(item.id) === Number(value);
+              return (
               <button
                 key={item.id}
                 type="button"
                 role="option"
+                aria-selected={isSelected}
                 className="seller-product-id-picker__option"
                 onClick={() => {
                   onSelect(item.id);
@@ -92,7 +95,8 @@ export default function SellerProductIdPicker({
                   {getLocalizedText(item.title, 'uz')}
                 </span>
               </button>
-            ))
+              );
+            })
           )}
         </div>
       ) : null}
