@@ -79,7 +79,11 @@ export default function MyProductsPage() {
       ) : (
         <div className="my-products-page__list">
           {products.map((product) => (
-            <SellerProductCard key={product.id} product={product} />
+            <SellerProductCard
+              key={product.id}
+              product={product}
+              onEdit={(productId) => navigate(`/products/${productId}/edit`)}
+            />
           ))}
         </div>
       )}

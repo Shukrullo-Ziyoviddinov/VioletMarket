@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Button } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
 import { resolveAssetUrl } from '../../utils/mediaUrl';
 import './SellerProductCard.css';
 
@@ -17,7 +19,7 @@ function getImageSrc(product) {
   return resolveAssetUrl(product?.image || product?.mainImage || '');
 }
 
-export default function SellerProductCard({ product }) {
+export default function SellerProductCard({ product, onEdit }) {
   const title = getProductTitle(product?.title);
   const price = String(product?.price || '').trim();
   const originalPrice = String(product?.originalPrice || '').trim();
@@ -29,6 +31,11 @@ export default function SellerProductCard({ product }) {
 
   const handleImageError = () => {
     setHasError(true);
+  };
+
+  const handleEdit = () => {
+    if (!product?.id || typeof onEdit !== 'function') return;
+    onEdit(product.id);
   };
 
   return (
@@ -51,6 +58,16 @@ export default function SellerProductCard({ product }) {
             <span className="seller-product-card__original-price">{originalPrice}</span>
           ) : null}
         </div>
+
+        <Button
+          type="default"
+          size="small"
+          icon={<EditOutlined />}
+          className="seller-product-card__edit-btn"
+          onClick={handleEdit}
+        >
+          Tahrirlash
+        </Button>
       </div>
     </article>
   );
