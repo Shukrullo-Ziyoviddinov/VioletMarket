@@ -1,4 +1,5 @@
 import React from 'react';
+import DragScroll from '../DragScroll';
 import '../ImageBanner/ImageBanner.css';
 import '../UzWarehouse/UzWarehouse.css';
 import './SkeletonLoader.css';
@@ -157,12 +158,19 @@ export function SellerProfileHeaderSkeleton() {
       </div>
       <div className="seller-profile__meta">
         <SkeletonPulse className="seller-profile__name seller-profile__name--skeleton" />
-        <div className="seller-profile__stats-row seller-profile__stats-row--skeleton">
-          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton" />
-          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
-          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
-          <SkeletonPulse className="seller-profile__subscribe-btn seller-profile__subscribe-btn--skeleton seller-profile__subscribe-btn--desktop" />
-        </div>
+        <DragScroll
+          className="seller-profile__stats-scroll"
+          direction="horizontal"
+          usePointerCapture={false}
+          aria-hidden
+        >
+          <div className="seller-profile__stats-row seller-profile__stats-row--skeleton">
+            <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton" />
+            <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
+            <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
+            <SkeletonPulse className="seller-profile__subscribe-btn seller-profile__subscribe-btn--skeleton seller-profile__subscribe-btn--desktop" />
+          </div>
+        </DragScroll>
       </div>
     </header>
   );

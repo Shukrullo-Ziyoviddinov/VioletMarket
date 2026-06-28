@@ -15,6 +15,7 @@ import SellerProfileReyting from '../components/SellerProfileReyting/SellerProfi
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
 import SellerOrderCount from '../components/SellerOrderCount';
 import SellerSubscribeButton from '../components/SellerSubscribeButton';
+import DragScroll from '../components/DragScroll';
 import LoadMore from '../components/LoadMore';
 import {
   SkeletonPulse,
@@ -198,16 +199,22 @@ const SellerProfile = () => {
                 </div>
                 <div className="seller-profile__meta">
                   <h1 className="seller-profile__name">{getLocalizedText(seller.name, lang)}</h1>
-                  <div className="seller-profile__stats-row">
-                    <p className="seller-profile__product-count">
-                      {t('seller.productCount', { count: productCount })}
-                    </p>
-                    <SellerSubscriberCount count={subscriberCount} />
-                    <SellerOrderCount count={orderCount} />
-                    <div className="seller-profile__subscribe-inline-desktop">
-                      <SellerSubscribeButton subscribed={subscribed} onToggle={handleToggleSubscribe} />
+                  <DragScroll
+                    className="seller-profile__stats-scroll"
+                    direction="horizontal"
+                    usePointerCapture={false}
+                  >
+                    <div className="seller-profile__stats-row">
+                      <p className="seller-profile__product-count">
+                        {t('seller.productCount', { count: productCount })}
+                      </p>
+                      <SellerSubscriberCount count={subscriberCount} />
+                      <SellerOrderCount count={orderCount} />
+                      <div className="seller-profile__subscribe-inline-desktop">
+                        <SellerSubscribeButton subscribed={subscribed} onToggle={handleToggleSubscribe} />
+                      </div>
                     </div>
-                  </div>
+                  </DragScroll>
                 </div>
               </header>
 

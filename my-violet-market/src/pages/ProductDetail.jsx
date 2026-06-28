@@ -1914,13 +1914,19 @@ const ProductDetail = () => {
                     <span className="product-detail-seller__name">
                       {getLocalizedText(detailSeller.name, lang)}
                     </span>
-                    <div className="seller-profile__stats-row">
-                      <p className="seller-profile__product-count">
-                        {i18n.t('seller.productCount', { count: sellerProductCountForDetail })}
-                      </p>
-                      <SellerSubscriberCount count={sellerSubscriberDisplay} />
-                      <SellerOrderCount count={sellerOrderCountForDetail} />
-                    </div>
+                    <DragScroll
+                      className="seller-profile__stats-scroll"
+                      direction="horizontal"
+                      usePointerCapture={false}
+                    >
+                      <div className="seller-profile__stats-row">
+                        <p className="seller-profile__product-count">
+                          {i18n.t('seller.productCount', { count: sellerProductCountForDetail })}
+                        </p>
+                        <SellerSubscriberCount count={sellerSubscriberDisplay} />
+                        <SellerOrderCount count={sellerOrderCountForDetail} />
+                      </div>
+                    </DragScroll>
                   </div>
                 </Link>
                 <div className="product-detail-seller__subscribe-wrap">

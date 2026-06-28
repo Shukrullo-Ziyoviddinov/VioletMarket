@@ -1234,13 +1234,23 @@ body.share-menu-open {
   gap: 0;
 }
 
+.product-detail-seller-wrap .seller-profile__stats-scroll {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
 .product-detail-seller-wrap .seller-profile__stats-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px 18px;
-  margin-top: 6px;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
+}
+
+.product-detail-seller-wrap .seller-profile__stats-row > * {
+  flex-shrink: 0;
 }
 
 .product-detail-seller-wrap .seller-profile__product-count {
