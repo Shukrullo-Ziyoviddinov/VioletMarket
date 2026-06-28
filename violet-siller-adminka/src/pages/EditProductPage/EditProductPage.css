@@ -1,17 +1,17 @@
-.add-products-page {
+.edit-product-page {
   padding-bottom: 96px;
 }
 
-.add-products-page__head {
+.edit-product-page__head {
   margin-bottom: 20px;
 }
 
-.add-products-page__title {
+.edit-product-page__title {
   margin: 0 0 6px !important;
   color: #2a1842 !important;
 }
 
-.add-products-page__subtitle {
+.edit-product-page__subtitle {
   display: block;
   max-width: 760px;
   line-height: 1.5;

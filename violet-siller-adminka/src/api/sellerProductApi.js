@@ -33,6 +33,63 @@ export async function fetchSellerRelatedProductPickerOptions(token) {
   return Array.isArray(data?.data?.options) ? data.data.options : [];
 }
 
+export async function fetchSellerProducts(token) {
+  const res = await fetch(apiUrl('/api/seller-auth/products'), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await parseJson(res);
+  return Array.isArray(data?.data?.products) ? data.data.products : [];
+}
+
+export async function fetchSellerProductById(token, productId) {
+  const res = await fetch(apiUrl(`/api/seller-auth/products/${productId}`), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}
+
+export async function createSellerProduct(token, payload) {
+  const res = await fetch(apiUrl('/api/seller-auth/products'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}
+
+export async function updateSellerProduct(token, productId, payload) {
+  const res = await fetch(apiUrl(`/api/seller-auth/products/${productId}`), {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await parseJson(res);
+  return data?.data?.product || null;
+}
+
+export async function deleteSellerProduct(token, productId) {
+  const res = await fetch(apiUrl(`/api/seller-auth/products/${productId}`), {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await parseJson(res);
+  return data?.data || null;
+}
+
 function sleep(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);

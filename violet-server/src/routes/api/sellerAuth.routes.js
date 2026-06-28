@@ -49,6 +49,23 @@ router.get(
   sellerAuthMiddleware,
   sellerProductController.getRelatedProductPickerOptions,
 );
+router.get("/seller-auth/products", sellerAuthMiddleware, sellerProductController.listSellerProducts);
+router.post("/seller-auth/products", sellerAuthMiddleware, sellerProductController.createSellerProduct);
+router.get(
+  "/seller-auth/products/:productId",
+  sellerAuthMiddleware,
+  sellerProductController.getSellerProduct,
+);
+router.patch(
+  "/seller-auth/products/:productId",
+  sellerAuthMiddleware,
+  sellerProductController.updateSellerProduct,
+);
+router.delete(
+  "/seller-auth/products/:productId",
+  sellerAuthMiddleware,
+  sellerProductController.deleteSellerProduct,
+);
 router.patch("/seller-auth/market-profile", sellerAuthMiddleware, controller.updateMarketProfile);
 router.post(
   "/seller-auth/uploads/image",

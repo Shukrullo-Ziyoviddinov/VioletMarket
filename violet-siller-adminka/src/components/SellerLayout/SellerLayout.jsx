@@ -17,7 +17,10 @@ export default function SellerLayout() {
   const { isPausedNoticeOpen, closePausedNotice } = useSellerCabinetSession();
 
   return (
-    <Layout className="seller-layout">
+    <Layout
+      className="seller-layout"
+      style={{ '--seller-sider-width': collapsed ? '80px' : '240px' }}
+    >
       <Sider
         collapsible
         collapsed={collapsed}

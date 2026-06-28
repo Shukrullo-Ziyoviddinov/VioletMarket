@@ -7,6 +7,7 @@ import ApplicationStatusPage from './pages/ApplicationStatusPage/ApplicationStat
 import ApplicationSubmitPage from './pages/ApplicationSubmitPage/ApplicationSubmitPage';
 import HomePage from './pages/HomePage/HomePage';
 import AddProductsPage from './pages/AddProductsPage/AddProductsPage';
+import EditProductPage from './pages/EditProductPage/EditProductPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterStartPage from './pages/RegisterStartPage/RegisterStartPage';
 import RegisterVerifyPage from './pages/RegisterVerifyPage/RegisterVerifyPage';
@@ -27,6 +28,7 @@ export default function App() {
           <Route element={<SellerLayout />}>
             <Route index element={<HomePage />} />
             <Route path="products/add" element={<AddProductsPage />} />
+            <Route path="products/:productId/edit" element={<EditProductPage />} />
           </Route>
         </Route>
 
