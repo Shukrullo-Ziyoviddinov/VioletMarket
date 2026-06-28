@@ -45,25 +45,27 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  align-self: flex-end;
 }
 
 .product-seller-chat-composer__icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: none;
-  border-radius: 8px;
-  background: transparent;
+  border-radius: 12px;
+  background: #f3ebfd;
   color: #8b79a8;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .product-seller-chat-composer__icon-btn:hover,
 .product-seller-chat-composer__icon-btn--active {
-  background: #f3ebfd;
+  background: #e8dcf8;
   color: #764ba2;
 }
 
@@ -73,19 +75,33 @@
 
 .product-seller-chat-composer__send {
   flex-shrink: 0;
-  min-width: 88px;
-  height: 44px;
-  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #8b5cf6 0%, #764ba2 100%);
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.product-seller-chat-composer__send i {
+  display: block;
+  transform: translateX(1px);
+}
+
+.product-seller-chat-composer__send:hover:not(:disabled) {
+  transform: scale(1.04);
 }
 
 .product-seller-chat-composer__send:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  transform: none;
 }

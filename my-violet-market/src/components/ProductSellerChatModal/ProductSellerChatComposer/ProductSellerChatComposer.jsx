@@ -58,48 +58,49 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
           aria-label={t('productDetail.chat.inputPlaceholder')}
         />
 
-        <div className="product-seller-chat-composer__actions">
-          <button
-            type="button"
-            className={`product-seller-chat-composer__icon-btn${
-              emojiOpen ? ' product-seller-chat-composer__icon-btn--active' : ''
-            }`}
-            onClick={() => setEmojiOpen((current) => !current)}
-            aria-label={t('productDetail.chat.emoji')}
-            aria-expanded={emojiOpen}
-          >
-            <i className="bx bx-smile" aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            className="product-seller-chat-composer__icon-btn"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label={t('productDetail.chat.image')}
-          >
-            <i className="bx bx-image" aria-hidden="true" />
-          </button>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="product-seller-chat-composer__file-input"
-            onChange={handleImageChange}
-            tabIndex={-1}
-            aria-hidden
-          />
-        </div>
+        <button
+          type="button"
+          className="product-seller-chat-composer__send"
+          onClick={handleSend}
+          disabled={!text.trim()}
+          aria-label={t('productDetail.chat.send')}
+        >
+          <i className="bx bx-send" aria-hidden="true" />
+        </button>
       </div>
 
-      <button
-        type="button"
-        className="product-seller-chat-composer__send"
-        onClick={handleSend}
-        disabled={!text.trim()}
-      >
-        {t('productDetail.chat.send')}
-      </button>
+      <div className="product-seller-chat-composer__actions">
+        <button
+          type="button"
+          className={`product-seller-chat-composer__icon-btn${
+            emojiOpen ? ' product-seller-chat-composer__icon-btn--active' : ''
+          }`}
+          onClick={() => setEmojiOpen((current) => !current)}
+          aria-label={t('productDetail.chat.emoji')}
+          aria-expanded={emojiOpen}
+        >
+          <i className="bx bx-smile" aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          className="product-seller-chat-composer__icon-btn"
+          onClick={() => fileInputRef.current?.click()}
+          aria-label={t('productDetail.chat.image')}
+        >
+          <i className="bx bx-image" aria-hidden="true" />
+        </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="product-seller-chat-composer__file-input"
+          onChange={handleImageChange}
+          tabIndex={-1}
+          aria-hidden
+        />
+      </div>
     </div>
   );
 }
