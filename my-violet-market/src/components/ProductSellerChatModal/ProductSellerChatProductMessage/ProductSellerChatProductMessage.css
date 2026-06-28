@@ -1,0 +1,31 @@
+.product-seller-chat-product-message {
+  max-width: min(82%, 280px);
+  padding: 8px;
+  border-radius: 18px 18px 0 18px;
+  background: #022ff9;
+  box-shadow: 0 1px 2px rgba(2, 47, 249, 0.28);
+}
+
+.product-seller-chat-product-message--customer {
+  align-self: flex-end;
+}
+
+.product-seller-chat-product-message--seller {
+  align-self: flex-start;
+  background: #e9e9eb;
+  border-radius: 18px 18px 18px 0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.product-seller-chat-product-message--customer .product-seller-chat-product-preview__title,
+.product-seller-chat-product-message--customer .product-seller-chat-product-preview__price {
+  color: #ffffff;
+}
+
+.product-seller-chat-product-message--customer .product-seller-chat-product-preview__original-price {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.product-seller-chat-product-message--customer .product-seller-chat-product-preview__media {
+  border-color: rgba(255, 255, 255, 0.28);
+}

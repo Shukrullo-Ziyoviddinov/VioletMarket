@@ -2380,6 +2380,13 @@ const ProductDetail = () => {
         open={isSellerChatOpen}
         seller={detailSeller}
         lang={lang}
+        contextProduct={{
+          id: productData.id,
+          title: getLocalizedText(productData.title, lang),
+          image: allImages[0] || normalizeImagePath(getProductMainImage(productData)),
+          price: formatPrice(currentPrice),
+          originalPrice: currentOriginalPrice != null ? formatPrice(currentOriginalPrice) : '',
+        }}
         messages={sellerChatMessages}
         onClose={() => setIsSellerChatOpen(false)}
         onSendMessage={(message) => {

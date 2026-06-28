@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/ProductSellerChatMessageBubble';
+import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
 
 export default function ProductSellerChatMessageList({ messages = [] }) {
@@ -14,13 +15,21 @@ export default function ProductSellerChatMessageList({ messages = [] }) {
   return (
     <div className="product-seller-chat-message-list" role="log" aria-live="polite">
       {messages.length === 0 ? (
-        <p className="product-seller-chat-message-list__empty">
-          {t('productDetail.chat.empty')}
-        </p>
+        <p className="product-seller-chat-message-list__empty">{t('productDetail.chat.empty')}</p>
       ) : (
-        messages.map((message) => (
-          <ProductSellerChatMessageBubble key={message.id} message={message} />
-        ))
+        messages.map((message) => {
+          if (message?.type === 'product') {
+            return (
+              <ProductSellerChatProductMessage
+                key={message.id}
+                product={message.content}
+                isCustomer={message.sender === 'customer'}
+              />
+            );
+          }
+
+          return <ProductSellerChatMessageBubble key={message.id} message={message} />;
+        })
       )}
       <div ref={endRef} className="product-seller-chat-message-list__anchor" />
     </div>

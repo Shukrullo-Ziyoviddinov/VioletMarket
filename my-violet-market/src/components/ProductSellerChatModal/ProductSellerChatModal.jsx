@@ -5,6 +5,7 @@ import { getPortalContainer } from '../../utils/utils';
 import ProductSellerChatModalHeader from './ProductSellerChatModalHeader/ProductSellerChatModalHeader';
 import ProductSellerChatMessageList from './ProductSellerChatMessageList/ProductSellerChatMessageList';
 import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSellerChatComposer';
+import ProductSellerChatContextProduct from './ProductSellerChatContextProduct/ProductSellerChatContextProduct';
 import './ProductSellerChatModal.css';
 
 function createMessageId() {
@@ -15,6 +16,7 @@ export default function ProductSellerChatModal({
   open = false,
   seller = null,
   lang = 'uz',
+  contextProduct = null,
   messages = [],
   onClose,
   onSendMessage,
@@ -81,6 +83,17 @@ export default function ProductSellerChatModal({
     });
   };
 
+  const handleSendProduct = (product) => {
+    if (!product) return;
+    onSendMessage?.({
+      id: createMessageId(),
+      sender: 'customer',
+      type: 'product',
+      content: { ...product },
+      createdAt: new Date().toISOString(),
+    });
+  };
+
   return createPortal(
     <div className="product-seller-chat-modal" role="presentation">
       <button
@@ -98,6 +111,9 @@ export default function ProductSellerChatModal({
       >
         <ProductSellerChatModalHeader seller={seller} lang={lang} onBack={onClose} />
         <ProductSellerChatMessageList messages={messages} />
+        {contextProduct ? (
+          <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
+        ) : null}
         <ProductSellerChatComposer onSendText={handleSendText} onSendImage={handleSendImage} />
       </div>
     </div>,

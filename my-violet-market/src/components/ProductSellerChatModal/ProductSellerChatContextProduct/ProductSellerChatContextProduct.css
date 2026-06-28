@@ -1,0 +1,40 @@
+.product-seller-chat-context-product {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid #ece7f3;
+  background: #ffffff;
+}
+
+.product-seller-chat-context-product__send {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 12px;
+  background: #9b4fe7;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.product-seller-chat-context-product__send i {
+  display: block;
+  transform: translateX(1px);
+}
+
+.product-seller-chat-context-product__send:hover {
+  background: #8a3fd6;
+  transform: scale(1.04);
+}
+
+.product-seller-chat-context-product .product-seller-chat-product-preview {
+  flex: 1 1 auto;
+}
