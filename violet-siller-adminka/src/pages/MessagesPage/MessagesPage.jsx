@@ -4,7 +4,7 @@ import { useSellerAuth } from '../../context/SellerAuthContext';
 import { fetchSellerMessageThreads } from '../../api/messageChatApi';
 import { useUserMessageChat } from '../../hooks/useUserMessageChat';
 import SellerUserChatModal from '../../components/SellerUserChatModal';
-import { resolveAssetUrl } from '../../utils/mediaUrl';
+import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import './MessagesPage.css';
 
 const { Title } = Typography;
@@ -90,9 +90,13 @@ export default function MessagesPage() {
               <li key={thread.userId}>
                 <button type="button" className="messages-page__item" onClick={() => handleOpenThread(thread)}>
                   <img
-                    src={resolveAssetUrl(thread.profileImage)}
+                    src={resolveUserProfileImage(thread.profileImage)}
                     alt=""
                     className="messages-page__avatar"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = DEFAULT_USER_AVATAR;
+                    }}
                   />
                   <span className="messages-page__name">{displayName}</span>
                   {thread.unreadCount > 0 ? (

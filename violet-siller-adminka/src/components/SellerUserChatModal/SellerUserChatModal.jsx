@@ -1,20 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { resolveAssetUrl } from '../../utils/mediaUrl';
+import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '../../utils/mediaUrl';
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
 function SellerUserChatHeader({ user, onBack }) {
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Foydalanuvchi';
-  const avatarSrc = resolveAssetUrl(user?.profileImage);
+  const avatarSrc = resolveUserProfileImage(user?.profileImage);
 
   return (
     <header className="seller-user-chat-header">
       <button type="button" className="seller-user-chat-header__back" onClick={onBack} aria-label="Orqaga">
-        ←
+        <i className="bx bx-chevron-left" aria-hidden="true" />
       </button>
       <div className="seller-user-chat-header__profile">
-        <img src={avatarSrc} alt="" className="seller-user-chat-header__avatar" />
+        <img
+          src={avatarSrc}
+          alt=""
+          className="seller-user-chat-header__avatar"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = DEFAULT_USER_AVATAR;
+          }}
+        />
         <h2 className="seller-user-chat-header__name">{displayName}</h2>
       </div>
     </header>
@@ -148,17 +156,34 @@ function SellerUserChatComposer({ onSendText, onSendImage }) {
           onKeyDown={handleKeyDown}
           onFocus={() => setEmojiOpen(false)}
         />
-        <button type="button" className="seller-user-chat-composer__send" onClick={handleSend} disabled={!text.trim()}>
-          ➤
+        <button
+          type="button"
+          className="seller-user-chat-composer__send"
+          onClick={handleSend}
+          disabled={!text.trim()}
+          aria-label="Yuborish"
+        >
+          <i className="bx bx-send" aria-hidden="true" />
         </button>
       </div>
 
       <div className="seller-user-chat-composer__actions">
-        <button type="button" className="seller-user-chat-composer__icon-btn" onClick={() => setEmojiOpen((v) => !v)}>
-          ☺
+        <button
+          type="button"
+          className={`seller-user-chat-composer__icon-btn${emojiOpen ? ' seller-user-chat-composer__icon-btn--active' : ''}`}
+          onClick={() => setEmojiOpen((v) => !v)}
+          aria-label="Emoji"
+          aria-expanded={emojiOpen}
+        >
+          <i className="bx bx-smile" aria-hidden="true" />
         </button>
-        <button type="button" className="seller-user-chat-composer__icon-btn" onClick={() => fileInputRef.current?.click()}>
-          🖼
+        <button
+          type="button"
+          className="seller-user-chat-composer__icon-btn"
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="Rasm yuklash"
+        >
+          <i className="bx bx-image" aria-hidden="true" />
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
       </div>
