@@ -11,6 +11,7 @@ import { SellerSubscriptionProvider } from './contexts/SellerSubscriptionContext
 import { CommentsProvider } from './contexts/CommentsContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { TestOrderModalProvider, useTestOrderModal } from './contexts/TestOrderModalContext';
+import { consumePendingPostOrderReviewOnHome } from './productManagement';
 import './i18n';
 import Navbar from './components/Navbar';
 import CheckoutNavbar from './components/CheckoutNavbar';
@@ -31,8 +32,6 @@ import ChinaWarehousePage from './pages/ChinaWarehousePage';
 import SellerProfile from './pages/SellerProfile';
 import './App.css';
 
-const TEST_ORDER_MODAL_PENDING_KEY = 'pendingTestOrderModal';
-
 const AppContent = () => {
   const location = useLocation();
   const isCheckout = location.pathname === '/checkout';
@@ -40,37 +39,12 @@ const AppContent = () => {
   const { isOpen, closeModal, cartSnapshot, pendingOpenOnHome, openModal, clearPendingOpenOnHome } = useTestOrderModal();
 
   useEffect(() => {
-    if (location.pathname !== '/') return;
-
-    // SOTILDI MODAL (.test-order-modal-content) — bosh sahifada ochish (checkout/navigate keyin).
-    // Keyinchalik real to'lov tasdiqlanganda shu oqim boshqa servisdan keladi.
-    if (pendingOpenOnHome) {
-      openModal({
-        cartSnapshot: pendingOpenOnHome.cartSnapshot,
-        onCloseExtra: pendingOpenOnHome.onCloseExtra,
-      });
-      clearPendingOpenOnHome();
-      try {
-        sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
-      } catch (storageError) {
-        console.error('Pending test order modal state o\'chirilmadi:', storageError);
-      }
-      return;
-    }
-
-    try {
-      const raw = sessionStorage.getItem(TEST_ORDER_MODAL_PENDING_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      openModal({
-        cartSnapshot: parsed?.cartSnapshot || null,
-        onCloseExtra: null,
-      });
-      sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
-    } catch (storageError) {
-      console.error('Pending test order modal state o\'qilmadi:', storageError);
-      sessionStorage.removeItem(TEST_ORDER_MODAL_PENDING_KEY);
-    }
+    consumePendingPostOrderReviewOnHome({
+      pathname: location.pathname,
+      pendingOpenOnHome,
+      openModal,
+      clearPendingOpenOnHome,
+    });
   }, [location.pathname, pendingOpenOnHome, openModal, clearPendingOpenOnHome]);
 
   return (

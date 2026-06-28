@@ -6,10 +6,9 @@ import { useCart } from '../../contexts/CartContext';
 import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useCheckoutPayment } from '../../contexts/CheckoutPaymentContext';
+import { startPostOrderReviewFlow } from '../../productManagement';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
 import './CheckoutOrderSummary.css';
-
-const TEST_ORDER_MODAL_PENDING_KEY = 'pendingTestOrderModal';
 
 const CheckoutOrderSummary = ({
   productTypesCount,
@@ -45,22 +44,11 @@ const CheckoutOrderSummary = ({
 
       await checkoutCart();
       window.dispatchEvent(new Event('appDataRefreshRequested'));
-      // -------------------------------------------------------------------------
-      // SOTILDI MODAL (.test-order-modal-content) — hozir checkout dan keyin ochiladi.
-      // Keyinchalik real to'lov muvaffaqiyatli bo'lganda boshqa joydan chaqiriladi.
-      // -------------------------------------------------------------------------
-      scheduleOpenOnHome({
+      startPostOrderReviewFlow({
         cartSnapshot,
+        scheduleOpenOnHome,
+        navigate,
       });
-      try {
-        sessionStorage.setItem(
-          TEST_ORDER_MODAL_PENDING_KEY,
-          JSON.stringify({ cartSnapshot }),
-        );
-      } catch (storageError) {
-        console.error('Pending test order modal state saqlanmadi:', storageError);
-      }
-      navigate('/', { replace: true });
     } catch (error) {
       if (error?.status === 409) {
         await refreshCart();
