@@ -2,7 +2,7 @@
   position: relative;
   flex-shrink: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
   padding: 12px 14px;
   border-top: 1px solid #ece7f3;
@@ -13,9 +13,9 @@
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding: 8px 10px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
   border: 1px solid #d8c9ef;
   border-radius: 14px;
   background: #fcfbfe;
@@ -45,7 +45,7 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
-  align-self: flex-end;
+  align-self: center;
 }
 
 .product-seller-chat-composer__icon-btn {
@@ -78,17 +78,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #764ba2 100%);
+  background: #9b4fe7;
   color: #ffffff;
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
 }
 
 .product-seller-chat-composer__send i {
@@ -97,6 +97,7 @@
 }
 
 .product-seller-chat-composer__send:hover:not(:disabled) {
+  background: #8a3fd6;
   transform: scale(1.04);
 }
 

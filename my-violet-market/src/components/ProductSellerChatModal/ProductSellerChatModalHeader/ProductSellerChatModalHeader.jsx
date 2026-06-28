@@ -17,7 +17,7 @@ export default function ProductSellerChatModalHeader({ seller, lang, onBack }) {
         onClick={onBack}
         aria-label={t('productDetail.chat.back')}
       >
-        <i className="bx bx-arrow-back" aria-hidden="true" />
+        <i className="bx bx-chevron-left" aria-hidden="true" />
       </button>
 
       <div className="product-seller-chat-modal-header__profile">

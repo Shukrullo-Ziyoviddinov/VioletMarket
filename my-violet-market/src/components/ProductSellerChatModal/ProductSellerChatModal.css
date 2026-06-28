@@ -2,6 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 1300;
+  overscroll-behavior: none;
 }
 
 .product-seller-chat-modal__backdrop {
