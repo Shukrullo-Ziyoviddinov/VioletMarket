@@ -1,0 +1,28 @@
+.messages-page__head {
+  margin-bottom: 20px;
+}
+
+.messages-page__title {
+  margin: 0 0 6px !important;
+  color: #2a1842 !important;
+}
+
+.messages-page__subtitle {
+  display: block;
+  line-height: 1.5;
+}
+
+.messages-page__empty {
+  padding: 32px 20px;
+  text-align: center;
+  border: 1px dashed #d8c9ef;
+  border-radius: 14px;
+  background: #fcfbfe;
+}
+
+.messages-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 760px;
+}

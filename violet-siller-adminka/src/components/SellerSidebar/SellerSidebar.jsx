@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menu } from 'antd';
-import { AppstoreOutlined, DashboardOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, DashboardOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './SellerSidebar.css';
 
@@ -16,12 +16,14 @@ const menuItems = [
     route: '/products/discontinued',
   },
   { key: 'add-products', icon: <PlusCircleOutlined />, label: "Mahsulot qo'shish", route: '/products/add' },
+  { key: 'messages', icon: <MessageOutlined />, label: 'Xabarlar', route: '/messages' },
   { key: 'market-info', icon: <ShopOutlined />, label: 'Market haqida' },
 ];
 
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products/add') return 'add-products';
   if (pathname === '/products/discontinued') return 'discontinued-products';
+  if (pathname === '/messages') return 'messages';
   if (pathname === '/products' || /^\/products\/\d+\/edit$/.test(pathname)) return 'my-products';
   if (pathname === '/') return 'home';
   return 'home';
