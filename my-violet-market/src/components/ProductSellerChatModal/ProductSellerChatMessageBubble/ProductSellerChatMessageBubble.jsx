@@ -11,7 +11,7 @@ export default function ProductSellerChatMessageBubble({ message }) {
         isCustomer
           ? ' product-seller-chat-message-bubble--customer'
           : ' product-seller-chat-message-bubble--seller'
-      }`}
+      }${isImage ? ' product-seller-chat-message-bubble--image' : ''}`}
     >
       {isImage ? (
         <img
