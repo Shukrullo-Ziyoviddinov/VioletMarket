@@ -378,6 +378,7 @@
     "previewMore": "yana",
     "productCount": "{{count}} mahsulot",
     "subscriberCount": "{{count}} obunachi",
+    "orderCount": "{{count}} buyurtma",
     "subscribe": "Obuna",
     "unsubscribe": "Obunani bekor qilish",
     "loginRequired": "Obuna bo‘lish uchun tizimga kiring"

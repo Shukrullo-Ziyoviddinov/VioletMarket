@@ -378,6 +378,7 @@
     "previewMore": "ещё",
     "productCount": "{{count}} товаров",
     "subscriberCount": "{{count}} подписчиков",
+    "orderCount": "{{count}} заказов",
     "subscribe": "Подписка",
     "unsubscribe": "Отмена подписки",
     "loginRequired": "Войдите, чтобы подписаться"

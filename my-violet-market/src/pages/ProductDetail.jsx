@@ -28,6 +28,7 @@ import SizeChartPantsDiagram from '../components/SizeChartPantsDiagram/SizeChart
 import SizeChartGuidanceFooter from '../components/SizeChartGuidanceFooter/SizeChartGuidanceFooter';
 import ProductPolicy from '../components/ProductPolicy';
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
+import SellerOrderCount from '../components/SellerOrderCount';
 import SellerSubscribeButton from '../components/SellerSubscribeButton';
 import { useAppData } from '../contexts/AppDataContext';
 import { SkeletonPulse } from '../components/SkeletonLoader';
@@ -742,6 +743,7 @@ const ProductDetail = () => {
     [detailSellerId, catalog]
   );
   const sellerBaseSubscribers = detailSeller?.subscriberCount ?? 0;
+  const sellerOrderCountForDetail = Math.max(0, Number(detailSeller?.orderCount) || 0);
   const {
     displayCount: sellerSubscriberDisplay,
     subscribed: sellerSubscribed,
@@ -1917,6 +1919,7 @@ const ProductDetail = () => {
                         {i18n.t('seller.productCount', { count: sellerProductCountForDetail })}
                       </p>
                       <SellerSubscriberCount count={sellerSubscriberDisplay} />
+                      <SellerOrderCount count={sellerOrderCountForDetail} />
                     </div>
                   </div>
                 </Link>

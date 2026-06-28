@@ -160,6 +160,7 @@ export function SellerProfileHeaderSkeleton() {
         <div className="seller-profile__stats-row seller-profile__stats-row--skeleton">
           <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton" />
           <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
+          <SkeletonPulse className="seller-profile__stat-line seller-profile__stat-line--skeleton seller-profile__stat-line--short" />
           <SkeletonPulse className="seller-profile__subscribe-btn seller-profile__subscribe-btn--skeleton seller-profile__subscribe-btn--desktop" />
         </div>
       </div>

@@ -13,6 +13,7 @@ import GlobalMore from '../components/GlobalMore';
 import GlobalModal from '../components/GlobalModal';
 import SellerProfileReyting from '../components/SellerProfileReyting/SellerProfileReyting';
 import SellerSubscriberCount from '../components/SellerSubscriberCount';
+import SellerOrderCount from '../components/SellerOrderCount';
 import SellerSubscribeButton from '../components/SellerSubscribeButton';
 import LoadMore from '../components/LoadMore';
 import {
@@ -37,6 +38,7 @@ const SellerProfile = () => {
   const [seller, setSeller] = useState(null);
   const [productCount, setProductCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
   const [subscribed, setSubscribed] = useState(false);
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
@@ -58,6 +60,7 @@ const SellerProfile = () => {
       setSeller(data.seller);
       setProductCount(Number(data.productCount) || 0);
       setSubscriberCount(Number(data.subscriberCount) || 0);
+      setOrderCount(Number(data.orderCount) || 0);
       setSubscribed(Boolean(data.subscribed));
     } catch (err) {
       setSeller(null);
@@ -200,6 +203,7 @@ const SellerProfile = () => {
                       {t('seller.productCount', { count: productCount })}
                     </p>
                     <SellerSubscriberCount count={subscriberCount} />
+                    <SellerOrderCount count={orderCount} />
                     <div className="seller-profile__subscribe-inline-desktop">
                       <SellerSubscribeButton subscribed={subscribed} onToggle={handleToggleSubscribe} />
                     </div>

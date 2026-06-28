@@ -9,6 +9,7 @@ function toSellerAccountPublic(account) {
     sellerCountry: account.sellerCountry || "",
     logo: account.logo,
     subscriberCount: account.subscriberCount,
+    orderCount: Math.max(0, Number(account.orderCount) || 0),
     status: normalizeSellerAccountStatus(account.status),
   };
 }

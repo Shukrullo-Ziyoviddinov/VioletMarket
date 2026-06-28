@@ -61,15 +61,19 @@ async function getSellerProfile(sellerIdRaw, userId) {
     subscribed = Boolean(row);
   }
 
+  const orderCount = Math.max(0, Number(sellerDoc.orderCount) || 0);
+
   const seller = {
     ...stripMongoMeta(sellerDoc),
     subscriberCount,
+    orderCount,
   };
 
   return {
     seller,
     productCount,
     subscriberCount,
+    orderCount,
     subscribed,
   };
 }

@@ -271,6 +271,7 @@ async function getSellerCabinetProfile(shopId) {
       sellerCountry: sellerAccount.sellerCountry || "",
       logo: sellerAccount.logo,
       subscriberCount: sellerAccount.subscriberCount,
+      orderCount: Math.max(0, Number(sellerAccount.orderCount) || 0),
       status: normalizeSellerAccountStatus(sellerAccount.status),
     },
   };

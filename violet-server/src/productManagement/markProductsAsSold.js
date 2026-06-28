@@ -1,10 +1,39 @@
 const { Product } = require("../models/product");
+const { SellerAccount } = require("../models/sellerAccount");
 const { HttpError } = require("../utils/httpError");
 const { recordCheckoutSales } = require("../services/recommendation/recommendationRankingService");
 const {
   FLASH_CATEGORY_SECTION_KEY,
   isFlashCategoryActive,
 } = require("../utils/flashCategoryProduct");
+
+async function incrementSellerOrderCounts(requestedByProductId, productMap) {
+  const incrementsBySeller = new Map();
+
+  for (const [productId, requestedQty] of requestedByProductId.entries()) {
+    const product = productMap.get(Number(productId)) ?? productMap.get(productId);
+    const sellerId = String(product?.sellerId ?? "").trim();
+    if (!sellerId) continue;
+    incrementsBySeller.set(
+      sellerId,
+      (incrementsBySeller.get(sellerId) || 0) + requestedQty,
+    );
+  }
+
+  if (incrementsBySeller.size === 0) return;
+
+  const ops = [];
+  for (const [sellerId, qty] of incrementsBySeller.entries()) {
+    ops.push({
+      updateOne: {
+        filter: { id: sellerId },
+        update: { $inc: { orderCount: qty } },
+      },
+    });
+  }
+
+  await SellerAccount.bulkWrite(ops, { ordered: false });
+}
 
 /**
  * Buyurtma tasdiqlanganda mahsulotlarni sotildi deb belgilash.
@@ -85,6 +114,7 @@ async function markProductsAsSold({
     }
   }
   await recordCheckoutSales(rankingMetrics);
+  await incrementSellerOrderCounts(requestedByProductId, productMap);
 }
 
 module.exports = {

@@ -16,6 +16,7 @@ const sellerAccountSchema = new mongoose.Schema(
     sellerCountry: { type: String, required: true, trim: true, lowercase: true, index: true },
     logo: { type: String, required: true, trim: true },
     subscriberCount: { type: Number, default: 0 },
+    orderCount: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ["active", "paused"],

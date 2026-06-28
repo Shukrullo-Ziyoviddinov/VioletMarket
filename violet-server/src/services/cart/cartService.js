@@ -530,7 +530,7 @@ async function checkoutCartForUser(userId) {
 
   const productIds = [...requestedByProductId.keys()].filter(Number.isFinite);
   const products = await Product.find({ id: { $in: productIds } })
-    .select("id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName");
+    .select("id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName sellerId");
   const productMap = new Map(products.map((product) => [Number(product.id), product]));
 
   const insufficient = [];

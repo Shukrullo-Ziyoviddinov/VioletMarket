@@ -60,6 +60,7 @@ async function approveApplication(applicationId) {
       sellerCountry,
       logo: DEFAULT_SELLER_LOGO,
       subscriberCount: 0,
+      orderCount: 0,
       status: "active",
     });
   }
