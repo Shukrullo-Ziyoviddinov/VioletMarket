@@ -5,6 +5,7 @@ const { ShippingCountry } = require("../../models/shippingCountry");
 const { BrandCountryFilterValue } = require("../../models/brandCountryFilterValue");
 const { createProduct } = require("../productService");
 const { HttpError } = require("../../utils/httpError");
+const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { hasVariantStockData } = require("../../utils/productStockRules");
 const { isSellerAccountPaused } = require("../../utils/sellerAccountStatus");
 const {
@@ -472,12 +473,14 @@ async function listSellerProducts(sellerShopId) {
 
   return keepNewestProductPerId(rows).map((product) => {
     const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
+    const image = product.image || product.mainImage || firstColor?.mainImage || "";
     return {
       id: product.id,
       title: product.title || { uz: "", ru: "" },
       price: firstColor?.price || product.price || "",
       originalPrice: firstColor?.originalPrice || product.originalPrice || "",
-      image: product.image || product.mainImage || firstColor?.mainImage || "",
+      image,
+      imageUrl: resolvePublicAssetUrl(image),
       categoryName: product.categoryName || "",
       clientActive: product.clientActive !== false,
       pausedBySeller: Boolean(product.pausedBySeller),

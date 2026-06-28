@@ -10,6 +10,12 @@ function getStorefrontBaseUrl() {
   return '';
 }
 
+function normalizeRelativePath(rawPath) {
+  const normalized = String(rawPath || '').trim().replace(/\\/g, '/');
+  if (!normalized) return '';
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
+}
+
 export function resolveAssetUrl(path) {
   if (!path) return FALLBACK_IMAGE;
 
@@ -20,8 +26,19 @@ export function resolveAssetUrl(path) {
   if (normalized.startsWith('data:')) return normalized;
   if (/^https?:\/\//i.test(normalized)) return normalized;
 
-  if (normalized.startsWith('/uploads/') || normalized.startsWith('uploads/')) {
-    const uploadPath = normalized.startsWith('/') ? normalized : `/${normalized}`;
+  const isUploadPath =
+    normalized.startsWith('/uploads/') ||
+    normalized.startsWith('uploads/') ||
+    normalized.includes('/uploads/') ||
+    normalized.startsWith('public/uploads/');
+
+  if (isUploadPath) {
+    const uploadStartIndex = normalized.indexOf('/uploads/');
+    const uploadRelative =
+      uploadStartIndex >= 0
+        ? normalized.slice(uploadStartIndex)
+        : `/${normalized.replace(/^\/?(?:public\/)?uploads\//, 'uploads/')}`;
+    const uploadPath = normalizeRelativePath(uploadRelative);
     return `${getApiBaseUrl()}${uploadPath}`;
   }
 
@@ -30,9 +47,13 @@ export function resolveAssetUrl(path) {
   }
 
   const storefrontBase = getStorefrontBaseUrl();
-  const storefrontPath = normalized.startsWith('/') ? normalized : `/${normalized}`;
+  const storefrontPath = normalizeRelativePath(normalized);
   if (storefrontBase) {
     return `${storefrontBase}${storefrontPath}`;
+  }
+
+  if (normalized.startsWith('img/') || normalized.startsWith('/img/')) {
+    return `${getApiBaseUrl()}${storefrontPath}`;
   }
 
   return FALLBACK_IMAGE;
