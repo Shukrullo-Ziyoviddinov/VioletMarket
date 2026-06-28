@@ -1958,7 +1958,10 @@ const ProductDetail = () => {
                     </div>
                     <h3>
                       {structuredDescriptionBlock
-                        ? getLocalizedText(structuredDescriptionBlock.title, lang)
+                        ? getLocalizedText(
+                            structuredDescriptionBlock.title ?? structuredDescriptionBlock.description,
+                            lang,
+                          )
                         : i18n.t('productDetail.descriptionHeader')}
                     </h3>
                   </>

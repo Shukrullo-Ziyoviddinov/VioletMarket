@@ -70,6 +70,7 @@ export function buildProductDescriptionArray(values) {
 
   return [
     {
+      title: { ...PRODUCT_ABOUT_TITLE },
       description: { ...PRODUCT_ABOUT_TITLE },
       info: {
         uz: String(values?.descriptionInfoUz || '').trim(),
