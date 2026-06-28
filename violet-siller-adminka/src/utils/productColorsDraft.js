@@ -108,7 +108,7 @@ export function applyColorsChange(values, nextColors) {
 function buildOptionalDiscount(discountUz, discountRu) {
   const uz = String(discountUz || '').trim();
   const ru = String(discountRu || '').trim();
-  if (!uz && !ru) return undefined;
+  if (!uz || !ru) return undefined;
   return { uz, ru };
 }
 

@@ -6,7 +6,7 @@ import { buildRelatedGroupsPayload } from './relatedGroupsDraft';
 function buildOptionalDiscount(discountUz, discountRu) {
   const uz = String(discountUz || '').trim();
   const ru = String(discountRu || '').trim();
-  if (!uz && !ru) return undefined;
+  if (!uz || !ru) return undefined;
   return { uz, ru };
 }
 
@@ -83,7 +83,17 @@ export function buildSellerProductPayload(values) {
   }
 
   if (sizeChart) {
-    payload.sizeChart = sizeChart;
+    const hasSizeChartContent =
+      sizeChart.title?.uz ||
+      sizeChart.title?.ru ||
+      sizeChart.instruction?.uz ||
+      sizeChart.instruction?.ru ||
+      (Array.isArray(sizeChart.measureColumns) && sizeChart.measureColumns.length > 0) ||
+      (Array.isArray(sizeChart.guideImages) && sizeChart.guideImages.length > 0);
+
+    if (hasSizeChartContent) {
+      payload.sizeChart = sizeChart;
+    }
   }
 
   return payload;

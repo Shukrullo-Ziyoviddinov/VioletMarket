@@ -33,6 +33,14 @@ export function validateSellerProductForm(values) {
     errors.push('Brend tanlanishi shart');
   }
 
+  if (!String(values?.countriesCategories || '').trim()) {
+    errors.push('Davlat bo\'yicha kategoriya tanlanishi shart');
+  }
+
+  if (!String(values?.weight || '').trim()) {
+    errors.push('Mahsulot og\'irligi (gramm) kiritilishi shart');
+  }
+
   const colors = Array.isArray(values?.colors) ? values.colors : [];
   const mainImage = String(values?.mainImage || '').trim();
 
@@ -50,6 +58,14 @@ export function validateSellerProductForm(values) {
   if ((discountUz && !discountRu) || (!discountUz && discountRu)) {
     errors.push('Chegirma matni ikkala tilda ham to\'ldirilishi kerak');
   }
+
+  colors.forEach((color, index) => {
+    const colorDiscountUz = String(color?.discountUz || '').trim();
+    const colorDiscountRu = String(color?.discountRu || '').trim();
+    if ((colorDiscountUz && !colorDiscountRu) || (!colorDiscountUz && colorDiscountRu)) {
+      errors.push(`Rang #${index + 1}: chegirma matni ikkala tilda ham to'ldirilishi kerak`);
+    }
+  });
 
   return errors;
 }
