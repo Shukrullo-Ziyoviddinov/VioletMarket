@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getPortalContainer } from '../../utils/utils';
@@ -22,6 +22,17 @@ export default function ProductSellerChatModal({
   onSendMessage,
 }) {
   const { t } = useTranslation();
+  const [contextProductSent, setContextProductSent] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setContextProductSent(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setContextProductSent(false);
+  }, [contextProduct?.id]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -84,7 +95,7 @@ export default function ProductSellerChatModal({
   };
 
   const handleSendProduct = (product) => {
-    if (!product) return;
+    if (!product || contextProductSent) return;
     onSendMessage?.({
       id: createMessageId(),
       sender: 'customer',
@@ -92,6 +103,7 @@ export default function ProductSellerChatModal({
       content: { ...product },
       createdAt: new Date().toISOString(),
     });
+    setContextProductSent(true);
   };
 
   return createPortal(
@@ -111,7 +123,7 @@ export default function ProductSellerChatModal({
       >
         <ProductSellerChatModalHeader seller={seller} lang={lang} onBack={onClose} />
         <ProductSellerChatMessageList messages={messages} />
-        {contextProduct ? (
+        {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}
         <ProductSellerChatComposer onSendText={handleSendText} onSendImage={handleSendImage} />
