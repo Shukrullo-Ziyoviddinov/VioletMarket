@@ -1,4 +1,4 @@
-.seller-chat-message-list {
+.product-seller-chat-message-list {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -9,7 +9,7 @@
   background: #f8f6fb;
 }
 
-.seller-chat-message-list__empty {
+.product-seller-chat-message-list__empty {
   margin: auto;
   max-width: 260px;
   text-align: center;
@@ -18,7 +18,7 @@
   color: #9b93ad;
 }
 
-.seller-chat-message-list__anchor {
+.product-seller-chat-message-list__anchor {
   height: 1px;
   flex-shrink: 0;
 }

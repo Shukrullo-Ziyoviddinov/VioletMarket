@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { PictureOutlined, SmileOutlined } from '@ant-design/icons';
-import SellerChatEmojiPicker from '../SellerChatEmojiPicker/SellerChatEmojiPicker';
-import './SellerChatComposer.css';
+import { useTranslation } from 'react-i18next';
+import ProductSellerChatEmojiPicker from '../ProductSellerChatEmojiPicker/ProductSellerChatEmojiPicker';
+import './ProductSellerChatComposer.css';
 
-export default function SellerChatComposer({ onSendText, onSendImage }) {
+export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
@@ -38,52 +39,52 @@ export default function SellerChatComposer({ onSendText, onSendImage }) {
   };
 
   return (
-    <div className="seller-chat-composer">
-      <SellerChatEmojiPicker
+    <div className="product-seller-chat-composer">
+      <ProductSellerChatEmojiPicker
         open={emojiOpen}
         onSelect={handleEmojiSelect}
         onClose={() => setEmojiOpen(false)}
       />
 
-      <div className="seller-chat-composer__field">
+      <div className="product-seller-chat-composer__field">
         <textarea
-          className="seller-chat-composer__input"
+          className="product-seller-chat-composer__input"
           rows={1}
-          placeholder="Xabar yozing..."
+          placeholder={t('productDetail.chat.inputPlaceholder')}
           value={text}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setEmojiOpen(false)}
-          aria-label="Chat xabari"
+          aria-label={t('productDetail.chat.inputPlaceholder')}
         />
 
-        <div className="seller-chat-composer__actions">
+        <div className="product-seller-chat-composer__actions">
           <button
             type="button"
-            className={`seller-chat-composer__icon-btn${
-              emojiOpen ? ' seller-chat-composer__icon-btn--active' : ''
+            className={`product-seller-chat-composer__icon-btn${
+              emojiOpen ? ' product-seller-chat-composer__icon-btn--active' : ''
             }`}
             onClick={() => setEmojiOpen((current) => !current)}
-            aria-label="Emoji"
+            aria-label={t('productDetail.chat.emoji')}
             aria-expanded={emojiOpen}
           >
-            <SmileOutlined />
+            <i className="bx bx-smile" aria-hidden="true" />
           </button>
 
           <button
             type="button"
-            className="seller-chat-composer__icon-btn"
+            className="product-seller-chat-composer__icon-btn"
             onClick={() => fileInputRef.current?.click()}
-            aria-label="Rasm yuklash"
+            aria-label={t('productDetail.chat.image')}
           >
-            <PictureOutlined />
+            <i className="bx bx-image" aria-hidden="true" />
           </button>
 
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            className="seller-chat-composer__file-input"
+            className="product-seller-chat-composer__file-input"
             onChange={handleImageChange}
             tabIndex={-1}
             aria-hidden
@@ -93,11 +94,11 @@ export default function SellerChatComposer({ onSendText, onSendImage }) {
 
       <button
         type="button"
-        className="seller-chat-composer__send"
+        className="product-seller-chat-composer__send"
         onClick={handleSend}
         disabled={!text.trim()}
       >
-        Yuborish
+        {t('productDetail.chat.send')}
       </button>
     </div>
   );

@@ -128,7 +128,19 @@
     "addToCart": "Savatga qo'shish",
     "goToCart": "Savatga o'tish",
     "adding": "Qo'shilyapti...",
-    "sellerStore": "Sotuvchi do'koni: {{name}}"
+    "sellerStore": "Sotuvchi do'koni: {{name}}",
+    "chat": {
+      "title": "Sotuvchi bilan chat",
+      "back": "Orqaga",
+      "close": "Yopish",
+      "contact": "Aloqa",
+      "sellerFallback": "Sotuvchi",
+      "empty": "Hozircha xabar yo'q. Birinchi xabaringizni yozing.",
+      "inputPlaceholder": "Xabar yozing...",
+      "emoji": "Emoji",
+      "image": "Rasm yuklash",
+      "send": "Yuborish"
+    }
   },
   "wishlist": {
     "emptyTitle": "Sevimli mahsulotingizni qo'shing!",

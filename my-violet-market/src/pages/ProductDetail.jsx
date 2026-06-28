@@ -17,6 +17,7 @@ import VideoModal from '../components/VideoModal';
 import ImageModal from '../components/ImageModal';
 import CommentsSection from '../components/CommentsSection';
 import CommentsModal from '../components/CommentsModal';
+import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
@@ -255,6 +256,8 @@ const ProductDetail = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
+  const [isSellerChatOpen, setIsSellerChatOpen] = useState(false);
+  const [sellerChatMessages, setSellerChatMessages] = useState([]);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
@@ -735,6 +738,11 @@ const ProductDetail = () => {
     () => (detailSellerId ? getSellerById(detailSellerId) : null),
     [detailSellerId, getSellerById]
   );
+
+  useEffect(() => {
+    setIsSellerChatOpen(false);
+    setSellerChatMessages([]);
+  }, [detailSellerId]);
   const sellerProductCountForDetail = useMemo(
     () =>
       detailSellerId
@@ -1855,7 +1863,11 @@ const ProductDetail = () => {
               <button
                 type="button"
                 className="product-detail-action-icon product-detail-action-icon--support"
-                aria-label="Aloqa"
+                aria-label={i18n.t('productDetail.chat.contact')}
+                onClick={() => {
+                  if (detailSeller) setIsSellerChatOpen(true);
+                }}
+                disabled={!detailSeller}
               >
                 <i className="bx bx-headphone" aria-hidden="true" />
               </button>
@@ -2362,6 +2374,17 @@ const ProductDetail = () => {
         onClose={() => setIsCommentsModalOpen(false)}
         comments={allComments}
         productId={productData?.id}
+      />
+
+      <ProductSellerChatModal
+        open={isSellerChatOpen}
+        seller={detailSeller}
+        lang={lang}
+        messages={sellerChatMessages}
+        onClose={() => setIsSellerChatOpen(false)}
+        onSendMessage={(message) => {
+          setSellerChatMessages((current) => [...current, message]);
+        }}
       />
     </div>
   );

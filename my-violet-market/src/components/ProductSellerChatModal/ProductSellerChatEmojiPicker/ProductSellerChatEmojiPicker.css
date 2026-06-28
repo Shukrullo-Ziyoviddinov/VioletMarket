@@ -1,4 +1,4 @@
-.seller-chat-emoji-picker {
+.product-seller-chat-emoji-picker {
   position: absolute;
   right: 12px;
   bottom: calc(100% + 8px);
@@ -11,13 +11,13 @@
   box-shadow: 0 8px 24px rgba(42, 24, 66, 0.12);
 }
 
-.seller-chat-emoji-picker__grid {
+.product-seller-chat-emoji-picker__grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 }
 
-.seller-chat-emoji-picker__item {
+.product-seller-chat-emoji-picker__item {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -29,9 +29,8 @@
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.15s ease;
 }
 
-.seller-chat-emoji-picker__item:hover {
+.product-seller-chat-emoji-picker__item:hover {
   background: #f3ebfd;
 }

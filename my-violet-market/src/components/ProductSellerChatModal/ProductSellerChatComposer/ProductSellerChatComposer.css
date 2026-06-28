@@ -1,4 +1,4 @@
-.seller-chat-composer {
+.product-seller-chat-composer {
   position: relative;
   flex-shrink: 0;
   display: flex;
@@ -9,7 +9,7 @@
   background: #ffffff;
 }
 
-.seller-chat-composer__field {
+.product-seller-chat-composer__field {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
@@ -21,7 +21,7 @@
   background: #fcfbfe;
 }
 
-.seller-chat-composer__input {
+.product-seller-chat-composer__input {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 24px;
@@ -36,18 +36,18 @@
   outline: none;
 }
 
-.seller-chat-composer__input::placeholder {
+.product-seller-chat-composer__input::placeholder {
   color: #9b93ad;
 }
 
-.seller-chat-composer__actions {
+.product-seller-chat-composer__actions {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.seller-chat-composer__icon-btn {
+.product-seller-chat-composer__icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -57,22 +57,21 @@
   border-radius: 8px;
   background: transparent;
   color: #8b79a8;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.seller-chat-composer__icon-btn:hover,
-.seller-chat-composer__icon-btn--active {
+.product-seller-chat-composer__icon-btn:hover,
+.product-seller-chat-composer__icon-btn--active {
   background: #f3ebfd;
   color: #764ba2;
 }
 
-.seller-chat-composer__file-input {
+.product-seller-chat-composer__file-input {
   display: none;
 }
 
-.seller-chat-composer__send {
+.product-seller-chat-composer__send {
   flex-shrink: 0;
   min-width: 88px;
   height: 44px;
@@ -84,10 +83,9 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease;
 }
 
-.seller-chat-composer__send:disabled {
+.product-seller-chat-composer__send:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
