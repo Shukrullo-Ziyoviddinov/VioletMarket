@@ -1,6 +1,5 @@
 import React from 'react';
 import { Alert, Button, Spin, Typography } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
 import MiniGlobalModal from '../MiniGlobalModal/MiniGlobalModal';
 import SellerProductCard from '../SellerProductCard/SellerProductCard';
 import './SellerProductsGrid.css';
