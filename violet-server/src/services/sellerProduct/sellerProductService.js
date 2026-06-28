@@ -544,10 +544,36 @@ async function deleteSellerProduct(sellerShopId, productIdRaw) {
   return { id: productId };
 }
 
+async function setSellerProductClientActive(sellerShopId, productIdRaw, clientActiveRaw) {
+  await assertSellerCanManageProducts(sellerShopId);
+  const productId = parseProductId(productIdRaw);
+  await assertSellerOwnsProduct(sellerShopId, productId);
+
+  const clientActive = clientActiveRaw !== false;
+  const sellerId = String(sellerShopId || "").trim();
+
+  await Product.updateMany(
+    { id: productId, sellerId },
+    {
+      $set: {
+        clientActive,
+        pausedBySeller: !clientActive,
+      },
+    },
+  );
+
+  return {
+    id: productId,
+    clientActive,
+    pausedBySeller: !clientActive,
+  };
+}
+
 module.exports = {
   listSellerProducts,
   getSellerProductById,
   createSellerProduct,
   updateSellerProduct,
   deleteSellerProduct,
+  setSellerProductClientActive,
 };

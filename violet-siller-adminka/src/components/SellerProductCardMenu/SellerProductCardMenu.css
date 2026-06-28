@@ -36,6 +36,11 @@
   background: #f3ebfd;
 }
 
+.seller-product-card-menu__item:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .seller-product-card-menu__item .anticon {
   font-size: 14px;
   flex-shrink: 0;
@@ -51,6 +56,34 @@
 
 .seller-product-card-menu__item--danger:hover {
   background: #fff0f0;
+}
+
+.seller-product-card-menu__item--pause,
+.seller-product-card-menu__item--pause .anticon {
+  color: #ea580c;
+}
+
+.seller-product-card-menu__item--pause:hover:not(:disabled) {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.seller-product-card-menu__item--pause:hover:not(:disabled) .anticon {
+  color: #c2410c;
+}
+
+.seller-product-card-menu__item--activate,
+.seller-product-card-menu__item--activate .anticon {
+  color: #16a34a;
+}
+
+.seller-product-card-menu__item--activate:hover:not(:disabled) {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.seller-product-card-menu__item--activate:hover:not(:disabled) .anticon {
+  color: #15803d;
 }
 
 .seller-product-card-menu__trigger {

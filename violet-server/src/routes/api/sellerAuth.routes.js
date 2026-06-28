@@ -66,6 +66,11 @@ router.delete(
   sellerAuthMiddleware,
   sellerProductController.deleteSellerProduct,
 );
+router.patch(
+  "/seller-auth/products/:productId/client-active",
+  sellerAuthMiddleware,
+  sellerProductController.setSellerProductClientActive,
+);
 router.patch("/seller-auth/market-profile", sellerAuthMiddleware, controller.updateMarketProfile);
 router.post(
   "/seller-auth/uploads/image",

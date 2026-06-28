@@ -41,6 +41,15 @@ const deleteSellerProduct = asyncHandler(async (req, res) => {
   res.json({ ok: true, data: result });
 });
 
+const setSellerProductClientActive = asyncHandler(async (req, res) => {
+  const result = await productService.setSellerProductClientActive(
+    req.sellerShopId,
+    req.params.productId,
+    req.body?.clientActive,
+  );
+  res.json({ ok: true, data: result });
+});
+
 module.exports = {
   getProductFormOptions,
   getRelatedProductPickerOptions,
@@ -49,4 +58,5 @@ module.exports = {
   createSellerProduct,
   updateSellerProduct,
   deleteSellerProduct,
+  setSellerProductClientActive,
 };

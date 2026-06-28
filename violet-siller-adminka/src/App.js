@@ -7,6 +7,7 @@ import ApplicationStatusPage from './pages/ApplicationStatusPage/ApplicationStat
 import ApplicationSubmitPage from './pages/ApplicationSubmitPage/ApplicationSubmitPage';
 import HomePage from './pages/HomePage/HomePage';
 import AddProductsPage from './pages/AddProductsPage/AddProductsPage';
+import DiscontinuedProductsPage from './pages/DiscontinuedProductsPage/DiscontinuedProductsPage';
 import EditProductPage from './pages/EditProductPage/EditProductPage';
 import MyProductsPage from './pages/MyProductsPage/MyProductsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
@@ -29,6 +30,7 @@ export default function App() {
           <Route element={<SellerLayout />}>
             <Route index element={<HomePage />} />
             <Route path="products" element={<MyProductsPage />} />
+            <Route path="products/discontinued" element={<DiscontinuedProductsPage />} />
             <Route path="products/add" element={<AddProductsPage />} />
             <Route path="products/:productId/edit" element={<EditProductPage />} />
           </Route>

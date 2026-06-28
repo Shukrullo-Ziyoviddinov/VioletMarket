@@ -1,15 +1,15 @@
 import React from 'react';
-import { Button, Typography } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
 import SellerProductsGrid, {
   SellerProductsDeleteModal,
 } from '../../components/SellerProductsGrid/SellerProductsGrid';
 import { useSellerProductList } from '../../hooks/useSellerProductList';
 import '../MyProductsPage/MyProductsPage.css';
+import './DiscontinuedProductsPage.css';
 
 const { Title, Text } = Typography;
 
-export default function MyProductsPage() {
+export default function DiscontinuedProductsPage() {
   const {
     navigate,
     displayedProducts,
@@ -24,35 +24,28 @@ export default function MyProductsPage() {
     handleCloseDeleteModal,
     handleConfirmDelete,
     handleTogglePause,
-  } = useSellerProductList({ productFilter: 'all' });
+  } = useSellerProductList({ productFilter: 'paused' });
 
   return (
-    <section className="my-products-page">
+    <section className="my-products-page discontinued-products-page">
       <div className="my-products-page__head">
         <div>
           <Title level={3} className="my-products-page__title">
-            Mening mahsulotlarim
+            Vaqtincha to&apos;xtatilgan
           </Title>
           <Text type="secondary" className="my-products-page__subtitle">
-            Do&apos;koningizga tegishli barcha mahsulotlar ro&apos;yxati.
+            Mijozlar saytida vaqtincha ko&apos;rinmaydigan mahsulotlar.
           </Text>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusCircleOutlined />}
-          onClick={() => navigate('/products/add')}
-        >
-          Mahsulot qo&apos;shish
-        </Button>
       </div>
 
       <SellerProductsGrid
         products={displayedProducts}
         loading={loading}
         error={error}
-        emptyText="Hozircha mahsulot yo'q."
-        emptyActionLabel="Birinchi mahsulotni qo'shing"
-        onEmptyAction={() => navigate('/products/add')}
+        emptyText="Vaqtincha to'xtatilgan mahsulot yo'q."
+        emptyActionLabel="Barcha mahsulotlarga qaytish"
+        onEmptyAction={() => navigate('/products')}
         openMenuProductId={openMenuProductId}
         setOpenMenuProductId={setOpenMenuProductId}
         togglingPauseProductId={togglingPauseProductId}

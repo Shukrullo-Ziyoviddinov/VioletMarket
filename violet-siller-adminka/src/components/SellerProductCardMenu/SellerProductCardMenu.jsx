@@ -1,10 +1,24 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DeleteOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import './SellerProductCardMenu.css';
 
-function SellerProductCardMenuDropdown({ style, onDelete, onEdit }) {
+function SellerProductCardMenuDropdown({
+  style,
+  isPaused,
+  deleting,
+  togglingPause,
+  onDelete,
+  onEdit,
+  onTogglePause,
+}) {
   return (
     <div className="seller-product-card-menu__dropdown" role="menu" style={style}>
       <button
@@ -12,18 +26,44 @@ function SellerProductCardMenuDropdown({ style, onDelete, onEdit }) {
         role="menuitem"
         className="seller-product-card-menu__item seller-product-card-menu__item--danger"
         onClick={onDelete}
+        disabled={deleting || togglingPause}
       >
         <DeleteOutlined aria-hidden="true" />
-        <span>O&apos;chirish</span>
+        <span>{deleting ? "O'chirilmoqda..." : "O'chirish"}</span>
       </button>
       <button
         type="button"
         role="menuitem"
         className="seller-product-card-menu__item"
         onClick={onEdit}
+        disabled={deleting || togglingPause}
       >
         <EditOutlined aria-hidden="true" />
         <span>Tahrirlash</span>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className={`seller-product-card-menu__item${
+          isPaused
+            ? ' seller-product-card-menu__item--activate'
+            : ' seller-product-card-menu__item--pause'
+        }`}
+        onClick={onTogglePause}
+        disabled={deleting || togglingPause}
+      >
+        {isPaused ? (
+          <PlayCircleOutlined aria-hidden="true" />
+        ) : (
+          <PauseCircleOutlined aria-hidden="true" />
+        )}
+        <span>
+          {togglingPause
+            ? 'Saqlanmoqda...'
+            : isPaused
+              ? 'Faollashtirish'
+              : "Vaqtincha to'xtatish"}
+        </span>
       </button>
     </div>
   );
@@ -31,14 +71,19 @@ function SellerProductCardMenuDropdown({ style, onDelete, onEdit }) {
 
 export default function SellerProductCardMenu({
   isOpen = false,
+  clientActive = true,
+  deleting = false,
+  togglingPause = false,
   onToggle,
   onClose,
   onEdit,
   onDelete,
+  onTogglePause,
 }) {
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const [dropdownStyle, setDropdownStyle] = useState(null);
+  const isPaused = clientActive === false;
 
   const updateDropdownPosition = () => {
     const trigger = triggerRef.current;
@@ -102,6 +147,11 @@ export default function SellerProductCardMenu({
     onDelete?.();
   };
 
+  const handleTogglePause = () => {
+    onClose?.();
+    onTogglePause?.();
+  };
+
   return (
     <div className="seller-product-card-menu" ref={rootRef}>
       <Button
@@ -123,8 +173,12 @@ export default function SellerProductCardMenu({
         ? createPortal(
             <SellerProductCardMenuDropdown
               style={dropdownStyle}
+              isPaused={isPaused}
+              deleting={deleting}
+              togglingPause={togglingPause}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onTogglePause={handleTogglePause}
             />,
             document.body,
           )

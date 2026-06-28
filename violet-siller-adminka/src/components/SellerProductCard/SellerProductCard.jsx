@@ -24,9 +24,11 @@ export default function SellerProductCard({
   product,
   onEdit,
   onDelete,
+  onTogglePause,
   isMenuOpen = false,
   onMenuToggle,
   onMenuClose,
+  togglingPause = false,
 }) {
   const title = getProductTitle(product?.title);
   const price = String(product?.price || '').trim();
@@ -34,6 +36,7 @@ export default function SellerProductCard({
   const showOriginalPrice = Boolean(originalPrice && originalPrice !== price);
   const resolvedSrc = getImageSrc(product);
   const [hasError, setHasError] = useState(false);
+  const isPaused = product?.clientActive === false;
 
   const displaySrc = hasError ? FALLBACK_IMAGE : resolvedSrc;
 
@@ -56,6 +59,11 @@ export default function SellerProductCard({
           loading="lazy"
           onError={handleImageError}
         />
+        {isPaused ? (
+          <div className="seller-product-card__paused-overlay" aria-hidden="true">
+            <span>Vaqtincha to&apos;xtatilgan</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="seller-product-card__info">
@@ -80,12 +88,18 @@ export default function SellerProductCard({
 
           <SellerProductCardMenu
             isOpen={isMenuOpen}
+            clientActive={product?.clientActive !== false}
+            togglingPause={togglingPause}
             onToggle={onMenuToggle}
             onClose={onMenuClose}
             onEdit={handleEdit}
             onDelete={() => {
               if (!product?.id || typeof onDelete !== 'function') return;
               onDelete(product.id);
+            }}
+            onTogglePause={() => {
+              if (!product?.id || typeof onTogglePause !== 'function') return;
+              onTogglePause(product);
             }}
           />
         </div>

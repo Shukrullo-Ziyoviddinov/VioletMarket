@@ -79,6 +79,19 @@ export async function updateSellerProduct(token, productId, payload) {
   return data?.data?.product || null;
 }
 
+export async function setSellerProductClientActive(token, productId, clientActive) {
+  const res = await fetch(apiUrl(`/api/seller-auth/products/${productId}/client-active`), {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ clientActive: Boolean(clientActive) }),
+  });
+  const data = await parseJson(res);
+  return data?.data || null;
+}
+
 export async function deleteSellerProduct(token, productId) {
   const res = await fetch(apiUrl(`/api/seller-auth/products/${productId}`), {
     method: 'DELETE',
