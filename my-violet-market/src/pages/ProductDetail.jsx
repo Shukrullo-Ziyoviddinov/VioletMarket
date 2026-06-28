@@ -18,6 +18,7 @@ import ImageModal from '../components/ImageModal';
 import CommentsSection from '../components/CommentsSection';
 import CommentsModal from '../components/CommentsModal';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
+import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
@@ -238,7 +239,7 @@ const ProductDetail = () => {
   const { showToast } = useToast();
   const { getCommentsByProductId, comments, loadCommentsForProduct } = useComments();
   const { recordView } = useViewedAt();
-  const { authToken, authLoading } = useUser();
+  const { authToken, authLoading, userData } = useUser();
   const { allProducts, getSellerById, loading, error, uzbProductDeliveryInfo } = useAppData();
   const catalog = allProducts || [];
   const showDetailSkeleton = loading && !error;
@@ -257,7 +258,6 @@ const ProductDetail = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [isSellerChatOpen, setIsSellerChatOpen] = useState(false);
-  const [sellerChatMessages, setSellerChatMessages] = useState([]);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
@@ -741,8 +741,18 @@ const ProductDetail = () => {
 
   useEffect(() => {
     setIsSellerChatOpen(false);
-    setSellerChatMessages([]);
   }, [detailSellerId]);
+
+  const {
+    messages: sellerChatMessages,
+    sendText: sendSellerChatText,
+    sendImage: sendSellerChatImage,
+    sendProduct: sendSellerChatProduct,
+  } = useSellerMessageChat({
+    authToken,
+    sellerId: detailSellerId,
+    enabled: isSellerChatOpen && Boolean(authToken),
+  });
   const sellerProductCountForDetail = useMemo(
     () =>
       detailSellerId
@@ -1865,7 +1875,13 @@ const ProductDetail = () => {
                 className="product-detail-action-icon product-detail-action-icon--support"
                 aria-label={i18n.t('productDetail.chat.contact')}
                 onClick={() => {
-                  if (detailSeller) setIsSellerChatOpen(true);
+                  if (!detailSeller) return;
+                  if (!userData?.isAuthenticated || !authToken) {
+                    showToast(i18n.t('profile.messagesLoginRequired'), 'info');
+                    navigate('/login');
+                    return;
+                  }
+                  setIsSellerChatOpen(true);
                 }}
                 disabled={!detailSeller}
               >
@@ -2389,9 +2405,9 @@ const ProductDetail = () => {
         }}
         messages={sellerChatMessages}
         onClose={() => setIsSellerChatOpen(false)}
-        onSendMessage={(message) => {
-          setSellerChatMessages((current) => [...current, message]);
-        }}
+        onSendText={sendSellerChatText}
+        onSendImage={sendSellerChatImage}
+        onSendProduct={sendSellerChatProduct}
       />
     </div>
   );

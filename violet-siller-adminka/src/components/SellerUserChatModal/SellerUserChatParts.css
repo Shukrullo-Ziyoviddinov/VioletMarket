@@ -1,0 +1,234 @@
+.seller-user-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #ece7f3;
+  background: #fff;
+}
+
+.seller-user-chat-header__back {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: #f3ebfd;
+  color: #5b4d73;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.seller-user-chat-header__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.seller-user-chat-header__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+}
+
+.seller-user-chat-header__name {
+  margin: 0;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-user-chat-message-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px;
+  background: #f8f6fb;
+}
+
+.seller-user-chat-message-list__empty {
+  margin: auto;
+  color: #9b93ad;
+  text-align: center;
+}
+
+.seller-user-chat-message-list__anchor {
+  height: 1px;
+}
+
+.seller-user-chat-bubble {
+  max-width: min(78%, 300px);
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.seller-user-chat-bubble--customer {
+  align-self: flex-start;
+  padding: 9px 13px;
+  background: #e9e9eb;
+  border-radius: 18px 18px 18px 0;
+}
+
+.seller-user-chat-bubble--seller {
+  align-self: flex-end;
+  padding: 9px 13px;
+  background: #022ff9;
+  border-radius: 18px 18px 0 18px;
+  box-shadow: 0 1px 2px rgba(2, 47, 249, 0.28);
+}
+
+.seller-user-chat-bubble--image {
+  padding: 3px;
+}
+
+.seller-user-chat-bubble__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.seller-user-chat-bubble--customer .seller-user-chat-bubble__text {
+  color: #111;
+}
+
+.seller-user-chat-bubble--seller .seller-user-chat-bubble__text {
+  color: #fff;
+}
+
+.seller-user-chat-bubble__image {
+  display: block;
+  max-width: 220px;
+  width: 100%;
+  border-radius: 15px;
+}
+
+.seller-user-chat-product {
+  max-width: min(82%, 280px);
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 18px 18px 18px 0;
+  background: #e9e9eb;
+}
+
+.seller-user-chat-product--seller {
+  align-self: flex-end;
+  background: #022ff9;
+  border-radius: 18px 18px 0 18px;
+}
+
+.seller-user-chat-product--customer {
+  align-self: flex-start;
+}
+
+.seller-user-chat-product__image {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.seller-user-chat-product__title {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.seller-user-chat-product--seller .seller-user-chat-product__title,
+.seller-user-chat-product--seller .seller-user-chat-product__price {
+  color: #fff;
+}
+
+.seller-user-chat-composer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid #ece7f3;
+  background: #fff;
+}
+
+.seller-user-chat-composer__field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid #d8c9ef;
+  border-radius: 14px;
+  background: #fcfbfe;
+}
+
+.seller-user-chat-composer__input {
+  flex: 1;
+  min-height: 24px;
+  max-height: 120px;
+  resize: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.seller-user-chat-composer__send {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: #9b4fe7;
+  color: #fff;
+  cursor: pointer;
+}
+
+.seller-user-chat-composer__send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.seller-user-chat-composer__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.seller-user-chat-composer__icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: #f3ebfd;
+  cursor: pointer;
+}
+
+.seller-user-chat-emoji-picker {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(100% + 6px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #ece7f3;
+  box-shadow: 0 8px 24px rgba(42, 24, 66, 0.12);
+}
+
+.seller-user-chat-emoji-picker__item {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: #f8f6fb;
+  font-size: 20px;
+  cursor: pointer;
+}

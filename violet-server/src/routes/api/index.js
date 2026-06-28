@@ -45,6 +45,7 @@ const pendingReviewRoutes = require("./pendingReview.routes");
 const sellerAuthRoutes = require("./sellerAuth.routes");
 const adminSellerApplicationsRoutes = require("./adminSellerApplications.routes");
 const adminSellerManagementRoutes = require("./adminSellerManagement.routes");
+const messageChatRoutes = require("./messageChat.routes");
 
 const router = express.Router();
 
@@ -94,5 +95,6 @@ router.use(pendingReviewRoutes);
 router.use(sellerAuthRoutes);
 router.use(adminSellerApplicationsRoutes);
 router.use(adminSellerManagementRoutes);
+router.use(messageChatRoutes);
 
 module.exports = router;

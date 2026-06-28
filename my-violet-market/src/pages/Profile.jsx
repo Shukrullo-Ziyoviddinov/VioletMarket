@@ -14,8 +14,13 @@ import { ProfilePendingReviewsSkeleton } from '../components/SkeletonLoader';
 import CommentFormModal from '../components/CommentFormModal';
 import ProfileExit from '../components/ProfileExit';
 import { fetchPendingReviews } from '../api/pendingReviewsApi';
+import { fetchMessageChatThreads } from '../api/messageChatApi';
+import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
+import ProductSellerChatModal from '../components/ProductSellerChatModal';
+import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
+import '../components/ProfileMessageThreads/ProfileMessageThreadsList.css';
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -81,6 +86,12 @@ const Profile = () => {
   const [pendingReviewsLoading, setPendingReviewsLoading] = useState(false);
   const [pendingCommentFormOpen, setPendingCommentFormOpen] = useState(false);
   const [selectedPendingReview, setSelectedPendingReview] = useState(null);
+  const [messageThreads, setMessageThreads] = useState([]);
+  const [messageThreadsUnread, setMessageThreadsUnread] = useState(0);
+  const [messageThreadsLoading, setMessageThreadsLoading] = useState(false);
+  const [messagesModalOpen, setMessagesModalOpen] = useState(false);
+  const [activeChatSellerId, setActiveChatSellerId] = useState(null);
+  const [isProfileSellerChatOpen, setIsProfileSellerChatOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [openAboutSections, setOpenAboutSections] = useState({});
   const [subscribedSellers, setSubscribedSellers] = useState([]);
@@ -332,6 +343,77 @@ const Profile = () => {
     setSelectedPendingReview(item);
     setPendingCommentFormOpen(true);
   };
+
+  const loadMessageThreads = useCallback(async () => {
+    if (!authToken) {
+      setMessageThreads([]);
+      setMessageThreadsUnread(0);
+      return;
+    }
+    setMessageThreadsLoading(true);
+    try {
+      const data = await fetchMessageChatThreads(authToken);
+      setMessageThreads(Array.isArray(data.items) ? data.items : []);
+      setMessageThreadsUnread(Number(data.totalUnread) || 0);
+    } catch {
+      setMessageThreads([]);
+      setMessageThreadsUnread(0);
+    } finally {
+      setMessageThreadsLoading(false);
+    }
+  }, [authToken]);
+
+  useEffect(() => {
+    if (!userData.isAuthenticated || !authToken) {
+      setMessageThreads([]);
+      setMessageThreadsUnread(0);
+      return;
+    }
+    loadMessageThreads();
+  }, [userData.isAuthenticated, authToken, loadMessageThreads]);
+
+  useEffect(() => {
+    const onUpdate = () => {
+      loadMessageThreads();
+    };
+    window.addEventListener('messageChatUpdated', onUpdate);
+    return () => window.removeEventListener('messageChatUpdated', onUpdate);
+  }, [loadMessageThreads]);
+
+  const openMessagesModal = () => {
+    loadMessageThreads();
+    setMessagesModalOpen(true);
+  };
+
+  const handleOpenMessageThread = (thread) => {
+    setMessagesModalOpen(false);
+    setActiveChatSellerId(thread.sellerId);
+    setIsProfileSellerChatOpen(true);
+  };
+
+  const activeChatSeller = useMemo(() => {
+    if (!activeChatSellerId) return null;
+    const fromCatalog = getSellerById(activeChatSellerId);
+    if (fromCatalog) return fromCatalog;
+    const thread = messageThreads.find((item) => item.sellerId === activeChatSellerId);
+    if (!thread) return null;
+    return {
+      id: thread.sellerId,
+      name: thread.sellerName,
+      logo: thread.sellerLogo,
+    };
+  }, [activeChatSellerId, getSellerById, messageThreads]);
+
+  const {
+    messages: profileChatMessages,
+    sendText: sendProfileChatText,
+    sendImage: sendProfileChatImage,
+    sendProduct: sendProfileChatProduct,
+  } = useSellerMessageChat({
+    authToken,
+    sellerId: activeChatSellerId,
+    enabled: isProfileSellerChatOpen && Boolean(authToken),
+  });
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
@@ -854,6 +936,63 @@ const Profile = () => {
               pendingReviewId={selectedPendingReview.id}
             />
           )}
+
+          {userData.isAuthenticated && (
+            <div
+              className="profile-messages-row"
+              onClick={openMessagesModal}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openMessagesModal();
+                }
+              }}
+              aria-label={t('profile.messages')}
+              aria-haspopup="dialog"
+              aria-expanded={messagesModalOpen}
+            >
+              <i className="bx bx-message-dots profile-messages-icon" aria-hidden="true" />
+              <span className="profile-messages-label">{t('profile.messages')}</span>
+              {messageThreadsUnread > 0 && (
+                <span className="profile-messages-badge" aria-hidden="true">
+                  {messageThreadsUnread > 99 ? '99+' : messageThreadsUnread}
+                </span>
+              )}
+              <i className="bx bx-chevron-right profile-messages-chevron" aria-hidden="true" />
+            </div>
+          )}
+
+          <GlobalModal
+            isOpen={messagesModalOpen}
+            onClose={() => setMessagesModalOpen(false)}
+            title={t('profile.messages')}
+          >
+            {messageThreadsLoading ? (
+              <ProfilePendingReviewsSkeleton count={3} />
+            ) : (
+              <ProfileMessageThreadsList
+                items={messageThreads}
+                onOpenThread={handleOpenMessageThread}
+              />
+            )}
+          </GlobalModal>
+
+          <ProductSellerChatModal
+            open={isProfileSellerChatOpen}
+            seller={activeChatSeller}
+            lang={lang}
+            messages={profileChatMessages}
+            onClose={() => {
+              setIsProfileSellerChatOpen(false);
+              setActiveChatSellerId(null);
+              loadMessageThreads();
+            }}
+            onSendText={sendProfileChatText}
+            onSendImage={sendProfileChatImage}
+            onSendProduct={sendProfileChatProduct}
+          />
 
           <div className="profile-card-auth">
             {userData.isAuthenticated ? (

@@ -8,10 +8,6 @@ import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSeller
 import ProductSellerChatContextProduct from './ProductSellerChatContextProduct/ProductSellerChatContextProduct';
 import './ProductSellerChatModal.css';
 
-function createMessageId() {
-  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
 export default function ProductSellerChatModal({
   open = false,
   seller = null,
@@ -19,7 +15,9 @@ export default function ProductSellerChatModal({
   contextProduct = null,
   messages = [],
   onClose,
-  onSendMessage,
+  onSendText,
+  onSendImage,
+  onSendProduct,
 }) {
   const { t } = useTranslation();
   const [contextProductSent, setContextProductSent] = useState(false);
@@ -75,34 +73,16 @@ export default function ProductSellerChatModal({
   if (!open || !seller) return null;
 
   const handleSendText = (text) => {
-    onSendMessage?.({
-      id: createMessageId(),
-      sender: 'customer',
-      type: 'text',
-      content: text,
-      createdAt: new Date().toISOString(),
-    });
+    onSendText?.(text);
   };
 
-  const handleSendImage = (previewUrl) => {
-    onSendMessage?.({
-      id: createMessageId(),
-      sender: 'customer',
-      type: 'image',
-      content: previewUrl,
-      createdAt: new Date().toISOString(),
-    });
+  const handleSendImage = (_previewUrl, file) => {
+    onSendImage?.(file);
   };
 
   const handleSendProduct = (product) => {
     if (!product || contextProductSent) return;
-    onSendMessage?.({
-      id: createMessageId(),
-      sender: 'customer',
-      type: 'product',
-      content: { ...product },
-      createdAt: new Date().toISOString(),
-    });
+    onSendProduct?.(product);
     setContextProductSent(true);
   };
 

@@ -1,9 +1,11 @@
 import React from 'react';
+import { normalizeImagePath } from '../../../utils/utils';
 import './ProductSellerChatMessageBubble.css';
 
 export default function ProductSellerChatMessageBubble({ message }) {
   const isCustomer = message?.sender === 'customer';
   const isImage = message?.type === 'image';
+  const imageSrc = isImage ? normalizeImagePath(message.content) : '';
 
   return (
     <div
@@ -15,7 +17,7 @@ export default function ProductSellerChatMessageBubble({ message }) {
     >
       {isImage ? (
         <img
-          src={message.content}
+          src={imageSrc}
           alt=""
           className="product-seller-chat-message-bubble__image"
         />

@@ -3,6 +3,7 @@ const controller = require("../../controllers/sellerAuthController");
 const sellerProductController = require("../../controllers/sellerProductController");
 const sellerUploadController = require("../../controllers/sellerUploadController");
 const { sellerAuthMiddleware } = require("../../middleware/sellerAuthMiddleware");
+const sellerMessageChatController = require("../../controllers/messageChat/sellerMessageChatController");
 
 const router = express.Router();
 
@@ -83,6 +84,26 @@ router.post(
   sellerAuthMiddleware,
   sellerVideoUploadGuard,
   sellerUploadController.uploadSellerVideo,
+);
+router.get(
+  "/seller-auth/message-chat/threads",
+  sellerAuthMiddleware,
+  sellerMessageChatController.listSellerThreads,
+);
+router.get(
+  "/seller-auth/message-chat/threads/:userId/messages",
+  sellerAuthMiddleware,
+  sellerMessageChatController.getSellerThreadMessages,
+);
+router.post(
+  "/seller-auth/message-chat/threads/:userId/messages",
+  sellerAuthMiddleware,
+  sellerMessageChatController.sendSellerMessage,
+);
+router.post(
+  "/seller-auth/message-chat/threads/:userId/read",
+  sellerAuthMiddleware,
+  sellerMessageChatController.markSellerThreadRead,
 );
 
 module.exports = router;
