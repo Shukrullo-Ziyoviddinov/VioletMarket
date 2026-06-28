@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import SellerAccountPausedNotice from '../SellerAccountPausedNotice/SellerAccountPausedNotice';
+import { resolveMiniGlobalModalPermission } from './miniGlobalModalTexts';
 import './MiniGlobalModal.css';
 
 const VARIANT_META = {
@@ -10,7 +11,92 @@ const VARIANT_META = {
   },
 };
 
-export default function MiniGlobalModal({ open = false, onClose, variant = 'seller-paused' }) {
+function MiniGlobalModalConfirm({
+  open,
+  permissionKey,
+  itemName,
+  loading,
+  onConfirm,
+  onCancel,
+}) {
+  const copy = useMemo(
+    () => resolveMiniGlobalModalPermission(permissionKey, itemName),
+    [permissionKey, itemName],
+  );
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !loading) {
+        onCancel?.();
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, loading, onCancel]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div className="mini-global-modal" role="presentation">
+      <button
+        type="button"
+        className="mini-global-modal__backdrop"
+        aria-label="Yopish"
+        onClick={loading ? undefined : onCancel}
+        disabled={loading}
+      />
+
+      <div className="mini-global-modal__center">
+        <div
+          className="mini-global-modal__dialog mini-global-modal__dialog--confirm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mini-global-modal-title"
+          aria-describedby="mini-global-modal-message"
+        >
+          <h2 id="mini-global-modal-title" className="mini-global-modal__title">
+            {copy.title}
+          </h2>
+          {copy.message ? (
+            <p id="mini-global-modal-message" className="mini-global-modal__message">
+              {copy.message}
+            </p>
+          ) : null}
+
+          <div className="mini-global-modal__actions">
+            <button
+              type="button"
+              className="mini-global-modal__btn mini-global-modal__btn--ghost"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {copy.cancelText}
+            </button>
+            <button
+              type="button"
+              className="mini-global-modal__btn mini-global-modal__btn--danger"
+              onClick={onConfirm}
+              disabled={loading}
+            >
+              {loading ? "O'chirilmoqda..." : copy.confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function MiniGlobalModalVariant({ open, onClose, variant }) {
   const meta = VARIANT_META[variant] || VARIANT_META['seller-paused'];
   const Content = meta.Content;
 
@@ -72,4 +158,31 @@ export default function MiniGlobalModal({ open = false, onClose, variant = 'sell
     </div>,
     document.body,
   );
+}
+
+export default function MiniGlobalModal({
+  open = false,
+  onClose,
+  variant = 'seller-paused',
+  permissionKey = '',
+  itemName = '',
+  loading = false,
+  onConfirm,
+}) {
+  const isConfirmMode = Boolean(permissionKey);
+
+  if (isConfirmMode) {
+    return (
+      <MiniGlobalModalConfirm
+        open={open}
+        permissionKey={permissionKey}
+        itemName={itemName}
+        loading={loading}
+        onConfirm={onConfirm}
+        onCancel={onClose}
+      />
+    );
+  }
+
+  return <MiniGlobalModalVariant open={open} onClose={onClose} variant={variant} />;
 }

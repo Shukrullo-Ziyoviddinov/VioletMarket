@@ -38,9 +38,14 @@
   gap: 8px;
 }
 
-.seller-product-card__edit-btn {
+.seller-product-card__actions {
   margin-top: auto;
-  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seller-product-card__edit-btn {
   border-color: #d8c9ef;
   color: #764ba2;
 }

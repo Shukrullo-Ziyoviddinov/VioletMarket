@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { resolveAssetUrl } from '../../utils/mediaUrl';
+import SellerProductCardMenu from '../SellerProductCardMenu/SellerProductCardMenu';
 import './SellerProductCard.css';
 
 const FALLBACK_IMAGE = resolveAssetUrl('');
@@ -19,7 +20,14 @@ function getImageSrc(product) {
   return resolveAssetUrl(product?.image || product?.mainImage || '');
 }
 
-export default function SellerProductCard({ product, onEdit }) {
+export default function SellerProductCard({
+  product,
+  onEdit,
+  onDelete,
+  isMenuOpen = false,
+  onMenuToggle,
+  onMenuClose,
+}) {
   const title = getProductTitle(product?.title);
   const price = String(product?.price || '').trim();
   const originalPrice = String(product?.originalPrice || '').trim();
@@ -59,15 +67,28 @@ export default function SellerProductCard({ product, onEdit }) {
           ) : null}
         </div>
 
-        <Button
-          type="default"
-          size="small"
-          icon={<EditOutlined />}
-          className="seller-product-card__edit-btn"
-          onClick={handleEdit}
-        >
-          Tahrirlash
-        </Button>
+        <div className="seller-product-card__actions">
+          <Button
+            type="default"
+            size="small"
+            icon={<EditOutlined />}
+            className="seller-product-card__edit-btn"
+            onClick={handleEdit}
+          >
+            Tahrirlash
+          </Button>
+
+          <SellerProductCardMenu
+            isOpen={isMenuOpen}
+            onToggle={onMenuToggle}
+            onClose={onMenuClose}
+            onEdit={handleEdit}
+            onDelete={() => {
+              if (!product?.id || typeof onDelete !== 'function') return;
+              onDelete(product.id);
+            }}
+          />
+        </div>
       </div>
     </article>
   );
