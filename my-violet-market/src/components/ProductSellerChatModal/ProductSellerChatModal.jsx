@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getPortalContainer } from '../../utils/utils';
@@ -38,6 +38,10 @@ export default function ProductSellerChatModal({
   const [editingMessage, setEditingMessage] = useState(null);
   const [composerText, setComposerText] = useState('');
   const [deletingMessageId, setDeletingMessageId] = useState(null);
+  const actionMessageRef = useRef(null);
+  const lockedScrollYRef = useRef(0);
+
+  actionMessageRef.current = actionMessage;
 
   useEffect(() => {
     if (!open) {
@@ -59,7 +63,7 @@ export default function ProductSellerChatModal({
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        if (actionMessage) {
+        if (actionMessageRef.current) {
           setActionMessage(null);
           return;
         }
@@ -67,7 +71,7 @@ export default function ProductSellerChatModal({
       }
     };
 
-    const scrollY = window.scrollY;
+    lockedScrollYRef.current = window.scrollY;
     const { style: bodyStyle } = document.body;
     const { style: htmlStyle } = document.documentElement;
 
@@ -80,7 +84,7 @@ export default function ProductSellerChatModal({
     htmlStyle.overflow = 'hidden';
     bodyStyle.overflow = 'hidden';
     bodyStyle.position = 'fixed';
-    bodyStyle.top = `-${scrollY}px`;
+    bodyStyle.top = `-${lockedScrollYRef.current}px`;
     bodyStyle.width = '100%';
 
     document.addEventListener('keydown', handleKeyDown);
@@ -91,10 +95,10 @@ export default function ProductSellerChatModal({
       bodyStyle.position = prevBodyPosition;
       bodyStyle.top = prevBodyTop;
       bodyStyle.width = prevBodyWidth;
-      window.scrollTo(0, scrollY);
+      window.scrollTo(0, lockedScrollYRef.current);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose, actionMessage]);
+  }, [open, onClose]);
 
   if (!open || !seller) return null;
 

@@ -59,11 +59,16 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-anchor: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 16px 14px;
   background: #f8f6fb;
+}
+
+.seller-user-chat-message-list--delete-lock {
+  overflow: hidden;
 }
 
 .seller-user-chat-message-list__empty {
