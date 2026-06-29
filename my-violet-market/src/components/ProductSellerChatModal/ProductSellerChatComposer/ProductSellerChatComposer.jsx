@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import ProductSellerChatEmojiPicker from '../ProductSellerChatEmojiPicker/ProductSellerChatEmojiPicker';
 import './ProductSellerChatComposer.css';
 
-export default function ProductSellerChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping }) {
+export default function ProductSellerChatComposer({
+  onSendText,
+  onSendImage,
+  onComposerActivity,
+  onStopTyping,
+  isSending = false,
+}) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -11,7 +17,7 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage, onC
 
   const handleSend = () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
     onStopTyping?.();
     onSendText?.(trimmed);
     setText('');
@@ -34,7 +40,7 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage, onC
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (!file || !file.type.startsWith('image/')) return;
+    if (!file || !file.type.startsWith('image/') || isSending) return;
 
     const previewUrl = URL.createObjectURL(file);
     onSendImage?.(previewUrl, file);
@@ -70,7 +76,7 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage, onC
           type="button"
           className="product-seller-chat-composer__send"
           onClick={handleSend}
-          disabled={!text.trim()}
+          disabled={!text.trim() || isSending}
           aria-label={t('productDetail.chat.send')}
         >
           <i className="bx bx-send" aria-hidden="true" />

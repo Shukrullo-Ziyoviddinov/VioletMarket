@@ -60,6 +60,7 @@ export default function MessagesPage() {
 
   const {
     messages,
+    isSending,
     sendText,
     sendImage,
   } = useUserMessageChat({
@@ -144,6 +145,7 @@ export default function MessagesPage() {
         onSendText={sendText}
         onSendImage={sendImage}
         isPartnerTyping={isUserTyping}
+        isSending={isSending}
         onComposerActivity={handleUserChatComposerActivity}
         onStopTyping={stopUserChatTyping}
       />

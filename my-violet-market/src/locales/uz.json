@@ -141,6 +141,7 @@
       "image": "Rasm yuklash",
       "send": "Yuborish",
       "typing": "Yozmoqda...",
+      "sending": "Yuborilmoqda...",
       "sendProduct": "Mahsulotni chatga yuborish"
     }
   },

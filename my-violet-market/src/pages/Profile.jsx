@@ -412,6 +412,7 @@ const Profile = () => {
 
   const {
     messages: profileChatMessages,
+    isSending: isProfileChatSending,
     sendText: sendProfileChatText,
     sendImage: sendProfileChatImage,
     sendProduct: sendProfileChatProduct,
@@ -1009,6 +1010,7 @@ const Profile = () => {
             onSendImage={sendProfileChatImage}
             onSendProduct={sendProfileChatProduct}
             isPartnerTyping={isProfileSellerTyping}
+            isSending={isProfileChatSending}
             onComposerActivity={handleProfileChatComposerActivity}
             onStopTyping={stopProfileChatTyping}
           />

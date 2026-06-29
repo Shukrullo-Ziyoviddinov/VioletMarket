@@ -6,6 +6,7 @@ import ProductSellerChatModalHeader from './ProductSellerChatModalHeader/Product
 import ProductSellerChatMessageList from './ProductSellerChatMessageList/ProductSellerChatMessageList';
 import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSellerChatComposer';
 import ProductSellerChatContextProduct from './ProductSellerChatContextProduct/ProductSellerChatContextProduct';
+import MessageChatSendStatus from '../MessageChatSendStatus';
 import './ProductSellerChatModal.css';
 
 export default function ProductSellerChatModal({
@@ -19,6 +20,7 @@ export default function ProductSellerChatModal({
   onSendImage,
   onSendProduct,
   isPartnerTyping = false,
+  isSending = false,
   onComposerActivity,
   onStopTyping,
 }) {
@@ -114,11 +116,13 @@ export default function ProductSellerChatModal({
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}
+        <MessageChatSendStatus active={isSending} />
         <ProductSellerChatComposer
           onSendText={handleSendText}
           onSendImage={handleSendImage}
           onComposerActivity={onComposerActivity}
           onStopTyping={onStopTyping}
+          isSending={isSending}
         />
       </div>
     </div>,

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '../../utils/mediaUrl';
+import MessageChatSendStatus from '../MessageChatSendStatus';
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
@@ -106,14 +107,14 @@ function SellerUserChatMessageList({ messages }) {
 
 const EMOJI_OPTIONS = ['😀', '😂', '😊', '😍', '🥰', '😉', '🙏', '👍', '👋', '🔥', '✅', '❤️'];
 
-function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping }) {
+function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping, isSending = false }) {
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleSend = () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
     onStopTyping?.();
     onSendText?.(trimmed);
     setText('');
@@ -130,7 +131,7 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (!file || !file.type.startsWith('image/')) return;
+    if (!file || !file.type.startsWith('image/') || isSending) return;
     onSendImage?.(file);
     setEmojiOpen(false);
   };
@@ -175,7 +176,7 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
           type="button"
           className="seller-user-chat-composer__send"
           onClick={handleSend}
-          disabled={!text.trim()}
+          disabled={!text.trim() || isSending}
           aria-label="Yuborish"
         >
           <i className="bx bx-send" aria-hidden="true" />
@@ -214,6 +215,7 @@ export default function SellerUserChatModal({
   onSendText,
   onSendImage,
   isPartnerTyping = false,
+  isSending = false,
   onComposerActivity,
   onStopTyping,
 }) {
@@ -242,11 +244,13 @@ export default function SellerUserChatModal({
       <div className="seller-user-chat-modal__panel" role="dialog" aria-modal="true">
         <SellerUserChatHeader user={user} onBack={onClose} isPartnerTyping={isPartnerTyping} />
         <SellerUserChatMessageList messages={messages} />
+        <MessageChatSendStatus active={isSending} />
         <SellerUserChatComposer
           onSendText={onSendText}
           onSendImage={onSendImage}
           onComposerActivity={onComposerActivity}
           onStopTyping={onStopTyping}
+          isSending={isSending}
         />
       </div>
     </div>,

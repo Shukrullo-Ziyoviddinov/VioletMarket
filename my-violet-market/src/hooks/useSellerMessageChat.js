@@ -10,6 +10,7 @@ import {
   MESSAGE_CHAT_SOCKET_EVENTS,
   subscribeMessageChatSocket,
 } from '../socket/useMessageChatSocket';
+import { useMessageSendState } from './useMessageSendState';
 
 function appendUniqueMessage(current, message) {
   if (!message || current.some((item) => item.id === message.id)) {
@@ -21,7 +22,7 @@ function appendUniqueMessage(current, message) {
 export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
+  const { isSending, beginSending, endSending } = useMessageSendState();
 
   const loadMessages = useCallback(async () => {
     if (!authToken || !sellerId) {
@@ -58,32 +59,37 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
 
       setMessages((current) => appendUniqueMessage(current, uiMessage));
 
+      if (uiMessage.sender === 'customer') {
+        endSending();
+      }
+
       if (uiMessage.sender === 'seller' && authToken) {
         markMessageChatThreadRead(authToken, sellerId).catch(() => {});
       }
 
       window.dispatchEvent(new CustomEvent('messageChatUpdated'));
     });
-  }, [enabled, sellerId, authToken]);
+  }, [enabled, sellerId, authToken, endSending]);
 
   const sendMessage = useCallback(
     async (payload) => {
-      if (!authToken || !sellerId || sending) return null;
+      if (!authToken || !sellerId || !beginSending()) return null;
 
-      setSending(true);
       try {
         const data = await sendMessageChatMessage(authToken, sellerId, payload);
         const message = data.message;
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+          endSending();
         }
         return message;
-      } finally {
-        setSending(false);
+      } catch {
+        endSending();
+        return null;
       }
     },
-    [authToken, sellerId, sending],
+    [authToken, sellerId, beginSending, endSending],
   );
 
   const sendText = useCallback(
@@ -93,13 +99,33 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
 
   const sendImage = useCallback(
     async (file) => {
-      if (!file) return null;
-      const upload = await uploadMessageChatImage(authToken, file);
-      const imagePath = upload?.data?.path;
-      if (!imagePath) return null;
-      return sendMessage({ type: 'image', content: imagePath });
+      if (!file || !authToken || !sellerId || !beginSending()) return null;
+
+      try {
+        const upload = await uploadMessageChatImage(authToken, file);
+        const imagePath = upload?.data?.path;
+        if (!imagePath) {
+          endSending();
+          return null;
+        }
+
+        const data = await sendMessageChatMessage(authToken, sellerId, {
+          type: 'image',
+          content: imagePath,
+        });
+        const message = data.message;
+        if (message) {
+          setMessages((current) => appendUniqueMessage(current, message));
+          window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+          endSending();
+        }
+        return message;
+      } catch {
+        endSending();
+        return null;
+      }
     },
-    [authToken, sendMessage],
+    [authToken, sellerId, beginSending, endSending],
   );
 
   const sendProduct = useCallback(
@@ -110,7 +136,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   return {
     messages,
     loading,
-    sending,
+    isSending,
     loadMessages,
     sendText,
     sendImage,

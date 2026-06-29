@@ -746,6 +746,7 @@ const ProductDetail = () => {
 
   const {
     messages: sellerChatMessages,
+    isSending: isSellerChatSending,
     sendText: sendSellerChatText,
     sendImage: sendSellerChatImage,
     sendProduct: sendSellerChatProduct,
@@ -2422,6 +2423,7 @@ const ProductDetail = () => {
         onSendImage={sendSellerChatImage}
         onSendProduct={sendSellerChatProduct}
         isPartnerTyping={isSellerTyping}
+        isSending={isSellerChatSending}
         onComposerActivity={handleSellerChatComposerActivity}
         onStopTyping={stopSellerChatTyping}
       />

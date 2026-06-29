@@ -1,0 +1,10 @@
+.message-chat-send-status {
+  margin: 0;
+  padding: 6px 14px 0;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: #9b4fe7;
+  text-align: right;
+  flex-shrink: 0;
+}
