@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
@@ -98,7 +98,25 @@ function SellerUserChatComposer({
 }) {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
   const isEditMode = Boolean(editingMessage);
+
+  const adjustTextareaHeight = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [text, adjustTextareaHeight]);
+
+  useEffect(() => {
+    if (!editingMessage) return;
+    textareaRef.current?.focus();
+    adjustTextareaHeight();
+  }, [editingMessage, adjustTextareaHeight]);
 
   const handleSubmit = () => {
     const trimmed = text.trim();
@@ -124,17 +142,9 @@ function SellerUserChatComposer({
   };
 
   return (
-    <div className="seller-user-chat-composer">
+    <div className="seller-user-chat-composer-wrap">
       {replyTarget ? <MessageChatReplyBar message={replyTarget} onCancel={onCancelComposerMode} /> : null}
-      {isEditMode ? (
-        <div className="seller-user-chat-composer__edit-banner">
-          <span>Xabarni tahrirlash</span>
-          <button type="button" onClick={onCancelComposerMode} aria-label="Bekor qilish">
-            <i className="bx bx-x" aria-hidden="true" />
-          </button>
-        </div>
-      ) : null}
-
+      <div className="seller-user-chat-composer">
       {emojiOpen ? (
         <div className="seller-user-chat-emoji-picker">
           {EMOJI_OPTIONS.map((emoji) => (
@@ -156,6 +166,7 @@ function SellerUserChatComposer({
 
       <div className="seller-user-chat-composer__field">
         <textarea
+          ref={textareaRef}
           className="seller-user-chat-composer__input"
           rows={1}
           placeholder="Xabar yozing..."
@@ -199,6 +210,7 @@ function SellerUserChatComposer({
           <i className="bx bx-image" aria-hidden="true" />
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
+      </div>
       </div>
     </div>
   );

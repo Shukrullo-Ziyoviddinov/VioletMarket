@@ -30,15 +30,7 @@ export default function ProductSellerChatMessageBubble({ message, onPress }) {
           className="product-seller-chat-message-bubble__image"
         />
       ) : (
-        <p className="product-seller-chat-message-bubble__text">
-          {message.content}
-          {message.editedAt ? (
-            <span className="product-seller-chat-message-bubble__edited">
-              {' '}
-              {t('productDetail.chat.edited')}
-            </span>
-          ) : null}
-        </p>
+        <p className="product-seller-chat-message-bubble__text">{message.content}</p>
       )}
       <MessageChatBubbleMeta message={message} viewerRole="user" />
     </button>

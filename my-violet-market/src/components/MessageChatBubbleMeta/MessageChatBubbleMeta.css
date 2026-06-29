@@ -1,12 +1,28 @@
 .message-chat-bubble-meta {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
   margin-top: 4px;
-  margin-left: auto;
   padding-top: 2px;
   line-height: 1;
+}
+
+.message-chat-bubble-meta__edited {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+}
+
+.message-chat-bubble-meta__end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-left: auto;
 }
 
 .message-chat-bubble-meta__time {

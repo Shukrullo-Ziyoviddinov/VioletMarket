@@ -126,42 +126,12 @@
   color: #fff;
 }
 
-.seller-user-chat-bubble__edited {
-  font-size: 11px;
-  opacity: 0.85;
-}
-
 .seller-user-chat-composer__send--edit {
   background: #2f9d4b;
 }
 
 .seller-user-chat-composer__send--edit:hover:not(:disabled) {
   background: #268a41;
-}
-
-.seller-user-chat-composer__edit-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: #9b4fe7;
-}
-
-.seller-user-chat-composer__edit-banner button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 50%;
-  background: #ece7f3;
-  color: #5b4d73;
-  font-size: 18px;
-  cursor: pointer;
 }
 
 .seller-user-chat-bubble__image {
@@ -225,20 +195,34 @@
   color: #fff;
 }
 
+.seller-user-chat-composer-wrap {
+  flex-shrink: 0;
+  border-top: 1px solid #ece7f3;
+  background: #fff;
+}
+
+.seller-user-chat-composer-wrap .message-chat-reply-bar {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  border-top: none;
+  border-bottom: 1px solid #ece7f3;
+  padding: 10px 14px;
+}
+
 .seller-user-chat-composer {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-top: 1px solid #ece7f3;
   background: #fff;
 }
 
 .seller-user-chat-composer__field {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 6px;
   padding: 4px 8px;
   border: 1px solid #d8c9ef;
@@ -251,10 +235,12 @@
   min-height: 24px;
   max-height: 120px;
   resize: none;
+  overflow-y: auto;
   border: none;
   background: transparent;
   font-family: inherit;
   font-size: 14px;
+  line-height: 1.45;
   outline: none;
 }
 

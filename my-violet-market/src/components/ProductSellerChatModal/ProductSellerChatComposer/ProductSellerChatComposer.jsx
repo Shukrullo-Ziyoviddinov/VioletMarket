@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatEmojiPicker from '../ProductSellerChatEmojiPicker/ProductSellerChatEmojiPicker';
 import MessageChatReplyBar from '../MessageChatReplyBar';
@@ -19,7 +19,25 @@ export default function ProductSellerChatComposer({
   const { t } = useTranslation();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
   const isEditMode = Boolean(editingMessage);
+
+  const adjustTextareaHeight = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [text, adjustTextareaHeight]);
+
+  useEffect(() => {
+    if (!editingMessage) return;
+    textareaRef.current?.focus();
+    adjustTextareaHeight();
+  }, [editingMessage, adjustTextareaHeight]);
 
   const handleSubmit = () => {
     const trimmed = text.trim();
@@ -53,17 +71,9 @@ export default function ProductSellerChatComposer({
   };
 
   return (
-    <div className="product-seller-chat-composer">
+    <div className="product-seller-chat-composer-wrap">
       {replyTarget ? <MessageChatReplyBar message={replyTarget} onCancel={onCancelComposerMode} /> : null}
-      {isEditMode ? (
-        <div className="product-seller-chat-composer__edit-banner">
-          <span>{t('productDetail.chat.editingMessage')}</span>
-          <button type="button" onClick={onCancelComposerMode} aria-label={t('productDetail.chat.cancelEdit')}>
-            <i className="bx bx-x" aria-hidden="true" />
-          </button>
-        </div>
-      ) : null}
-
+      <div className="product-seller-chat-composer">
       <ProductSellerChatEmojiPicker
         open={emojiOpen}
         onSelect={handleEmojiSelect}
@@ -72,6 +82,7 @@ export default function ProductSellerChatComposer({
 
       <div className="product-seller-chat-composer__field">
         <textarea
+          ref={textareaRef}
           className="product-seller-chat-composer__input"
           rows={1}
           placeholder={t('productDetail.chat.inputPlaceholder')}
@@ -129,6 +140,7 @@ export default function ProductSellerChatComposer({
           tabIndex={-1}
           aria-hidden
         />
+      </div>
       </div>
     </div>
   );

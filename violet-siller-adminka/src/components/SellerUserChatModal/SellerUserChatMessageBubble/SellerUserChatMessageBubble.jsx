@@ -21,10 +21,7 @@ export default function SellerUserChatMessageBubble({ message, onPress }) {
       {isImage ? (
         <img src={imageSrc} alt="" className="seller-user-chat-bubble__image" />
       ) : (
-        <p className="seller-user-chat-bubble__text">
-          {message.content}
-          {message.editedAt ? <span className="seller-user-chat-bubble__edited"> (tahrirlangan)</span> : null}
-        </p>
+        <p className="seller-user-chat-bubble__text">{message.content}</p>
       )}
       <MessageChatBubbleMeta message={message} viewerRole="seller" />
     </button>
