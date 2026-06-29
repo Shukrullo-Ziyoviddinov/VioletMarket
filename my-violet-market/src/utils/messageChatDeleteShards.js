@@ -27,9 +27,9 @@ export function createMessageChatDeleteShards(seed = 1) {
         width: 100 / COLS + 1.2,
         height: 100 / ROWS + 1.2,
         tx: `${(r1 - 0.5) * 160}px`,
-        ty: `${40 + r2 * 90}px`,
-        rot: `${(r3 - 0.5) * 260}deg`,
-        delay: `${0.08 + r4 * 0.22}s`,
+        ty: `${24 + r2 * 80}px`,
+        rot: `${(r3 - 0.5) * 280}deg`,
+        delay: `${r4 * 0.1}s`,
         drift: `${(r2 - 0.5) * 30}px`,
       });
     }

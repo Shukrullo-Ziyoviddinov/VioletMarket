@@ -54,11 +54,19 @@ function SellerUserChatHeader({
 
 function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId = null }) {
   const endRef = useRef(null);
+  const prevLengthRef = useRef(messages.length);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (deletingMessageId) return;
+
+    const grew = messages.length > prevLengthRef.current;
+    prevLengthRef.current = messages.length;
+
+    if (grew) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, deletingMessageId]);
 
   return (
     <div className="seller-user-chat-message-list">
@@ -68,32 +76,35 @@ function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId
         messages.map((message) => {
           const isHighlighted = highlightedMessageId === message.id;
           const isDeleting = deletingMessageId === message.id;
+          const rowClassName = `message-chat-message-row${
+            isDeleting ? ' message-chat-message-row--deleting' : ''
+          }`;
 
           if (message?.type === 'product') {
             return (
-              <SellerUserChatProductMessage
-                key={message.id}
-                product={message.content}
+              <div key={message.id} ref={registerMessageRef(message.id)} className={rowClassName}>
+                <SellerUserChatProductMessage
+                  product={message.content}
+                  message={message}
+                  isSeller={message.sender === 'seller'}
+                  onPress={onMessagePress}
+                  isHighlighted={isHighlighted}
+                  isDeleting={isDeleting}
+                  onJumpToMessage={jumpToMessage}
+                />
+              </div>
+            );
+          }
+          return (
+            <div key={message.id} ref={registerMessageRef(message.id)} className={rowClassName}>
+              <SellerUserChatMessageBubble
                 message={message}
-                isSeller={message.sender === 'seller'}
                 onPress={onMessagePress}
-                messageRef={registerMessageRef(message.id)}
                 isHighlighted={isHighlighted}
                 isDeleting={isDeleting}
                 onJumpToMessage={jumpToMessage}
               />
-            );
-          }
-          return (
-            <SellerUserChatMessageBubble
-              key={message.id}
-              message={message}
-              onPress={onMessagePress}
-              messageRef={registerMessageRef(message.id)}
-              isHighlighted={isHighlighted}
-              isDeleting={isDeleting}
-              onJumpToMessage={jumpToMessage}
-            />
+            </div>
           );
         })
       )}

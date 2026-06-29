@@ -14,7 +14,6 @@ export default function SellerUserChatProductMessage({
   message,
   isSeller,
   onPress,
-  messageRef,
   isHighlighted = false,
   isDeleting = false,
   onJumpToMessage,
@@ -26,7 +25,6 @@ export default function SellerUserChatProductMessage({
 
   return (
     <button
-      ref={messageRef}
       type="button"
       className={`seller-user-chat-product${
         isSeller ? ' seller-user-chat-product--seller' : ' seller-user-chat-product--customer'

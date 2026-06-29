@@ -14,7 +14,6 @@ const BUBBLE_COLORS = {
 export default function ProductSellerChatMessageBubble({
   message,
   onPress,
-  messageRef,
   isHighlighted = false,
   isDeleting = false,
   onJumpToMessage,
@@ -27,7 +26,6 @@ export default function ProductSellerChatMessageBubble({
 
   return (
     <button
-      ref={messageRef}
       type="button"
       className={`product-seller-chat-message-bubble${
         isCustomer

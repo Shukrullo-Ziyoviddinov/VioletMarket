@@ -93,11 +93,4 @@
 .product-seller-chat-message-bubble--deleting {
   pointer-events: none;
   overflow: visible;
-  animation: message-chat-delete-shake 0.16s ease-in-out;
-}
-
-.product-seller-chat-message-bubble--deleting > :not(.message-chat-delete-shatter) {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.05s linear;
 }

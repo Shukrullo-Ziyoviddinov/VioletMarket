@@ -76,6 +76,32 @@
   height: 1px;
 }
 
+.message-chat-message-row {
+  display: flex;
+  width: 100%;
+  max-height: 800px;
+}
+
+.message-chat-message-row--deleting {
+  pointer-events: none;
+  overflow: visible;
+  animation: message-chat-message-row-collapse 1.28s ease-in forwards;
+}
+
+@keyframes message-chat-message-row-collapse {
+  0%,
+  68% {
+    max-height: 800px;
+    opacity: 1;
+  }
+  100% {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}
+
 .seller-user-chat-bubble {
   position: relative;
   max-width: min(78%, 300px);
@@ -358,12 +384,4 @@
 .seller-user-chat-product--deleting {
   pointer-events: none;
   overflow: visible;
-  animation: message-chat-delete-shake 0.16s ease-in-out;
-}
-
-.seller-user-chat-bubble--deleting > :not(.message-chat-delete-shatter),
-.seller-user-chat-product--deleting > :not(.message-chat-delete-shatter) {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.05s linear;
 }
