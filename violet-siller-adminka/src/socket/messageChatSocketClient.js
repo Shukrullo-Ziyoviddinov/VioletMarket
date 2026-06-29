@@ -25,6 +25,8 @@ function bindSocketEvents(nextSocket) {
   nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.SENDING);
   nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.PRESENCE_UPDATE);
   nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.READ);
+  nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED);
+  nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED);
 
   nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
     dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
@@ -48,6 +50,14 @@ function bindSocketEvents(nextSocket) {
 
   nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.READ, (payload) => {
     dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.READ, payload);
+  });
+
+  nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED, (payload) => {
+    dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED, payload);
+  });
+
+  nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED, (payload) => {
+    dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED, payload);
   });
 }
 

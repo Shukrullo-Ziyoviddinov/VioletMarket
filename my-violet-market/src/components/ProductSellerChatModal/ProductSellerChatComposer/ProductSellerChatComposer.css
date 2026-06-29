@@ -1,3 +1,36 @@
+.product-seller-chat-composer__send--edit {
+  background: #2f9d4b;
+}
+
+.product-seller-chat-composer__send--edit:hover:not(:disabled) {
+  background: #268a41;
+}
+
+.product-seller-chat-composer__edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b4fe7;
+}
+
+.product-seller-chat-composer__edit-banner button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: #ece7f3;
+  color: #5b4d73;
+  font-size: 18px;
+  cursor: pointer;
+}
+
 .product-seller-chat-composer {
   position: relative;
   flex-shrink: 0;

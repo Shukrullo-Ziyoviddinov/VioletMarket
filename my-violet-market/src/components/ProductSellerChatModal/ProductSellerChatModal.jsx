@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getPortalContainer } from '../../utils/utils';
+import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import ProductSellerChatModalHeader from './ProductSellerChatModalHeader/ProductSellerChatModalHeader';
 import ProductSellerChatMessageList from './ProductSellerChatMessageList/ProductSellerChatMessageList';
 import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSellerChatComposer';
 import ProductSellerChatContextProduct from './ProductSellerChatContextProduct/ProductSellerChatContextProduct';
+import MessageChatActionsModal from './MessageChatActionsModal';
 import './ProductSellerChatModal.css';
 
 export default function ProductSellerChatModal({
@@ -18,6 +20,8 @@ export default function ProductSellerChatModal({
   onSendText,
   onSendImage,
   onSendProduct,
+  onDeleteMessage,
+  onEditMessage,
   isPartnerTyping = false,
   isPartnerSending = false,
   isPartnerOnline = false,
@@ -28,10 +32,18 @@ export default function ProductSellerChatModal({
 }) {
   const { t } = useTranslation();
   const [contextProductSent, setContextProductSent] = useState(false);
+  const [actionMessage, setActionMessage] = useState(null);
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [composerText, setComposerText] = useState('');
 
   useEffect(() => {
     if (!open) {
       setContextProductSent(false);
+      setActionMessage(null);
+      setReplyTarget(null);
+      setEditingMessage(null);
+      setComposerText('');
     }
   }, [open]);
 
@@ -44,6 +56,10 @@ export default function ProductSellerChatModal({
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
+        if (actionMessage) {
+          setActionMessage(null);
+          return;
+        }
         onClose?.();
       }
     };
@@ -75,16 +91,52 @@ export default function ProductSellerChatModal({
       window.scrollTo(0, scrollY);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, actionMessage]);
 
   if (!open || !seller) return null;
 
-  const handleSendText = (text) => {
-    onSendText?.(text);
+  const resetComposerModes = () => {
+    setReplyTarget(null);
+    setEditingMessage(null);
+    setComposerText('');
   };
 
-  const handleSendImage = (_previewUrl, file) => {
-    onSendImage?.(file);
+  const handleSendText = async (text) => {
+    if (editingMessage) {
+      await onEditMessage?.(editingMessage.id, text);
+      setEditingMessage(null);
+      setComposerText('');
+      return;
+    }
+
+    const replyTo = replyTarget ? buildReplyToPayload(replyTarget) : null;
+    onSendText?.(text, replyTo);
+    setReplyTarget(null);
+    setComposerText('');
+  };
+
+  const handleDeleteMessage = async (message) => {
+    const ok = await onDeleteMessage?.(message.id);
+    if (!ok) return;
+    if (editingMessage?.id === message.id) {
+      setEditingMessage(null);
+      setComposerText('');
+    }
+    if (replyTarget?.id === message.id) {
+      setReplyTarget(null);
+    }
+  };
+
+  const handleEditMessage = (message) => {
+    setReplyTarget(null);
+    setEditingMessage(message);
+    setComposerText(String(message.content || ''));
+  };
+
+  const handleReplyMessage = (message) => {
+    setEditingMessage(null);
+    setComposerText('');
+    setReplyTarget(message);
   };
 
   const handleSendProduct = (product) => {
@@ -117,16 +169,30 @@ export default function ProductSellerChatModal({
           isPartnerOnline={isPartnerOnline}
           partnerLastActiveAt={partnerLastActiveAt}
         />
-        <ProductSellerChatMessageList messages={messages} />
+        <ProductSellerChatMessageList messages={messages} onMessagePress={setActionMessage} />
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}
         <ProductSellerChatComposer
+          text={composerText}
+          onTextChange={setComposerText}
+          editingMessage={editingMessage}
+          replyTarget={replyTarget}
+          onCancelComposerMode={resetComposerModes}
           onSendText={handleSendText}
-          onSendImage={handleSendImage}
+          onSendImage={onSendImage}
           onComposerActivity={onComposerActivity}
           onStopTyping={onStopTyping}
           isSending={isSending}
+        />
+        <MessageChatActionsModal
+          open={Boolean(actionMessage)}
+          message={actionMessage}
+          viewerRole="user"
+          onClose={() => setActionMessage(null)}
+          onDelete={handleDeleteMessage}
+          onEdit={handleEditMessage}
+          onReply={handleReplyMessage}
         />
       </div>
     </div>,

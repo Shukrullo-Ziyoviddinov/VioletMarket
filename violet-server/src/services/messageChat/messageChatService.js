@@ -3,6 +3,11 @@ const { MessageChat } = require("../../models/messageChat");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
+const {
+  buildReplyPreview,
+  mapReplyToClient,
+  mapReplyToSocket,
+} = require("./messageChatReplyHelpers");
 
 const DEFAULT_AVATAR =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+8J+RpDwvdGV4dD48L3N2Zz4=";
@@ -62,6 +67,32 @@ function validateContent(type, content) {
   return content;
 }
 
+async function resolveReplyTo(uid, sellerId, replyToRaw) {
+  const messageId = String(replyToRaw?.messageId || "").trim();
+  if (!messageId) return undefined;
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new HttpError(400, "Javob xabari noto'g'ri", "INVALID_REPLY");
+  }
+
+  const parent = await MessageChat.findOne({
+    _id: messageId,
+    userId: uid,
+    sellerId,
+  }).lean();
+
+  if (!parent) {
+    throw new HttpError(404, "Javob xabari topilmadi", "REPLY_NOT_FOUND");
+  }
+
+  return {
+    messageId: String(parent._id),
+    sender: parent.sender,
+    type: parent.type,
+    preview: buildReplyPreview(parent),
+  };
+}
+
 function mapMessageToClient(row) {
   return {
     id: String(row._id),
@@ -71,6 +102,8 @@ function mapMessageToClient(row) {
     createdAt: row.createdAt,
     readByUser: Boolean(row.readByUser),
     readBySeller: Boolean(row.readBySeller),
+    replyTo: mapReplyToClient(row.replyTo),
+    editedAt: row.editedAt || null,
   };
 }
 
@@ -83,6 +116,8 @@ function mapMessageToSocket(row) {
     createdAt: row.createdAt,
     readByUser: Boolean(row.readByUser),
     readBySeller: Boolean(row.readBySeller),
+    replyTo: mapReplyToSocket(row.replyTo),
+    editedAt: row.editedAt || null,
   };
 }
 
@@ -246,6 +281,7 @@ async function sendUserMessage(userId, sellerIdRaw, payload) {
 
   const type = normalizeMessageType(payload?.type);
   const content = validateContent(type, payload?.content);
+  const replyTo = await resolveReplyTo(uid, sellerId, payload?.replyTo);
 
   const doc = await MessageChat.create({
     userId: uid,
@@ -255,6 +291,7 @@ async function sendUserMessage(userId, sellerIdRaw, payload) {
     content,
     readByUser: true,
     readBySeller: false,
+    ...(replyTo ? { replyTo } : {}),
   });
 
   return {
@@ -271,6 +308,7 @@ async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
 
   const type = normalizeMessageType(payload?.type);
   const content = validateContent(type, payload?.content);
+  const replyTo = await resolveReplyTo(uid, sellerId, payload?.replyTo);
 
   const doc = await MessageChat.create({
     userId: uid,
@@ -280,6 +318,7 @@ async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
     content,
     readByUser: false,
     readBySeller: true,
+    ...(replyTo ? { replyTo } : {}),
   });
 
   return {
@@ -312,6 +351,116 @@ async function markThreadReadBySeller(sellerShopId, userIdRaw) {
   return { ok: true };
 }
 
+async function deleteUserMessage(userId, sellerIdRaw, messageIdRaw) {
+  const uid = toUserObjectId(userId);
+  const sellerId = normalizeSellerId(sellerIdRaw);
+  const messageId = String(messageIdRaw || "").trim();
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new HttpError(400, "Xabar ID noto'g'ri", "INVALID_MESSAGE_ID");
+  }
+
+  const row = await MessageChat.findOneAndDelete({
+    _id: messageId,
+    userId: uid,
+    sellerId,
+    sender: "user",
+  }).lean();
+
+  if (!row) {
+    throw new HttpError(404, "Xabar topilmadi yoki o'chirish mumkin emas", "MESSAGE_NOT_FOUND");
+  }
+
+  return { messageId: String(row._id) };
+}
+
+async function deleteSellerMessage(sellerShopId, userIdRaw, messageIdRaw) {
+  const sellerId = normalizeSellerId(sellerShopId);
+  const uid = toUserObjectId(userIdRaw);
+  const messageId = String(messageIdRaw || "").trim();
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new HttpError(400, "Xabar ID noto'g'ri", "INVALID_MESSAGE_ID");
+  }
+
+  const row = await MessageChat.findOneAndDelete({
+    _id: messageId,
+    userId: uid,
+    sellerId,
+    sender: "seller",
+  }).lean();
+
+  if (!row) {
+    throw new HttpError(404, "Xabar topilmadi yoki o'chirish mumkin emas", "MESSAGE_NOT_FOUND");
+  }
+
+  return { messageId: String(row._id) };
+}
+
+async function editUserMessage(userId, sellerIdRaw, messageIdRaw, textRaw) {
+  const uid = toUserObjectId(userId);
+  const sellerId = normalizeSellerId(sellerIdRaw);
+  const messageId = String(messageIdRaw || "").trim();
+  const content = validateContent("text", textRaw);
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new HttpError(400, "Xabar ID noto'g'ri", "INVALID_MESSAGE_ID");
+  }
+
+  const row = await MessageChat.findOneAndUpdate(
+    {
+      _id: messageId,
+      userId: uid,
+      sellerId,
+      sender: "user",
+      type: "text",
+    },
+    { $set: { content, editedAt: new Date() } },
+    { new: true },
+  ).lean();
+
+  if (!row) {
+    throw new HttpError(404, "Xabar topilmadi yoki tahrirlash mumkin emas", "MESSAGE_NOT_FOUND");
+  }
+
+  return {
+    message: mapMessageToClient(row),
+    socketMessage: mapMessageToSocket(row),
+  };
+}
+
+async function editSellerMessage(sellerShopId, userIdRaw, messageIdRaw, textRaw) {
+  const sellerId = normalizeSellerId(sellerShopId);
+  const uid = toUserObjectId(userIdRaw);
+  const messageId = String(messageIdRaw || "").trim();
+  const content = validateContent("text", textRaw);
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new HttpError(400, "Xabar ID noto'g'ri", "INVALID_MESSAGE_ID");
+  }
+
+  const row = await MessageChat.findOneAndUpdate(
+    {
+      _id: messageId,
+      userId: uid,
+      sellerId,
+      sender: "seller",
+      type: "text",
+    },
+    { $set: { content, editedAt: new Date() } },
+    { new: true },
+  ).lean();
+
+  if (!row) {
+    throw new HttpError(404, "Xabar topilmadi yoki tahrirlash mumkin emas", "MESSAGE_NOT_FOUND");
+  }
+
+  return {
+    message: mapMessageToClient(row),
+    socketMessage: mapMessageToSocket(row),
+  };
+}
+
 module.exports = {
   listUserThreads,
   listSellerThreads,
@@ -321,4 +470,8 @@ module.exports = {
   sendSellerMessage,
   markThreadReadByUser,
   markThreadReadBySeller,
+  deleteUserMessage,
+  deleteSellerMessage,
+  editUserMessage,
+  editSellerMessage,
 };

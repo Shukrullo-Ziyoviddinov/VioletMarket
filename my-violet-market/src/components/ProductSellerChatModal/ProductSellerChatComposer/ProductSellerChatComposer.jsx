@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatEmojiPicker from '../ProductSellerChatEmojiPicker/ProductSellerChatEmojiPicker';
+import MessageChatReplyBar from '../MessageChatReplyBar';
 import './ProductSellerChatComposer.css';
 
 export default function ProductSellerChatComposer({
@@ -9,31 +10,35 @@ export default function ProductSellerChatComposer({
   onComposerActivity,
   onStopTyping,
   isSending = false,
+  text = '',
+  onTextChange,
+  editingMessage = null,
+  replyTarget = null,
+  onCancelComposerMode,
 }) {
   const { t } = useTranslation();
-  const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const isEditMode = Boolean(editingMessage);
 
-  const handleSend = () => {
+  const handleSubmit = () => {
     const trimmed = text.trim();
     if (!trimmed || isSending) return;
     onStopTyping?.();
     onSendText?.(trimmed);
-    setText('');
     setEmojiOpen(false);
   };
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      handleSend();
+      handleSubmit();
     }
   };
 
   const handleEmojiSelect = (emoji) => {
     const nextText = `${text}${emoji}`;
-    setText(nextText);
+    onTextChange?.(nextText);
     onComposerActivity?.(nextText.trim().length > 0);
   };
 
@@ -49,6 +54,16 @@ export default function ProductSellerChatComposer({
 
   return (
     <div className="product-seller-chat-composer">
+      {replyTarget ? <MessageChatReplyBar message={replyTarget} onCancel={onCancelComposerMode} /> : null}
+      {isEditMode ? (
+        <div className="product-seller-chat-composer__edit-banner">
+          <span>{t('productDetail.chat.editingMessage')}</span>
+          <button type="button" onClick={onCancelComposerMode} aria-label={t('productDetail.chat.cancelEdit')}>
+            <i className="bx bx-x" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
       <ProductSellerChatEmojiPicker
         open={emojiOpen}
         onSelect={handleEmojiSelect}
@@ -63,7 +78,7 @@ export default function ProductSellerChatComposer({
           value={text}
           onChange={(event) => {
             const nextText = event.target.value;
-            setText(nextText);
+            onTextChange?.(nextText);
             onComposerActivity?.(nextText.trim().length > 0);
           }}
           onKeyDown={handleKeyDown}
@@ -74,12 +89,12 @@ export default function ProductSellerChatComposer({
 
         <button
           type="button"
-          className="product-seller-chat-composer__send"
-          onClick={handleSend}
+          className={`product-seller-chat-composer__send${isEditMode ? ' product-seller-chat-composer__send--edit' : ''}`}
+          onClick={handleSubmit}
           disabled={!text.trim() || isSending}
-          aria-label={t('productDetail.chat.send')}
+          aria-label={isEditMode ? t('productDetail.chat.saveEdit') : t('productDetail.chat.send')}
         >
-          <i className="bx bx-send" aria-hidden="true" />
+          <i className={`bx ${isEditMode ? 'bx-check' : 'bx-send'}`} aria-hidden="true" />
         </button>
       </div>
 

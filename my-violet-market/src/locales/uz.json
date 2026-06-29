@@ -144,6 +144,16 @@
       "sending": "Yuborilmoqda...",
       "online": "Online",
       "lastActive": "Oxirgi faollik",
+      "actionDelete": "O'chirish",
+      "actionEdit": "Tahrirlash",
+      "actionReply": "Javob berish",
+      "openMessageActions": "Xabar amallari",
+      "replyingTo": "Javob",
+      "cancelReply": "Javobni bekor qilish",
+      "editingMessage": "Tahrirlanmoqda",
+      "cancelEdit": "Tahrirlashni bekor qilish",
+      "saveEdit": "Saqlash",
+      "edited": "(tahrirlangan)",
       "sendProduct": "Mahsulotni chatga yuborish"
     }
   },

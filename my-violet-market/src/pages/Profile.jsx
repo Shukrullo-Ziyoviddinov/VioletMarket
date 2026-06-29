@@ -418,6 +418,8 @@ const Profile = () => {
     sendText: sendProfileChatText,
     sendImage: sendProfileChatImage,
     sendProduct: sendProfileChatProduct,
+    deleteMessage: deleteProfileChatMessage,
+    editMessage: editProfileChatMessage,
   } = useSellerMessageChat({
     authToken,
     sellerId: activeChatSellerId,
@@ -1024,6 +1026,8 @@ const Profile = () => {
             onSendText={sendProfileChatText}
             onSendImage={sendProfileChatImage}
             onSendProduct={sendProfileChatProduct}
+            onDeleteMessage={deleteProfileChatMessage}
+            onEditMessage={editProfileChatMessage}
             isPartnerTyping={isProfileSellerTyping}
             isPartnerSending={isProfileSellerPartnerSending}
             isPartnerOnline={isProfileSellerOnline}

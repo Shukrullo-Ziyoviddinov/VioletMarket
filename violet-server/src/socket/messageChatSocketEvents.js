@@ -6,6 +6,8 @@ const MESSAGE_CHAT_SOCKET_EVENTS = {
   PRESENCE_SUBSCRIBE: "messageChat:presence:subscribe",
   PRESENCE_UPDATE: "messageChat:presence:update",
   READ: "messageChat:read",
+  MESSAGE_DELETED: "messageChat:messageDeleted",
+  MESSAGE_UPDATED: "messageChat:messageUpdated",
 };
 
 module.exports = { MESSAGE_CHAT_SOCKET_EVENTS };

@@ -65,6 +65,8 @@ export default function MessagesPage() {
     isSending,
     sendText,
     sendImage,
+    deleteMessage,
+    editMessage,
   } = useUserMessageChat({
     token,
     userId: activeUser?.userId,
@@ -158,6 +160,8 @@ export default function MessagesPage() {
         onClose={handleCloseChat}
         onSendText={sendText}
         onSendImage={sendImage}
+        onDeleteMessage={deleteMessage}
+        onEditMessage={editMessage}
         isPartnerTyping={isUserTyping}
         isPartnerSending={isUserPartnerSending}
         isPartnerOnline={isUserOnline}

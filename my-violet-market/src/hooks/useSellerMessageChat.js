@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  deleteMessageChatMessage,
+  editMessageChatMessage,
   fetchMessageChatThreadMessages,
   markMessageChatThreadRead,
   sendMessageChatMessage,
@@ -19,6 +21,11 @@ function appendUniqueMessage(current, message) {
     return current;
   }
   return [...current, message];
+}
+
+function replaceMessage(current, message) {
+  if (!message) return current;
+  return current.map((item) => (item.id === message.id ? message : item));
 }
 
 export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
@@ -96,6 +103,35 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     });
   }, [enabled, sellerId]);
 
+  useEffect(() => {
+    if (!enabled || !sellerId) return undefined;
+
+    const unsubscribeDeleted = subscribeMessageChatSocket(
+      MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED,
+      (payload) => {
+        if (!payload || String(payload.sellerId) !== String(sellerId)) return;
+        setMessages((current) => current.filter((item) => item.id !== String(payload.messageId)));
+        window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+      },
+    );
+
+    const unsubscribeUpdated = subscribeMessageChatSocket(
+      MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED,
+      (payload) => {
+        if (!payload || String(payload.sellerId) !== String(sellerId)) return;
+        const uiMessage = mapMessageChatSocketMessage(payload.message);
+        if (!uiMessage) return;
+        setMessages((current) => replaceMessage(current, uiMessage));
+        window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+      },
+    );
+
+    return () => {
+      unsubscribeDeleted();
+      unsubscribeUpdated();
+    };
+  }, [enabled, sellerId]);
+
   const sendMessage = useCallback(
     async (payload) => {
       if (!authToken || !sellerId || !beginSending(messages.length)) return null;
@@ -117,7 +153,11 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   );
 
   const sendText = useCallback(
-    (text) => sendMessage({ type: 'text', content: text }),
+    (text, replyTo = null) => {
+      const payload = { type: 'text', content: text };
+      if (replyTo) payload.replyTo = replyTo;
+      return sendMessage(payload);
+    },
     [sendMessage],
   );
 
@@ -156,6 +196,39 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     [sendMessage],
   );
 
+  const deleteMessage = useCallback(
+    async (messageId) => {
+      if (!authToken || !sellerId || !messageId) return false;
+      try {
+        await deleteMessageChatMessage(authToken, sellerId, messageId);
+        setMessages((current) => current.filter((item) => item.id !== String(messageId)));
+        window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [authToken, sellerId],
+  );
+
+  const editMessage = useCallback(
+    async (messageId, text) => {
+      if (!authToken || !sellerId || !messageId) return null;
+      try {
+        const data = await editMessageChatMessage(authToken, sellerId, messageId, text);
+        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
+        if (message) {
+          setMessages((current) => replaceMessage(current, message));
+          window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+        }
+        return message;
+      } catch {
+        return null;
+      }
+    },
+    [authToken, sellerId],
+  );
+
   return {
     messages,
     loading,
@@ -164,5 +237,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     sendText,
     sendImage,
     sendProduct,
+    deleteMessage,
+    editMessage,
   };
 }

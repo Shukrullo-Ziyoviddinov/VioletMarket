@@ -48,3 +48,24 @@ export function markSellerMessageThreadRead(token, userId) {
 }
 
 export { uploadSellerMarketImage as uploadSellerMessageChatImage } from './sellerAuthApi';
+
+export function deleteSellerMessageChatMessage(token, userId, messageId) {
+  return fetch(
+    apiUrl(`/api/seller-auth/message-chat/threads/${encodeURIComponent(userId)}/messages/${encodeURIComponent(messageId)}`),
+    {
+      method: 'DELETE',
+      headers: authHeaders(token),
+    },
+  ).then(parseJson);
+}
+
+export function editSellerMessageChatMessage(token, userId, messageId, content) {
+  return fetch(
+    apiUrl(`/api/seller-auth/message-chat/threads/${encodeURIComponent(userId)}/messages/${encodeURIComponent(messageId)}`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+      body: JSON.stringify({ content }),
+    },
+  ).then(parseJson);
+}

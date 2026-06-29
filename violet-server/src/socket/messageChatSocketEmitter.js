@@ -60,11 +60,39 @@ function emitMessageChatRead({ userId, sellerId, readBy }) {
   ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.READ, payload);
 }
 
+function emitMessageChatMessageDeleted({ userId, sellerId, messageId }) {
+  if (!ioInstance || !userId || !sellerId || !messageId) return;
+
+  const payload = {
+    userId: normalizeSocketId(userId),
+    sellerId: normalizeSocketId(sellerId),
+    messageId: normalizeSocketId(messageId),
+  };
+
+  ioInstance.to(getUserRoom(payload.userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED, payload);
+  ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_DELETED, payload);
+}
+
+function emitMessageChatMessageUpdated({ userId, sellerId, message }) {
+  if (!ioInstance || !userId || !sellerId || !message) return;
+
+  const payload = {
+    userId: normalizeSocketId(userId),
+    sellerId: normalizeSocketId(sellerId),
+    message,
+  };
+
+  ioInstance.to(getUserRoom(payload.userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED, payload);
+  ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED, payload);
+}
+
 module.exports = {
   setMessageChatSocketIo,
   emitMessageChatMessage,
   emitMessageChatThreadsUpdated,
   emitMessageChatRead,
+  emitMessageChatMessageDeleted,
+  emitMessageChatMessageUpdated,
   getUserRoom,
   getSellerRoom,
 };

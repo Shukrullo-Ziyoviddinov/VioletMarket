@@ -1,0 +1,60 @@
+.message-chat-actions-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.message-chat-actions-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(26, 18, 37, 0.35);
+  cursor: pointer;
+}
+
+.message-chat-actions-modal__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 24px, 360px);
+  margin: 0 12px 12px;
+  padding: 8px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(42, 24, 66, 0.18);
+}
+
+.message-chat-actions-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #2a1842;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.message-chat-actions-modal__item i {
+  font-size: 20px;
+  color: #9b4fe7;
+}
+
+.message-chat-actions-modal__item:hover {
+  background: #f8f4fd;
+}
+
+.message-chat-actions-modal__item--danger {
+  color: #d92d4f;
+}
+
+.message-chat-actions-modal__item--danger i {
+  color: #d92d4f;
+}

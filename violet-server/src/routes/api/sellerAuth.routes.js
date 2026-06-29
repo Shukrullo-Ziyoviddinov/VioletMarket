@@ -105,5 +105,15 @@ router.post(
   sellerAuthMiddleware,
   sellerMessageChatController.markSellerThreadRead,
 );
+router.patch(
+  "/seller-auth/message-chat/threads/:userId/messages/:messageId",
+  sellerAuthMiddleware,
+  sellerMessageChatController.editSellerMessage,
+);
+router.delete(
+  "/seller-auth/message-chat/threads/:userId/messages/:messageId",
+  sellerAuthMiddleware,
+  sellerMessageChatController.deleteSellerMessage,
+);
 
 module.exports = router;

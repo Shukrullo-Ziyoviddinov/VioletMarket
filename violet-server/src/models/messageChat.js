@@ -38,6 +38,16 @@ const messageChatSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    replyTo: {
+      messageId: { type: String, default: null },
+      sender: { type: String, enum: ["user", "seller", null], default: null },
+      type: { type: String, enum: ["text", "image", "product", null], default: null },
+      preview: { type: String, default: "" },
+    },
+    editedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true, collection: "message_chat" },
 );

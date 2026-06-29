@@ -144,6 +144,16 @@
       "sending": "Отправляется...",
       "online": "Онлайн",
       "lastActive": "Последняя активность",
+      "actionDelete": "Удалить",
+      "actionEdit": "Редактировать",
+      "actionReply": "Ответить",
+      "openMessageActions": "Действия с сообщением",
+      "replyingTo": "Ответ",
+      "cancelReply": "Отменить ответ",
+      "editingMessage": "Редактирование",
+      "cancelEdit": "Отменить редактирование",
+      "saveEdit": "Сохранить",
+      "edited": "(изменено)",
       "sendProduct": "Отправить товар в чат"
     }
   },

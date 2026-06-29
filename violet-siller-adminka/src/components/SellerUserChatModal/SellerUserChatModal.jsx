@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
+import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
+import MessageChatActionsModal from './MessageChatActionsModal';
+import MessageChatReplyBar from './MessageChatReplyBar/MessageChatReplyBar';
 import SellerUserChatMessageBubble from './SellerUserChatMessageBubble/SellerUserChatMessageBubble';
 import SellerUserChatProductMessage from './SellerUserChatProductMessage/SellerUserChatProductMessage';
 import './SellerUserChatModal.css';
@@ -47,7 +50,7 @@ function SellerUserChatHeader({
   );
 }
 
-function SellerUserChatMessageList({ messages }) {
+function SellerUserChatMessageList({ messages, onMessagePress }) {
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -67,10 +70,11 @@ function SellerUserChatMessageList({ messages }) {
                 product={message.content}
                 message={message}
                 isSeller={message.sender === 'seller'}
+                onPress={onMessagePress}
               />
             );
           }
-          return <SellerUserChatMessageBubble key={message.id} message={message} />;
+          return <SellerUserChatMessageBubble key={message.id} message={message} onPress={onMessagePress} />;
         })
       )}
       <div ref={endRef} className="seller-user-chat-message-list__anchor" />
@@ -80,24 +84,34 @@ function SellerUserChatMessageList({ messages }) {
 
 const EMOJI_OPTIONS = ['😀', '😂', '😊', '😍', '🥰', '😉', '🙏', '👍', '👋', '🔥', '✅', '❤️'];
 
-function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping, isSending = false }) {
-  const [text, setText] = useState('');
+function SellerUserChatComposer({
+  onSendText,
+  onSendImage,
+  onComposerActivity,
+  onStopTyping,
+  isSending = false,
+  text = '',
+  onTextChange,
+  editingMessage = null,
+  replyTarget = null,
+  onCancelComposerMode,
+}) {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const isEditMode = Boolean(editingMessage);
 
-  const handleSend = () => {
+  const handleSubmit = () => {
     const trimmed = text.trim();
     if (!trimmed || isSending) return;
     onStopTyping?.();
     onSendText?.(trimmed);
-    setText('');
     setEmojiOpen(false);
   };
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      handleSend();
+      handleSubmit();
     }
   };
 
@@ -111,6 +125,16 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
 
   return (
     <div className="seller-user-chat-composer">
+      {replyTarget ? <MessageChatReplyBar message={replyTarget} onCancel={onCancelComposerMode} /> : null}
+      {isEditMode ? (
+        <div className="seller-user-chat-composer__edit-banner">
+          <span>Xabarni tahrirlash</span>
+          <button type="button" onClick={onCancelComposerMode} aria-label="Bekor qilish">
+            <i className="bx bx-x" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
       {emojiOpen ? (
         <div className="seller-user-chat-emoji-picker">
           {EMOJI_OPTIONS.map((emoji) => (
@@ -120,7 +144,7 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
               className="seller-user-chat-emoji-picker__item"
               onClick={() => {
                 const nextText = `${text}${emoji}`;
-                setText(nextText);
+                onTextChange?.(nextText);
                 onComposerActivity?.(nextText.trim().length > 0);
               }}
             >
@@ -138,7 +162,7 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
           value={text}
           onChange={(event) => {
             const nextText = event.target.value;
-            setText(nextText);
+            onTextChange?.(nextText);
             onComposerActivity?.(nextText.trim().length > 0);
           }}
           onKeyDown={handleKeyDown}
@@ -147,12 +171,12 @@ function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, o
         />
         <button
           type="button"
-          className="seller-user-chat-composer__send"
-          onClick={handleSend}
+          className={`seller-user-chat-composer__send${isEditMode ? ' seller-user-chat-composer__send--edit' : ''}`}
+          onClick={handleSubmit}
           disabled={!text.trim() || isSending}
-          aria-label="Yuborish"
+          aria-label={isEditMode ? 'Saqlash' : 'Yuborish'}
         >
-          <i className="bx bx-send" aria-hidden="true" />
+          <i className={`bx ${isEditMode ? 'bx-check' : 'bx-send'}`} aria-hidden="true" />
         </button>
       </div>
 
@@ -187,6 +211,8 @@ export default function SellerUserChatModal({
   onClose,
   onSendText,
   onSendImage,
+  onDeleteMessage,
+  onEditMessage,
   isPartnerTyping = false,
   isPartnerSending = false,
   isPartnerOnline = false,
@@ -195,11 +221,31 @@ export default function SellerUserChatModal({
   onComposerActivity,
   onStopTyping,
 }) {
+  const [actionMessage, setActionMessage] = useState(null);
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [composerText, setComposerText] = useState('');
+
+  useEffect(() => {
+    if (!open) {
+      setActionMessage(null);
+      setReplyTarget(null);
+      setEditingMessage(null);
+      setComposerText('');
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.();
+      if (event.key === 'Escape') {
+        if (actionMessage) {
+          setActionMessage(null);
+          return;
+        }
+        onClose?.();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -210,9 +256,53 @@ export default function SellerUserChatModal({
       document.body.style.overflow = prevOverflow;
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, actionMessage]);
 
   if (!open || !user) return null;
+
+  const resetComposerModes = () => {
+    setReplyTarget(null);
+    setEditingMessage(null);
+    setComposerText('');
+  };
+
+  const handleSendText = async (text) => {
+    if (editingMessage) {
+      await onEditMessage?.(editingMessage.id, text);
+      setEditingMessage(null);
+      setComposerText('');
+      return;
+    }
+
+    const replyTo = replyTarget ? buildReplyToPayload(replyTarget) : null;
+    onSendText?.(text, replyTo);
+    setReplyTarget(null);
+    setComposerText('');
+  };
+
+  const handleDeleteMessage = async (message) => {
+    const ok = await onDeleteMessage?.(message.id);
+    if (!ok) return;
+    if (editingMessage?.id === message.id) {
+      setEditingMessage(null);
+      setComposerText('');
+    }
+    if (replyTarget?.id === message.id) {
+      setReplyTarget(null);
+    }
+  };
+
+  const handleEditMessage = (message) => {
+    setReplyTarget(null);
+    setEditingMessage(message);
+    setComposerText(String(message.content || ''));
+  };
+
+  const handleReplyMessage = (message) => {
+    setEditingMessage(null);
+    setComposerText('');
+    setReplyTarget(message);
+  };
 
   return createPortal(
     <div className="seller-user-chat-modal" role="presentation">
@@ -226,13 +316,27 @@ export default function SellerUserChatModal({
           isPartnerOnline={isPartnerOnline}
           partnerLastActiveAt={partnerLastActiveAt}
         />
-        <SellerUserChatMessageList messages={messages} />
+        <SellerUserChatMessageList messages={messages} onMessagePress={setActionMessage} />
         <SellerUserChatComposer
-          onSendText={onSendText}
+          text={composerText}
+          onTextChange={setComposerText}
+          editingMessage={editingMessage}
+          replyTarget={replyTarget}
+          onCancelComposerMode={resetComposerModes}
+          onSendText={handleSendText}
           onSendImage={onSendImage}
           onComposerActivity={onComposerActivity}
           onStopTyping={onStopTyping}
           isSending={isSending}
+        />
+        <MessageChatActionsModal
+          open={Boolean(actionMessage)}
+          message={actionMessage}
+          viewerRole="seller"
+          onClose={() => setActionMessage(null)}
+          onDelete={handleDeleteMessage}
+          onEdit={handleEditMessage}
+          onReply={handleReplyMessage}
         />
       </div>
     </div>,

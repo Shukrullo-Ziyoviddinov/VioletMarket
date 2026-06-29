@@ -38,6 +38,16 @@ router.post(
   authMiddleware,
   messageChatController.markUserThreadRead,
 );
+router.patch(
+  "/message-chat/threads/:sellerId/messages/:messageId",
+  authMiddleware,
+  messageChatController.editUserMessage,
+);
+router.delete(
+  "/message-chat/threads/:sellerId/messages/:messageId",
+  authMiddleware,
+  messageChatController.deleteUserMessage,
+);
 router.post(
   "/message-chat/uploads/image",
   authMiddleware,

@@ -4,7 +4,7 @@ import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/Pr
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
 
-export default function ProductSellerChatMessageList({ messages = [] }) {
+export default function ProductSellerChatMessageList({ messages = [], onMessagePress }) {
   const { t } = useTranslation();
   const endRef = useRef(null);
 
@@ -25,11 +25,12 @@ export default function ProductSellerChatMessageList({ messages = [] }) {
                 product={message.content}
                 message={message}
                 isCustomer={message.sender === 'customer'}
+                onPress={onMessagePress}
               />
             );
           }
 
-          return <ProductSellerChatMessageBubble key={message.id} message={message} />;
+          return <ProductSellerChatMessageBubble key={message.id} message={message} onPress={onMessagePress} />;
         })
       )}
       <div ref={endRef} className="product-seller-chat-message-list__anchor" />

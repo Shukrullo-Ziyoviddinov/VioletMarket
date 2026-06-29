@@ -58,3 +58,24 @@ export function uploadMessageChatImage(token, file) {
     body: formData,
   }).then(parseJsonResponse);
 }
+
+export function deleteMessageChatMessage(token, sellerId, messageId) {
+  return fetch(
+    apiUrl(`/api/message-chat/threads/${encodeURIComponent(sellerId)}/messages/${encodeURIComponent(messageId)}`),
+    {
+      method: 'DELETE',
+      headers: authHeaders(token),
+    },
+  ).then(parseJsonResponse);
+}
+
+export function editMessageChatMessage(token, sellerId, messageId, content) {
+  return fetch(
+    apiUrl(`/api/message-chat/threads/${encodeURIComponent(sellerId)}/messages/${encodeURIComponent(messageId)}`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+      body: JSON.stringify({ content }),
+    },
+  ).then(parseJsonResponse);
+}

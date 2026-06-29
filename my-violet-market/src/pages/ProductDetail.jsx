@@ -752,6 +752,8 @@ const ProductDetail = () => {
     sendText: sendSellerChatText,
     sendImage: sendSellerChatImage,
     sendProduct: sendSellerChatProduct,
+    deleteMessage: deleteSellerChatMessage,
+    editMessage: editSellerChatMessage,
   } = useSellerMessageChat({
     authToken,
     sellerId: detailSellerId,
@@ -2436,6 +2438,8 @@ const ProductDetail = () => {
         onSendText={sendSellerChatText}
         onSendImage={sendSellerChatImage}
         onSendProduct={sendSellerChatProduct}
+        onDeleteMessage={deleteSellerChatMessage}
+        onEditMessage={editSellerChatMessage}
         isPartnerTyping={isSellerTyping}
         isPartnerSending={isSellerPartnerSending}
         isPartnerOnline={isSellerOnline}
