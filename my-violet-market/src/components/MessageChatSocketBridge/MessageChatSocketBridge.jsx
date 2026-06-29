@@ -1,5 +1,5 @@
-import { useMessageChatSocketConnection } from '../socket/useMessageChatSocket';
-import { useUser } from '../contexts/UserContext';
+import { useMessageChatSocketConnection } from '../../socket/useMessageChatSocket';
+import { useUser } from '../../contexts/UserContext';
 
 export default function MessageChatSocketBridge() {
   const { authToken, userData } = useUser();
