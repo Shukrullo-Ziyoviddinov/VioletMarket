@@ -78,26 +78,29 @@
 
 .message-chat-message-row {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  max-height: 800px;
 }
 
 .message-chat-message-row--deleting {
   pointer-events: none;
   overflow: visible;
-  animation: message-chat-message-row-collapse 1.28s ease-in forwards;
+  transform-origin: center center;
+  animation: message-chat-message-row-collapse 1.2s ease-in forwards;
 }
 
 @keyframes message-chat-message-row-collapse {
-  0%,
-  68% {
-    max-height: 800px;
+  0% {
     opacity: 1;
+    transform: scale(1);
+    max-height: 500px;
+    margin-bottom: 0;
   }
   100% {
-    max-height: 0;
     opacity: 0;
-    margin: 0;
+    transform: scale(0);
+    max-height: 0;
+    margin-bottom: -10px;
     overflow: hidden;
   }
 }
