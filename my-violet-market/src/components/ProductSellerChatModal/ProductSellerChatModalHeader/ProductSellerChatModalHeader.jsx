@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedText, normalizeImagePath } from '../../../utils/utils';
+import MessageChatPartnerStatus from '../../MessageChatPartnerStatus';
 import './ProductSellerChatModalHeader.css';
 
 export default function ProductSellerChatModalHeader({
@@ -9,6 +10,8 @@ export default function ProductSellerChatModalHeader({
   onBack,
   isPartnerTyping = false,
   isPartnerSending = false,
+  isPartnerOnline = false,
+  partnerLastActiveAt = null,
 }) {
   const { t } = useTranslation();
   const sellerName = seller ? getLocalizedText(seller.name, lang) : '';
@@ -39,11 +42,12 @@ export default function ProductSellerChatModalHeader({
         </div>
         <div className="product-seller-chat-modal-header__profile-text">
           <h2 className="seller-profile__name">{displayName}</h2>
-          {isPartnerSending ? (
-            <p className="product-seller-chat-modal-header__sending">{t('productDetail.chat.sending')}</p>
-          ) : isPartnerTyping ? (
-            <p className="product-seller-chat-modal-header__typing">{t('productDetail.chat.typing')}</p>
-          ) : null}
+          <MessageChatPartnerStatus
+            isPartnerTyping={isPartnerTyping}
+            isPartnerSending={isPartnerSending}
+            isPartnerOnline={isPartnerOnline}
+            partnerLastActiveAt={partnerLastActiveAt}
+          />
         </div>
       </div>
     </header>

@@ -1,0 +1,29 @@
+.message-chat-partner-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.message-chat-partner-status--action {
+  color: #9b4fe7;
+}
+
+.message-chat-partner-status--online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2f9d4b;
+}
+
+.message-chat-partner-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2f9d4b;
+  flex-shrink: 0;
+}
+
+.message-chat-partner-status--last-active {
+  color: #8b79a8;
+}

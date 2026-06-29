@@ -3,6 +3,7 @@ const { authenticateMessageChatSocket } = require("./messageChatSocketAuth");
 const { setMessageChatSocketIo } = require("./messageChatSocketEmitter");
 const { registerMessageChatTypingOnSocket } = require("./messageChatTypingHandler");
 const { registerMessageChatSendingOnSocket } = require("./messageChatSendingHandler");
+const { registerMessageChatPresenceOnSocket } = require("./messageChatPresenceHandler");
 
 function initMessageChatSocket(httpServer) {
   const io = new Server(httpServer, {
@@ -37,6 +38,7 @@ function initMessageChatSocket(httpServer) {
 
     registerMessageChatTypingOnSocket(socket, io);
     registerMessageChatSendingOnSocket(socket, io);
+    registerMessageChatPresenceOnSocket(socket, io);
   });
 
   setMessageChatSocketIo(io);

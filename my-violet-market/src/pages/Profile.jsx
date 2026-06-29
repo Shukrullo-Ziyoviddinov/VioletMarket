@@ -20,6 +20,7 @@ import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../hooks/useMessageChatSending';
+import { useMessageChatPresence } from '../hooks/useMessageChatPresence';
 import { useMessageChatSocketThreadsUpdated } from '../socket/useMessageChatSocket';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
@@ -438,6 +439,13 @@ const Profile = () => {
     enabled: isProfileSellerChatOpen && Boolean(authToken),
     watchSender: 'seller',
   });
+
+  const { isPartnerOnline: isProfileSellerOnline, partnerLastActiveAt: profileSellerLastActiveAt } =
+    useMessageChatPresence({
+      sellerId: activeChatSellerId,
+      enabled: isProfileSellerChatOpen && Boolean(authToken),
+      watchKind: 'seller',
+    });
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
@@ -1018,6 +1026,8 @@ const Profile = () => {
             onSendProduct={sendProfileChatProduct}
             isPartnerTyping={isProfileSellerTyping}
             isPartnerSending={isProfileSellerPartnerSending}
+            isPartnerOnline={isProfileSellerOnline}
+            partnerLastActiveAt={profileSellerLastActiveAt}
             isSending={isProfileChatSending}
             onComposerActivity={handleProfileChatComposerActivity}
             onStopTyping={stopProfileChatTyping}

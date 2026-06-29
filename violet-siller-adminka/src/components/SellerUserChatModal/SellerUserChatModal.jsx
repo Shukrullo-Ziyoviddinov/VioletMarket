@@ -1,10 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '../../utils/mediaUrl';
+import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
-function SellerUserChatHeader({ user, onBack, isPartnerTyping = false, isPartnerSending = false }) {
+function SellerUserChatHeader({
+  user,
+  onBack,
+  isPartnerTyping = false,
+  isPartnerSending = false,
+  isPartnerOnline = false,
+  partnerLastActiveAt = null,
+}) {
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Foydalanuvchi';
   const avatarSrc = resolveUserProfileImage(user?.profileImage);
 
@@ -25,11 +33,12 @@ function SellerUserChatHeader({ user, onBack, isPartnerTyping = false, isPartner
         />
         <div className="seller-user-chat-header__profile-text">
           <h2 className="seller-user-chat-header__name">{displayName}</h2>
-          {isPartnerSending ? (
-            <p className="seller-user-chat-header__sending">Yuborilmoqda...</p>
-          ) : isPartnerTyping ? (
-            <p className="seller-user-chat-header__typing">Yozmoqda...</p>
-          ) : null}
+          <MessageChatPartnerStatus
+            isPartnerTyping={isPartnerTyping}
+            isPartnerSending={isPartnerSending}
+            isPartnerOnline={isPartnerOnline}
+            partnerLastActiveAt={partnerLastActiveAt}
+          />
         </div>
       </div>
     </header>
@@ -217,6 +226,8 @@ export default function SellerUserChatModal({
   onSendImage,
   isPartnerTyping = false,
   isPartnerSending = false,
+  isPartnerOnline = false,
+  partnerLastActiveAt = null,
   isSending = false,
   onComposerActivity,
   onStopTyping,
@@ -249,6 +260,8 @@ export default function SellerUserChatModal({
           onBack={onClose}
           isPartnerTyping={isPartnerTyping}
           isPartnerSending={isPartnerSending}
+          isPartnerOnline={isPartnerOnline}
+          partnerLastActiveAt={partnerLastActiveAt}
         />
         <SellerUserChatMessageList messages={messages} />
         <SellerUserChatComposer

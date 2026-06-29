@@ -142,6 +142,8 @@
       "send": "Yuborish",
       "typing": "Yozmoqda...",
       "sending": "Yuborilmoqda...",
+      "online": "Online",
+      "lastActive": "Oxirgi faollik",
       "sendProduct": "Mahsulotni chatga yuborish"
     }
   },

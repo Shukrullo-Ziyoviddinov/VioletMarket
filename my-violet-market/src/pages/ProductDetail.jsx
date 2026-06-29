@@ -21,6 +21,7 @@ import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../hooks/useMessageChatSending';
+import { useMessageChatPresence } from '../hooks/useMessageChatPresence';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
@@ -771,6 +772,12 @@ const ProductDetail = () => {
     sellerId: detailSellerId,
     enabled: isSellerChatOpen && Boolean(authToken),
     watchSender: 'seller',
+  });
+
+  const { isPartnerOnline: isSellerOnline, partnerLastActiveAt: sellerLastActiveAt } = useMessageChatPresence({
+    sellerId: detailSellerId,
+    enabled: isSellerChatOpen && Boolean(authToken),
+    watchKind: 'seller',
   });
   const sellerProductCountForDetail = useMemo(
     () =>
@@ -2431,6 +2438,8 @@ const ProductDetail = () => {
         onSendProduct={sendSellerChatProduct}
         isPartnerTyping={isSellerTyping}
         isPartnerSending={isSellerPartnerSending}
+        isPartnerOnline={isSellerOnline}
+        partnerLastActiveAt={sellerLastActiveAt}
         isSending={isSellerChatSending}
         onComposerActivity={handleSellerChatComposerActivity}
         onStopTyping={stopSellerChatTyping}

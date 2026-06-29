@@ -20,6 +20,8 @@ export default function ProductSellerChatModal({
   onSendProduct,
   isPartnerTyping = false,
   isPartnerSending = false,
+  isPartnerOnline = false,
+  partnerLastActiveAt = null,
   isSending = false,
   onComposerActivity,
   onStopTyping,
@@ -112,6 +114,8 @@ export default function ProductSellerChatModal({
           onBack={onClose}
           isPartnerTyping={isPartnerTyping}
           isPartnerSending={isPartnerSending}
+          isPartnerOnline={isPartnerOnline}
+          partnerLastActiveAt={partnerLastActiveAt}
         />
         <ProductSellerChatMessageList messages={messages} />
         {contextProduct && !contextProductSent ? (

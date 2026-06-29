@@ -5,6 +5,7 @@ import { fetchSellerMessageThreads } from '../../api/messageChatApi';
 import { useUserMessageChat } from '../../hooks/useUserMessageChat';
 import { useMessageChatTyping } from '../../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../../hooks/useMessageChatSending';
+import { useMessageChatPresence } from '../../hooks/useMessageChatPresence';
 import SellerUserChatModal from '../../components/SellerUserChatModal';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { useMessageChatSocketThreadsUpdated } from '../../socket/useMessageChatSocket';
@@ -86,6 +87,12 @@ export default function MessagesPage() {
     watchSender: 'user',
   });
 
+  const { isPartnerOnline: isUserOnline, partnerLastActiveAt: userLastActiveAt } = useMessageChatPresence({
+    userId: activeUser?.userId,
+    enabled: chatOpen && Boolean(token),
+    watchKind: 'user',
+  });
+
   const handleOpenThread = (thread) => {
     setActiveUser({
       userId: thread.userId,
@@ -153,6 +160,8 @@ export default function MessagesPage() {
         onSendImage={sendImage}
         isPartnerTyping={isUserTyping}
         isPartnerSending={isUserPartnerSending}
+        isPartnerOnline={isUserOnline}
+        partnerLastActiveAt={userLastActiveAt}
         isSending={isSending}
         onComposerActivity={handleUserChatComposerActivity}
         onStopTyping={stopUserChatTyping}
