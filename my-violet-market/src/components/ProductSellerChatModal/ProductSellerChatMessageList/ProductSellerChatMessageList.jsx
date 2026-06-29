@@ -35,9 +35,9 @@ export default function ProductSellerChatMessageList({
           const isHighlighted = highlightedMessageId === message.id;
           const isDeleting = deletingMessageId === message.id;
 
-          const rowClassName = `message-chat-message-row${
-            isDeleting ? ' message-chat-message-row--deleting' : ''
-          }`;
+          const rowClassName = `message-chat-message-row message-chat-message-row--${
+            message.sender === 'customer' ? 'end' : 'start'
+          }${isDeleting ? ' message-chat-message-row--deleting' : ''}`;
 
           if (message?.type === 'product') {
             return (

@@ -55,8 +55,3 @@
 .product-seller-chat-product-message--highlighted {
   animation: message-chat-bubble-highlight 2s ease-out;
 }
-
-.product-seller-chat-product-message--deleting {
-  pointer-events: none;
-  overflow: visible;
-}

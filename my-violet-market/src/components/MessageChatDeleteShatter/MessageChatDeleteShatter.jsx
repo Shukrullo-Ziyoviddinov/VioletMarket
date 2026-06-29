@@ -1,32 +1,73 @@
-import React from 'react';
-import { useMessageChatDeleteShards } from '../../utils/messageChatDeleteShards';
+import React, { useLayoutEffect, useState } from 'react';
+import { createMessageChatDeleteShards } from '../../utils/messageChatDeleteShards';
 import './MessageChatDeleteShatter.css';
 
-export default function MessageChatDeleteShatter({ active = false, color = '#9b4fe7', seed = 1 }) {
-  const shards = useMessageChatDeleteShards(active, seed);
+const COLS = 7;
+const ROWS = 5;
 
-  if (!active || shards.length === 0) return null;
+export default function MessageChatDeleteShatter({
+  active = false,
+  seed = 1,
+  containerRef,
+  children,
+}) {
+  const [size, setSize] = useState(null);
+  const shards = active ? createMessageChatDeleteShards(seed, COLS, ROWS) : [];
+
+  useLayoutEffect(() => {
+    if (!active || !containerRef?.current) {
+      setSize(null);
+      return;
+    }
+
+    const node = containerRef.current;
+    const { width, height } = node.getBoundingClientRect();
+    setSize({ width, height });
+  }, [active, containerRef, children]);
+
+  if (!active || !size || shards.length === 0) return null;
+
+  const pieceWidth = size.width / COLS;
+  const pieceHeight = size.height / ROWS;
 
   return (
-    <div className="message-chat-delete-shatter" aria-hidden="true">
-      {shards.map((shard) => (
-        <span
-          key={shard.id}
-          className="message-chat-delete-shatter__piece"
-          style={{
-            left: `${shard.left}%`,
-            top: `${shard.top}%`,
-            width: `${shard.width}%`,
-            height: `${shard.height}%`,
-            backgroundColor: color,
-            '--shard-tx': shard.tx,
-            '--shard-ty': shard.ty,
-            '--shard-rot': shard.rot,
-            '--shard-delay': shard.delay,
-            '--shard-drift': shard.drift,
-          }}
-        />
-      ))}
+    <div
+      className="message-chat-delete-shatter"
+      style={{ width: size.width, height: size.height }}
+      aria-hidden="true"
+    >
+      {shards.map((shard, index) => {
+        const col = index % COLS;
+        const row = Math.floor(index / COLS);
+
+        return (
+          <div
+            key={shard.id}
+            className="message-chat-delete-shatter__piece"
+            style={{
+              width: pieceWidth + 1,
+              height: pieceHeight + 1,
+              left: col * pieceWidth,
+              top: row * pieceHeight,
+              '--shard-tx': shard.tx,
+              '--shard-ty': shard.ty,
+              '--shard-rot': shard.rot,
+              '--shard-delay': shard.delay,
+            }}
+          >
+            <div
+              className="message-chat-delete-shatter__mirror"
+              style={{
+                width: size.width,
+                height: size.height,
+                transform: `translate(${-col * pieceWidth}px, ${-row * pieceHeight}px)`,
+              }}
+            >
+              {children}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

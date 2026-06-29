@@ -82,24 +82,33 @@
   width: 100%;
 }
 
+.message-chat-message-row--start {
+  align-items: flex-start;
+}
+
+.message-chat-message-row--end {
+  align-items: flex-end;
+}
+
 .message-chat-message-row--deleting {
   pointer-events: none;
   overflow: visible;
-  transform-origin: center center;
-  animation: message-chat-message-row-collapse 1.2s ease-in forwards;
+  animation: message-chat-message-row-collapse 1.15s ease-in forwards;
 }
 
 @keyframes message-chat-message-row-collapse {
   0% {
-    opacity: 1;
-    transform: scale(1);
     max-height: 500px;
+    opacity: 1;
     margin-bottom: 0;
   }
+  75% {
+    max-height: 500px;
+    opacity: 1;
+  }
   100% {
-    opacity: 0;
-    transform: scale(0);
     max-height: 0;
+    opacity: 0;
     margin-bottom: -10px;
     overflow: hidden;
   }
@@ -381,10 +390,4 @@
 .seller-user-chat-bubble--highlighted,
 .seller-user-chat-product--highlighted {
   animation: seller-message-chat-bubble-highlight 2s ease-out;
-}
-
-.seller-user-chat-bubble--deleting,
-.seller-user-chat-product--deleting {
-  pointer-events: none;
-  overflow: visible;
 }

@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatProductPreview from '../ProductSellerChatProductPreview/ProductSellerChatProductPreview';
 import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
 import MessageChatDeleteShatter from '../../MessageChatDeleteShatter';
 import MessageChatQuotedBlock from '../MessageChatQuotedBlock';
 import './ProductSellerChatProductMessage.css';
-
-const BUBBLE_COLORS = {
-  customer: '#022ff9',
-  seller: '#9b4fe7',
-};
 
 export default function ProductSellerChatProductMessage({
   product,
@@ -21,12 +16,22 @@ export default function ProductSellerChatProductMessage({
   onJumpToMessage,
 }) {
   const { t } = useTranslation();
+  const bubbleRef = useRef(null);
   if (!product) return null;
 
-  const shardColor = isCustomer ? BUBBLE_COLORS.customer : BUBBLE_COLORS.seller;
+  const surface = (
+    <>
+      {message?.replyTo ? (
+        <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
+      ) : null}
+      <ProductSellerChatProductPreview product={product} compact />
+      {message ? <MessageChatBubbleMeta message={message} viewerRole="user" /> : null}
+    </>
+  );
 
   return (
     <button
+      ref={bubbleRef}
       type="button"
       className={`product-seller-chat-product-message${
         isCustomer ? ' product-seller-chat-product-message--customer' : ' product-seller-chat-product-message--seller'
@@ -36,12 +41,14 @@ export default function ProductSellerChatProductMessage({
       onClick={() => onPress?.(message)}
       aria-label={t('productDetail.chat.openMessageActions')}
     >
-      {message?.replyTo ? (
-        <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
+      <div className={`message-chat-bubble-surface${isDeleting ? ' message-chat-bubble-surface--hidden' : ''}`}>
+        {surface}
+      </div>
+      {isDeleting && message ? (
+        <MessageChatDeleteShatter active={isDeleting} seed={message.id} containerRef={bubbleRef}>
+          <div className="message-chat-bubble-surface">{surface}</div>
+        </MessageChatDeleteShatter>
       ) : null}
-      <ProductSellerChatProductPreview product={product} compact />
-      {message ? <MessageChatBubbleMeta message={message} viewerRole="user" /> : null}
-      {message ? <MessageChatDeleteShatter active={isDeleting} color={shardColor} seed={message.id} /> : null}
     </button>
   );
 }
