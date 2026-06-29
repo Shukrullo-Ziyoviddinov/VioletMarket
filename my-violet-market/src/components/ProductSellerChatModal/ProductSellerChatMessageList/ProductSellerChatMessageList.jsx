@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMessageChatJumpTo } from '../../../hooks/useMessageChatJumpTo';
-import { useMessageChatListScrollLock } from '../../../hooks/useMessageChatListScrollLock';
 import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/ProductSellerChatMessageBubble';
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
@@ -13,11 +12,8 @@ export default function ProductSellerChatMessageList({
 }) {
   const { t } = useTranslation();
   const endRef = useRef(null);
-  const listRef = useRef(null);
   const prevLengthRef = useRef(messages.length);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
-
-  useMessageChatListScrollLock(listRef, Boolean(deletingMessageId));
 
   useEffect(() => {
     if (deletingMessageId) return;
@@ -31,14 +27,7 @@ export default function ProductSellerChatMessageList({
   }, [messages, deletingMessageId]);
 
   return (
-    <div
-      ref={listRef}
-      className={`product-seller-chat-message-list${
-        deletingMessageId ? ' product-seller-chat-message-list--delete-lock' : ''
-      }`}
-      role="log"
-      aria-live="polite"
-    >
+    <div className="product-seller-chat-message-list" role="log" aria-live="polite">
       {messages.length === 0 ? (
         <p className="product-seller-chat-message-list__empty">{t('productDetail.chat.empty')}</p>
       ) : (

@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
-import { useMessageChatListScrollLock } from '../../hooks/useMessageChatListScrollLock';
 import { waitMessageChatDeleteAnimation } from '../../utils/messageChatDeleteAnimation';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
 import MessageChatActionsModal from './MessageChatActionsModal';
@@ -55,11 +54,8 @@ function SellerUserChatHeader({
 
 function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId = null }) {
   const endRef = useRef(null);
-  const listRef = useRef(null);
   const prevLengthRef = useRef(messages.length);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
-
-  useMessageChatListScrollLock(listRef, Boolean(deletingMessageId));
 
   useEffect(() => {
     if (deletingMessageId) return;
@@ -73,12 +69,7 @@ function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId
   }, [messages, deletingMessageId]);
 
   return (
-    <div
-      ref={listRef}
-      className={`seller-user-chat-message-list${
-        deletingMessageId ? ' seller-user-chat-message-list--delete-lock' : ''
-      }`}
-    >
+    <div className="seller-user-chat-message-list">
       {messages.length === 0 ? (
         <p className="seller-user-chat-message-list__empty">Hozircha xabar yo&apos;q.</p>
       ) : (

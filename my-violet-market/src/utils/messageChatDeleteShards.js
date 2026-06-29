@@ -20,8 +20,8 @@ export function createMessageChatDeleteShards(seed = 1, cols = DEFAULT_COLS, row
 
       pieces.push({
         id: `${row}-${col}`,
-        tx: `${(r1 - 0.5) * 90}px`,
-        ty: `${18 + r2 * 70}px`,
+        tx: `${(r1 - 0.5) * 24}px`,
+        ty: `${22 + r2 * 56}px`,
         rot: `${(r3 - 0.5) * 240}deg`,
         delay: `${r4 * 0.08}s`,
       });
