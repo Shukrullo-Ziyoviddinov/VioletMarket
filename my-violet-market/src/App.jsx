@@ -31,6 +31,7 @@ import UzWarehousePage from './pages/UzWarehousePage';
 import ChinaWarehousePage from './pages/ChinaWarehousePage';
 import SellerProfile from './pages/SellerProfile';
 import './App.css';
+import MessageChatSocketBridge from './components/MessageChatSocketBridge/MessageChatSocketBridge';
 
 const AppContent = () => {
   const location = useLocation();
@@ -116,6 +117,7 @@ function App() {
                   <SearchHistoryProvider>
                     <CommentsProvider>
                       <TestOrderModalProvider>
+                        <MessageChatSocketBridge />
                         <AppContent />
                       </TestOrderModalProvider>
                     </CommentsProvider>

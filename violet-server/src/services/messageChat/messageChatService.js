@@ -74,6 +74,18 @@ function mapMessageToClient(row) {
   };
 }
 
+function mapMessageToSocket(row) {
+  return {
+    id: String(row._id || row.id),
+    sender: row.sender,
+    type: row.type,
+    content: row.content,
+    createdAt: row.createdAt,
+    readByUser: Boolean(row.readByUser),
+    readBySeller: Boolean(row.readBySeller),
+  };
+}
+
 async function assertSellerExists(sellerId) {
   const seller = await SellerAccount.findOne({ id: sellerId }).lean();
   if (!seller) {
@@ -255,7 +267,10 @@ async function sendUserMessage(userId, sellerIdRaw, payload) {
     readBySeller: false,
   });
 
-  return { message: mapMessageToClient(doc.toObject()) };
+  return {
+    message: mapMessageToClient(doc.toObject()),
+    socketMessage: mapMessageToSocket(doc.toObject()),
+  };
 }
 
 async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
@@ -287,6 +302,7 @@ async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
       readByUser: false,
       readBySeller: true,
     },
+    socketMessage: mapMessageToSocket(doc.toObject()),
   };
 }
 

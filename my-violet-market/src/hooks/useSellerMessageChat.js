@@ -5,6 +5,18 @@ import {
   sendMessageChatMessage,
   uploadMessageChatImage,
 } from '../api/messageChatApi';
+import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
+import {
+  MESSAGE_CHAT_SOCKET_EVENTS,
+  subscribeMessageChatSocket,
+} from '../socket/useMessageChatSocket';
+
+function appendUniqueMessage(current, message) {
+  if (!message || current.some((item) => item.id === message.id)) {
+    return current;
+  }
+  return [...current, message];
+}
 
 export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   const [messages, setMessages] = useState([]);
@@ -35,6 +47,25 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     loadMessages();
   }, [enabled, authToken, sellerId, loadMessages]);
 
+  useEffect(() => {
+    if (!enabled || !sellerId) return undefined;
+
+    return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
+      if (!payload || payload.sellerId !== sellerId) return;
+
+      const uiMessage = mapMessageChatSocketMessage(payload.message);
+      if (!uiMessage) return;
+
+      setMessages((current) => appendUniqueMessage(current, uiMessage));
+
+      if (uiMessage.sender === 'seller' && authToken) {
+        markMessageChatThreadRead(authToken, sellerId).catch(() => {});
+      }
+
+      window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+    });
+  }, [enabled, sellerId, authToken]);
+
   const sendMessage = useCallback(
     async (payload) => {
       if (!authToken || !sellerId || sending) return null;
@@ -44,7 +75,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
         const data = await sendMessageChatMessage(authToken, sellerId, payload);
         const message = data.message;
         if (message) {
-          setMessages((current) => [...current, message]);
+          setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('messageChatUpdated'));
         }
         return message;

@@ -1,5 +1,9 @@
 const messageChatService = require("../../services/messageChat/messageChatService");
 const { asyncHandler } = require("../../utils/asyncHandler");
+const {
+  emitMessageChatMessage,
+  emitMessageChatThreadsUpdated,
+} = require("../../socket/messageChatSocketEmitter");
 
 const listUserThreads = asyncHandler(async (req, res) => {
   const data = await messageChatService.listUserThreads(req.userId);
@@ -20,7 +24,18 @@ const sendUserMessage = asyncHandler(async (req, res) => {
     req.params.sellerId,
     req.body || {},
   );
-  res.status(201).json({ ok: true, ...data });
+
+  emitMessageChatMessage({
+    userId: String(req.userId),
+    sellerId: req.params.sellerId,
+    message: data.socketMessage,
+  });
+  emitMessageChatThreadsUpdated({
+    userId: String(req.userId),
+    sellerId: req.params.sellerId,
+  });
+
+  res.status(201).json({ ok: true, message: data.message });
 });
 
 const markUserThreadRead = asyncHandler(async (req, res) => {
@@ -28,6 +43,12 @@ const markUserThreadRead = asyncHandler(async (req, res) => {
     req.userId,
     req.params.sellerId,
   );
+
+  emitMessageChatThreadsUpdated({
+    userId: String(req.userId),
+    sellerId: req.params.sellerId,
+  });
+
   res.json({ ok: true, ...data });
 });
 

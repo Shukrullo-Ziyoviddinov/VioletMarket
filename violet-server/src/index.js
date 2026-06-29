@@ -2,12 +2,14 @@ require("./config/loadEnv")();
 
 const path = require("path");
 const fs = require("fs");
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const config = require("./config");
 const routes = require("./routes");
 const { errorHandler } = require("./middleware/errorHandler");
 const { activityTrackerMiddleware } = require("./middleware/activityTrackerMiddleware");
+const { initMessageChatSocket } = require("./socket");
 
 const app = express();
 const uploadDir = path.resolve(__dirname, "../public/uploads");
@@ -40,8 +42,12 @@ async function start() {
     console.warn("MongoDB: DATABASE_URL yo‘q — server DBsiz ishlaydi");
   }
 
-  app.listen(config.port, () => {
+  const httpServer = http.createServer(app);
+  initMessageChatSocket(httpServer);
+
+  httpServer.listen(config.port, () => {
     console.log(`Server http://localhost:${config.port}`);
+    console.log("Message chat Socket.IO: /socket.io");
     console.log(
       "Auth API: POST /api/auth/send-register-code, /api/auth/register, /api/auth/send-login-code, /api/auth/verify-login",
     );

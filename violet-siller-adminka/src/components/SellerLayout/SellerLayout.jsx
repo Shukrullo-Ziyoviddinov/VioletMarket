@@ -6,6 +6,7 @@ import MarketInfo from '../MarketInfo/MarketInfo';
 import MiniGlobalModal from '../MiniGlobalModal/MiniGlobalModal';
 import SellerHeader from '../SellerHeader/SellerHeader';
 import SellerSidebar from '../SellerSidebar/SellerSidebar';
+import MessageChatSocketBridge from '../MessageChatSocketBridge/MessageChatSocketBridge';
 import { useSellerCabinetSession } from '../../hooks/useSellerCabinetSession';
 import './SellerLayout.css';
 
@@ -21,6 +22,7 @@ export default function SellerLayout() {
       className="seller-layout"
       style={{ '--seller-sider-width': collapsed ? '80px' : '240px' }}
     >
+      <MessageChatSocketBridge />
       <Sider
         collapsible
         collapsed={collapsed}

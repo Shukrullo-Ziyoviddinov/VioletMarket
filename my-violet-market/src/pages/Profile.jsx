@@ -18,6 +18,7 @@ import { fetchMessageChatThreads } from '../api/messageChatApi';
 import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
+import { useMessageChatSocketThreadsUpdated } from '../socket/useMessageChatSocket';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 import '../components/ProfileMessageThreads/ProfileMessageThreadsList.css';
@@ -379,6 +380,10 @@ const Profile = () => {
     window.addEventListener('messageChatUpdated', onUpdate);
     return () => window.removeEventListener('messageChatUpdated', onUpdate);
   }, [loadMessageThreads]);
+
+  useMessageChatSocketThreadsUpdated(() => {
+    loadMessageThreads();
+  });
 
   const openMessagesModal = () => {
     loadMessageThreads();
