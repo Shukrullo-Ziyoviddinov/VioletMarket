@@ -2,8 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatProductPreview from '../ProductSellerChatProductPreview/ProductSellerChatProductPreview';
 import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
+import MessageChatDeleteShatter from '../../MessageChatDeleteShatter';
 import MessageChatQuotedBlock from '../MessageChatQuotedBlock';
 import './ProductSellerChatProductMessage.css';
+
+const BUBBLE_COLORS = {
+  customer: '#022ff9',
+  seller: '#9b4fe7',
+};
 
 export default function ProductSellerChatProductMessage({
   product,
@@ -17,6 +23,8 @@ export default function ProductSellerChatProductMessage({
 }) {
   const { t } = useTranslation();
   if (!product) return null;
+
+  const shardColor = isCustomer ? BUBBLE_COLORS.customer : BUBBLE_COLORS.seller;
 
   return (
     <button
@@ -35,6 +43,7 @@ export default function ProductSellerChatProductMessage({
       ) : null}
       <ProductSellerChatProductPreview product={product} compact />
       {message ? <MessageChatBubbleMeta message={message} viewerRole="user" /> : null}
+      {message ? <MessageChatDeleteShatter active={isDeleting} color={shardColor} seed={message.id} /> : null}
     </button>
   );
 }

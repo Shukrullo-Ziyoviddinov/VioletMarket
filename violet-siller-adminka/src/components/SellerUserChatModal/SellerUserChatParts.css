@@ -77,6 +77,7 @@
 }
 
 .seller-user-chat-bubble {
+  position: relative;
   max-width: min(78%, 300px);
   display: flex;
   flex-direction: column;
@@ -142,6 +143,7 @@
 }
 
 .seller-user-chat-product {
+  position: relative;
   max-width: min(82%, 280px);
   display: flex;
   flex-direction: column;
@@ -352,41 +354,16 @@
   animation: seller-message-chat-bubble-highlight 2s ease-out;
 }
 
-@keyframes seller-message-chat-bubble-delete {
-  0% {
-    transform: scale(1) translateX(0);
-    opacity: 1;
-    filter: blur(0);
-  }
-  14% {
-    transform: scale(1.04) translateX(-4px);
-    opacity: 1;
-  }
-  28% {
-    transform: scale(0.96) translateX(4px);
-  }
-  42% {
-    transform: scale(1.03) translateX(-3px);
-  }
-  56% {
-    transform: scale(0.94) translateX(3px);
-    opacity: 0.88;
-  }
-  72% {
-    transform: scale(0.82) translateX(0);
-    opacity: 0.55;
-    filter: blur(2px);
-  }
-  100% {
-    transform: scale(0.45) translateY(10px);
-    opacity: 0;
-    filter: blur(8px);
-  }
-}
-
 .seller-user-chat-bubble--deleting,
 .seller-user-chat-product--deleting {
-  animation: seller-message-chat-bubble-delete 0.52s ease-in forwards;
   pointer-events: none;
-  transform-origin: center center;
+  overflow: visible;
+  animation: message-chat-delete-shake 0.16s ease-in-out;
+}
+
+.seller-user-chat-bubble--deleting > :not(.message-chat-delete-shatter),
+.seller-user-chat-product--deleting > :not(.message-chat-delete-shatter) {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.05s linear;
 }
