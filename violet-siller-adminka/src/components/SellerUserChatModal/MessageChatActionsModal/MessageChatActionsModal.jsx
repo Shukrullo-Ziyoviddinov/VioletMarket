@@ -1,5 +1,5 @@
 import React from 'react';
-import { isOwnChatMessage } from '../../utils/messageChatReadStatus';
+import { isOwnChatMessage } from '../../../utils/messageChatReadStatus';
 import './MessageChatActionsModal.css';
 
 export default function MessageChatActionsModal({

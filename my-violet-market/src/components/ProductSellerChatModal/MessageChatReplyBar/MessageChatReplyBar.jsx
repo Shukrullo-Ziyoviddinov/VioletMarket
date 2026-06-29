@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getMessagePreviewText } from '../../utils/messageChatReplyUtils';
+import { getMessagePreviewText } from '../../../utils/messageChatReplyUtils';
 import './MessageChatReplyBar.css';
 
 export default function MessageChatReplyBar({ message, onCancel }) {

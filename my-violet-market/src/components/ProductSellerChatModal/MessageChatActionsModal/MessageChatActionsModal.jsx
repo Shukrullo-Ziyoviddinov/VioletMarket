@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { isOwnChatMessage } from '../../utils/messageChatReadStatus';
+import { isOwnChatMessage } from '../../../utils/messageChatReadStatus';
 import './MessageChatActionsModal.css';
 
 export default function MessageChatActionsModal({
