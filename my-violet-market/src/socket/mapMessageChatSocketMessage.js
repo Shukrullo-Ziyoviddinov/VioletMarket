@@ -10,9 +10,12 @@ export function mapMessageChatSocketMessage(message) {
       }
     : null;
 
+  const sender =
+    message.sender === 'user' || message.sender === 'customer' ? 'customer' : 'seller';
+
   return {
     id: String(message.id),
-    sender: message.sender === 'user' ? 'customer' : 'seller',
+    sender,
     type: message.type,
     content: message.content,
     createdAt: message.createdAt,

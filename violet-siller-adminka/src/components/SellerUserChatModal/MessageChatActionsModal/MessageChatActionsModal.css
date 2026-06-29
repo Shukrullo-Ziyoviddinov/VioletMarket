@@ -3,7 +3,7 @@
   inset: 0;
   z-index: 5;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
 }
 
@@ -19,7 +19,7 @@
   position: relative;
   z-index: 1;
   width: min(100% - 24px, 360px);
-  margin: 0 12px 12px;
+  margin: 0 12px;
   padding: 8px;
   border-radius: 16px;
   background: #fff;

@@ -8,7 +8,7 @@ import {
   uploadSellerMessageChatImage,
 } from '../api/messageChatApi';
 import { emitMessageChatSending } from '../socket/messageChatSocketClient';
-import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
+import { mapMessageChatClientMessage, mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
 import { SELLER_MESSAGE_CHAT_INCOMING_EVENT } from '../socket/useSellerMessageChatSocketHub';
 import { useMessageSendState } from './useMessageSendState';
 import { applyMessageChatReadUpdate } from '../utils/messageChatReadStatus';
@@ -59,9 +59,9 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
     try {
       const data = await fetchSellerMessageThreadMessages(token, userId);
       const items = Array.isArray(data.items)
-        ? data.items.map((row) => mapMessageChatSocketMessage({ ...row, sender: row.sender }))
+        ? data.items.map((row) => mapMessageChatClientMessage(row)).filter(Boolean)
         : [];
-      setMessages(items.filter(Boolean));
+      setMessages(items);
       await markSellerMessageThreadRead(token, userId);
       window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
     } catch {
@@ -143,7 +143,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
 
       try {
         const data = await sendSellerMessageChatMessage(token, userId, payload);
-        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
+        const message = data.message ? mapMessageChatClientMessage(data.message) : null;
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
@@ -182,7 +182,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
           type: 'image',
           content: imagePath,
         });
-        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
+        const message = data.message ? mapMessageChatClientMessage(data.message) : null;
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
@@ -216,7 +216,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
       if (!token || !userId || !messageId) return null;
       try {
         const data = await editSellerMessageChatMessage(token, userId, messageId, text);
-        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
+        const message = data.message ? mapMessageChatClientMessage(data.message) : null;
         if (message) {
           setMessages((current) => replaceMessage(current, message));
           window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
