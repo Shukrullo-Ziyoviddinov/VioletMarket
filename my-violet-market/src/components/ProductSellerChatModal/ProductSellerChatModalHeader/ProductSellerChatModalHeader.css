@@ -51,7 +51,8 @@
   flex: 1;
 }
 
-.product-seller-chat-modal-header__typing {
+.product-seller-chat-modal-header__typing,
+.product-seller-chat-modal-header__sending {
   margin: 0;
   font-size: 12px;
   line-height: 1.2;

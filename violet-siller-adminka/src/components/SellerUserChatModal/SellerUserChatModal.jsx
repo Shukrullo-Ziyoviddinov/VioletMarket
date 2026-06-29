@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '../../utils/mediaUrl';
-import MessageChatSendStatus from '../MessageChatSendStatus';
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
-function SellerUserChatHeader({ user, onBack, isPartnerTyping = false }) {
+function SellerUserChatHeader({ user, onBack, isPartnerTyping = false, isPartnerSending = false }) {
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Foydalanuvchi';
   const avatarSrc = resolveUserProfileImage(user?.profileImage);
 
@@ -26,7 +25,9 @@ function SellerUserChatHeader({ user, onBack, isPartnerTyping = false }) {
         />
         <div className="seller-user-chat-header__profile-text">
           <h2 className="seller-user-chat-header__name">{displayName}</h2>
-          {isPartnerTyping ? (
+          {isPartnerSending ? (
+            <p className="seller-user-chat-header__sending">Yuborilmoqda...</p>
+          ) : isPartnerTyping ? (
             <p className="seller-user-chat-header__typing">Yozmoqda...</p>
           ) : null}
         </div>
@@ -75,12 +76,12 @@ function SellerUserChatProductMessage({ product, isSeller }) {
   );
 }
 
-function SellerUserChatMessageList({ messages, isSending = false }) {
+function SellerUserChatMessageList({ messages }) {
   const endRef = useRef(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isSending]);
+  }, [messages]);
 
   return (
     <div className="seller-user-chat-message-list">
@@ -100,7 +101,6 @@ function SellerUserChatMessageList({ messages, isSending = false }) {
           return <SellerUserChatMessageBubble key={message.id} message={message} />;
         })
       )}
-      <MessageChatSendStatus active={isSending} />
       <div ref={endRef} className="seller-user-chat-message-list__anchor" />
     </div>
   );
@@ -216,6 +216,7 @@ export default function SellerUserChatModal({
   onSendText,
   onSendImage,
   isPartnerTyping = false,
+  isPartnerSending = false,
   isSending = false,
   onComposerActivity,
   onStopTyping,
@@ -243,8 +244,13 @@ export default function SellerUserChatModal({
     <div className="seller-user-chat-modal" role="presentation">
       <button type="button" className="seller-user-chat-modal__backdrop" aria-label="Yopish" onClick={onClose} />
       <div className="seller-user-chat-modal__panel" role="dialog" aria-modal="true">
-        <SellerUserChatHeader user={user} onBack={onClose} isPartnerTyping={isPartnerTyping} />
-        <SellerUserChatMessageList messages={messages} isSending={isSending} />
+        <SellerUserChatHeader
+          user={user}
+          onBack={onClose}
+          isPartnerTyping={isPartnerTyping}
+          isPartnerSending={isPartnerSending}
+        />
+        <SellerUserChatMessageList messages={messages} />
         <SellerUserChatComposer
           onSendText={onSendText}
           onSendImage={onSendImage}

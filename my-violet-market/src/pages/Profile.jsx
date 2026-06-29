@@ -19,6 +19,7 @@ import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
+import { useMessageChatSending } from '../hooks/useMessageChatSending';
 import { useMessageChatSocketThreadsUpdated } from '../socket/useMessageChatSocket';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
@@ -427,6 +428,12 @@ const Profile = () => {
     handleComposerActivity: handleProfileChatComposerActivity,
     stopTyping: stopProfileChatTyping,
   } = useMessageChatTyping({
+    sellerId: activeChatSellerId,
+    enabled: isProfileSellerChatOpen && Boolean(authToken),
+    watchSender: 'seller',
+  });
+
+  const { isPartnerSending: isProfileSellerPartnerSending } = useMessageChatSending({
     sellerId: activeChatSellerId,
     enabled: isProfileSellerChatOpen && Boolean(authToken),
     watchSender: 'seller',
@@ -1010,6 +1017,7 @@ const Profile = () => {
             onSendImage={sendProfileChatImage}
             onSendProduct={sendProfileChatProduct}
             isPartnerTyping={isProfileSellerTyping}
+            isPartnerSending={isProfileSellerPartnerSending}
             isSending={isProfileChatSending}
             onComposerActivity={handleProfileChatComposerActivity}
             onStopTyping={stopProfileChatTyping}

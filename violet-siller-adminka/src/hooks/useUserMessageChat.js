@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   fetchSellerMessageThreadMessages,
   markSellerMessageThreadRead,
   sendSellerMessageChatMessage,
   uploadSellerMessageChatImage,
 } from '../api/messageChatApi';
+import { emitMessageChatSending } from '../socket/messageChatSocketClient';
 import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
 import { SELLER_MESSAGE_CHAT_INCOMING_EVENT } from '../socket/useSellerMessageChatSocketHub';
 import { useMessageSendState } from './useMessageSendState';
@@ -20,6 +21,24 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const { isSending, beginSending, endSending } = useMessageSendState(messages, 'seller');
+  const prevIsSendingRef = useRef(false);
+
+  const notifyPartnerSending = useCallback(
+    (sending) => {
+      if (!userId) return;
+      emitMessageChatSending({ userId, isSending: sending });
+    },
+    [userId],
+  );
+
+  useEffect(() => {
+    if (isSending && !prevIsSendingRef.current) {
+      notifyPartnerSending(true);
+    } else if (!isSending && prevIsSendingRef.current) {
+      notifyPartnerSending(false);
+    }
+    prevIsSendingRef.current = isSending;
+  }, [isSending, notifyPartnerSending]);
 
   const loadMessages = useCallback(async () => {
     if (!token || !userId) {

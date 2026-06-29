@@ -19,6 +19,7 @@ export default function ProductSellerChatModal({
   onSendImage,
   onSendProduct,
   isPartnerTyping = false,
+  isPartnerSending = false,
   isSending = false,
   onComposerActivity,
   onStopTyping,
@@ -110,8 +111,9 @@ export default function ProductSellerChatModal({
           lang={lang}
           onBack={onClose}
           isPartnerTyping={isPartnerTyping}
+          isPartnerSending={isPartnerSending}
         />
-        <ProductSellerChatMessageList messages={messages} isSending={isSending} />
+        <ProductSellerChatMessageList messages={messages} />
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}

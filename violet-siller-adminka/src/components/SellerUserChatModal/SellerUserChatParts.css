@@ -47,7 +47,8 @@
   flex: 1;
 }
 
-.seller-user-chat-header__typing {
+.seller-user-chat-header__typing,
+.seller-user-chat-header__sending {
   margin: 0;
   font-size: 12px;
   line-height: 1.2;

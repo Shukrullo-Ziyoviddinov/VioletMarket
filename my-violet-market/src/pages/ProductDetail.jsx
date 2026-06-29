@@ -20,6 +20,7 @@ import CommentsModal from '../components/CommentsModal';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
+import { useMessageChatSending } from '../hooks/useMessageChatSending';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
@@ -761,6 +762,12 @@ const ProductDetail = () => {
     handleComposerActivity: handleSellerChatComposerActivity,
     stopTyping: stopSellerChatTyping,
   } = useMessageChatTyping({
+    sellerId: detailSellerId,
+    enabled: isSellerChatOpen && Boolean(authToken),
+    watchSender: 'seller',
+  });
+
+  const { isPartnerSending: isSellerPartnerSending } = useMessageChatSending({
     sellerId: detailSellerId,
     enabled: isSellerChatOpen && Boolean(authToken),
     watchSender: 'seller',
@@ -2423,6 +2430,7 @@ const ProductDetail = () => {
         onSendImage={sendSellerChatImage}
         onSendProduct={sendSellerChatProduct}
         isPartnerTyping={isSellerTyping}
+        isPartnerSending={isSellerPartnerSending}
         isSending={isSellerChatSending}
         onComposerActivity={handleSellerChatComposerActivity}
         onStopTyping={stopSellerChatTyping}

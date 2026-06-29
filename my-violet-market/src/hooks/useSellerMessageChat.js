@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   fetchMessageChatThreadMessages,
   markMessageChatThreadRead,
   sendMessageChatMessage,
   uploadMessageChatImage,
 } from '../api/messageChatApi';
+import { emitMessageChatSending } from '../socket/messageChatSocketClient';
 import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
 import {
   MESSAGE_CHAT_SOCKET_EVENTS,
@@ -23,6 +24,24 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const { isSending, beginSending, endSending } = useMessageSendState(messages, 'customer');
+  const prevIsSendingRef = useRef(false);
+
+  const notifyPartnerSending = useCallback(
+    (sending) => {
+      if (!sellerId) return;
+      emitMessageChatSending({ sellerId, isSending: sending });
+    },
+    [sellerId],
+  );
+
+  useEffect(() => {
+    if (isSending && !prevIsSendingRef.current) {
+      notifyPartnerSending(true);
+    } else if (!isSending && prevIsSendingRef.current) {
+      notifyPartnerSending(false);
+    }
+    prevIsSendingRef.current = isSending;
+  }, [isSending, notifyPartnerSending]);
 
   const loadMessages = useCallback(async () => {
     if (!authToken || !sellerId) {
