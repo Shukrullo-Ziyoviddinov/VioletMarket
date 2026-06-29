@@ -1,12 +1,14 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
-export function useMessageSendState() {
+export function useMessageSendState(messages, ownSender) {
   const [isSending, setIsSending] = useState(false);
   const sendingRef = useRef(false);
+  const baselineRef = useRef(0);
 
-  const beginSending = useCallback(() => {
+  const beginSending = useCallback((messageCount = 0) => {
     if (sendingRef.current) return false;
     sendingRef.current = true;
+    baselineRef.current = messageCount;
     setIsSending(true);
     return true;
   }, []);
@@ -15,6 +17,18 @@ export function useMessageSendState() {
     sendingRef.current = false;
     setIsSending(false);
   }, []);
+
+  useEffect(() => {
+    if (!isSending) return;
+
+    const baseline = baselineRef.current;
+    if (messages.length <= baseline) return;
+
+    const added = messages.slice(baseline);
+    if (added.some((message) => message?.sender === ownSender)) {
+      endSending();
+    }
+  }, [messages, isSending, ownSender, endSending]);
 
   return {
     isSending,

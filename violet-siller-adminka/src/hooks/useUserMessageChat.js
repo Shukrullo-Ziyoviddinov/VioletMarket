@@ -19,7 +19,7 @@ function appendUniqueMessage(current, message) {
 export function useUserMessageChat({ token, userId, enabled = true }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { isSending, beginSending, endSending } = useMessageSendState();
+  const { isSending, beginSending, endSending } = useMessageSendState(messages, 'seller');
 
   const loadMessages = useCallback(async () => {
     if (!token || !userId) {
@@ -60,10 +60,6 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
 
       setMessages((current) => appendUniqueMessage(current, uiMessage));
 
-      if (uiMessage.sender === 'seller') {
-        endSending();
-      }
-
       if (uiMessage.sender === 'customer' && token) {
         markSellerMessageThreadRead(token, userId).catch(() => {});
       }
@@ -73,11 +69,11 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
 
     window.addEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
     return () => window.removeEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
-  }, [userId, token, endSending]);
+  }, [userId, token]);
 
   const sendMessage = useCallback(
     async (payload) => {
-      if (!token || !userId || !beginSending()) return null;
+      if (!token || !userId || !beginSending(messages.length)) return null;
 
       try {
         const data = await sendSellerMessageChatMessage(token, userId, payload);
@@ -85,7 +81,6 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
-          endSending();
         }
         return message;
       } catch {
@@ -93,7 +88,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
         return null;
       }
     },
-    [token, userId, beginSending, endSending],
+    [token, userId, messages.length, beginSending, endSending],
   );
 
   const sendText = useCallback(
@@ -103,7 +98,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
 
   const sendImage = useCallback(
     async (file) => {
-      if (!file || !token || !userId || !beginSending()) return null;
+      if (!file || !token || !userId || !beginSending(messages.length)) return null;
 
       try {
         const upload = await uploadSellerMessageChatImage(token, file);
@@ -121,7 +116,6 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
-          endSending();
         }
         return message;
       } catch {
@@ -129,7 +123,7 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
         return null;
       }
     },
-    [token, userId, beginSending, endSending],
+    [token, userId, messages.length, beginSending, endSending],
   );
 
   return {

@@ -75,12 +75,12 @@ function SellerUserChatProductMessage({ product, isSeller }) {
   );
 }
 
-function SellerUserChatMessageList({ messages }) {
+function SellerUserChatMessageList({ messages, isSending = false }) {
   const endRef = useRef(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isSending]);
 
   return (
     <div className="seller-user-chat-message-list">
@@ -100,6 +100,7 @@ function SellerUserChatMessageList({ messages }) {
           return <SellerUserChatMessageBubble key={message.id} message={message} />;
         })
       )}
+      <MessageChatSendStatus active={isSending} />
       <div ref={endRef} className="seller-user-chat-message-list__anchor" />
     </div>
   );
@@ -243,8 +244,7 @@ export default function SellerUserChatModal({
       <button type="button" className="seller-user-chat-modal__backdrop" aria-label="Yopish" onClick={onClose} />
       <div className="seller-user-chat-modal__panel" role="dialog" aria-modal="true">
         <SellerUserChatHeader user={user} onBack={onClose} isPartnerTyping={isPartnerTyping} />
-        <SellerUserChatMessageList messages={messages} />
-        <MessageChatSendStatus active={isSending} />
+        <SellerUserChatMessageList messages={messages} isSending={isSending} />
         <SellerUserChatComposer
           onSendText={onSendText}
           onSendImage={onSendImage}

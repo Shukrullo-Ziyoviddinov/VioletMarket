@@ -6,7 +6,6 @@ import ProductSellerChatModalHeader from './ProductSellerChatModalHeader/Product
 import ProductSellerChatMessageList from './ProductSellerChatMessageList/ProductSellerChatMessageList';
 import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSellerChatComposer';
 import ProductSellerChatContextProduct from './ProductSellerChatContextProduct/ProductSellerChatContextProduct';
-import MessageChatSendStatus from '../MessageChatSendStatus';
 import './ProductSellerChatModal.css';
 
 export default function ProductSellerChatModal({
@@ -112,11 +111,10 @@ export default function ProductSellerChatModal({
           onBack={onClose}
           isPartnerTyping={isPartnerTyping}
         />
-        <ProductSellerChatMessageList messages={messages} />
+        <ProductSellerChatMessageList messages={messages} isSending={isSending} />
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}
-        <MessageChatSendStatus active={isSending} />
         <ProductSellerChatComposer
           onSendText={handleSendText}
           onSendImage={handleSendImage}

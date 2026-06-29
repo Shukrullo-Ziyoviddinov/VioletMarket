@@ -22,7 +22,7 @@ function appendUniqueMessage(current, message) {
 export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { isSending, beginSending, endSending } = useMessageSendState();
+  const { isSending, beginSending, endSending } = useMessageSendState(messages, 'customer');
 
   const loadMessages = useCallback(async () => {
     if (!authToken || !sellerId) {
@@ -59,29 +59,24 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
 
       setMessages((current) => appendUniqueMessage(current, uiMessage));
 
-      if (uiMessage.sender === 'customer') {
-        endSending();
-      }
-
       if (uiMessage.sender === 'seller' && authToken) {
         markMessageChatThreadRead(authToken, sellerId).catch(() => {});
       }
 
       window.dispatchEvent(new CustomEvent('messageChatUpdated'));
     });
-  }, [enabled, sellerId, authToken, endSending]);
+  }, [enabled, sellerId, authToken]);
 
   const sendMessage = useCallback(
     async (payload) => {
-      if (!authToken || !sellerId || !beginSending()) return null;
+      if (!authToken || !sellerId || !beginSending(messages.length)) return null;
 
       try {
         const data = await sendMessageChatMessage(authToken, sellerId, payload);
-        const message = data.message;
+        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('messageChatUpdated'));
-          endSending();
         }
         return message;
       } catch {
@@ -89,7 +84,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
         return null;
       }
     },
-    [authToken, sellerId, beginSending, endSending],
+    [authToken, sellerId, messages.length, beginSending, endSending],
   );
 
   const sendText = useCallback(
@@ -99,7 +94,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
 
   const sendImage = useCallback(
     async (file) => {
-      if (!file || !authToken || !sellerId || !beginSending()) return null;
+      if (!file || !authToken || !sellerId || !beginSending(messages.length)) return null;
 
       try {
         const upload = await uploadMessageChatImage(authToken, file);
@@ -113,11 +108,10 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
           type: 'image',
           content: imagePath,
         });
-        const message = data.message;
+        const message = data.message ? mapMessageChatSocketMessage(data.message) : null;
         if (message) {
           setMessages((current) => appendUniqueMessage(current, message));
           window.dispatchEvent(new CustomEvent('messageChatUpdated'));
-          endSending();
         }
         return message;
       } catch {
@@ -125,7 +119,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
         return null;
       }
     },
-    [authToken, sellerId, beginSending, endSending],
+    [authToken, sellerId, messages.length, beginSending, endSending],
   );
 
   const sendProduct = useCallback(

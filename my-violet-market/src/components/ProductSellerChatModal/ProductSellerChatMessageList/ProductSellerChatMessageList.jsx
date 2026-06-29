@@ -2,15 +2,16 @@ import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/ProductSellerChatMessageBubble';
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
+import MessageChatSendStatus from '../../MessageChatSendStatus';
 import './ProductSellerChatMessageList.css';
 
-export default function ProductSellerChatMessageList({ messages = [] }) {
+export default function ProductSellerChatMessageList({ messages = [], isSending = false }) {
   const { t } = useTranslation();
   const endRef = useRef(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isSending]);
 
   return (
     <div className="product-seller-chat-message-list" role="log" aria-live="polite">
@@ -31,6 +32,7 @@ export default function ProductSellerChatMessageList({ messages = [] }) {
           return <ProductSellerChatMessageBubble key={message.id} message={message} />;
         })
       )}
+      <MessageChatSendStatus active={isSending} />
       <div ref={endRef} className="product-seller-chat-message-list__anchor" />
     </div>
   );
