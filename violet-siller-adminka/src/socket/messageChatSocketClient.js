@@ -19,6 +19,9 @@ function dispatchEvent(eventName, payload) {
 }
 
 function bindSocketEvents(nextSocket) {
+  nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE);
+  nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.THREADS_UPDATED);
+
   nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
     dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
   });
@@ -52,10 +55,11 @@ export function connectMessageChatSocket(token) {
     auth: { token: nextToken },
     autoConnect: true,
     reconnection: true,
-    reconnectionAttempts: 10,
+    reconnectionAttempts: Infinity,
   });
 
   bindSocketEvents(socket);
+
   return socket;
 }
 

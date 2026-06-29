@@ -6,6 +6,7 @@ import { useUserMessageChat } from '../../hooks/useUserMessageChat';
 import SellerUserChatModal from '../../components/SellerUserChatModal';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { useMessageChatSocketThreadsUpdated } from '../../socket/useMessageChatSocket';
+import { SELLER_MESSAGE_CHAT_INCOMING_EVENT } from '../../socket/useSellerMessageChatSocketHub';
 import './MessagesPage.css';
 
 const { Title } = Typography;
@@ -46,6 +47,15 @@ export default function MessagesPage() {
   }, [loadThreads]);
 
   useMessageChatSocketThreadsUpdated(loadThreads);
+
+  useEffect(() => {
+    const handleIncoming = () => {
+      loadThreads();
+    };
+
+    window.addEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
+    return () => window.removeEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
+  }, [loadThreads]);
 
   const {
     messages,

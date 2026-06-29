@@ -6,10 +6,7 @@ import {
   uploadSellerMessageChatImage,
 } from '../api/messageChatApi';
 import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
-import {
-  MESSAGE_CHAT_SOCKET_EVENTS,
-  subscribeMessageChatSocket,
-} from '../socket/useMessageChatSocket';
+import { SELLER_MESSAGE_CHAT_INCOMING_EVENT } from '../socket/useSellerMessageChatSocketHub';
 
 function appendUniqueMessage(current, message) {
   if (!message || current.some((item) => item.id === message.id)) {
@@ -51,10 +48,11 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
   }, [enabled, token, userId, loadMessages]);
 
   useEffect(() => {
-    if (!enabled || !userId) return undefined;
+    if (!userId) return undefined;
 
-    return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
-      if (!payload || payload.userId !== userId) return;
+    const handleIncoming = (event) => {
+      const payload = event.detail;
+      if (!payload || String(payload.userId) !== String(userId)) return;
 
       const uiMessage = mapMessageChatSocketMessage(payload.message);
       if (!uiMessage) return;
@@ -66,8 +64,11 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
       }
 
       window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
-    });
-  }, [enabled, userId, token]);
+    };
+
+    window.addEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
+    return () => window.removeEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
+  }, [userId, token]);
 
   const sendMessage = useCallback(
     async (payload) => {

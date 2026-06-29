@@ -14,25 +14,29 @@ function getSellerRoom(sellerId) {
   return `message-chat:seller:${String(sellerId)}`;
 }
 
+function normalizeSocketId(value) {
+  return String(value || "").trim();
+}
+
 function emitMessageChatMessage({ userId, sellerId, message }) {
   if (!ioInstance || !userId || !sellerId || !message) return;
 
   const payload = {
-    userId: String(userId),
-    sellerId: String(sellerId),
+    userId: normalizeSocketId(userId),
+    sellerId: normalizeSocketId(sellerId),
     message,
   };
 
-  ioInstance.to(getUserRoom(userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
-  ioInstance.to(getSellerRoom(sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
+  ioInstance.to(getUserRoom(payload.userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
+  ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
 }
 
 function emitMessageChatThreadsUpdated({ userId, sellerId }) {
   if (!ioInstance) return;
 
   const payload = {
-    userId: userId ? String(userId) : null,
-    sellerId: sellerId ? String(sellerId) : null,
+    userId: userId ? normalizeSocketId(userId) : null,
+    sellerId: sellerId ? normalizeSocketId(sellerId) : null,
   };
 
   if (userId) {

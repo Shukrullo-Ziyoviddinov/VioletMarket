@@ -28,9 +28,9 @@ function initMessageChatSocket(httpServer) {
     }
 
     if (identity.kind === "user") {
-      socket.join(`message-chat:user:${identity.userId}`);
+      socket.join(`message-chat:user:${String(identity.userId).trim()}`);
     } else if (identity.kind === "seller") {
-      socket.join(`message-chat:seller:${identity.sellerId}`);
+      socket.join(`message-chat:seller:${String(identity.sellerId).trim()}`);
     }
   });
 

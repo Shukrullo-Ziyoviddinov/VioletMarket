@@ -51,7 +51,7 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     if (!enabled || !sellerId) return undefined;
 
     return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
-      if (!payload || payload.sellerId !== sellerId) return;
+      if (!payload || String(payload.sellerId) !== String(sellerId)) return;
 
       const uiMessage = mapMessageChatSocketMessage(payload.message);
       if (!uiMessage) return;

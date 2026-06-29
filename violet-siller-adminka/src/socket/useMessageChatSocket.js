@@ -14,7 +14,7 @@ export function useMessageChatSocketConnection(authToken) {
     }
 
     connectMessageChatSocket(authToken);
-    return () => disconnectMessageChatSocket();
+    return undefined;
   }, [authToken]);
 }
 

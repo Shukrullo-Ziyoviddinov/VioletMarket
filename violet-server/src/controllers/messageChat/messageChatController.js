@@ -27,12 +27,12 @@ const sendUserMessage = asyncHandler(async (req, res) => {
 
   emitMessageChatMessage({
     userId: String(req.userId),
-    sellerId: req.params.sellerId,
+    sellerId: String(req.params.sellerId || "").trim(),
     message: data.socketMessage,
   });
   emitMessageChatThreadsUpdated({
     userId: String(req.userId),
-    sellerId: req.params.sellerId,
+    sellerId: String(req.params.sellerId || "").trim(),
   });
 
   res.status(201).json({ ok: true, message: data.message });
