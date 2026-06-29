@@ -9,6 +9,8 @@ import { emitMessageChatSending } from '../socket/messageChatSocketClient';
 import { mapMessageChatSocketMessage } from '../socket/mapMessageChatSocketMessage';
 import { SELLER_MESSAGE_CHAT_INCOMING_EVENT } from '../socket/useSellerMessageChatSocketHub';
 import { useMessageSendState } from './useMessageSendState';
+import { applyMessageChatReadUpdate } from '../utils/messageChatReadStatus';
+import { MESSAGE_CHAT_SOCKET_EVENTS, subscribeMessageChatSocket } from '../socket/useMessageChatSocket';
 
 function appendUniqueMessage(current, message) {
   if (!message || current.some((item) => item.id === message.id)) {
@@ -89,6 +91,15 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
     window.addEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
     return () => window.removeEventListener(SELLER_MESSAGE_CHAT_INCOMING_EVENT, handleIncoming);
   }, [userId, token]);
+
+  useEffect(() => {
+    if (!enabled || !userId) return undefined;
+
+    return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.READ, (payload) => {
+      if (!payload || String(payload.userId) !== String(userId)) return;
+      setMessages((current) => applyMessageChatReadUpdate(current, payload));
+    });
+  }, [enabled, userId]);
 
   const sendMessage = useCallback(
     async (payload) => {

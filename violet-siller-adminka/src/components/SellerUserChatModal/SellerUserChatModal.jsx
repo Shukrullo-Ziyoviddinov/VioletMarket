@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '../../utils/mediaUrl';
+import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
+import SellerUserChatMessageBubble from './SellerUserChatMessageBubble/SellerUserChatMessageBubble';
+import SellerUserChatProductMessage from './SellerUserChatProductMessage/SellerUserChatProductMessage';
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
@@ -45,46 +47,6 @@ function SellerUserChatHeader({
   );
 }
 
-function SellerUserChatMessageBubble({ message }) {
-  const isSeller = message?.sender === 'seller';
-  const isImage = message?.type === 'image';
-  const imageSrc = isImage ? resolveAssetUrl(message.content) : '';
-
-  return (
-    <div
-      className={`seller-user-chat-bubble${
-        isSeller ? ' seller-user-chat-bubble--seller' : ' seller-user-chat-bubble--customer'
-      }${isImage ? ' seller-user-chat-bubble--image' : ''}`}
-    >
-      {isImage ? (
-        <img src={imageSrc} alt="" className="seller-user-chat-bubble__image" />
-      ) : (
-        <p className="seller-user-chat-bubble__text">{message.content}</p>
-      )}
-    </div>
-  );
-}
-
-function SellerUserChatProductMessage({ product, isSeller }) {
-  if (!product) return null;
-  const title = String(product.title || '').trim() || 'Mahsulot';
-  const imageSrc = resolveAssetUrl(product.image);
-
-  return (
-    <div
-      className={`seller-user-chat-product${
-        isSeller ? ' seller-user-chat-product--seller' : ' seller-user-chat-product--customer'
-      }`}
-    >
-      <img src={imageSrc} alt="" className="seller-user-chat-product__image" />
-      <div className="seller-user-chat-product__info">
-        <p className="seller-user-chat-product__title">{title}</p>
-        {product.price ? <span className="seller-user-chat-product__price">{product.price}</span> : null}
-      </div>
-    </div>
-  );
-}
-
 function SellerUserChatMessageList({ messages }) {
   const endRef = useRef(null);
 
@@ -103,6 +65,7 @@ function SellerUserChatMessageList({ messages }) {
               <SellerUserChatProductMessage
                 key={message.id}
                 product={message.content}
+                message={message}
                 isSeller={message.sender === 'seller'}
               />
             );

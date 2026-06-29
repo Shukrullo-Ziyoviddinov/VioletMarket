@@ -1,8 +1,14 @@
 import React from 'react';
 import ProductSellerChatProductPreview from '../ProductSellerChatProductPreview/ProductSellerChatProductPreview';
+import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
 import './ProductSellerChatProductMessage.css';
 
-export default function ProductSellerChatProductMessage({ product, isCustomer = false }) {
+export default function ProductSellerChatProductMessage({
+  product,
+  message = null,
+  isCustomer = false,
+  viewerRole = 'user',
+}) {
   if (!product) return null;
 
   return (
@@ -12,6 +18,7 @@ export default function ProductSellerChatProductMessage({ product, isCustomer = 
       }`}
     >
       <ProductSellerChatProductPreview product={product} compact />
+      {message ? <MessageChatBubbleMeta message={message} viewerRole={viewerRole} /> : null}
     </div>
   );
 }

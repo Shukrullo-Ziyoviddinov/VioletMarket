@@ -47,10 +47,24 @@ function emitMessageChatThreadsUpdated({ userId, sellerId }) {
   }
 }
 
+function emitMessageChatRead({ userId, sellerId, readBy }) {
+  if (!ioInstance || !userId || !sellerId || !readBy) return;
+
+  const payload = {
+    userId: normalizeSocketId(userId),
+    sellerId: normalizeSocketId(sellerId),
+    readBy: String(readBy).trim(),
+  };
+
+  ioInstance.to(getUserRoom(payload.userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.READ, payload);
+  ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.READ, payload);
+}
+
 module.exports = {
   setMessageChatSocketIo,
   emitMessageChatMessage,
   emitMessageChatThreadsUpdated,
+  emitMessageChatRead,
   getUserRoom,
   getSellerRoom,
 };

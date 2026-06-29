@@ -236,17 +236,7 @@ async function getThreadMessagesForSeller(sellerShopId, userIdRaw) {
     .sort({ createdAt: 1 })
     .lean();
 
-  return {
-    items: rows.map((row) => ({
-      id: String(row._id),
-      sender: row.sender,
-      type: row.type,
-      content: row.content,
-      createdAt: row.createdAt,
-      readByUser: Boolean(row.readByUser),
-      readBySeller: Boolean(row.readBySeller),
-    })),
-  };
+  return { items: rows.map(mapMessageToClient) };
 }
 
 async function sendUserMessage(userId, sellerIdRaw, payload) {
@@ -293,15 +283,7 @@ async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
   });
 
   return {
-    message: {
-      id: String(doc._id),
-      sender: "seller",
-      type: doc.type,
-      content: doc.content,
-      createdAt: doc.createdAt,
-      readByUser: false,
-      readBySeller: true,
-    },
+    message: mapMessageToClient(doc.toObject()),
     socketMessage: mapMessageToSocket(doc.toObject()),
   };
 }

@@ -1,5 +1,7 @@
 .product-seller-chat-product-message {
   max-width: min(82%, 280px);
+  display: flex;
+  flex-direction: column;
   padding: 8px;
   border-radius: 18px 18px 0 18px;
   background: #022ff9;

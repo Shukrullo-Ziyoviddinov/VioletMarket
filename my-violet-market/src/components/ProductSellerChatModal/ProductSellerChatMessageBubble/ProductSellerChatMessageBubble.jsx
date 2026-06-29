@@ -1,8 +1,9 @@
 import React from 'react';
 import { normalizeImagePath } from '../../../utils/utils';
+import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
 import './ProductSellerChatMessageBubble.css';
 
-export default function ProductSellerChatMessageBubble({ message }) {
+export default function ProductSellerChatMessageBubble({ message, viewerRole = 'user' }) {
   const isCustomer = message?.sender === 'customer';
   const isImage = message?.type === 'image';
   const imageSrc = isImage ? normalizeImagePath(message.content) : '';
@@ -24,6 +25,7 @@ export default function ProductSellerChatMessageBubble({ message }) {
       ) : (
         <p className="product-seller-chat-message-bubble__text">{message.content}</p>
       )}
+      <MessageChatBubbleMeta message={message} viewerRole={viewerRole} />
     </div>
   );
 }

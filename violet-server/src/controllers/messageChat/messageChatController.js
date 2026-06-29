@@ -3,6 +3,7 @@ const { asyncHandler } = require("../../utils/asyncHandler");
 const {
   emitMessageChatMessage,
   emitMessageChatThreadsUpdated,
+  emitMessageChatRead,
 } = require("../../socket/messageChatSocketEmitter");
 
 const listUserThreads = asyncHandler(async (req, res) => {
@@ -47,6 +48,12 @@ const markUserThreadRead = asyncHandler(async (req, res) => {
   emitMessageChatThreadsUpdated({
     userId: String(req.userId),
     sellerId: req.params.sellerId,
+  });
+
+  emitMessageChatRead({
+    userId: String(req.userId),
+    sellerId: String(req.params.sellerId || "").trim(),
+    readBy: "user",
   });
 
   res.json({ ok: true, ...data });

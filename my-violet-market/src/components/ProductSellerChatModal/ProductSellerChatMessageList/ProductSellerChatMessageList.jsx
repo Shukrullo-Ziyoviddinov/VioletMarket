@@ -23,6 +23,7 @@ export default function ProductSellerChatMessageList({ messages = [] }) {
               <ProductSellerChatProductMessage
                 key={message.id}
                 product={message.content}
+                message={message}
                 isCustomer={message.sender === 'customer'}
               />
             );

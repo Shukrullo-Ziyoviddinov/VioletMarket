@@ -12,6 +12,7 @@ import {
   subscribeMessageChatSocket,
 } from '../socket/useMessageChatSocket';
 import { useMessageSendState } from './useMessageSendState';
+import { applyMessageChatReadUpdate } from '../utils/messageChatReadStatus';
 
 function appendUniqueMessage(current, message) {
   if (!message || current.some((item) => item.id === message.id)) {
@@ -85,6 +86,15 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
       window.dispatchEvent(new CustomEvent('messageChatUpdated'));
     });
   }, [enabled, sellerId, authToken]);
+
+  useEffect(() => {
+    if (!enabled || !sellerId) return undefined;
+
+    return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.READ, (payload) => {
+      if (!payload || String(payload.sellerId) !== String(sellerId)) return;
+      setMessages((current) => applyMessageChatReadUpdate(current, payload));
+    });
+  }, [enabled, sellerId]);
 
   const sendMessage = useCallback(
     async (payload) => {
