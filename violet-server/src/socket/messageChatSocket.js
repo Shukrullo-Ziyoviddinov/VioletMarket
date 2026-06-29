@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const { authenticateMessageChatSocket } = require("./messageChatSocketAuth");
 const { setMessageChatSocketIo } = require("./messageChatSocketEmitter");
+const { registerMessageChatTypingOnSocket } = require("./messageChatTypingHandler");
 
 function initMessageChatSocket(httpServer) {
   const io = new Server(httpServer, {
@@ -32,6 +33,8 @@ function initMessageChatSocket(httpServer) {
     } else if (identity.kind === "seller") {
       socket.join(`message-chat:seller:${String(identity.sellerId).trim()}`);
     }
+
+    registerMessageChatTypingOnSocket(socket, io);
   });
 
   setMessageChatSocketIo(io);

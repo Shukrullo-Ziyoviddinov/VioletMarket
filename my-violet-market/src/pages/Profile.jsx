@@ -18,6 +18,7 @@ import { fetchMessageChatThreads } from '../api/messageChatApi';
 import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
+import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
 import { useMessageChatSocketThreadsUpdated } from '../socket/useMessageChatSocket';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
@@ -418,6 +419,16 @@ const Profile = () => {
     authToken,
     sellerId: activeChatSellerId,
     enabled: isProfileSellerChatOpen && Boolean(authToken),
+  });
+
+  const {
+    isPartnerTyping: isProfileSellerTyping,
+    handleComposerActivity: handleProfileChatComposerActivity,
+    stopTyping: stopProfileChatTyping,
+  } = useMessageChatTyping({
+    sellerId: activeChatSellerId,
+    enabled: isProfileSellerChatOpen && Boolean(authToken),
+    watchSender: 'seller',
   });
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
@@ -997,6 +1008,9 @@ const Profile = () => {
             onSendText={sendProfileChatText}
             onSendImage={sendProfileChatImage}
             onSendProduct={sendProfileChatProduct}
+            isPartnerTyping={isProfileSellerTyping}
+            onComposerActivity={handleProfileChatComposerActivity}
+            onStopTyping={stopProfileChatTyping}
           />
 
           <div className="profile-card-auth">

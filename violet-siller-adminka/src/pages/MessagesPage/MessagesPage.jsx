@@ -3,6 +3,7 @@ import { Empty, Spin, Typography } from 'antd';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { fetchSellerMessageThreads } from '../../api/messageChatApi';
 import { useUserMessageChat } from '../../hooks/useUserMessageChat';
+import { useMessageChatTyping } from '../../hooks/useMessageChatTyping';
 import SellerUserChatModal from '../../components/SellerUserChatModal';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { useMessageChatSocketThreadsUpdated } from '../../socket/useMessageChatSocket';
@@ -65,6 +66,16 @@ export default function MessagesPage() {
     token,
     userId: activeUser?.userId,
     enabled: chatOpen && Boolean(token),
+  });
+
+  const {
+    isPartnerTyping: isUserTyping,
+    handleComposerActivity: handleUserChatComposerActivity,
+    stopTyping: stopUserChatTyping,
+  } = useMessageChatTyping({
+    userId: activeUser?.userId,
+    enabled: chatOpen && Boolean(token),
+    watchSender: 'user',
   });
 
   const handleOpenThread = (thread) => {
@@ -132,6 +143,9 @@ export default function MessagesPage() {
         onClose={handleCloseChat}
         onSendText={sendText}
         onSendImage={sendImage}
+        isPartnerTyping={isUserTyping}
+        onComposerActivity={handleUserChatComposerActivity}
+        onStopTyping={stopUserChatTyping}
       />
     </section>
   );

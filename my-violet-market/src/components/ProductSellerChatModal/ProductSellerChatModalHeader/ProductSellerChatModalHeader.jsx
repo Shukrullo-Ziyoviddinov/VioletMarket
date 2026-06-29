@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getLocalizedText, normalizeImagePath } from '../../../utils/utils';
 import './ProductSellerChatModalHeader.css';
 
-export default function ProductSellerChatModalHeader({ seller, lang, onBack }) {
+export default function ProductSellerChatModalHeader({ seller, lang, onBack, isPartnerTyping = false }) {
   const { t } = useTranslation();
   const sellerName = seller ? getLocalizedText(seller.name, lang) : '';
   const displayName = sellerName || t('productDetail.chat.sellerFallback');
@@ -31,7 +31,12 @@ export default function ProductSellerChatModalHeader({ seller, lang, onBack }) {
             }}
           />
         </div>
-        <h2 className="seller-profile__name">{displayName}</h2>
+        <div className="product-seller-chat-modal-header__profile-text">
+          <h2 className="seller-profile__name">{displayName}</h2>
+          {isPartnerTyping ? (
+            <p className="product-seller-chat-modal-header__typing">{t('productDetail.chat.typing')}</p>
+          ) : null}
+        </div>
       </div>
     </header>
   );

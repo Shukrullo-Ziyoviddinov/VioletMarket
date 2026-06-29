@@ -19,6 +19,7 @@ import CommentsSection from '../components/CommentsSection';
 import CommentsModal from '../components/CommentsModal';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
+import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
 import DeliveryInfo from '../components/DeliveryInfo';
 import FlashSaleCountdown from '../components/FlashSaleCountdown/FlashSaleCountdown';
 import DragScroll from '../components/DragScroll';
@@ -752,6 +753,16 @@ const ProductDetail = () => {
     authToken,
     sellerId: detailSellerId,
     enabled: isSellerChatOpen && Boolean(authToken),
+  });
+
+  const {
+    isPartnerTyping: isSellerTyping,
+    handleComposerActivity: handleSellerChatComposerActivity,
+    stopTyping: stopSellerChatTyping,
+  } = useMessageChatTyping({
+    sellerId: detailSellerId,
+    enabled: isSellerChatOpen && Boolean(authToken),
+    watchSender: 'seller',
   });
   const sellerProductCountForDetail = useMemo(
     () =>
@@ -2410,6 +2421,9 @@ const ProductDetail = () => {
         onSendText={sendSellerChatText}
         onSendImage={sendSellerChatImage}
         onSendProduct={sendSellerChatProduct}
+        isPartnerTyping={isSellerTyping}
+        onComposerActivity={handleSellerChatComposerActivity}
+        onStopTyping={stopSellerChatTyping}
       />
     </div>
   );

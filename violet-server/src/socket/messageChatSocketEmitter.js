@@ -51,4 +51,6 @@ module.exports = {
   setMessageChatSocketIo,
   emitMessageChatMessage,
   emitMessageChatThreadsUpdated,
+  getUserRoom,
+  getSellerRoom,
 };

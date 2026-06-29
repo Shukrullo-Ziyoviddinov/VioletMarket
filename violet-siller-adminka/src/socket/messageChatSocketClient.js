@@ -21,6 +21,7 @@ function dispatchEvent(eventName, payload) {
 function bindSocketEvents(nextSocket) {
   nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE);
   nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.THREADS_UPDATED);
+  nextSocket.off(MESSAGE_CHAT_SOCKET_EVENTS.TYPING);
 
   nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, (payload) => {
     dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE, payload);
@@ -28,6 +29,10 @@ function bindSocketEvents(nextSocket) {
 
   nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.THREADS_UPDATED, (payload) => {
     dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.THREADS_UPDATED, payload);
+  });
+
+  nextSocket.on(MESSAGE_CHAT_SOCKET_EVENTS.TYPING, (payload) => {
+    dispatchEvent(MESSAGE_CHAT_SOCKET_EVENTS.TYPING, payload);
   });
 }
 
@@ -89,4 +94,10 @@ export function subscribeMessageChatSocket(eventName, handler) {
 
 export function getMessageChatSocket() {
   return socket;
+}
+
+export function emitMessageChatTyping(payload) {
+  const activeSocket = getMessageChatSocket();
+  if (!activeSocket?.connected) return;
+  activeSocket.emit(MESSAGE_CHAT_SOCKET_EVENTS.TYPING, payload);
 }

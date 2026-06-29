@@ -43,6 +43,22 @@
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.16);
 }
 
+.product-seller-chat-modal-header__profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.product-seller-chat-modal-header__typing {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #9b4fe7;
+  font-weight: 500;
+}
+
 .product-seller-chat-modal-header .seller-profile__name {
   margin: 0;
   font-size: 15px;

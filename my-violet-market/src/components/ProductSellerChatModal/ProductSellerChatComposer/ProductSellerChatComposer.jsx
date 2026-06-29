@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ProductSellerChatEmojiPicker from '../ProductSellerChatEmojiPicker/ProductSellerChatEmojiPicker';
 import './ProductSellerChatComposer.css';
 
-export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
+export default function ProductSellerChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping }) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -12,6 +12,7 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
   const handleSend = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    onStopTyping?.();
     onSendText?.(trimmed);
     setText('');
     setEmojiOpen(false);
@@ -25,7 +26,9 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
   };
 
   const handleEmojiSelect = (emoji) => {
-    setText((current) => `${current}${emoji}`);
+    const nextText = `${text}${emoji}`;
+    setText(nextText);
+    onComposerActivity?.(nextText.trim().length > 0);
   };
 
   const handleImageChange = (event) => {
@@ -52,8 +55,13 @@ export default function ProductSellerChatComposer({ onSendText, onSendImage }) {
           rows={1}
           placeholder={t('productDetail.chat.inputPlaceholder')}
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => {
+            const nextText = event.target.value;
+            setText(nextText);
+            onComposerActivity?.(nextText.trim().length > 0);
+          }}
           onKeyDown={handleKeyDown}
+          onBlur={() => onStopTyping?.()}
           onFocus={() => setEmojiOpen(false)}
           aria-label={t('productDetail.chat.inputPlaceholder')}
         />

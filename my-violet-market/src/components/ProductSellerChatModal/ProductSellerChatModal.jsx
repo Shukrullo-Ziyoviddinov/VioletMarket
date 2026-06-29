@@ -18,6 +18,9 @@ export default function ProductSellerChatModal({
   onSendText,
   onSendImage,
   onSendProduct,
+  isPartnerTyping = false,
+  onComposerActivity,
+  onStopTyping,
 }) {
   const { t } = useTranslation();
   const [contextProductSent, setContextProductSent] = useState(false);
@@ -101,12 +104,22 @@ export default function ProductSellerChatModal({
         aria-modal="true"
         aria-label={t('productDetail.chat.title')}
       >
-        <ProductSellerChatModalHeader seller={seller} lang={lang} onBack={onClose} />
+        <ProductSellerChatModalHeader
+          seller={seller}
+          lang={lang}
+          onBack={onClose}
+          isPartnerTyping={isPartnerTyping}
+        />
         <ProductSellerChatMessageList messages={messages} />
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}
-        <ProductSellerChatComposer onSendText={handleSendText} onSendImage={handleSendImage} />
+        <ProductSellerChatComposer
+          onSendText={handleSendText}
+          onSendImage={handleSendImage}
+          onComposerActivity={onComposerActivity}
+          onStopTyping={onStopTyping}
+        />
       </div>
     </div>,
     getPortalContainer(),

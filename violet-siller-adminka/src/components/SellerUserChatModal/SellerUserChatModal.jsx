@@ -4,7 +4,7 @@ import { DEFAULT_USER_AVATAR, resolveAssetUrl, resolveUserProfileImage } from '.
 import './SellerUserChatModal.css';
 import './SellerUserChatParts.css';
 
-function SellerUserChatHeader({ user, onBack }) {
+function SellerUserChatHeader({ user, onBack, isPartnerTyping = false }) {
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Foydalanuvchi';
   const avatarSrc = resolveUserProfileImage(user?.profileImage);
 
@@ -23,7 +23,12 @@ function SellerUserChatHeader({ user, onBack }) {
             event.currentTarget.src = DEFAULT_USER_AVATAR;
           }}
         />
-        <h2 className="seller-user-chat-header__name">{displayName}</h2>
+        <div className="seller-user-chat-header__profile-text">
+          <h2 className="seller-user-chat-header__name">{displayName}</h2>
+          {isPartnerTyping ? (
+            <p className="seller-user-chat-header__typing">Yozmoqda...</p>
+          ) : null}
+        </div>
       </div>
     </header>
   );
@@ -101,7 +106,7 @@ function SellerUserChatMessageList({ messages }) {
 
 const EMOJI_OPTIONS = ['😀', '😂', '😊', '😍', '🥰', '😉', '🙏', '👍', '👋', '🔥', '✅', '❤️'];
 
-function SellerUserChatComposer({ onSendText, onSendImage }) {
+function SellerUserChatComposer({ onSendText, onSendImage, onComposerActivity, onStopTyping }) {
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
@@ -109,6 +114,7 @@ function SellerUserChatComposer({ onSendText, onSendImage }) {
   const handleSend = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    onStopTyping?.();
     onSendText?.(trimmed);
     setText('');
     setEmojiOpen(false);
@@ -138,7 +144,11 @@ function SellerUserChatComposer({ onSendText, onSendImage }) {
               key={emoji}
               type="button"
               className="seller-user-chat-emoji-picker__item"
-              onClick={() => setText((current) => `${current}${emoji}`)}
+              onClick={() => {
+                const nextText = `${text}${emoji}`;
+                setText(nextText);
+                onComposerActivity?.(nextText.trim().length > 0);
+              }}
             >
               {emoji}
             </button>
@@ -152,8 +162,13 @@ function SellerUserChatComposer({ onSendText, onSendImage }) {
           rows={1}
           placeholder="Xabar yozing..."
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => {
+            const nextText = event.target.value;
+            setText(nextText);
+            onComposerActivity?.(nextText.trim().length > 0);
+          }}
           onKeyDown={handleKeyDown}
+          onBlur={() => onStopTyping?.()}
           onFocus={() => setEmojiOpen(false)}
         />
         <button
@@ -198,6 +213,9 @@ export default function SellerUserChatModal({
   onClose,
   onSendText,
   onSendImage,
+  isPartnerTyping = false,
+  onComposerActivity,
+  onStopTyping,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -222,9 +240,14 @@ export default function SellerUserChatModal({
     <div className="seller-user-chat-modal" role="presentation">
       <button type="button" className="seller-user-chat-modal__backdrop" aria-label="Yopish" onClick={onClose} />
       <div className="seller-user-chat-modal__panel" role="dialog" aria-modal="true">
-        <SellerUserChatHeader user={user} onBack={onClose} />
+        <SellerUserChatHeader user={user} onBack={onClose} isPartnerTyping={isPartnerTyping} />
         <SellerUserChatMessageList messages={messages} />
-        <SellerUserChatComposer onSendText={onSendText} onSendImage={onSendImage} />
+        <SellerUserChatComposer
+          onSendText={onSendText}
+          onSendImage={onSendImage}
+          onComposerActivity={onComposerActivity}
+          onStopTyping={onStopTyping}
+        />
       </div>
     </div>,
     document.body,

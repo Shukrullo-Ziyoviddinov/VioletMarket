@@ -39,6 +39,22 @@
   background: #eee;
 }
 
+.seller-user-chat-header__profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.seller-user-chat-header__typing {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #9b4fe7;
+  font-weight: 500;
+}
+
 .seller-user-chat-header__name {
   margin: 0;
   font-size: 15px;
@@ -77,8 +93,13 @@
 .seller-user-chat-bubble--customer {
   align-self: flex-start;
   padding: 9px 13px;
-  background: #e9e9eb;
+  background: #9b4fe7;
   border-radius: 18px 18px 18px 0;
+  box-shadow: 0 1px 2px rgba(155, 79, 231, 0.28);
+}
+
+.seller-user-chat-bubble--customer.seller-user-chat-bubble--image {
+  background: #9b4fe7;
 }
 
 .seller-user-chat-bubble--seller {
@@ -100,7 +121,7 @@
 }
 
 .seller-user-chat-bubble--customer .seller-user-chat-bubble__text {
-  color: #111;
+  color: #fff;
 }
 
 .seller-user-chat-bubble--seller .seller-user-chat-bubble__text {
