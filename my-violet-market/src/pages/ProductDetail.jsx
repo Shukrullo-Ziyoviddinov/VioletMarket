@@ -1677,6 +1677,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            <div className="product-detail-variant-selections">
             {colorOptions.length > 0 && (
               <div className="color-selection">
                 <h3>{i18n.t('productDetail.colorLabel')} {selectedColor !== null ? getLabelFromOption(selectedColor, lang) : colorOptions[0]?.label}</h3>
@@ -1771,22 +1772,6 @@ const ProductDetail = () => {
               </div>
             )}
 
-            <div className="product-detail-quantity-row">
-              <div className="product-detail-quantity" aria-live="polite">
-                <i className="bx bx-package" aria-hidden="true" />
-                <span>
-                  {i18n.t('productDetail.quantityLeft', {
-                    count: displayQuantity,
-                  })}
-                </span>
-              </div>
-              <ProductDetailSalesFooter
-                meta={productData?.productDetailSalesMeta}
-                remainingQuantity={displayQuantity}
-                soldCount={productData?.flashSaleSoldCount}
-              />
-            </div>
-
             {storageOptions.length > 0 && (
               <div className="storage-selection">
                 <h3>{i18n.t('productDetail.storageLabel')} {
@@ -1868,6 +1853,23 @@ const ProductDetail = () => {
                 </div>
               </div>
             )}
+            </div>
+
+            <div className="product-detail-quantity-row">
+              <div className="product-detail-quantity" aria-live="polite">
+                <i className="bx bx-package" aria-hidden="true" />
+                <span>
+                  {i18n.t('productDetail.quantityLeft', {
+                    count: displayQuantity,
+                  })}
+                </span>
+              </div>
+              <ProductDetailSalesFooter
+                meta={productData?.productDetailSalesMeta}
+                remainingQuantity={displayQuantity}
+                soldCount={productData?.flashSaleSoldCount}
+              />
+            </div>
 
             <div className='addo-btn__detail'>
               <button

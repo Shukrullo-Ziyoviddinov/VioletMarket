@@ -11,6 +11,7 @@ import {
   createModelStockRow,
   createStorageStockRow,
   applyColorsChange,
+  colorHasVariantStockData,
 } from '../../utils/productColorsDraft';
 import './AddProductColorsFields.css';
 
@@ -224,8 +225,9 @@ export default function AddProductColorsFields({ values, onChange }) {
         kiriting. Bitta rang yoki rangsiz mahsulot uchun omborni yuqoridagi{' '}
         <strong>Mahsulot ombori</strong> bo&apos;limida to&apos;ldiring. Bir nechta rangda —
         kiyimlar uchun <strong>sizeStock</strong>, telefon modeli uchun <strong>modelStock</strong>,
-        xotira uchun <strong>storageStock</strong>; kerakli qismlarni bir vaqtda ham to&apos;ldirish
-        mumkin.
+        xotira uchun <strong>storageStock</strong>. Faqat rang tanlovi bo&apos;lsa (o&apos;lcham,
+        model yoki xotira yo&apos;q) — har bir rang uchun <strong>quantity</strong> maydonini
+        to&apos;ldiring.
       </p>
 
       <div className="add-product-colors__toolbar">
@@ -240,7 +242,10 @@ export default function AddProductColorsFields({ values, onChange }) {
         </p>
       ) : null}
 
-      {colors.map((color, colorIndex) => (
+      {colors.map((color, colorIndex) => {
+        const showColorQuantity = !colorHasVariantStockData(color);
+
+        return (
         <div key={color.localId} className="add-product-colors__card">
           <div className="add-product-colors__card-head">
             <span className="add-product-colors__card-index">Rang #{colorIndex + 1}</span>
@@ -296,6 +301,27 @@ export default function AddProductColorsFields({ values, onChange }) {
               onSelect={(nextValue) => changeColorField(color.localId, 'colorFilter', nextValue)}
             />
           </div>
+
+          {showColorQuantity ? (
+            <FieldRow hint="Faqat rang tanlovi bo'lgan mahsulotlar uchun. O'lcham, model yoki xotira qo'shilsa bu maydon yashiriladi.">
+              <FieldBlock
+                label="Rang miqdori (quantity)"
+                hint="Shu rangdan nechta dona bor. O'lcham, model yoki xotira to'ldirilmasa ishlatiladi."
+                className="add-product-form__field--in-row add-product-colors__quantity-field"
+                alignInput
+              >
+                <Input
+                  size="large"
+                  inputMode="numeric"
+                  placeholder="5"
+                  value={color.quantity ?? ''}
+                  onChange={(event) =>
+                    changeColorField(color.localId, 'quantity', event.target.value)
+                  }
+                />
+              </FieldBlock>
+            </FieldRow>
+          ) : null}
 
           <div className="add-product-colors__section add-product-colors__section--size">
             <div className="add-product-colors__section-head">
@@ -669,7 +695,8 @@ export default function AddProductColorsFields({ values, onChange }) {
             />
           </div>
         </div>
-      ))}
+        );
+      })}
     </section>
   );
 }

@@ -75,6 +75,8 @@ function mapColorToDraft(color) {
     nameUz: String(color?.name?.uz || '').trim(),
     nameRu: String(color?.name?.ru || '').trim(),
     colorFilter: String(color?.colorFilter || '').trim(),
+    quantity:
+      color?.quantity != null && color?.quantity !== '' ? String(color.quantity) : '',
     sizeStockRows: mapStockMapToSizeRows(color?.sizeStock),
     modelStockRows: mapStockMapToVariantRows(color?.modelStock, createModelStockRow),
     storageStockRows: mapStockMapToVariantRows(color?.storageStock, createStorageStockRow),

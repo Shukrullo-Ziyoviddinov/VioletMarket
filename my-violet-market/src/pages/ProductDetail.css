@@ -367,6 +367,24 @@
   margin-bottom: 10px;
 }
 
+.product-detail-variant-selections {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 4px;
+}
+
+.product-detail-variant-selections .color-selection,
+.product-detail-variant-selections .size-selection,
+.product-detail-variant-selections .storage-selection,
+.product-detail-variant-selections .model-selection {
+  margin-bottom: 10px;
+}
+
+.product-detail-variant-selections .model-selection {
+  margin-bottom: 0;
+}
+
 .color-selection h3,
 .size-selection h3,
 .storage-selection h3,

@@ -24,12 +24,28 @@ export {
   getInitialProductStockFormFields,
 };
 
+export function colorHasVariantStockData(color) {
+  const hasRows = (rows) =>
+    (Array.isArray(rows) ? rows : []).some((row) => {
+      const label = String(row?.label || '').trim();
+      const quantity = Number(row?.quantity);
+      return label && Number.isFinite(quantity);
+    });
+
+  return (
+    hasRows(color?.sizeStockRows) ||
+    hasRows(color?.modelStockRows) ||
+    hasRows(color?.storageStockRows)
+  );
+}
+
 export function createColorDraft() {
   return {
     localId: createLocalId('color'),
     nameUz: '',
     nameRu: '',
     colorFilter: '',
+    quantity: '',
     sizeStockRows: [createSizeStockRow()],
     modelStockRows: [],
     storageStockRows: [],
@@ -119,6 +135,12 @@ function buildColorPayload(color) {
   const sizeStock = buildSizeStockObject(color?.sizeStockRows);
   const modelStock = buildModelStockObject(color?.modelStockRows);
   const storageStock = buildStorageStockObject(color?.storageStockRows);
+  const hasVariantStock =
+    Object.keys(sizeStock).length > 0 ||
+    Object.keys(modelStock).length > 0 ||
+    Object.keys(storageStock).length > 0;
+  const colorQuantity = Number(color?.quantity);
+  const hasColorQuantity = !hasVariantStock && Number.isFinite(colorQuantity);
   const price = String(color?.price || '').trim();
   const originalPrice = String(color?.originalPrice || '').trim();
   const mainImage = String(color?.mainImage || '').trim();
@@ -135,6 +157,7 @@ function buildColorPayload(color) {
     originalPrice ||
     mainImage ||
     thumbnails.length > 0 ||
+    hasColorQuantity ||
     Object.keys(sizeStock).length > 0 ||
     Object.keys(modelStock).length > 0 ||
     Object.keys(storageStock).length > 0;
@@ -156,6 +179,10 @@ function buildColorPayload(color) {
 
   if (Object.keys(storageStock).length > 0) {
     payload.storageStock = storageStock;
+  }
+
+  if (hasColorQuantity) {
+    payload.quantity = Math.max(0, Math.floor(colorQuantity));
   }
 
   if (price) payload.price = price;
