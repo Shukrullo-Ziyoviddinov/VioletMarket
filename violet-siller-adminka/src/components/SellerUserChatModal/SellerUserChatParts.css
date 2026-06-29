@@ -331,3 +331,23 @@
   font-size: 20px;
   cursor: pointer;
 }
+
+@keyframes seller-message-chat-bubble-highlight {
+  0% {
+    filter: brightness(1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+  18% {
+    filter: brightness(1.28);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), 0 4px 14px rgba(255, 255, 255, 0.22);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+}
+
+.seller-user-chat-bubble--highlighted,
+.seller-user-chat-product--highlighted {
+  animation: seller-message-chat-bubble-highlight 2s ease-out;
+}

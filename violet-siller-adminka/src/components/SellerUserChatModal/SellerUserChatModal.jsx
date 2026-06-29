@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
+import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
 import MessageChatActionsModal from './MessageChatActionsModal';
 import MessageChatReplyBar from './MessageChatReplyBar/MessageChatReplyBar';
@@ -52,6 +53,7 @@ function SellerUserChatHeader({
 
 function SellerUserChatMessageList({ messages, onMessagePress }) {
   const endRef = useRef(null);
+  const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -63,6 +65,8 @@ function SellerUserChatMessageList({ messages, onMessagePress }) {
         <p className="seller-user-chat-message-list__empty">Hozircha xabar yo&apos;q.</p>
       ) : (
         messages.map((message) => {
+          const isHighlighted = highlightedMessageId === message.id;
+
           if (message?.type === 'product') {
             return (
               <SellerUserChatProductMessage
@@ -71,10 +75,22 @@ function SellerUserChatMessageList({ messages, onMessagePress }) {
                 message={message}
                 isSeller={message.sender === 'seller'}
                 onPress={onMessagePress}
+                messageRef={registerMessageRef(message.id)}
+                isHighlighted={isHighlighted}
+                onJumpToMessage={jumpToMessage}
               />
             );
           }
-          return <SellerUserChatMessageBubble key={message.id} message={message} onPress={onMessagePress} />;
+          return (
+            <SellerUserChatMessageBubble
+              key={message.id}
+              message={message}
+              onPress={onMessagePress}
+              messageRef={registerMessageRef(message.id)}
+              isHighlighted={isHighlighted}
+              onJumpToMessage={jumpToMessage}
+            />
+          );
         })
       )}
       <div ref={endRef} className="seller-user-chat-message-list__anchor" />

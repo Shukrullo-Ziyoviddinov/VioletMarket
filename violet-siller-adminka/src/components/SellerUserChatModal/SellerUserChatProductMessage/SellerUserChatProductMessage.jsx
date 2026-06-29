@@ -3,21 +3,32 @@ import { resolveAssetUrl } from '../../../utils/mediaUrl';
 import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
 import MessageChatQuotedBlock from '../MessageChatQuotedBlock/MessageChatQuotedBlock';
 
-export default function SellerUserChatProductMessage({ product, message, isSeller, onPress }) {
+export default function SellerUserChatProductMessage({
+  product,
+  message,
+  isSeller,
+  onPress,
+  messageRef,
+  isHighlighted = false,
+  onJumpToMessage,
+}) {
   if (!product) return null;
   const title = String(product.title || '').trim() || 'Mahsulot';
   const imageSrc = resolveAssetUrl(product.image);
 
   return (
     <button
+      ref={messageRef}
       type="button"
       className={`seller-user-chat-product${
         isSeller ? ' seller-user-chat-product--seller' : ' seller-user-chat-product--customer'
-      }`}
+      }${isHighlighted ? ' seller-user-chat-product--highlighted' : ''}`}
       onClick={() => onPress?.(message)}
       aria-label="Xabar amallari"
     >
-      {message?.replyTo ? <MessageChatQuotedBlock replyTo={message.replyTo} /> : null}
+      {message?.replyTo ? (
+        <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
+      ) : null}
       <div className="seller-user-chat-product__body">
         <img src={imageSrc} alt="" className="seller-user-chat-product__image" />
         <div className="seller-user-chat-product__info">

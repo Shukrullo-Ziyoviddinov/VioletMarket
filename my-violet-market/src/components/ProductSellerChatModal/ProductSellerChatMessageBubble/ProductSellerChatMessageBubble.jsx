@@ -5,7 +5,13 @@ import MessageChatBubbleMeta from '../../MessageChatBubbleMeta';
 import MessageChatQuotedBlock from '../MessageChatQuotedBlock';
 import './ProductSellerChatMessageBubble.css';
 
-export default function ProductSellerChatMessageBubble({ message, onPress }) {
+export default function ProductSellerChatMessageBubble({
+  message,
+  onPress,
+  messageRef,
+  isHighlighted = false,
+  onJumpToMessage,
+}) {
   const { t } = useTranslation();
   const isCustomer = message?.sender === 'customer';
   const isImage = message?.type === 'image';
@@ -13,16 +19,21 @@ export default function ProductSellerChatMessageBubble({ message, onPress }) {
 
   return (
     <button
+      ref={messageRef}
       type="button"
       className={`product-seller-chat-message-bubble${
         isCustomer
           ? ' product-seller-chat-message-bubble--customer'
           : ' product-seller-chat-message-bubble--seller'
-      }${isImage ? ' product-seller-chat-message-bubble--image' : ''}`}
+      }${isImage ? ' product-seller-chat-message-bubble--image' : ''}${
+        isHighlighted ? ' product-seller-chat-message-bubble--highlighted' : ''
+      }`}
       onClick={() => onPress?.(message)}
       aria-label={t('productDetail.chat.openMessageActions')}
     >
-      {message?.replyTo ? <MessageChatQuotedBlock replyTo={message.replyTo} /> : null}
+      {message?.replyTo ? (
+        <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
+      ) : null}
       {isImage ? (
         <img
           src={imageSrc}

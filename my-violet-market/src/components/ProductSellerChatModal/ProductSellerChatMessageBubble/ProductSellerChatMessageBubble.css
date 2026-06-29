@@ -69,3 +69,22 @@
 .product-seller-chat-message-bubble--seller .product-seller-chat-message-bubble__image {
   border-radius: 15px 15px 15px 0;
 }
+
+@keyframes message-chat-bubble-highlight {
+  0% {
+    filter: brightness(1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+  18% {
+    filter: brightness(1.28);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), 0 4px 14px rgba(255, 255, 255, 0.22);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  }
+}
+
+.product-seller-chat-message-bubble--highlighted {
+  animation: message-chat-bubble-highlight 2s ease-out;
+}

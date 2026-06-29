@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMessageChatJumpTo } from '../../../hooks/useMessageChatJumpTo';
 import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/ProductSellerChatMessageBubble';
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
@@ -7,6 +8,7 @@ import './ProductSellerChatMessageList.css';
 export default function ProductSellerChatMessageList({ messages = [], onMessagePress }) {
   const { t } = useTranslation();
   const endRef = useRef(null);
+  const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -18,6 +20,8 @@ export default function ProductSellerChatMessageList({ messages = [], onMessageP
         <p className="product-seller-chat-message-list__empty">{t('productDetail.chat.empty')}</p>
       ) : (
         messages.map((message) => {
+          const isHighlighted = highlightedMessageId === message.id;
+
           if (message?.type === 'product') {
             return (
               <ProductSellerChatProductMessage
@@ -26,11 +30,23 @@ export default function ProductSellerChatMessageList({ messages = [], onMessageP
                 message={message}
                 isCustomer={message.sender === 'customer'}
                 onPress={onMessagePress}
+                messageRef={registerMessageRef(message.id)}
+                isHighlighted={isHighlighted}
+                onJumpToMessage={jumpToMessage}
               />
             );
           }
 
-          return <ProductSellerChatMessageBubble key={message.id} message={message} onPress={onMessagePress} />;
+          return (
+            <ProductSellerChatMessageBubble
+              key={message.id}
+              message={message}
+              onPress={onMessagePress}
+              messageRef={registerMessageRef(message.id)}
+              isHighlighted={isHighlighted}
+              onJumpToMessage={jumpToMessage}
+            />
+          );
         })
       )}
       <div ref={endRef} className="product-seller-chat-message-list__anchor" />
