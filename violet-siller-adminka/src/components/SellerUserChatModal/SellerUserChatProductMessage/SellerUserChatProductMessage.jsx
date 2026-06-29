@@ -10,6 +10,7 @@ export default function SellerUserChatProductMessage({
   onPress,
   messageRef,
   isHighlighted = false,
+  isDeleting = false,
   onJumpToMessage,
 }) {
   if (!product) return null;
@@ -22,7 +23,9 @@ export default function SellerUserChatProductMessage({
       type="button"
       className={`seller-user-chat-product${
         isSeller ? ' seller-user-chat-product--seller' : ' seller-user-chat-product--customer'
-      }${isHighlighted ? ' seller-user-chat-product--highlighted' : ''}`}
+      }${isHighlighted ? ' seller-user-chat-product--highlighted' : ''}${
+        isDeleting ? ' seller-user-chat-product--deleting' : ''
+      }`}
       onClick={() => onPress?.(message)}
       aria-label="Xabar amallari"
     >

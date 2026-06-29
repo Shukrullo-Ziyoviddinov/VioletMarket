@@ -8,6 +8,7 @@ export default function SellerUserChatMessageBubble({
   onPress,
   messageRef,
   isHighlighted = false,
+  isDeleting = false,
   onJumpToMessage,
 }) {
   const isSeller = message?.sender === 'seller';
@@ -22,7 +23,7 @@ export default function SellerUserChatMessageBubble({
         isSeller ? ' seller-user-chat-bubble--seller' : ' seller-user-chat-bubble--customer'
       }${isImage ? ' seller-user-chat-bubble--image' : ''}${
         isHighlighted ? ' seller-user-chat-bubble--highlighted' : ''
-      }`}
+      }${isDeleting ? ' seller-user-chat-bubble--deleting' : ''}`}
       onClick={() => onPress?.(message)}
       aria-label="Xabar amallari"
     >

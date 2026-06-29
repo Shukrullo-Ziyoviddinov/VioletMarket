@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getPortalContainer } from '../../utils/utils';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
+import { waitMessageChatDeleteAnimation } from '../../utils/messageChatDeleteAnimation';
 import ProductSellerChatModalHeader from './ProductSellerChatModalHeader/ProductSellerChatModalHeader';
 import ProductSellerChatMessageList from './ProductSellerChatMessageList/ProductSellerChatMessageList';
 import ProductSellerChatComposer from './ProductSellerChatComposer/ProductSellerChatComposer';
@@ -36,6 +37,7 @@ export default function ProductSellerChatModal({
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
   const [composerText, setComposerText] = useState('');
+  const [deletingMessageId, setDeletingMessageId] = useState(null);
 
   useEffect(() => {
     if (!open) {
@@ -44,6 +46,7 @@ export default function ProductSellerChatModal({
       setReplyTarget(null);
       setEditingMessage(null);
       setComposerText('');
+      setDeletingMessageId(null);
     }
   }, [open]);
 
@@ -116,8 +119,15 @@ export default function ProductSellerChatModal({
   };
 
   const handleDeleteMessage = async (message) => {
+    if (!message?.id || deletingMessageId) return;
+
+    setDeletingMessageId(message.id);
+    await waitMessageChatDeleteAnimation();
+
     const ok = await onDeleteMessage?.(message.id);
+    setDeletingMessageId(null);
     if (!ok) return;
+
     if (editingMessage?.id === message.id) {
       setEditingMessage(null);
       setComposerText('');
@@ -169,7 +179,11 @@ export default function ProductSellerChatModal({
           isPartnerOnline={isPartnerOnline}
           partnerLastActiveAt={partnerLastActiveAt}
         />
-        <ProductSellerChatMessageList messages={messages} onMessagePress={setActionMessage} />
+        <ProductSellerChatMessageList
+          messages={messages}
+          onMessagePress={setActionMessage}
+          deletingMessageId={deletingMessageId}
+        />
         {contextProduct && !contextProductSent ? (
           <ProductSellerChatContextProduct product={contextProduct} onSend={handleSendProduct} />
         ) : null}

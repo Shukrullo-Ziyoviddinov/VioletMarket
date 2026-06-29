@@ -12,6 +12,7 @@ export default function ProductSellerChatProductMessage({
   onPress,
   messageRef,
   isHighlighted = false,
+  isDeleting = false,
   onJumpToMessage,
 }) {
   const { t } = useTranslation();
@@ -23,7 +24,9 @@ export default function ProductSellerChatProductMessage({
       type="button"
       className={`product-seller-chat-product-message${
         isCustomer ? ' product-seller-chat-product-message--customer' : ' product-seller-chat-product-message--seller'
-      }${isHighlighted ? ' product-seller-chat-product-message--highlighted' : ''}`}
+      }${isHighlighted ? ' product-seller-chat-product-message--highlighted' : ''}${
+        isDeleting ? ' product-seller-chat-product-message--deleting' : ''
+      }`}
       onClick={() => onPress?.(message)}
       aria-label={t('productDetail.chat.openMessageActions')}
     >

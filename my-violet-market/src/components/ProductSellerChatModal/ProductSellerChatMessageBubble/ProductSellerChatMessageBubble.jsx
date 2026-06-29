@@ -10,6 +10,7 @@ export default function ProductSellerChatMessageBubble({
   onPress,
   messageRef,
   isHighlighted = false,
+  isDeleting = false,
   onJumpToMessage,
 }) {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ export default function ProductSellerChatMessageBubble({
           : ' product-seller-chat-message-bubble--seller'
       }${isImage ? ' product-seller-chat-message-bubble--image' : ''}${
         isHighlighted ? ' product-seller-chat-message-bubble--highlighted' : ''
-      }`}
+      }${isDeleting ? ' product-seller-chat-message-bubble--deleting' : ''}`}
       onClick={() => onPress?.(message)}
       aria-label={t('productDetail.chat.openMessageActions')}
     >

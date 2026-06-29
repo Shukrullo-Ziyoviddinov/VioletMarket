@@ -5,7 +5,11 @@ import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/Pr
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
 
-export default function ProductSellerChatMessageList({ messages = [], onMessagePress }) {
+export default function ProductSellerChatMessageList({
+  messages = [],
+  onMessagePress,
+  deletingMessageId = null,
+}) {
   const { t } = useTranslation();
   const endRef = useRef(null);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
@@ -21,6 +25,7 @@ export default function ProductSellerChatMessageList({ messages = [], onMessageP
       ) : (
         messages.map((message) => {
           const isHighlighted = highlightedMessageId === message.id;
+          const isDeleting = deletingMessageId === message.id;
 
           if (message?.type === 'product') {
             return (
@@ -32,6 +37,7 @@ export default function ProductSellerChatMessageList({ messages = [], onMessageP
                 onPress={onMessagePress}
                 messageRef={registerMessageRef(message.id)}
                 isHighlighted={isHighlighted}
+                isDeleting={isDeleting}
                 onJumpToMessage={jumpToMessage}
               />
             );
@@ -44,6 +50,7 @@ export default function ProductSellerChatMessageList({ messages = [], onMessageP
               onPress={onMessagePress}
               messageRef={registerMessageRef(message.id)}
               isHighlighted={isHighlighted}
+              isDeleting={isDeleting}
               onJumpToMessage={jumpToMessage}
             />
           );

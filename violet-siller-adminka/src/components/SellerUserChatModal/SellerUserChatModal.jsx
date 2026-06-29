@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
+import { waitMessageChatDeleteAnimation } from '../../utils/messageChatDeleteAnimation';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
 import MessageChatActionsModal from './MessageChatActionsModal';
 import MessageChatReplyBar from './MessageChatReplyBar/MessageChatReplyBar';
@@ -51,7 +52,7 @@ function SellerUserChatHeader({
   );
 }
 
-function SellerUserChatMessageList({ messages, onMessagePress }) {
+function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId = null }) {
   const endRef = useRef(null);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
 
@@ -66,6 +67,7 @@ function SellerUserChatMessageList({ messages, onMessagePress }) {
       ) : (
         messages.map((message) => {
           const isHighlighted = highlightedMessageId === message.id;
+          const isDeleting = deletingMessageId === message.id;
 
           if (message?.type === 'product') {
             return (
@@ -77,6 +79,7 @@ function SellerUserChatMessageList({ messages, onMessagePress }) {
                 onPress={onMessagePress}
                 messageRef={registerMessageRef(message.id)}
                 isHighlighted={isHighlighted}
+                isDeleting={isDeleting}
                 onJumpToMessage={jumpToMessage}
               />
             );
@@ -88,6 +91,7 @@ function SellerUserChatMessageList({ messages, onMessagePress }) {
               onPress={onMessagePress}
               messageRef={registerMessageRef(message.id)}
               isHighlighted={isHighlighted}
+              isDeleting={isDeleting}
               onJumpToMessage={jumpToMessage}
             />
           );
@@ -253,6 +257,7 @@ export default function SellerUserChatModal({
   const [replyTarget, setReplyTarget] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
   const [composerText, setComposerText] = useState('');
+  const [deletingMessageId, setDeletingMessageId] = useState(null);
 
   useEffect(() => {
     if (!open) {
@@ -260,6 +265,7 @@ export default function SellerUserChatModal({
       setReplyTarget(null);
       setEditingMessage(null);
       setComposerText('');
+      setDeletingMessageId(null);
     }
   }, [open]);
 
@@ -309,8 +315,15 @@ export default function SellerUserChatModal({
   };
 
   const handleDeleteMessage = async (message) => {
+    if (!message?.id || deletingMessageId) return;
+
+    setDeletingMessageId(message.id);
+    await waitMessageChatDeleteAnimation();
+
     const ok = await onDeleteMessage?.(message.id);
+    setDeletingMessageId(null);
     if (!ok) return;
+
     if (editingMessage?.id === message.id) {
       setEditingMessage(null);
       setComposerText('');
@@ -344,7 +357,11 @@ export default function SellerUserChatModal({
           isPartnerOnline={isPartnerOnline}
           partnerLastActiveAt={partnerLastActiveAt}
         />
-        <SellerUserChatMessageList messages={messages} onMessagePress={setActionMessage} />
+        <SellerUserChatMessageList
+          messages={messages}
+          onMessagePress={setActionMessage}
+          deletingMessageId={deletingMessageId}
+        />
         <SellerUserChatComposer
           text={composerText}
           onTextChange={setComposerText}
