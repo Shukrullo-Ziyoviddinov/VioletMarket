@@ -34,14 +34,14 @@ const Scrollable = ({
   const shouldBlockClickRef = useRef(false);
   const lastPointerXRef = useRef(0);
   const velocityRef = useRef(0);
+  const velocitySamplesRef = useRef([]);
   const velTrackRef = useRef({ x: 0, t: 0 });
   const horizontalActiveRef = useRef(false);
   const momentumRafRef = useRef(null);
   const isManualScrollingRef = useRef(false);
 
-  const MOMENTUM_MIN_VELOCITY = 2.5;
-  const MOMENTUM_SCALE = 0.4;
   const DIRECTION_LOCK_PX = 8;
+  const VELOCITY_SAMPLE_MS = 80;
 
   const stopMomentum = () => {
     if (momentumRafRef.current) {
@@ -60,21 +60,53 @@ const Scrollable = ({
       }
     }
     velTrackRef.current = { x: clientX, t: now };
+
+    velocitySamplesRef.current.push({ x: clientX, t: now });
+    velocitySamplesRef.current = velocitySamplesRef.current.filter(
+      (sample) => now - sample.t < VELOCITY_SAMPLE_MS
+    );
+  };
+
+  const getReleaseVelocity = () => {
+    const samples = velocitySamplesRef.current;
+    if (samples.length >= 2) {
+      const first = samples[0];
+      const last = samples[samples.length - 1];
+      const dt = last.t - first.t;
+      if (dt > 0) {
+        return ((last.x - first.x) / dt) * 16.67;
+      }
+    }
+    return velocityRef.current;
+  };
+
+  const getMomentumFriction = (velocity) => {
+    const speed = Math.abs(velocity);
+    if (speed < 1.5) return 0.76;
+    if (speed < 5) return 0.86;
+    return 0.93;
   };
 
   const applyMomentum = (rawVelocity) => {
     const el = scrollRef.current;
-    const initialVelocity = rawVelocity * MOMENTUM_SCALE;
-    if (!el || Math.abs(initialVelocity) < MOMENTUM_MIN_VELOCITY) return;
+    if (!el) {
+      finishManualScrolling();
+      return;
+    }
+
+    if (Math.abs(rawVelocity) < 0.05) {
+      finishManualScrolling();
+      return;
+    }
 
     stopMomentum();
     el.style.scrollBehavior = 'auto';
 
-    let velocity = initialVelocity;
-    const friction = 0.88;
+    let velocity = rawVelocity;
 
     const step = () => {
-      if (Math.abs(velocity) < 0.25) {
+      const speed = Math.abs(velocity);
+      if (speed < 0.08) {
         momentumRafRef.current = null;
         finishManualScrolling();
         return;
@@ -97,7 +129,7 @@ const Scrollable = ({
       }
 
       el.scrollLeft = next;
-      velocity *= friction;
+      velocity *= getMomentumFriction(velocity);
       momentumRafRef.current = requestAnimationFrame(step);
     };
 
@@ -160,6 +192,7 @@ const Scrollable = ({
     horizontalActiveRef.current = false;
     touchDirectionLockedRef.current = null;
     velocityRef.current = 0;
+    velocitySamplesRef.current = [];
     velTrackRef.current = { x: 0, t: 0 };
     lastPointerXRef.current = e.pageX;
     startXRef.current = e.pageX;
@@ -217,13 +250,8 @@ const Scrollable = ({
     if (currentScroll) {
       currentScroll.classList.remove('is-dragging');
       if (wasDragging) {
-        const releaseVelocity = velocityRef.current;
-        if (Math.abs(releaseVelocity) >= MOMENTUM_MIN_VELOCITY) {
-          isManualScrollingRef.current = true;
-          applyMomentum(releaseVelocity);
-        } else {
-          finishManualScrolling();
-        }
+        isManualScrollingRef.current = true;
+        applyMomentum(getReleaseVelocity());
       } else {
         deactivateHorizontalDrag();
         isManualScrollingRef.current = false;
@@ -372,6 +400,7 @@ const Scrollable = ({
     horizontalActiveRef.current = false;
     touchDirectionLockedRef.current = null;
     velocityRef.current = 0;
+    velocitySamplesRef.current = [];
     velTrackRef.current = { x: 0, t: 0 };
     startXRef.current = e.touches[0].pageX;
     startYRef.current = e.touches[0].pageY;
@@ -464,13 +493,8 @@ const Scrollable = ({
     if (scrollRef.current) {
       scrollRef.current.classList.remove('is-dragging');
       if (wasDragging) {
-        const releaseVelocity = velocityRef.current;
-        if (Math.abs(releaseVelocity) >= MOMENTUM_MIN_VELOCITY) {
-          isManualScrollingRef.current = true;
-          applyMomentum(releaseVelocity);
-        } else {
-          finishManualScrolling();
-        }
+        isManualScrollingRef.current = true;
+        applyMomentum(getReleaseVelocity());
       } else {
         deactivateHorizontalDrag();
         isManualScrollingRef.current = false;

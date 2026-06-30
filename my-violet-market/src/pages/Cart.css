@@ -667,4 +667,8 @@
   .cart-item-price {
     font-size: 1.2rem;
   }
+
+  .cart-page{
+    margin-top: 80pc;
+  }
 }
