@@ -55,3 +55,49 @@
 .seller-sidebar--collapsed .seller-sidebar__logo {
   padding-inline: 8px;
 }
+
+.seller-sidebar__menu-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.seller-sidebar__icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-sidebar__unread-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #764ba2;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.seller-sidebar__unread-badge--icon {
+  position: absolute;
+  top: -7px;
+  right: -11px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+
+.seller-sidebar__menu .ant-menu-item-selected .seller-sidebar__unread-badge {
+  background: #fff;
+  color: #9b4fe7;
+}

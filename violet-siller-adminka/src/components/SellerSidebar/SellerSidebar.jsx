@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Menu } from 'antd';
 import { AppstoreOutlined, DashboardOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSellerAuth } from '../../context/SellerAuthContext';
+import { useSellerMessageThreadsUnread } from '../../hooks/useSellerMessageThreadsUnread';
 import './SellerSidebar.css';
 
 const LOGO_SRC = `${process.env.PUBLIC_URL}/img/${encodeURIComponent('vio_preview_rev_1 (1).png')}`;
@@ -20,6 +22,25 @@ const menuItems = [
   { key: 'market-info', icon: <ShopOutlined />, label: 'Market haqida' },
 ];
 
+function formatUnreadCount(count) {
+  return count > 99 ? '99+' : String(count);
+}
+
+function SidebarUnreadBadge({ count, collapsed = false }) {
+  if (!count || count <= 0) return null;
+
+  return (
+    <span
+      className={`seller-sidebar__unread-badge${
+        collapsed ? ' seller-sidebar__unread-badge--icon' : ''
+      }`}
+      aria-label={`${count} ta o'qilmagan xabar`}
+    >
+      {formatUnreadCount(count)}
+    </span>
+  );
+}
+
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products/add') return 'add-products';
   if (pathname === '/products/discontinued') return 'discontinued-products';
@@ -32,7 +53,35 @@ function getSelectedKeyFromPath(pathname) {
 export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { token, isAuthenticated } = useSellerAuth();
+  const totalUnread = useSellerMessageThreadsUnread(token, isAuthenticated);
   const selectedKey = getSelectedKeyFromPath(location.pathname);
+
+  const sidebarMenuItems = useMemo(
+    () =>
+      menuItems.map(({ key, icon, label }) => {
+        if (key !== 'messages') {
+          return { key, icon, label };
+        }
+
+        return {
+          key,
+          icon: (
+            <span className="seller-sidebar__icon-wrap">
+              {icon}
+              {collapsed ? <SidebarUnreadBadge count={totalUnread} collapsed /> : null}
+            </span>
+          ),
+          label: (
+            <span className="seller-sidebar__menu-label">
+              <span>{label}</span>
+              {!collapsed ? <SidebarUnreadBadge count={totalUnread} /> : null}
+            </span>
+          ),
+        };
+      }),
+    [totalUnread, collapsed],
+  );
 
   const handleMenuClick = ({ key }) => {
     const selectedItem = menuItems.find((item) => item.key === key);
@@ -65,7 +114,7 @@ export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
         mode="inline"
         className="seller-sidebar__menu"
         selectedKeys={[selectedKey]}
-        items={menuItems.map(({ key, icon, label }) => ({ key, icon, label }))}
+        items={sidebarMenuItems}
         onClick={handleMenuClick}
       />
     </aside>
