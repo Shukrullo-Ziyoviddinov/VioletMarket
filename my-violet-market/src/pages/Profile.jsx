@@ -10,18 +10,17 @@ import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
 import GlobalModal from '../components/GlobalModal';
 import { ProfilePendingReviewsList } from '../components/ProfilePendingReviews';
-import { ProfilePendingReviewsSkeleton, ProfileMessageThreadsSkeleton } from '../components/SkeletonLoader';
+import { ProfilePendingReviewsSkeleton } from '../components/SkeletonLoader';
 import CommentFormModal from '../components/CommentFormModal';
 import ProfileExit from '../components/ProfileExit';
 import { fetchPendingReviews } from '../api/pendingReviewsApi';
-import { fetchMessageChatThreads } from '../api/messageChatApi';
 import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
 import ProductSellerChatModal from '../components/ProductSellerChatModal';
+import { useMessageChatThreads } from '../hooks/useMessageChatThreads';
 import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../hooks/useMessageChatSending';
 import { useMessageChatPresence } from '../hooks/useMessageChatPresence';
-import { useMessageChatSocketThreadsUpdated } from '../socket/useMessageChatSocket';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
 import '../components/ProfileMessageThreads/ProfileMessageThreadsList.css';
@@ -90,10 +89,6 @@ const Profile = () => {
   const [pendingReviewsLoading, setPendingReviewsLoading] = useState(false);
   const [pendingCommentFormOpen, setPendingCommentFormOpen] = useState(false);
   const [selectedPendingReview, setSelectedPendingReview] = useState(null);
-  const [messageThreads, setMessageThreads] = useState([]);
-  const [messageThreadsUnread, setMessageThreadsUnread] = useState(0);
-  const [messageThreadsLoading, setMessageThreadsLoading] = useState(false);
-  const [messagesModalOpen, setMessagesModalOpen] = useState(false);
   const [activeChatSellerId, setActiveChatSellerId] = useState(null);
   const [isProfileSellerChatOpen, setIsProfileSellerChatOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -348,53 +343,18 @@ const Profile = () => {
     setPendingCommentFormOpen(true);
   };
 
-  const loadMessageThreads = useCallback(async () => {
-    if (!authToken) {
-      setMessageThreads([]);
-      setMessageThreadsUnread(0);
-      return;
-    }
-    setMessageThreadsLoading(true);
-    try {
-      const data = await fetchMessageChatThreads(authToken);
-      setMessageThreads(Array.isArray(data.items) ? data.items : []);
-      setMessageThreadsUnread(Number(data.totalUnread) || 0);
-    } catch {
-      setMessageThreads([]);
-      setMessageThreadsUnread(0);
-    } finally {
-      setMessageThreadsLoading(false);
-    }
-  }, [authToken]);
+  const isAuthenticated = Boolean(userData.isAuthenticated && authToken);
+  const { threads: messageThreads, reload: reloadMessageThreads } = useMessageChatThreads(
+    authToken,
+    isAuthenticated,
+  );
 
-  useEffect(() => {
-    if (!userData.isAuthenticated || !authToken) {
-      setMessageThreads([]);
-      setMessageThreadsUnread(0);
-      return;
-    }
-    loadMessageThreads();
-  }, [userData.isAuthenticated, authToken, loadMessageThreads]);
-
-  useEffect(() => {
-    const onUpdate = () => {
-      loadMessageThreads();
-    };
-    window.addEventListener('messageChatUpdated', onUpdate);
-    return () => window.removeEventListener('messageChatUpdated', onUpdate);
-  }, [loadMessageThreads]);
-
-  useMessageChatSocketThreadsUpdated(() => {
-    loadMessageThreads();
-  });
-
-  const openMessagesModal = () => {
-    loadMessageThreads();
-    setMessagesModalOpen(true);
-  };
+  const unreadMessageThreads = useMemo(
+    () => messageThreads.filter((thread) => Number(thread.unreadCount) > 0),
+    [messageThreads],
+  );
 
   const handleOpenMessageThread = (thread) => {
-    setMessagesModalOpen(false);
     setActiveChatSellerId(thread.sellerId);
     setIsProfileSellerChatOpen(true);
   };
@@ -973,47 +933,15 @@ const Profile = () => {
             />
           )}
 
-          {userData.isAuthenticated && (
-            <div
-              className="profile-messages-row"
-              onClick={openMessagesModal}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openMessagesModal();
-                }
-              }}
-              aria-label={t('profile.messages')}
-              aria-haspopup="dialog"
-              aria-expanded={messagesModalOpen}
-            >
-              <i className="bx bx-message-dots profile-messages-icon" aria-hidden="true" />
-              <span className="profile-messages-label">{t('profile.messages')}</span>
-              {messageThreadsUnread > 0 && (
-                <span className="profile-messages-badge" aria-hidden="true">
-                  {messageThreadsUnread > 99 ? '99+' : messageThreadsUnread}
-                </span>
-              )}
-              <i className="bx bx-chevron-right profile-messages-chevron" aria-hidden="true" />
-            </div>
-          )}
-
-          <GlobalModal
-            isOpen={messagesModalOpen}
-            onClose={() => setMessagesModalOpen(false)}
-            title={t('profile.messages')}
-          >
-            {messageThreadsLoading ? (
-              <ProfileMessageThreadsSkeleton count={4} />
-            ) : (
+          {userData.isAuthenticated && unreadMessageThreads.length > 0 && (
+            <section className="profile-unread-messages" aria-label={t('profile.newMessages')}>
+              <h3 className="profile-unread-messages__title">{t('profile.newMessages')}</h3>
               <ProfileMessageThreadsList
-                items={messageThreads}
+                items={unreadMessageThreads}
                 onOpenThread={handleOpenMessageThread}
               />
-            )}
-          </GlobalModal>
+            </section>
+          )}
 
           <ProductSellerChatModal
             open={isProfileSellerChatOpen}
@@ -1024,7 +952,7 @@ const Profile = () => {
             onClose={() => {
               setIsProfileSellerChatOpen(false);
               setActiveChatSellerId(null);
-              loadMessageThreads();
+              reloadMessageThreads();
             }}
             onSendText={sendProfileChatText}
             onSendImage={sendProfileChatImage}
@@ -1036,7 +964,7 @@ const Profile = () => {
               if (ok) {
                 setIsProfileSellerChatOpen(false);
                 setActiveChatSellerId(null);
-                loadMessageThreads();
+                reloadMessageThreads();
               }
               return ok;
             }}

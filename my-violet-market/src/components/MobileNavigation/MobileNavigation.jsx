@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
 import { useNavbar } from '../../contexts/NavbarContext';
+import { useUser } from '../../contexts/UserContext';
+import { useMessageChatThreads } from '../../hooks/useMessageChatThreads';
 import './MobileNavigation.css';
 
 const MobileNavigation = () => {
@@ -10,6 +12,9 @@ const MobileNavigation = () => {
   const { i18n } = useTranslation();
   const { getTotalItems } = useCart();
   const { toggleDropdown } = useNavbar();
+  const { userData, authToken } = useUser();
+  const isAuthenticated = Boolean(userData?.isAuthenticated && authToken);
+  const { totalUnread: chatUnread } = useMessageChatThreads(authToken, isAuthenticated);
   const cartCount = getTotalItems();
 
   const isActive = (path) => {
@@ -36,6 +41,16 @@ const MobileNavigation = () => {
           <i className="bx bxs-grid-alt"></i>
           <span>{i18n.t('mobileNav.catalog')}</span>
         </button>
+        <Link
+          to="/chats"
+          className={`mb-nav__link ${isActive('/chats') ? 'active' : ''}`}
+        >
+          <i className="bx bx-message-dots"></i>
+          <span className="mb-nav__link__text">{i18n.t('mobileNav.chat')}</span>
+          {chatUnread > 0 && (
+            <span className="cart-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
+          )}
+        </Link>
         <Link
           to="/cart"
           className={`mb-nav__link ${isActive('/cart') ? 'active' : ''}`}

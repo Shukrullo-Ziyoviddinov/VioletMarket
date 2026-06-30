@@ -30,6 +30,7 @@ import OrderHistory from './pages/OrderHistory';
 import UzWarehousePage from './pages/UzWarehousePage';
 import ChinaWarehousePage from './pages/ChinaWarehousePage';
 import SellerProfile from './pages/SellerProfile';
+import ChatsPage from './pages/ChatsPage';
 import './App.css';
 import MessageChatSocketBridge from './components/MessageChatSocketBridge/MessageChatSocketBridge';
 
@@ -78,6 +79,7 @@ const AppContent = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/chats" element={<ChatsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/uzWarehousePage" element={<UzWarehousePage />} />

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useCart } from '../../contexts/CartContext';
 import { useNavbar } from '../../contexts/NavbarContext';
 import { useAppData } from '../../contexts/AppDataContext';
+import { useUser } from '../../contexts/UserContext';
+import { useMessageChatThreads } from '../../hooks/useMessageChatThreads';
 import { normalizeImagePath } from '../../utils/utils';
 import SearchBar from '../SearchBar';
 import { SkeletonPulse } from '../SkeletonLoader';
@@ -34,6 +36,9 @@ const Navbar = () => {
   const { isDropdownOpen, toggleDropdown } = useNavbar();
   const { getTotalItems } = useCart();
   const cartCount = getTotalItems();
+  const { userData, authToken } = useUser();
+  const isAuthenticated = Boolean(userData?.isAuthenticated && authToken);
+  const { totalUnread: chatUnread } = useMessageChatThreads(authToken, isAuthenticated);
   const isMobile = useIsMobile();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef(null);
@@ -84,6 +89,13 @@ const Navbar = () => {
             <Link to="/wishlist" className="navbar-icon wishlist-icon">
               <i className="far fa-heart"></i>
               <span className="navbar-icon-text">{i18n.t('nav.wishlist')}</span>
+            </Link>
+            <Link to="/chats" className="navbar-icon chats-icon">
+              <i className="bx bx-message-dots"></i>
+              {chatUnread > 0 && (
+                <span className="cart-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
+              )}
+              <span className="navbar-icon-text">{i18n.t('nav.chat')}</span>
             </Link>
             <Link to="/cart" className="navbar-icon cart-icon">
               <i className="fas fa-shopping-cart"></i>

@@ -3,6 +3,7 @@
     "catalog": "Категории",
     "profile": "Профиль",
     "wishlist": "Избранное",
+    "chat": "Чат",
     "cart": "Корзина"
   },
   "search": {
@@ -49,6 +50,7 @@
   "mobileNav": {
     "home": "Главная",
     "catalog": "Категории",
+    "chat": "Чат",
     "cart": "Корзина",
     "account": "Аккаунт"
   },
@@ -369,6 +371,7 @@
     "subscriptionsEmpty": "Пока нет подписок на магазины.",
     "myReviews": "Мои отзывы",
     "messages": "Сообщения",
+    "newMessages": "Новые сообщения",
     "messagesEmpty": "Сообщений пока нет.",
     "messagesUnread": "{{count}} новых сообщений",
     "messagesLoginRequired": "Войдите, чтобы написать продавцу",
@@ -419,6 +422,23 @@
     "subscribe": "Подписка",
     "unsubscribe": "Отмена подписки",
     "loginRequired": "Войдите, чтобы подписаться"
+  },
+  "chats": {
+    "title": "Чаты",
+    "empty": "Чатов пока нет.",
+    "loginRequired": "Войдите, чтобы переписываться с продавцами.",
+    "filters": {
+      "label": "Фильтры чатов",
+      "all": "Все",
+      "unread": "Непрочитанные",
+      "pinned": "Закреплённые",
+      "archived": "Архив"
+    },
+    "actions": {
+      "pin": "Закрепить",
+      "unpin": "Открепить",
+      "delete": "Удалить"
+    }
   },
   "uzWarehouse": {
     "bannersSectionAria": "Баннеры складов",

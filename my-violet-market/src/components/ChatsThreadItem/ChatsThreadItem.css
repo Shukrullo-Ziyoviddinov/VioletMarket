@@ -1,0 +1,147 @@
+.chats-thread-item-wrap {
+  position: relative;
+}
+
+.chats-thread-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-bottom: 1px solid #ece7f3;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+.chats-thread-item:hover {
+  background: #faf8fd;
+}
+
+.chats-thread-item__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #eee;
+}
+
+.chats-thread-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.chats-thread-item__top,
+.chats-thread-item__bottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chats-thread-item__bottom {
+  margin-top: 4px;
+  align-items: center;
+}
+
+.chats-thread-item__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.chats-thread-item__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f1630;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chats-thread-item__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #8a8198;
+  white-space: nowrap;
+}
+
+.chats-thread-item__status--online {
+  color: #1f9d55;
+  font-weight: 600;
+}
+
+.chats-thread-item__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.chats-thread-item__time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #8a8198;
+  white-space: nowrap;
+}
+
+.chats-thread-item__preview {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #5b4d73;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chats-thread-item__preview--typing {
+  color: #764ba2;
+  font-weight: 600;
+}
+
+.chats-thread-item__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.chats-thread-item__icon {
+  font-size: 15px;
+  color: #a39aad;
+}
+
+.chats-thread-item__badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #764ba2;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chats-thread-item__read {
+  font-size: 18px;
+  color: #a39aad;
+}
+
+.chats-thread-item__read--read {
+  color: #4f8df5;
+}

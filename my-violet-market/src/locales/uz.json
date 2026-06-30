@@ -3,6 +3,7 @@
     "catalog": "Kategoriya",
     "profile": "Profile",
     "wishlist": "Wishlist",
+    "chat": "Chat",
     "cart": "Savat"
   },
   "search": {
@@ -49,6 +50,7 @@
   "mobileNav": {
     "home": "Asosiy",
     "catalog": "Kategoriya",
+    "chat": "Chat",
     "cart": "Savat",
     "account": "Akaunt"
   },
@@ -369,6 +371,7 @@
     "subscriptionsEmpty": "Hozircha obuna bo'lgan do'konlar yo'q.",
     "myReviews": "Sharhlarim",
     "messages": "Xabarlar",
+    "newMessages": "Yangi xabarlar",
     "messagesEmpty": "Hozircha xabarlar yo'q.",
     "messagesUnread": "{{count}} ta yangi xabar",
     "messagesLoginRequired": "Sotuvchiga yozish uchun tizimga kiring",
@@ -419,6 +422,23 @@
     "subscribe": "Obuna",
     "unsubscribe": "Obunani bekor qilish",
     "loginRequired": "Obuna bo‘lish uchun tizimga kiring"
+  },
+  "chats": {
+    "title": "Chatlar",
+    "empty": "Hozircha chatlar yo'q.",
+    "loginRequired": "Sotuvchilar bilan yozishish uchun tizimga kiring.",
+    "filters": {
+      "label": "Chat filtrlari",
+      "all": "Barchasi",
+      "unread": "O'qilmagan",
+      "pinned": "Pin qilingan",
+      "archived": "Arxivlangan"
+    },
+    "actions": {
+      "pin": "Pin qilish",
+      "unpin": "Pindan olib tashlash",
+      "delete": "O'chirish"
+    }
   },
   "uzWarehouse": {
     "bannersSectionAria": "Ombor bannerlari",

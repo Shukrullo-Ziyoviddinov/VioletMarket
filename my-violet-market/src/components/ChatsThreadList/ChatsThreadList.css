@@ -1,0 +1,24 @@
+.chats-thread-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.chats-thread-list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  color: #8a8198;
+  font-size: 15px;
+  text-align: center;
+}
+
+.chats-thread-list--empty p {
+  margin: 0;
+}
+
+.chats-thread-list--loading {
+  overflow: hidden;
+}

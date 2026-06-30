@@ -106,6 +106,29 @@
   flex-shrink: 0;
 }
 
+.profile-unread-messages {
+  margin: 0 26px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.profile-unread-messages__title {
+  margin: 0;
+  padding: 14px 16px 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.profile-unread-messages .profile-message-threads-list {
+  border-top: 1px solid #ece7f3;
+}
+
+.profile-unread-messages .profile-message-threads-item:last-child {
+  border-bottom: none;
+}
+
 .profile-messages-row {
   display: flex;
   align-items: center;
@@ -116,6 +139,8 @@
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .profile-messages-row:hover {
