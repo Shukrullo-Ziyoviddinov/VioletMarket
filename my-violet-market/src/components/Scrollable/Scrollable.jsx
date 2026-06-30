@@ -34,6 +34,9 @@ const Scrollable = ({
   const shouldBlockClickRef = useRef(false);
   const velocitySamplesRef = useRef([]);
   const momentumRafRef = useRef(null);
+  const dragRafRef = useRef(null);
+  const pendingScrollLeftRef = useRef(null);
+  const isManualScrollingRef = useRef(false);
 
   const stopMomentum = () => {
     if (momentumRafRef.current) {
@@ -71,20 +74,23 @@ const Scrollable = ({
     const step = () => {
       if (Math.abs(velocity) < 0.25) {
         momentumRafRef.current = null;
+        finishManualScrolling();
         return;
       }
 
       const maxScroll = el.scrollWidth - el.clientWidth;
-      const next = el.scrollLeft - velocity;
+      const next = Math.round(el.scrollLeft - velocity);
 
       if (next <= 0) {
         el.scrollLeft = 0;
         momentumRafRef.current = null;
+        finishManualScrolling();
         return;
       }
       if (next >= maxScroll) {
         el.scrollLeft = maxScroll;
         momentumRafRef.current = null;
+        finishManualScrolling();
         return;
       }
 
@@ -94,6 +100,29 @@ const Scrollable = ({
     };
 
     momentumRafRef.current = requestAnimationFrame(step);
+  };
+
+  const finishManualScrolling = () => {
+    isManualScrollingRef.current = false;
+    updateScrollButtons();
+  };
+
+  const scheduleDragScroll = (targetLeft) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const max = el.scrollWidth - el.clientWidth;
+    pendingScrollLeftRef.current = Math.round(Math.max(0, Math.min(max, targetLeft)));
+
+    if (dragRafRef.current) return;
+
+    dragRafRef.current = requestAnimationFrame(() => {
+      dragRafRef.current = null;
+      const scrollEl = scrollRef.current;
+      if (scrollEl && pendingScrollLeftRef.current !== null) {
+        scrollEl.scrollLeft = pendingScrollLeftRef.current;
+      }
+    });
   };
 
   const updateScrollButtons = () => {
@@ -114,6 +143,7 @@ const Scrollable = ({
     if (!scrollElement) return;
     
     stopMomentum();
+    isManualScrollingRef.current = true;
     isMouseDownRef.current = true;
     setIsDragging(true);
     hasMovedRef.current = false;
@@ -143,7 +173,7 @@ const Scrollable = ({
     }
 
     addVelocitySample(x);
-    scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
+    scheduleDragScroll(scrollLeftRef.current - walk);
   };
 
   // Mouse up - scroll tugashi
@@ -155,7 +185,14 @@ const Scrollable = ({
     if (currentScroll) {
       currentScroll.classList.remove('is-dragging');
       if (wasDragging) {
-        applyMomentum(getReleaseVelocity());
+        const releaseVelocity = getReleaseVelocity();
+        if (Math.abs(releaseVelocity) >= 0.3) {
+          applyMomentum(releaseVelocity);
+        } else {
+          finishManualScrolling();
+        }
+      } else {
+        isManualScrollingRef.current = false;
       }
     }
 
@@ -194,6 +231,10 @@ const Scrollable = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       stopMomentum();
+      if (dragRafRef.current) {
+        cancelAnimationFrame(dragRafRef.current);
+        dragRafRef.current = null;
+      }
     };
   }, []);
 
@@ -242,6 +283,7 @@ const Scrollable = ({
     };
 
     const handleScroll = () => {
+      if (isManualScrollingRef.current) return;
       updateScrollButtons();
     };
 
@@ -293,8 +335,8 @@ const Scrollable = ({
     }
 
     stopMomentum();
+    isManualScrollingRef.current = true;
     isTouchDraggingRef.current = true;
-    setIsDragging(true);
     hasMovedRef.current = false;
     touchDirectionLockedRef.current = null;
     velocitySamplesRef.current = [];
@@ -303,6 +345,7 @@ const Scrollable = ({
     scrollLeftRef.current = scrollRef.current.scrollLeft;
     addVelocitySample(e.touches[0].pageX);
     scrollRef.current.style.scrollBehavior = 'auto';
+    scrollRef.current.classList.add('is-dragging');
     
     // Bosilgan elementni saqlash (click event uchun)
     touchTargetRef.current = clickedElement;
@@ -343,19 +386,24 @@ const Scrollable = ({
     
     const deltaX = Math.abs(e.touches[0].pageX - startXRef.current);
     const deltaY = Math.abs(e.touches[0].pageY - startYRef.current);
-    
-    // Yo'nalishni bir marta aniqlash (10px harakatdan keyin)
-    if (!touchDirectionLockedRef.current && (deltaX > 10 || deltaY > 10)) {
-      touchDirectionLockedRef.current = deltaX > deltaY ? 'h' : 'v';
+
+    if (!touchDirectionLockedRef.current) {
+      if (deltaX > 10 || deltaY > 10) {
+        touchDirectionLockedRef.current = deltaX > deltaY ? 'h' : 'v';
+      } else {
+        return;
+      }
     }
-    
+
     // Vertikal harakat – sahifa scroll qilishi uchun preventDefault qilmaymiz
     if (touchDirectionLockedRef.current === 'v') {
-      hasMovedRef.current = true; // Click trigger bo'lmasin
+      hasMovedRef.current = true;
       isTouchDraggingRef.current = false;
+      isManualScrollingRef.current = false;
+      scrollRef.current?.classList.remove('is-dragging');
       return;
     }
-    
+
     // Gorizontal harakat – Scrollable ichida scroll
     const touchX = e.touches[0].pageX;
     const walk = touchX - startXRef.current;
@@ -367,7 +415,7 @@ const Scrollable = ({
 
     if (hasMovedRef.current) {
       addVelocitySample(touchX);
-      scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
+      scheduleDragScroll(scrollLeftRef.current - walk);
     }
   };
 
@@ -375,13 +423,22 @@ const Scrollable = ({
     const wasDragging = hasMovedRef.current;
     const touchedElement = touchTargetRef.current;
     
-    if (scrollRef.current && wasDragging) {
-      applyMomentum(getReleaseVelocity());
+    if (scrollRef.current) {
+      scrollRef.current.classList.remove('is-dragging');
+      if (wasDragging) {
+        const releaseVelocity = getReleaseVelocity();
+        if (Math.abs(releaseVelocity) >= 0.3) {
+          applyMomentum(releaseVelocity);
+        } else {
+          finishManualScrolling();
+        }
+      } else {
+        isManualScrollingRef.current = false;
+      }
     }
 
     isTouchDraggingRef.current = false;
     touchDirectionLockedRef.current = null;
-    setIsDragging(false);
     
     // Agar interaktiv elementga bosilgan bo'lsa (yurakcha, button, va h.k.), to'g'ridan-to'g'ri click event'ni trigger qilish
     if (touchedElement && !wasDragging) {

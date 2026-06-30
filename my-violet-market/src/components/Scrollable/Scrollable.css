@@ -13,12 +13,14 @@
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
   cursor: grab;
 }
 
 .scrollable-container.is-dragging {
   cursor: grabbing;
+  -webkit-overflow-scrolling: auto;
+  overscroll-behavior-x: contain;
 }
 
 .scrollable-container::-webkit-scrollbar {
