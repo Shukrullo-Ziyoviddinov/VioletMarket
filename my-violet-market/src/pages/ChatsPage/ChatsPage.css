@@ -2,7 +2,6 @@
   position: relative;
   margin-top: 100px;
   padding: 0 0 24px;
-  min-height: calc(100vh - 0px);
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
@@ -48,7 +47,6 @@
 @media (max-width: 768px) {
   .chats-page {
     margin-top: 88px;
-    min-height: calc(100vh - 112px);
     max-width: none;
     padding-bottom: 16px;
   }
@@ -59,6 +57,14 @@
 }
 
 @media (max-width: 550px) {
+  body.chats-page-active {
+    background: #fff;
+  }
+
+  body.chats-page-active .main-content {
+    background: #fff;
+  }
+
   body.chats-page-active .navbar {
     display: none !important;
   }
@@ -73,10 +79,9 @@
 
   .chats-page {
     margin-top: 0;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: calc(100dvh - 90px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 16px;
   }
 
   .chats-page__header {
@@ -86,5 +91,6 @@
 
   .chats-page--search-open {
     overflow: hidden;
+    min-height: 100dvh;
   }
 }
