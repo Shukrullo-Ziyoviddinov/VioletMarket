@@ -5,14 +5,36 @@
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
-  background: #fff;
+  background: transparent;
   box-sizing: border-box;
   min-height: calc(100dvh - 90px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
 }
 
+body.chats-page-active {
+  background-color: #2a1842;
+  background-image: url('/img/chatspadeback.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body.chats-page-active .main-content {
+  background: transparent;
+}
+
+.chats-page .chats-filter {
+  background: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.22);
+}
+
+.chats-page .chats-thread-list {
+  background: transparent;
+}
+
 .chats-page__header {
   padding: 16px 16px 8px;
-  border-bottom: 1px solid #ece7f3;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .chats-page__login {
@@ -58,14 +80,6 @@
 }
 
 @media (max-width: 550px) {
-  body.chats-page-active {
-    background: #fff;
-  }
-
-  body.chats-page-active .main-content {
-    background: #fff;
-  }
-
   body.chats-page-active .navbar {
     display: none !important;
   }
