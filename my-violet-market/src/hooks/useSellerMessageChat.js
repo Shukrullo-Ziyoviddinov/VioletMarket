@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   deleteMessageChatMessage,
+  deleteMessageChatThread,
   editMessageChatMessage,
   fetchMessageChatThreadMessages,
   markMessageChatThreadRead,
@@ -229,6 +230,18 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     [authToken, sellerId],
   );
 
+  const deleteThread = useCallback(async () => {
+    if (!authToken || !sellerId) return false;
+    try {
+      await deleteMessageChatThread(authToken, sellerId);
+      setMessages([]);
+      window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+      return true;
+    } catch {
+      return false;
+    }
+  }, [authToken, sellerId]);
+
   return {
     messages,
     loading,
@@ -239,5 +252,6 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     sendProduct,
     deleteMessage,
     editMessage,
+    deleteThread,
   };
 }

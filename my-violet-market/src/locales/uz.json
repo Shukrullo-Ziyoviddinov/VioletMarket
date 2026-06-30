@@ -154,7 +154,13 @@
       "cancelEdit": "Tahrirlashni bekor qilish",
       "saveEdit": "Saqlash",
       "edited": "(tahrirlangan)",
-      "sendProduct": "Mahsulotni chatga yuborish"
+      "sendProduct": "Mahsulotni chatga yuborish",
+      "threadMenu": "Chat menyusi",
+      "deleteThread": "O'chirish",
+      "deleteThreadTitle": "Chatni o'chirish",
+      "deleteThreadConfirm": "Haqiqatan ham bu chatni o'chirmoqchimisiz? Barcha yozishmalar butunlay o'chib ketadi (sotuvchidan ham).",
+      "deleteThreadYes": "Ha",
+      "deleteThreadNo": "Yo'q"
     }
   },
   "wishlist": {

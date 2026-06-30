@@ -1,6 +1,7 @@
 const MESSAGE_CHAT_SOCKET_EVENTS = {
   MESSAGE: "messageChat:message",
   THREADS_UPDATED: "messageChat:threadsUpdated",
+  THREAD_DELETED: "messageChat:threadDeleted",
   TYPING: "messageChat:typing",
   SENDING: "messageChat:sending",
   PRESENCE_SUBSCRIBE: "messageChat:presence:subscribe",

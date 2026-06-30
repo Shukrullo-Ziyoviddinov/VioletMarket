@@ -102,6 +102,20 @@ const editSellerMessage = asyncHandler(async (req, res) => {
   res.json({ ok: true, message: data.message });
 });
 
+const deleteSellerThread = asyncHandler(async (req, res) => {
+  const data = await messageChatService.deleteThreadForSeller(
+    req.sellerShopId,
+    req.params.userId,
+  );
+
+  emitMessageChatThreadsUpdated({
+    userId: data.userId,
+    sellerId: req.sellerShopId,
+  });
+
+  res.json({ ok: true, ...data });
+});
+
 module.exports = {
   listSellerThreads,
   getSellerThreadMessages,
@@ -109,4 +123,5 @@ module.exports = {
   markSellerThreadRead,
   deleteSellerMessage,
   editSellerMessage,
+  deleteSellerThread,
 };

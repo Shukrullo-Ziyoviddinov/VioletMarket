@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { MessageChat } = require("../../models/messageChat");
+const { MessageChatThreadState } = require("../../models/messageChatThreadState");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
@@ -137,6 +138,43 @@ async function assertUserExists(userId) {
   return user;
 }
 
+async function getSellerThreadStateMap(sellerId) {
+  const rows = await MessageChatThreadState.find({ sellerId })
+    .select("userId deletedBySellerAt sellerMessagesHiddenBeforeAt")
+    .lean();
+
+  return rows;
+}
+
+async function getThreadState(uid, sellerId) {
+  return MessageChatThreadState.findOne({ userId: uid, sellerId }).lean();
+}
+
+async function buildUserMessageQuery(uid, sellerId) {
+  return { userId: uid, sellerId };
+}
+
+async function buildSellerMessageQuery(uid, sellerId) {
+  const state = await getThreadState(uid, sellerId);
+  if (state?.deletedBySellerAt) {
+    throw new HttpError(404, "Chat topilmadi", "THREAD_NOT_FOUND");
+  }
+
+  const query = { userId: uid, sellerId };
+  if (state?.sellerMessagesHiddenBeforeAt) {
+    query.createdAt = { $gt: state.sellerMessagesHiddenBeforeAt };
+  }
+  return query;
+}
+
+async function clearThreadDeletedForSeller(uid, sellerId) {
+  await MessageChatThreadState.findOneAndUpdate(
+    { userId: uid, sellerId },
+    { $set: { deletedBySellerAt: null } },
+    { upsert: true },
+  );
+}
+
 async function listUserThreads(userId) {
   const uid = toUserObjectId(userId);
 
@@ -192,9 +230,26 @@ async function listUserThreads(userId) {
 
 async function listSellerThreads(sellerShopId) {
   const sellerId = normalizeSellerId(sellerShopId);
+  const threadStates = await getSellerThreadStateMap(sellerId);
+  const hiddenUserIds = threadStates
+    .filter((row) => row.deletedBySellerAt)
+    .map((row) => String(row.userId));
+  const hiddenObjectIds = hiddenUserIds
+    .filter((id) => mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
+  const hiddenBeforeByUser = new Map(
+    threadStates
+      .filter((row) => row.sellerMessagesHiddenBeforeAt)
+      .map((row) => [String(row.userId), row.sellerMessagesHiddenBeforeAt]),
+  );
 
   const rows = await MessageChat.aggregate([
-    { $match: { sellerId } },
+    {
+      $match: {
+        sellerId,
+        ...(hiddenObjectIds.length > 0 ? { userId: { $nin: hiddenObjectIds } } : {}),
+      },
+    },
     { $sort: { createdAt: -1 } },
     {
       $group: {
@@ -227,7 +282,8 @@ async function listSellerThreads(sellerShopId) {
   const users = await User.find({ _id: { $in: userIds } }).lean();
   const userMap = new Map(users.map((u) => [String(u._id), u]));
 
-  const items = rows.map((row) => {
+  const items = rows
+    .map((row) => {
     const user = userMap.get(String(row._id)) || null;
     const last = row.lastMessage;
     return {
@@ -244,7 +300,12 @@ async function listSellerThreads(sellerShopId) {
       },
       unreadCount: row.unreadCount,
     };
-  });
+  })
+    .filter((item) => {
+      const hiddenBefore = hiddenBeforeByUser.get(item.userId);
+      if (!hiddenBefore) return true;
+      return new Date(item.lastMessage.createdAt) > new Date(hiddenBefore);
+    });
 
   const totalUnread = items.reduce((sum, item) => sum + item.unreadCount, 0);
   return { items, totalUnread };
@@ -255,7 +316,8 @@ async function getThreadMessagesForUser(userId, sellerIdRaw) {
   const sellerId = normalizeSellerId(sellerIdRaw);
   await assertSellerExists(sellerId);
 
-  const rows = await MessageChat.find({ userId: uid, sellerId })
+  const query = await buildUserMessageQuery(uid, sellerId);
+  const rows = await MessageChat.find(query)
     .sort({ createdAt: 1 })
     .lean();
 
@@ -267,7 +329,8 @@ async function getThreadMessagesForSeller(sellerShopId, userIdRaw) {
   const uid = toUserObjectId(userIdRaw);
   await assertUserExists(uid);
 
-  const rows = await MessageChat.find({ userId: uid, sellerId })
+  const query = await buildSellerMessageQuery(uid, sellerId);
+  const rows = await MessageChat.find(query)
     .sort({ createdAt: 1 })
     .lean();
 
@@ -309,6 +372,8 @@ async function sendSellerMessage(sellerShopId, userIdRaw, payload) {
   const type = normalizeMessageType(payload?.type);
   const content = validateContent(type, payload?.content);
   const replyTo = await resolveReplyTo(uid, sellerId, payload?.replyTo);
+
+  await clearThreadDeletedForSeller(uid, sellerId);
 
   const doc = await MessageChat.create({
     userId: uid,
@@ -461,6 +526,37 @@ async function editSellerMessage(sellerShopId, userIdRaw, messageIdRaw, textRaw)
   };
 }
 
+async function deleteThreadForUser(userId, sellerIdRaw) {
+  const uid = toUserObjectId(userId);
+  const sellerId = normalizeSellerId(sellerIdRaw);
+  await assertSellerExists(sellerId);
+
+  await MessageChat.deleteMany({ userId: uid, sellerId });
+  await MessageChatThreadState.deleteOne({ userId: uid, sellerId });
+
+  return { sellerId, userId: String(uid) };
+}
+
+async function deleteThreadForSeller(sellerShopId, userIdRaw) {
+  const sellerId = normalizeSellerId(sellerShopId);
+  const uid = toUserObjectId(userIdRaw);
+  await assertUserExists(uid);
+  const now = new Date();
+
+  await MessageChatThreadState.findOneAndUpdate(
+    { userId: uid, sellerId },
+    {
+      $set: {
+        deletedBySellerAt: now,
+        sellerMessagesHiddenBeforeAt: now,
+      },
+    },
+    { upsert: true },
+  );
+
+  return { userId: String(uid) };
+}
+
 module.exports = {
   listUserThreads,
   listSellerThreads,
@@ -474,4 +570,6 @@ module.exports = {
   deleteSellerMessage,
   editUserMessage,
   editSellerMessage,
+  deleteThreadForUser,
+  deleteThreadForSeller,
 };

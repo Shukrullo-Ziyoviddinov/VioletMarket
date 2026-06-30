@@ -6,6 +6,7 @@ const {
   emitMessageChatRead,
   emitMessageChatMessageDeleted,
   emitMessageChatMessageUpdated,
+  emitMessageChatThreadDeleted,
 } = require("../../socket/messageChatSocketEmitter");
 
 const listUserThreads = asyncHandler(async (req, res) => {
@@ -73,9 +74,13 @@ const deleteUserMessage = asyncHandler(async (req, res) => {
     sellerId: String(req.params.sellerId || "").trim(),
     messageId: data.messageId,
   });
+  emitMessageChatThreadDeleted({
+    userId: String(req.userId),
+    sellerId: data.sellerId,
+  });
   emitMessageChatThreadsUpdated({
     userId: String(req.userId),
-    sellerId: String(req.params.sellerId || "").trim(),
+    sellerId: data.sellerId,
   });
 
   res.json({ ok: true, ...data });
@@ -102,6 +107,24 @@ const editUserMessage = asyncHandler(async (req, res) => {
   res.json({ ok: true, message: data.message });
 });
 
+const deleteUserThread = asyncHandler(async (req, res) => {
+  const data = await messageChatService.deleteThreadForUser(
+    req.userId,
+    req.params.sellerId,
+  );
+
+  emitMessageChatThreadDeleted({
+    userId: String(req.userId),
+    sellerId: data.sellerId,
+  });
+  emitMessageChatThreadsUpdated({
+    userId: String(req.userId),
+    sellerId: data.sellerId,
+  });
+
+  res.json({ ok: true, ...data });
+});
+
 module.exports = {
   listUserThreads,
   getUserThreadMessages,
@@ -109,4 +132,5 @@ module.exports = {
   markUserThreadRead,
   deleteUserMessage,
   editUserMessage,
+  deleteUserThread,
 };

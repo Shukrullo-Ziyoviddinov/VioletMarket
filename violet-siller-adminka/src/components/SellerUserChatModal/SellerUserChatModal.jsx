@@ -5,6 +5,7 @@ import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
 import { waitMessageChatDeleteAnimation } from '../../utils/messageChatDeleteAnimation';
 import MessageChatPartnerStatus from '../MessageChatPartnerStatus';
+import MiniModal from '../MiniModal';
 import MessageChatActionsModal from './MessageChatActionsModal';
 import MessageChatReplyBar from './MessageChatReplyBar/MessageChatReplyBar';
 import SellerUserChatMessageBubble from './SellerUserChatMessageBubble/SellerUserChatMessageBubble';
@@ -15,13 +16,35 @@ import './SellerUserChatParts.css';
 function SellerUserChatHeader({
   user,
   onBack,
+  onDeleteThread,
   isPartnerTyping = false,
   isPartnerSending = false,
   isPartnerOnline = false,
   partnerLastActiveAt = null,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Foydalanuvchi';
   const avatarSrc = resolveUserProfileImage(user?.profileImage);
+
+  const handleDeleteRequest = () => {
+    setMenuOpen(false);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const ok = await onDeleteThread?.();
+      if (ok) {
+        setConfirmOpen(false);
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <header className="seller-user-chat-header">
@@ -48,6 +71,49 @@ function SellerUserChatHeader({
           />
         </div>
       </div>
+
+      <button
+        type="button"
+        className="seller-user-chat-header__menu"
+        onClick={() => setMenuOpen((value) => !value)}
+        aria-label="Chat menyusi"
+        aria-expanded={menuOpen}
+      >
+        <i className="bx bx-dots-vertical-rounded" aria-hidden="true" />
+      </button>
+
+      <MiniModal open={menuOpen} onClose={() => setMenuOpen(false)} align="bottom-end">
+        <button type="button" className="mini-modal__item mini-modal__item--danger" onClick={handleDeleteRequest}>
+          <i className="bx bx-trash" aria-hidden="true" />
+          <span>O&apos;chirish</span>
+        </button>
+      </MiniModal>
+
+      <MiniModal open={confirmOpen} onClose={() => !deleting && setConfirmOpen(false)} align="center">
+        <h3 className="mini-modal__title">Chatni o&apos;chirish</h3>
+        <p className="mini-modal__text">
+          Haqiqatan ham bu chatni o&apos;chirmoqchimisiz? Bu faqat sizning ro&apos;yxatingizdan yashiriladi. Foydalanuvchi
+          yozishmalarni ko&apos;rishda davom etadi.
+        </p>
+        <div className="mini-modal__actions">
+          <button
+            type="button"
+            className="mini-modal__btn mini-modal__btn--ghost"
+            onClick={() => setConfirmOpen(false)}
+            disabled={deleting}
+          >
+            Yo&apos;q
+          </button>
+          <button
+            type="button"
+            className="mini-modal__btn mini-modal__btn--danger"
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+          >
+            Ha
+          </button>
+        </div>
+      </MiniModal>
     </header>
   );
 }
@@ -256,6 +322,7 @@ export default function SellerUserChatModal({
   onSendImage,
   onDeleteMessage,
   onEditMessage,
+  onDeleteThread,
   isPartnerTyping = false,
   isPartnerSending = false,
   isPartnerOnline = false,
@@ -366,6 +433,7 @@ export default function SellerUserChatModal({
         <SellerUserChatHeader
           user={user}
           onBack={onClose}
+          onDeleteThread={onDeleteThread}
           isPartnerTyping={isPartnerTyping}
           isPartnerSending={isPartnerSending}
           isPartnerOnline={isPartnerOnline}

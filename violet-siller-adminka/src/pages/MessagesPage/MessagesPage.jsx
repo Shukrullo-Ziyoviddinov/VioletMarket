@@ -67,6 +67,7 @@ export default function MessagesPage() {
     sendImage,
     deleteMessage,
     editMessage,
+    deleteThread,
   } = useUserMessageChat({
     token,
     userId: activeUser?.userId,
@@ -110,6 +111,21 @@ export default function MessagesPage() {
     setActiveUser(null);
     loadThreads();
   };
+
+  useEffect(() => {
+    const handleThreadDeleted = (event) => {
+      const deletedUserId = event?.detail?.userId;
+      if (!deletedUserId || !activeUser?.userId) return;
+      if (String(activeUser.userId) === String(deletedUserId)) {
+        setChatOpen(false);
+        setActiveUser(null);
+        loadThreads();
+      }
+    };
+
+    window.addEventListener('sellerMessageChatThreadDeleted', handleThreadDeleted);
+    return () => window.removeEventListener('sellerMessageChatThreadDeleted', handleThreadDeleted);
+  }, [activeUser?.userId, loadThreads]);
 
   return (
     <section className="messages-page">
@@ -162,6 +178,13 @@ export default function MessagesPage() {
         onSendImage={sendImage}
         onDeleteMessage={deleteMessage}
         onEditMessage={editMessage}
+        onDeleteThread={async () => {
+          const ok = await deleteThread();
+          if (ok) {
+            handleCloseChat();
+          }
+          return ok;
+        }}
         isPartnerTyping={isUserTyping}
         isPartnerSending={isUserPartnerSending}
         isPartnerOnline={isUserOnline}

@@ -1,0 +1,124 @@
+.mini-modal-host {
+  position: absolute;
+  z-index: 12;
+}
+
+.mini-modal-host--bottom-end {
+  inset: 0;
+}
+
+.mini-modal-host--center {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.mini-modal-host__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mini-modal-host--center .mini-modal-host__backdrop {
+  background: rgba(26, 18, 37, 0.42);
+}
+
+.mini-modal {
+  position: absolute;
+  z-index: 1;
+  min-width: 168px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ece7f3;
+  box-shadow: 0 12px 32px rgba(42, 24, 66, 0.18);
+}
+
+.mini-modal-host--bottom-end .mini-modal {
+  top: calc(100% - 2px);
+  right: 8px;
+}
+
+.mini-modal-host--center .mini-modal {
+  position: relative;
+  width: min(100%, 320px);
+  padding: 18px 16px 14px;
+}
+
+.mini-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mini-modal__item i {
+  font-size: 18px;
+}
+
+.mini-modal__item:hover {
+  background: #f8f4fd;
+}
+
+.mini-modal__item--danger {
+  color: #d92d4f;
+}
+
+.mini-modal__item--danger i {
+  color: #d92d4f;
+}
+
+.mini-modal__title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
+.mini-modal__text {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #5b4d73;
+}
+
+.mini-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mini-modal__btn {
+  min-width: 72px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mini-modal__btn--ghost {
+  background: #f3ebfd;
+  color: #5b4d73;
+}
+
+.mini-modal__btn--danger {
+  background: #d92d4f;
+  color: #fff;
+}

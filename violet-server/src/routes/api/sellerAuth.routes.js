@@ -111,6 +111,11 @@ router.patch(
   sellerMessageChatController.editSellerMessage,
 );
 router.delete(
+  "/seller-auth/message-chat/threads/:userId",
+  sellerAuthMiddleware,
+  sellerMessageChatController.deleteSellerThread,
+);
+router.delete(
   "/seller-auth/message-chat/threads/:userId/messages/:messageId",
   sellerAuthMiddleware,
   sellerMessageChatController.deleteSellerMessage,

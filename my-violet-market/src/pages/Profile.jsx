@@ -420,6 +420,7 @@ const Profile = () => {
     sendProduct: sendProfileChatProduct,
     deleteMessage: deleteProfileChatMessage,
     editMessage: editProfileChatMessage,
+    deleteThread: deleteProfileChatThread,
   } = useSellerMessageChat({
     authToken,
     sellerId: activeChatSellerId,
@@ -1028,6 +1029,15 @@ const Profile = () => {
             onSendProduct={sendProfileChatProduct}
             onDeleteMessage={deleteProfileChatMessage}
             onEditMessage={editProfileChatMessage}
+            onDeleteThread={async () => {
+              const ok = await deleteProfileChatThread();
+              if (ok) {
+                setIsProfileSellerChatOpen(false);
+                setActiveChatSellerId(null);
+                loadMessageThreads();
+              }
+              return ok;
+            }}
             isPartnerTyping={isProfileSellerTyping}
             isPartnerSending={isProfileSellerPartnerSending}
             isPartnerOnline={isProfileSellerOnline}

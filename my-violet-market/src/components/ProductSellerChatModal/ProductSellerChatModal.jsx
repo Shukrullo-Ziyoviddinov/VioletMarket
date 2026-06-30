@@ -23,6 +23,7 @@ export default function ProductSellerChatModal({
   onSendProduct,
   onDeleteMessage,
   onEditMessage,
+  onDeleteThread,
   isPartnerTyping = false,
   isPartnerSending = false,
   isPartnerOnline = false,
@@ -178,6 +179,7 @@ export default function ProductSellerChatModal({
           seller={seller}
           lang={lang}
           onBack={onClose}
+          onDeleteThread={onDeleteThread}
           isPartnerTyping={isPartnerTyping}
           isPartnerSending={isPartnerSending}
           isPartnerOnline={isPartnerOnline}

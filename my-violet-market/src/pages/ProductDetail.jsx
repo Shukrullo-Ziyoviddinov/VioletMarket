@@ -754,6 +754,7 @@ const ProductDetail = () => {
     sendProduct: sendSellerChatProduct,
     deleteMessage: deleteSellerChatMessage,
     editMessage: editSellerChatMessage,
+    deleteThread: deleteSellerChatThread,
   } = useSellerMessageChat({
     authToken,
     sellerId: detailSellerId,
@@ -2440,6 +2441,13 @@ const ProductDetail = () => {
         onSendProduct={sendSellerChatProduct}
         onDeleteMessage={deleteSellerChatMessage}
         onEditMessage={editSellerChatMessage}
+        onDeleteThread={async () => {
+          const ok = await deleteSellerChatThread();
+          if (ok) {
+            setIsSellerChatOpen(false);
+          }
+          return ok;
+        }}
         isPartnerTyping={isSellerTyping}
         isPartnerSending={isSellerPartnerSending}
         isPartnerOnline={isSellerOnline}

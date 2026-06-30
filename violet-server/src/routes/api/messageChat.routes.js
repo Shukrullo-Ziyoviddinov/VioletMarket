@@ -44,6 +44,11 @@ router.patch(
   messageChatController.editUserMessage,
 );
 router.delete(
+  "/message-chat/threads/:sellerId",
+  authMiddleware,
+  messageChatController.deleteUserThread,
+);
+router.delete(
   "/message-chat/threads/:sellerId/messages/:messageId",
   authMiddleware,
   messageChatController.deleteUserMessage,

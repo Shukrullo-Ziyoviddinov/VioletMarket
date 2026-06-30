@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   deleteSellerMessageChatMessage,
+  deleteSellerMessageChatThread,
   editSellerMessageChatMessage,
   fetchSellerMessageThreadMessages,
   markSellerMessageThreadRead,
@@ -137,6 +138,21 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
     };
   }, [enabled, userId]);
 
+  useEffect(() => {
+    if (!enabled || !userId) return undefined;
+
+    return subscribeMessageChatSocket(MESSAGE_CHAT_SOCKET_EVENTS.THREAD_DELETED, (payload) => {
+      if (!payload || String(payload.userId) !== String(userId)) return;
+      setMessages([]);
+      window.dispatchEvent(
+        new CustomEvent('sellerMessageChatThreadDeleted', {
+          detail: { userId: String(payload.userId) },
+        }),
+      );
+      window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
+    });
+  }, [enabled, userId]);
+
   const sendMessage = useCallback(
     async (payload) => {
       if (!token || !userId || !beginSending(messages.length)) return null;
@@ -229,6 +245,18 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
     [token, userId],
   );
 
+  const deleteThread = useCallback(async () => {
+    if (!token || !userId) return false;
+    try {
+      await deleteSellerMessageChatThread(token, userId);
+      setMessages([]);
+      window.dispatchEvent(new CustomEvent('sellerMessageChatUpdated'));
+      return true;
+    } catch {
+      return false;
+    }
+  }, [token, userId]);
+
   return {
     messages,
     loading,
@@ -238,5 +266,6 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
     sendImage,
     deleteMessage,
     editMessage,
+    deleteThread,
   };
 }

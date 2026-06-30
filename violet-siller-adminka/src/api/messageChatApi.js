@@ -49,6 +49,13 @@ export function markSellerMessageThreadRead(token, userId) {
 
 export { uploadSellerMarketImage as uploadSellerMessageChatImage } from './sellerAuthApi';
 
+export function deleteSellerMessageChatThread(token, userId) {
+  return fetch(apiUrl(`/api/seller-auth/message-chat/threads/${encodeURIComponent(userId)}`), {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  }).then(parseJson);
+}
+
 export function deleteSellerMessageChatMessage(token, userId, messageId) {
   return fetch(
     apiUrl(`/api/seller-auth/message-chat/threads/${encodeURIComponent(userId)}/messages/${encodeURIComponent(messageId)}`),

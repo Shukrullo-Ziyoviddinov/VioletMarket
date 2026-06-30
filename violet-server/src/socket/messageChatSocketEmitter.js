@@ -86,6 +86,18 @@ function emitMessageChatMessageUpdated({ userId, sellerId, message }) {
   ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.MESSAGE_UPDATED, payload);
 }
 
+function emitMessageChatThreadDeleted({ userId, sellerId }) {
+  if (!ioInstance || !userId || !sellerId) return;
+
+  const payload = {
+    userId: normalizeSocketId(userId),
+    sellerId: normalizeSocketId(sellerId),
+  };
+
+  ioInstance.to(getUserRoom(payload.userId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.THREAD_DELETED, payload);
+  ioInstance.to(getSellerRoom(payload.sellerId)).emit(MESSAGE_CHAT_SOCKET_EVENTS.THREAD_DELETED, payload);
+}
+
 module.exports = {
   setMessageChatSocketIo,
   emitMessageChatMessage,
@@ -93,6 +105,7 @@ module.exports = {
   emitMessageChatRead,
   emitMessageChatMessageDeleted,
   emitMessageChatMessageUpdated,
+  emitMessageChatThreadDeleted,
   getUserRoom,
   getSellerRoom,
 };

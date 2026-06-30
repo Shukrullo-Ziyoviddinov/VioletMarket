@@ -154,7 +154,13 @@
       "cancelEdit": "Отменить редактирование",
       "saveEdit": "Сохранить",
       "edited": "(изменено)",
-      "sendProduct": "Отправить товар в чат"
+      "sendProduct": "Отправить товар в чат",
+      "threadMenu": "Меню чата",
+      "deleteThread": "Удалить",
+      "deleteThreadTitle": "Удалить чат",
+      "deleteThreadConfirm": "Вы действительно хотите удалить этот чат? Вся переписка будет полностью удалена (и у продавца тоже).",
+      "deleteThreadYes": "Да",
+      "deleteThreadNo": "Нет"
     }
   },
   "wishlist": {
