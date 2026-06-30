@@ -203,11 +203,13 @@ export default function ChatsPage() {
   if (!isAuthenticated) {
     return (
       <div className="chats-page">
-        <div className="chats-page__login">
-          <p>{t('chats.loginRequired')}</p>
-          <Link to="/login" className="chats-page__login-btn">
-            {t('profile.login')}
-          </Link>
+        <div className="chats-page__panel">
+          <div className="chats-page__login">
+            <p>{t('chats.loginRequired')}</p>
+            <Link to="/login" className="chats-page__login-btn">
+              {t('profile.login')}
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -216,7 +218,7 @@ export default function ChatsPage() {
   return (
     <div className={`chats-page${searchOpen ? ' chats-page--search-open' : ''}`}>
       {!searchOpen ? (
-        <>
+        <div className="chats-page__panel">
           <div className="chats-page__header">
             <ChatsPageSearch onOpen={handleOpenSearch} />
           </div>
@@ -235,7 +237,7 @@ export default function ChatsPage() {
             onUnarchiveThread={unarchiveThread}
             onDeleteThread={handleDeleteRequest}
           />
-        </>
+        </div>
       ) : null}
 
       <ChatsPageSearchModal
