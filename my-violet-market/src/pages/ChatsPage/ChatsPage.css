@@ -156,6 +156,7 @@
     min-height: 0;
     height: 100%;
     overflow: hidden;
+    padding-top: 0;
   }
 
   .chats-page__header {
