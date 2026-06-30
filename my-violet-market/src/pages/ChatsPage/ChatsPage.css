@@ -59,7 +59,7 @@
 }
 
 @media (max-width: 550px) {
-  body.chats-page-active .navbar-container {
+  body.chats-page-active .navbar {
     display: none !important;
   }
 
@@ -86,11 +86,5 @@
 
   .chats-page--search-open {
     overflow: hidden;
-  }
-}
-
-@media (min-width: 551px) {
-  body.chats-page-active .navbar-container {
-    display: block;
   }
 }
