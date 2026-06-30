@@ -1,7 +1,4 @@
 .chats-thread-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   background: #fff;
 }
 
@@ -9,6 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 240px;
   padding: 48px 20px;
   color: #8a8198;
   font-size: 15px;
@@ -20,5 +18,5 @@
 }
 
 .chats-thread-list--loading {
-  overflow: hidden;
+  min-height: 240px;
 }

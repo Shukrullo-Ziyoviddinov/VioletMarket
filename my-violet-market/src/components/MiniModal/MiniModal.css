@@ -7,6 +7,21 @@
   inset: 0;
 }
 
+.mini-modal-host--viewport {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+}
+
+.mini-modal-host--viewport .mini-modal-host__backdrop {
+  background: transparent;
+}
+
+.mini-modal-host--viewport.mini-modal-host--bottom-end .mini-modal {
+  top: auto;
+  right: auto;
+}
+
 .mini-modal-host--center {
   position: fixed;
   inset: 0;

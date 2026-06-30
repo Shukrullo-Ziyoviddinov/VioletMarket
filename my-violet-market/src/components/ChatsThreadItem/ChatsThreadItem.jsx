@@ -22,6 +22,7 @@ export default function ChatsThreadItem({
   const lang = i18n.language === 'ru' ? 'ru' : 'uz';
   const pressTimerRef = useRef(null);
   const suppressClickRef = useRef(false);
+  const wrapRef = useRef(null);
   const [actionsOpen, setActionsOpen] = React.useState(false);
 
   const pref = getThreadPreference(thread.sellerId, preferences);
@@ -74,7 +75,7 @@ export default function ChatsThreadItem({
   };
 
   return (
-    <div className="chats-thread-item-wrap">
+    <div className="chats-thread-item-wrap" ref={wrapRef}>
       <button
         type="button"
         className="chats-thread-item"
@@ -133,7 +134,11 @@ export default function ChatsThreadItem({
       <ChatsThreadActionsMenu
         open={actionsOpen}
         isPinned={Boolean(pref.pinned)}
-        onClose={() => setActionsOpen(false)}
+        anchorRef={wrapRef}
+        onClose={() => {
+          suppressClickRef.current = false;
+          setActionsOpen(false);
+        }}
         onTogglePin={() => {
           onTogglePin?.(thread);
           setActionsOpen(false);

@@ -6,6 +6,7 @@ import './ChatsThreadActionsMenu.css';
 export default function ChatsThreadActionsMenu({
   open = false,
   isPinned = false,
+  anchorRef = null,
   onClose,
   onTogglePin,
   onDelete,
@@ -13,7 +14,13 @@ export default function ChatsThreadActionsMenu({
   const { t } = useTranslation();
 
   return (
-    <MiniModal open={open} onClose={onClose} align="bottom-end">
+    <MiniModal
+      open={open}
+      onClose={onClose}
+      align="bottom-end"
+      viewportBackdrop
+      anchorRef={anchorRef}
+    >
       <button type="button" className="chats-thread-actions-menu__item" onClick={onTogglePin}>
         <i className={`bx ${isPinned ? 'bx-pin' : 'bx-pin'}`} aria-hidden="true" />
         <span>{isPinned ? t('chats.actions.unpin') : t('chats.actions.pin')}</span>
