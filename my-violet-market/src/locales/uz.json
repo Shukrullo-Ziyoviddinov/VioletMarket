@@ -440,6 +440,12 @@
       "archive": "Arxivlash",
       "unarchive": "Arxivdan chiqarish",
       "delete": "O'chirish"
+    },
+    "search": {
+      "label": "Chatlarni qidirish",
+      "placeholder": "Chatlarni qidirish...",
+      "hint": "Sotuvchi yoki xabar bo'yicha qidiring",
+      "noResults": "Mos chat topilmadi"
     }
   },
   "uzWarehouse": {

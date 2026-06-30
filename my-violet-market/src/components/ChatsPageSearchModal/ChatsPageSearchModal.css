@@ -1,0 +1,105 @@
+.chats-page-search-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+}
+
+.chats-page-search-modal--open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chats-page-search-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #ece7f3;
+  background: #fff;
+}
+
+.chats-page-search-modal__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ece7f3;
+  border-radius: 50%;
+  background: #fff;
+  color: #1f1630;
+  font-size: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chats-page-search-modal__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 2px solid #e8dff5;
+  border-radius: 14px;
+  background: #f8f4fd;
+}
+
+.chats-page-search-modal__search-icon {
+  font-size: 20px;
+  color: #9b4fe7;
+  flex-shrink: 0;
+}
+
+.chats-page-search-modal__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: #1f1630;
+  outline: none;
+  font-family: inherit;
+}
+
+.chats-page-search-modal__input::placeholder {
+  color: #8a8198;
+}
+
+.chats-page-search-modal__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #8a8198;
+  font-size: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chats-page-search-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.chats-page-search-modal__hint,
+.chats-page-search-modal__empty {
+  margin: 0;
+  padding: 40px 20px;
+  text-align: center;
+  color: #8a8198;
+  font-size: 15px;
+}

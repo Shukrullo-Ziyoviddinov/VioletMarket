@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../contexts/UserContext';
@@ -12,9 +12,18 @@ import { useSellerMessageChat } from '../../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../../hooks/useMessageChatSending';
 import { useMessageChatPresence } from '../../hooks/useMessageChatPresence';
-import { filterAndSortChatThreads, countUnreadChatThreads, buildPreferencesMapFromThreads } from '../../utils/chatsThreadUtils';
+import {
+  filterAndSortChatThreads,
+  countUnreadChatThreads,
+  buildPreferencesMapFromThreads,
+  sortChatThreadsByPinAndActivity,
+} from '../../utils/chatsThreadUtils';
+import { filterChatThreadsByQuery } from '../../utils/filterChatThreadsByQuery';
+import { getLocalizedText } from '../../utils/utils';
 import ChatsFilter from '../../components/ChatsFilter';
 import ChatsThreadList from '../../components/ChatsThreadList';
+import ChatsPageSearch from '../../components/ChatsPageSearch';
+import ChatsPageSearchModal from '../../components/ChatsPageSearchModal';
 import ProductSellerChatModal from '../../components/ProductSellerChatModal';
 import MiniModal from '../../components/MiniModal';
 import './ChatsPage.css';
@@ -24,8 +33,11 @@ export default function ChatsPage() {
   const { userData, authToken } = useUser();
   const { getSellerById } = useAppData();
   const lang = i18n.language || 'uz';
+  const langKey = lang === 'ru' ? 'ru' : 'uz';
 
   const [filter, setFilter] = useState('all');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeChatSellerId, setActiveChatSellerId] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -44,6 +56,21 @@ export default function ChatsPage() {
     () => filterAndSortChatThreads(threads, filter, preferences),
     [threads, filter, preferences],
   );
+
+  const searchThreads = useMemo(() => {
+    const matched = filterChatThreadsByQuery(threads, searchQuery, (thread) =>
+      getLocalizedText(thread.sellerName, langKey),
+    );
+    return sortChatThreadsByPinAndActivity(matched, preferences);
+  }, [threads, searchQuery, langKey, preferences]);
+
+  const searchSellerIds = useMemo(
+    () => searchThreads.map((thread) => thread.sellerId),
+    [searchThreads],
+  );
+
+  const searchPresenceMap = useChatsListPresence(searchSellerIds, isAuthenticated && searchOpen);
+  const searchTypingMap = useChatsListTyping(searchSellerIds, isAuthenticated && searchOpen);
 
   const unreadThreadCount = useMemo(
     () => countUnreadChatThreads(threads, preferences),
@@ -115,6 +142,28 @@ export default function ChatsPage() {
     setIsChatOpen(true);
   }, []);
 
+  const handleOpenSearch = useCallback(() => {
+    setSearchOpen(true);
+  }, []);
+
+  const handleCloseSearch = useCallback(() => {
+    setSearchOpen(false);
+    setSearchQuery('');
+  }, []);
+
+  const handleOpenThreadFromSearch = useCallback(
+    (thread) => {
+      handleCloseSearch();
+      handleOpenThread(thread);
+    },
+    [handleCloseSearch, handleOpenThread],
+  );
+
+  useEffect(() => {
+    document.body.classList.add('chats-page-active');
+    return () => document.body.classList.remove('chats-page-active');
+  }, []);
+
   const handleCloseChat = useCallback(() => {
     setIsChatOpen(false);
     setActiveChatSellerId(null);
@@ -148,9 +197,6 @@ export default function ChatsPage() {
   if (!isAuthenticated) {
     return (
       <div className="chats-page">
-        <div className="chats-page__header">
-          <h1 className="chats-page__title">{t('chats.title')}</h1>
-        </div>
         <div className="chats-page__login">
           <p>{t('chats.loginRequired')}</p>
           <Link to="/login" className="chats-page__login-btn">
@@ -162,24 +208,47 @@ export default function ChatsPage() {
   }
 
   return (
-    <div className="chats-page">
-      <div className="chats-page__header">
-        <h1 className="chats-page__title">{t('chats.title')}</h1>
-      </div>
+    <div className={`chats-page${searchOpen ? ' chats-page--search-open' : ''}`}>
+      {!searchOpen ? (
+        <>
+          <div className="chats-page__header">
+            <ChatsPageSearch onOpen={handleOpenSearch} />
+          </div>
 
-      <ChatsFilter value={filter} onChange={setFilter} unreadCount={unreadThreadCount} />
+          <ChatsFilter value={filter} onChange={setFilter} unreadCount={unreadThreadCount} />
 
-      <ChatsThreadList
-        threads={filteredThreads}
+          <ChatsThreadList
+            threads={filteredThreads}
+            loading={loading}
+            preferences={preferences}
+            presenceMap={presenceMap}
+            typingMap={typingMap}
+            onOpenThread={handleOpenThread}
+            onTogglePin={togglePin}
+            onArchiveThread={archiveThread}
+            onUnarchiveThread={unarchiveThread}
+            onDeleteThread={handleDeleteRequest}
+          />
+        </>
+      ) : null}
+
+      <ChatsPageSearchModal
+        open={searchOpen}
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        onClose={handleCloseSearch}
+        threads={searchThreads}
         loading={loading}
-        preferences={preferences}
-        presenceMap={presenceMap}
-        typingMap={typingMap}
-        onOpenThread={handleOpenThread}
-        onTogglePin={togglePin}
-        onArchiveThread={archiveThread}
-        onUnarchiveThread={unarchiveThread}
-        onDeleteThread={handleDeleteRequest}
+        threadListProps={{
+          preferences,
+          presenceMap: searchPresenceMap,
+          typingMap: searchTypingMap,
+          onOpenThread: handleOpenThreadFromSearch,
+          onTogglePin: togglePin,
+          onArchiveThread: archiveThread,
+          onUnarchiveThread: unarchiveThread,
+          onDeleteThread: handleDeleteRequest,
+        }}
       />
 
       <ProductSellerChatModal
