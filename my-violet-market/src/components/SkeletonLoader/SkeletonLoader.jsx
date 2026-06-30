@@ -4,6 +4,8 @@ import '../ImageBanner/ImageBanner.css';
 import '../UzWarehouse/UzWarehouse.css';
 import './SkeletonLoader.css';
 import '../ProductSellerChatModal/ProductSellerChatMessageList/ProductSellerChatMessageList.css';
+import '../ProductSellerChatModal/ProductSellerChatMessageBubble/ProductSellerChatMessageBubble.css';
+import '../ProductSellerChatModal/ProductSellerChatProductMessage/ProductSellerChatProductMessage.css';
 
 /** Asosiy pulse blok (className bilan kengaytirish mumkin) */
 export function SkeletonPulse({ className = '', style, ...rest }) {
@@ -253,7 +255,7 @@ export function SkeletonChatMessages() {
         <SkeletonPulse className="product-seller-chat-message-bubble product-seller-chat-message-bubble--customer skeleton-chat-bubble skeleton-chat-bubble--customer-sm" />
       </div>
       <div className="message-chat-message-row message-chat-message-row--start">
-        <SkeletonPulse className="product-seller-chat-message-bubble skeleton-chat-bubble skeleton-chat-bubble--seller-lg" />
+        <SkeletonPulse className="product-seller-chat-message-bubble product-seller-chat-message-bubble--seller skeleton-chat-bubble skeleton-chat-bubble--seller-lg" />
       </div>
       <div className="message-chat-message-row message-chat-message-row--end">
         <SkeletonPulse className="product-seller-chat-product-message product-seller-chat-product-message--customer skeleton-chat-product" />

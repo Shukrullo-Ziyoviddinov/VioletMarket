@@ -158,15 +158,39 @@
   pointer-events: none;
 }
 
-.skeleton-chat-bubble,
-.skeleton-chat-product {
+.product-seller-chat-message-list--skeleton .skeleton-pulse.skeleton-chat-bubble,
+.product-seller-chat-message-list--skeleton .skeleton-pulse.skeleton-chat-product {
   display: block;
+  flex-shrink: 0;
   border: none !important;
-  box-shadow: none !important;
   cursor: default;
   pointer-events: none;
   padding: 0 !important;
-  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+  background: linear-gradient(
+    90deg,
+    var(--sk-edge) 0%,
+    var(--sk-mid) 26%,
+    var(--sk-highlight) 50%,
+    var(--sk-mid) 74%,
+    var(--sk-edge) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.1s ease-in-out infinite !important;
+}
+
+.product-seller-chat-message-list--skeleton .skeleton-pulse.product-seller-chat-message-bubble--seller,
+.product-seller-chat-message-list--skeleton .skeleton-pulse.skeleton-chat-bubble--seller-lg {
+  --sk-edge: #d4c4ec;
+  --sk-mid: #e2d6f4;
+  --sk-highlight: #f0e9fa;
+}
+
+.product-seller-chat-message-list--skeleton .skeleton-pulse.product-seller-chat-message-bubble--customer,
+.product-seller-chat-message-list--skeleton .skeleton-pulse.product-seller-chat-product-message--customer {
+  --sk-edge: #c5cff8;
+  --sk-mid: #d6defc;
+  --sk-highlight: #e8edff;
 }
 
 .skeleton-chat-bubble--seller-md {

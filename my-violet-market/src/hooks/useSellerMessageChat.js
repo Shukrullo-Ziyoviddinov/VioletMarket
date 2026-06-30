@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   deleteMessageChatMessage,
   deleteMessageChatThread,
@@ -71,13 +71,17 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
     }
   }, [authToken, sellerId]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!enabled || !authToken || !sellerId) {
       setMessages([]);
       setLoading(false);
       return;
     }
     setLoading(true);
+  }, [enabled, authToken, sellerId]);
+
+  useEffect(() => {
+    if (!enabled || !authToken || !sellerId) return;
     loadMessages();
   }, [enabled, authToken, sellerId, loadMessages]);
 
