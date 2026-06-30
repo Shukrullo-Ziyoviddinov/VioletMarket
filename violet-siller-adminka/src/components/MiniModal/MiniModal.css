@@ -40,8 +40,8 @@
 }
 
 .mini-modal-host--bottom-end .mini-modal {
-  top: calc(100% - 2px);
-  right: 8px;
+  top: calc(100% - -5px);
+  right: 12px;
 }
 
 .mini-modal-host--center .mini-modal {
@@ -55,7 +55,7 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 12px;
+  padding: 5px 5px;
   border: none;
   border-radius: 10px;
   background: transparent;

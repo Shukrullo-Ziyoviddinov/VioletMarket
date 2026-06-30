@@ -10,7 +10,7 @@ import { getLocalizedText, normalizeImagePath } from '../utils/utils';
 import { useSellerSubscriptions } from '../contexts/SellerSubscriptionContext';
 import GlobalModal from '../components/GlobalModal';
 import { ProfilePendingReviewsList } from '../components/ProfilePendingReviews';
-import { ProfilePendingReviewsSkeleton } from '../components/SkeletonLoader';
+import { ProfilePendingReviewsSkeleton, ProfileMessageThreadsSkeleton } from '../components/SkeletonLoader';
 import CommentFormModal from '../components/CommentFormModal';
 import ProfileExit from '../components/ProfileExit';
 import { fetchPendingReviews } from '../api/pendingReviewsApi';
@@ -1006,7 +1006,7 @@ const Profile = () => {
             title={t('profile.messages')}
           >
             {messageThreadsLoading ? (
-              <ProfilePendingReviewsSkeleton count={3} />
+              <ProfileMessageThreadsSkeleton count={4} />
             ) : (
               <ProfileMessageThreadsList
                 items={messageThreads}

@@ -6,6 +6,7 @@ import './SkeletonLoader.css';
 import '../ProductSellerChatModal/ProductSellerChatMessageList/ProductSellerChatMessageList.css';
 import '../ProductSellerChatModal/ProductSellerChatMessageBubble/ProductSellerChatMessageBubble.css';
 import '../ProductSellerChatModal/ProductSellerChatProductMessage/ProductSellerChatProductMessage.css';
+import '../ProfileMessageThreads/ProfileMessageThreadsList.css';
 
 /** Asosiy pulse blok (className bilan kengaytirish mumkin) */
 export function SkeletonPulse({ className = '', style, ...rest }) {
@@ -235,6 +236,27 @@ export function ProfilePendingReviewsSkeleton({ count = 3 }) {
     >
       {Array.from({ length: count }).map((_, i) => (
         <ProfilePendingReviewItemSkeleton key={`pending-review-sk-${i}`} />
+      ))}
+    </ul>
+  );
+}
+
+/** Profil → Xabarlar ro'yxati: API javobi kutilganda */
+export function ProfileMessageThreadsSkeleton({ count = 4 }) {
+  return (
+    <ul
+      className="profile-message-threads-list profile-message-threads-list--skeleton"
+      aria-busy="true"
+      aria-label="Xabarlar yuklanmoqda"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <li key={`message-thread-sk-${i}`}>
+          <div className="profile-message-threads-item profile-message-threads-item--skeleton" aria-hidden>
+            <SkeletonPulse className="profile-message-threads-item__avatar profile-message-threads-item__avatar--skeleton" />
+            <SkeletonPulse className="profile-message-threads-item__name-skeleton" />
+            <SkeletonPulse className="profile-message-threads-item__chevron-skeleton" />
+          </div>
+        </li>
       ))}
     </ul>
   );
