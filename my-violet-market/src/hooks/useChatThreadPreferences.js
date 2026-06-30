@@ -1,86 +1,52 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  getChatThreadPreferences,
-  saveChatThreadPreferences,
-} from '../utils/chatsThreadUtils';
+import { useCallback } from 'react';
+import { updateMessageChatThreadPreferences } from '../api/messageChatApi';
 
-export function useChatThreadPreferences() {
-  const [preferences, setPreferences] = useState(() => getChatThreadPreferences());
-
-  useEffect(() => {
-    const onStorage = (event) => {
-      if (event.key && event.key !== 'messageChatThreadPreferences') return;
-      setPreferences(getChatThreadPreferences());
-    };
-
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  const updatePreference = useCallback((sellerId, patch) => {
-    const id = String(sellerId);
-    setPreferences((current) => {
-      const next = {
-        ...current,
-        [id]: {
-          ...(current[id] || {}),
-          ...patch,
-        },
-      };
-      saveChatThreadPreferences(next);
-      return next;
-    });
-  }, []);
-
-  const togglePin = useCallback(
-    (sellerId) => {
-      const id = String(sellerId);
-      setPreferences((current) => {
-        const pinned = !current[id]?.pinned;
-        const next = {
-          ...current,
-          [id]: {
-            ...(current[id] || {}),
-            pinned,
-            pinnedAt: pinned ? Date.now() : null,
-          },
-        };
-        saveChatThreadPreferences(next);
-        return next;
-      });
+export function useChatThreadPreferences(authToken, { onUpdated } = {}) {
+  const runUpdate = useCallback(
+    async (sellerId, patch) => {
+      if (!authToken) return false;
+      try {
+        await updateMessageChatThreadPreferences(authToken, sellerId, patch);
+        onUpdated?.();
+        window.dispatchEvent(new CustomEvent('messageChatUpdated'));
+        return true;
+      } catch {
+        return false;
+      }
     },
-    [],
+    [authToken, onUpdated],
   );
 
-  const toggleMute = useCallback((sellerId) => {
-    const id = String(sellerId);
-    setPreferences((current) => {
-      const next = {
-        ...current,
-        [id]: {
-          ...(current[id] || {}),
-          muted: !current[id]?.muted,
-        },
-      };
-      saveChatThreadPreferences(next);
-      return next;
-    });
-  }, []);
+  const togglePin = useCallback(
+    (thread) => {
+      const pinned = Boolean(thread?.pinned);
+      return runUpdate(thread.sellerId, { pinned: !pinned });
+    },
+    [runUpdate],
+  );
 
-  const archiveThread = useCallback((sellerId) => {
-    updatePreference(sellerId, { archived: true });
-  }, [updatePreference]);
+  const toggleMute = useCallback(
+    (thread) => {
+      const muted = Boolean(thread?.muted);
+      return runUpdate(thread.sellerId, { muted: !muted });
+    },
+    [runUpdate],
+  );
 
-  const unarchiveThread = useCallback((sellerId) => {
-    updatePreference(sellerId, { archived: false });
-  }, [updatePreference]);
+  const archiveThread = useCallback(
+    (thread) => runUpdate(thread.sellerId, { archived: true }),
+    [runUpdate],
+  );
+
+  const unarchiveThread = useCallback(
+    (thread) => runUpdate(thread.sellerId, { archived: false }),
+    [runUpdate],
+  );
 
   return {
-    preferences,
     togglePin,
     toggleMute,
     archiveThread,
     unarchiveThread,
-    updatePreference,
   };
 }

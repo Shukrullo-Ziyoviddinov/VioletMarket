@@ -17,6 +17,55 @@
   margin: 0;
 }
 
-.chats-thread-list--loading {
-  min-height: 240px;
+.chats-thread-list--skeleton {
+  pointer-events: none;
+}
+
+.chats-thread-item--skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.chats-thread-item--skeleton:hover {
+  background: #fff;
+}
+
+.chats-thread-item__avatar--skeleton {
+  padding: 0;
+}
+
+.chats-thread-item__sk {
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.chats-thread-item__sk--name {
+  width: min(42%, 148px);
+  height: 16px;
+}
+
+.chats-thread-item__sk--status {
+  width: 72px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.chats-thread-item__sk--time {
+  width: 44px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.chats-thread-item__sk--preview {
+  flex: 1;
+  min-width: 0;
+  max-width: min(72%, 280px);
+  height: 14px;
+  border-radius: 7px;
+}
+
+.chats-thread-item__sk--meta {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
 }

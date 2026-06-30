@@ -1,16 +1,15 @@
-export function getChatThreadPreferences() {
-  try {
-    const raw = localStorage.getItem('messageChatThreadPreferences');
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-export function saveChatThreadPreferences(next) {
-  localStorage.setItem('messageChatThreadPreferences', JSON.stringify(next));
+export function buildPreferencesMapFromThreads(threads) {
+  const map = {};
+  (Array.isArray(threads) ? threads : []).forEach((thread) => {
+    map[String(thread.sellerId)] = {
+      pinned: Boolean(thread.pinned),
+      pinnedAt: thread.pinnedAt || null,
+      archived: Boolean(thread.archived),
+      archivedAt: thread.archivedAt || null,
+      muted: Boolean(thread.muted),
+    };
+  });
+  return map;
 }
 
 export function getThreadPreference(sellerId, preferences) {

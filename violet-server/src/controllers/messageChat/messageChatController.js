@@ -125,6 +125,21 @@ const deleteUserThread = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
+const updateUserThreadPreferences = asyncHandler(async (req, res) => {
+  const data = await messageChatService.updateUserThreadPreferences(
+    req.userId,
+    req.params.sellerId,
+    req.body || {},
+  );
+
+  emitMessageChatThreadsUpdated({
+    userId: String(req.userId),
+    sellerId: data.sellerId,
+  });
+
+  res.json({ ok: true, preferences: data });
+});
+
 module.exports = {
   listUserThreads,
   getUserThreadMessages,
@@ -133,4 +148,5 @@ module.exports = {
   deleteUserMessage,
   editUserMessage,
   deleteUserThread,
+  updateUserThreadPreferences,
 };

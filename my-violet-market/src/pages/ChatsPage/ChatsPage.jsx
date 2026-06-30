@@ -12,7 +12,7 @@ import { useSellerMessageChat } from '../../hooks/useSellerMessageChat';
 import { useMessageChatTyping } from '../../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../../hooks/useMessageChatSending';
 import { useMessageChatPresence } from '../../hooks/useMessageChatPresence';
-import { filterAndSortChatThreads, countUnreadChatThreads } from '../../utils/chatsThreadUtils';
+import { filterAndSortChatThreads, countUnreadChatThreads, buildPreferencesMapFromThreads } from '../../utils/chatsThreadUtils';
 import ChatsFilter from '../../components/ChatsFilter';
 import ChatsThreadList from '../../components/ChatsThreadList';
 import ProductSellerChatModal from '../../components/ProductSellerChatModal';
@@ -34,7 +34,11 @@ export default function ChatsPage() {
   const isAuthenticated = Boolean(userData.isAuthenticated && authToken);
 
   const { threads, loading, reload } = useMessageChatThreads(authToken, isAuthenticated);
-  const { preferences, togglePin, archiveThread, unarchiveThread } = useChatThreadPreferences();
+  const { togglePin, archiveThread, unarchiveThread } = useChatThreadPreferences(authToken, {
+    onUpdated: reload,
+  });
+
+  const preferences = useMemo(() => buildPreferencesMapFromThreads(threads), [threads]);
 
   const filteredThreads = useMemo(
     () => filterAndSortChatThreads(threads, filter, preferences),
@@ -172,9 +176,9 @@ export default function ChatsPage() {
         presenceMap={presenceMap}
         typingMap={typingMap}
         onOpenThread={handleOpenThread}
-        onTogglePin={(thread) => togglePin(thread.sellerId)}
-        onArchiveThread={(thread) => archiveThread(thread.sellerId)}
-        onUnarchiveThread={(thread) => unarchiveThread(thread.sellerId)}
+        onTogglePin={togglePin}
+        onArchiveThread={archiveThread}
+        onUnarchiveThread={unarchiveThread}
         onDeleteThread={handleDeleteRequest}
       />
 

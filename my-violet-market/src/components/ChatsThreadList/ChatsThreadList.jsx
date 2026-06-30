@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProfileMessageThreadsSkeleton } from '../SkeletonLoader';
+import ChatsThreadListSkeleton from './ChatsThreadListSkeleton';
 import ChatsThreadItem from '../ChatsThreadItem';
 import './ChatsThreadList.css';
 
@@ -19,11 +19,7 @@ export default function ChatsThreadList({
   const { t } = useTranslation();
 
   if (loading) {
-    return (
-      <div className="chats-thread-list chats-thread-list--loading">
-        <ProfileMessageThreadsSkeleton count={5} />
-      </div>
-    );
+    return <ChatsThreadListSkeleton count={5} />;
   }
 
   if (!threads.length) {

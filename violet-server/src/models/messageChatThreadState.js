@@ -30,6 +30,28 @@ const messageChatThreadStateSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    pinned: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    pinnedAt: {
+      type: Date,
+      default: null,
+    },
+    archived: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    archivedAt: {
+      type: Date,
+      default: null,
+    },
+    muted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, collection: "message_chat_thread_state" },
 );

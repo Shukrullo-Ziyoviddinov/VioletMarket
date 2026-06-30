@@ -175,6 +175,58 @@ async function clearThreadDeletedForSeller(uid, sellerId) {
   );
 }
 
+async function getUserThreadStateMap(userId) {
+  const uid = toUserObjectId(userId);
+  const rows = await MessageChatThreadState.find({ userId: uid })
+    .select("sellerId pinned pinnedAt archived archivedAt muted")
+    .lean();
+  return new Map(rows.map((row) => [row.sellerId, row]));
+}
+
+function mapUserThreadPreferences(state) {
+  return {
+    pinned: Boolean(state?.pinned),
+    pinnedAt: state?.pinnedAt || null,
+    archived: Boolean(state?.archived),
+    archivedAt: state?.archivedAt || null,
+    muted: Boolean(state?.muted),
+  };
+}
+
+async function updateUserThreadPreferences(userId, sellerIdRaw, patch = {}) {
+  const uid = toUserObjectId(userId);
+  const sellerId = normalizeSellerId(sellerIdRaw);
+  await assertSellerExists(sellerId);
+
+  const update = {};
+  if (patch.pinned !== undefined) {
+    update.pinned = Boolean(patch.pinned);
+    update.pinnedAt = patch.pinned ? new Date() : null;
+  }
+  if (patch.archived !== undefined) {
+    update.archived = Boolean(patch.archived);
+    update.archivedAt = patch.archived ? new Date() : null;
+  }
+  if (patch.muted !== undefined) {
+    update.muted = Boolean(patch.muted);
+  }
+
+  if (Object.keys(update).length === 0) {
+    throw new HttpError(400, "Yangilash uchun ma'lumot yo'q", "EMPTY_PREFERENCES");
+  }
+
+  const row = await MessageChatThreadState.findOneAndUpdate(
+    { userId: uid, sellerId },
+    { $set: update },
+    { upsert: true, new: true },
+  ).lean();
+
+  return {
+    sellerId,
+    ...mapUserThreadPreferences(row),
+  };
+}
+
 async function listUserThreads(userId) {
   const uid = toUserObjectId(userId);
 
@@ -211,20 +263,25 @@ async function listUserThreads(userId) {
   const sellerIds = rows.map((row) => row._id);
   const sellers = await SellerAccount.find({ id: { $in: sellerIds } }).lean();
   const sellerMap = new Map(sellers.map((s) => [s.id, s]));
+  const stateMap = await getUserThreadStateMap(userId);
 
   const items = rows.map((row) => {
     const seller = sellerMap.get(row._id) || null;
     const last = row.lastMessage;
+    const prefs = mapUserThreadPreferences(stateMap.get(row._id));
     return {
       sellerId: row._id,
       sellerName: seller?.name || { uz: "Sotuvchi", ru: "Sotuvchi" },
       sellerLogo: seller?.logo || null,
       lastMessage: mapMessageToClient(last),
       unreadCount: row.unreadCount,
+      ...prefs,
     };
   });
 
-  const totalUnread = items.reduce((sum, item) => sum + item.unreadCount, 0);
+  const totalUnread = items
+    .filter((item) => !item.archived)
+    .reduce((sum, item) => sum + item.unreadCount, 0);
   return { items, totalUnread };
 }
 
@@ -572,4 +629,5 @@ module.exports = {
   editSellerMessage,
   deleteThreadForUser,
   deleteThreadForSeller,
+  updateUserThreadPreferences,
 };

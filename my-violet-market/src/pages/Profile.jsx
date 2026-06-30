@@ -14,16 +14,8 @@ import { ProfilePendingReviewsSkeleton } from '../components/SkeletonLoader';
 import CommentFormModal from '../components/CommentFormModal';
 import ProfileExit from '../components/ProfileExit';
 import { fetchPendingReviews } from '../api/pendingReviewsApi';
-import { ProfileMessageThreadsList } from '../components/ProfileMessageThreads';
-import ProductSellerChatModal from '../components/ProductSellerChatModal';
-import { useMessageChatThreads } from '../hooks/useMessageChatThreads';
-import { useSellerMessageChat } from '../hooks/useSellerMessageChat';
-import { useMessageChatTyping } from '../hooks/useMessageChatTyping';
-import { useMessageChatSending } from '../hooks/useMessageChatSending';
-import { useMessageChatPresence } from '../hooks/useMessageChatPresence';
 import TavsiyaEtamiz from '../components/TavsiyaEtamiz';
 import './Profile.css';
-import '../components/ProfileMessageThreads/ProfileMessageThreadsList.css';
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -89,8 +81,6 @@ const Profile = () => {
   const [pendingReviewsLoading, setPendingReviewsLoading] = useState(false);
   const [pendingCommentFormOpen, setPendingCommentFormOpen] = useState(false);
   const [selectedPendingReview, setSelectedPendingReview] = useState(null);
-  const [activeChatSellerId, setActiveChatSellerId] = useState(null);
-  const [isProfileSellerChatOpen, setIsProfileSellerChatOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [openAboutSections, setOpenAboutSections] = useState({});
   const [subscribedSellers, setSubscribedSellers] = useState([]);
@@ -342,74 +332,6 @@ const Profile = () => {
     setSelectedPendingReview(item);
     setPendingCommentFormOpen(true);
   };
-
-  const isAuthenticated = Boolean(userData.isAuthenticated && authToken);
-  const { threads: messageThreads, reload: reloadMessageThreads } = useMessageChatThreads(
-    authToken,
-    isAuthenticated,
-  );
-
-  const unreadMessageThreads = useMemo(
-    () => messageThreads.filter((thread) => Number(thread.unreadCount) > 0),
-    [messageThreads],
-  );
-
-  const handleOpenMessageThread = (thread) => {
-    setActiveChatSellerId(thread.sellerId);
-    setIsProfileSellerChatOpen(true);
-  };
-
-  const activeChatSeller = useMemo(() => {
-    if (!activeChatSellerId) return null;
-    const fromCatalog = getSellerById(activeChatSellerId);
-    if (fromCatalog) return fromCatalog;
-    const thread = messageThreads.find((item) => item.sellerId === activeChatSellerId);
-    if (!thread) return null;
-    return {
-      id: thread.sellerId,
-      name: thread.sellerName,
-      logo: thread.sellerLogo,
-    };
-  }, [activeChatSellerId, getSellerById, messageThreads]);
-
-  const {
-    messages: profileChatMessages,
-    loading: isProfileChatLoading,
-    isSending: isProfileChatSending,
-    sendText: sendProfileChatText,
-    sendImage: sendProfileChatImage,
-    sendProduct: sendProfileChatProduct,
-    deleteMessage: deleteProfileChatMessage,
-    editMessage: editProfileChatMessage,
-    deleteThread: deleteProfileChatThread,
-  } = useSellerMessageChat({
-    authToken,
-    sellerId: activeChatSellerId,
-    enabled: isProfileSellerChatOpen && Boolean(authToken),
-  });
-
-  const {
-    isPartnerTyping: isProfileSellerTyping,
-    handleComposerActivity: handleProfileChatComposerActivity,
-    stopTyping: stopProfileChatTyping,
-  } = useMessageChatTyping({
-    sellerId: activeChatSellerId,
-    enabled: isProfileSellerChatOpen && Boolean(authToken),
-    watchSender: 'seller',
-  });
-
-  const { isPartnerSending: isProfileSellerPartnerSending } = useMessageChatSending({
-    sellerId: activeChatSellerId,
-    enabled: isProfileSellerChatOpen && Boolean(authToken),
-    watchSender: 'seller',
-  });
-
-  const { isPartnerOnline: isProfileSellerOnline, partnerLastActiveAt: profileSellerLastActiveAt } =
-    useMessageChatPresence({
-      sellerId: activeChatSellerId,
-      enabled: isProfileSellerChatOpen && Boolean(authToken),
-      watchKind: 'seller',
-    });
 
   const currentLang = LANGUAGES.find((l) => l.code === (i18n.language || 'uz')) || LANGUAGES[0];
   const lang = i18n.language || 'uz';
@@ -932,50 +854,6 @@ const Profile = () => {
               pendingReviewId={selectedPendingReview.id}
             />
           )}
-
-          {userData.isAuthenticated && unreadMessageThreads.length > 0 && (
-            <section className="profile-unread-messages" aria-label={t('profile.newMessages')}>
-              <h3 className="profile-unread-messages__title">{t('profile.newMessages')}</h3>
-              <ProfileMessageThreadsList
-                items={unreadMessageThreads}
-                onOpenThread={handleOpenMessageThread}
-              />
-            </section>
-          )}
-
-          <ProductSellerChatModal
-            open={isProfileSellerChatOpen}
-            seller={activeChatSeller}
-            lang={lang}
-            messages={profileChatMessages}
-            loading={isProfileChatLoading}
-            onClose={() => {
-              setIsProfileSellerChatOpen(false);
-              setActiveChatSellerId(null);
-              reloadMessageThreads();
-            }}
-            onSendText={sendProfileChatText}
-            onSendImage={sendProfileChatImage}
-            onSendProduct={sendProfileChatProduct}
-            onDeleteMessage={deleteProfileChatMessage}
-            onEditMessage={editProfileChatMessage}
-            onDeleteThread={async () => {
-              const ok = await deleteProfileChatThread();
-              if (ok) {
-                setIsProfileSellerChatOpen(false);
-                setActiveChatSellerId(null);
-                reloadMessageThreads();
-              }
-              return ok;
-            }}
-            isPartnerTyping={isProfileSellerTyping}
-            isPartnerSending={isProfileSellerPartnerSending}
-            isPartnerOnline={isProfileSellerOnline}
-            partnerLastActiveAt={profileSellerLastActiveAt}
-            isSending={isProfileChatSending}
-            onComposerActivity={handleProfileChatComposerActivity}
-            onStopTyping={stopProfileChatTyping}
-          />
 
           <div className="profile-card-auth">
             {userData.isAuthenticated ? (

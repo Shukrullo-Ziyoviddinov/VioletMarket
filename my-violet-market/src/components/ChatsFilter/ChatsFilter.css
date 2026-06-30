@@ -55,3 +55,10 @@
 .chats-filter__tab--active .chats-filter__badge {
   background: #d92d4f;
 }
+
+@media (max-width: 450px) {
+  .chats-filter__tab {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
