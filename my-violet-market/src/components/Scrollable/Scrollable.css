@@ -19,8 +19,11 @@
 
 .scrollable-container.is-dragging {
   cursor: grabbing;
-  -webkit-overflow-scrolling: auto;
-  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 
 .scrollable-container::-webkit-scrollbar {

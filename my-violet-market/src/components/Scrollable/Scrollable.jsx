@@ -32,10 +32,11 @@ const Scrollable = ({
   const isTouchDraggingRef = useRef(false);
   const touchTargetRef = useRef(null);
   const shouldBlockClickRef = useRef(false);
-  const velocitySamplesRef = useRef([]);
+  const lastPointerXRef = useRef(0);
+  const velocityRef = useRef(0);
+  const velTrackRef = useRef({ x: 0, t: 0 });
+  const horizontalActiveRef = useRef(false);
   const momentumRafRef = useRef(null);
-  const dragRafRef = useRef(null);
-  const pendingScrollLeftRef = useRef(null);
   const isManualScrollingRef = useRef(false);
 
   const stopMomentum = () => {
@@ -45,20 +46,16 @@ const Scrollable = ({
     }
   };
 
-  const addVelocitySample = (clientX) => {
+  const trackVelocity = (clientX) => {
     const now = performance.now();
-    velocitySamplesRef.current.push({ x: clientX, t: now });
-    velocitySamplesRef.current = velocitySamplesRef.current.filter((s) => now - s.t < 100);
-  };
-
-  const getReleaseVelocity = () => {
-    const samples = velocitySamplesRef.current;
-    if (samples.length < 2) return 0;
-    const first = samples[0];
-    const last = samples[samples.length - 1];
-    const dt = last.t - first.t;
-    if (dt <= 0) return 0;
-    return ((last.x - first.x) / dt) * 16.67;
+    const { x: prevX, t: prevT } = velTrackRef.current;
+    if (prevT > 0) {
+      const dt = now - prevT;
+      if (dt > 0) {
+        velocityRef.current = ((clientX - prevX) / dt) * 16.67;
+      }
+    }
+    velTrackRef.current = { x: clientX, t: now };
   };
 
   const applyMomentum = (initialVelocity) => {
@@ -79,7 +76,7 @@ const Scrollable = ({
       }
 
       const maxScroll = el.scrollWidth - el.clientWidth;
-      const next = Math.round(el.scrollLeft - velocity);
+      const next = el.scrollLeft - velocity;
 
       if (next <= 0) {
         el.scrollLeft = 0;
@@ -103,26 +100,18 @@ const Scrollable = ({
   };
 
   const finishManualScrolling = () => {
+    const el = scrollRef.current;
+    if (el) {
+      el.style.overflowX = '';
+    }
     isManualScrollingRef.current = false;
     updateScrollButtons();
   };
 
-  const scheduleDragScroll = (targetLeft) => {
+  const applyDragDelta = (deltaX) => {
     const el = scrollRef.current;
-    if (!el) return;
-
-    const max = el.scrollWidth - el.clientWidth;
-    pendingScrollLeftRef.current = Math.round(Math.max(0, Math.min(max, targetLeft)));
-
-    if (dragRafRef.current) return;
-
-    dragRafRef.current = requestAnimationFrame(() => {
-      dragRafRef.current = null;
-      const scrollEl = scrollRef.current;
-      if (scrollEl && pendingScrollLeftRef.current !== null) {
-        scrollEl.scrollLeft = pendingScrollLeftRef.current;
-      }
-    });
+    if (!el || deltaX === 0) return;
+    el.scrollLeft -= deltaX;
   };
 
   const updateScrollButtons = () => {
@@ -148,11 +137,14 @@ const Scrollable = ({
     setIsDragging(true);
     hasMovedRef.current = false;
     shouldBlockClickRef.current = false;
-    velocitySamplesRef.current = [];
+    velocityRef.current = 0;
+    velTrackRef.current = { x: 0, t: 0 };
+    lastPointerXRef.current = e.pageX;
     startXRef.current = e.pageX;
     scrollLeftRef.current = scrollElement.scrollLeft;
-    addVelocitySample(e.pageX);
+    trackVelocity(e.pageX);
     scrollElement.style.scrollBehavior = 'auto';
+    scrollElement.style.overflowX = 'hidden';
     scrollElement.classList.add('is-dragging');
     
     e.preventDefault();
@@ -165,15 +157,16 @@ const Scrollable = ({
     
     e.preventDefault();
     const x = e.pageX;
-    const walk = x - startXRef.current;
+    const delta = x - lastPointerXRef.current;
+    lastPointerXRef.current = x;
 
-    if (Math.abs(walk) > 5) {
+    if (Math.abs(x - startXRef.current) > 3) {
       hasMovedRef.current = true;
       shouldBlockClickRef.current = true;
     }
 
-    addVelocitySample(x);
-    scheduleDragScroll(scrollLeftRef.current - walk);
+    trackVelocity(x);
+    applyDragDelta(delta);
   };
 
   // Mouse up - scroll tugashi
@@ -185,13 +178,14 @@ const Scrollable = ({
     if (currentScroll) {
       currentScroll.classList.remove('is-dragging');
       if (wasDragging) {
-        const releaseVelocity = getReleaseVelocity();
+        const releaseVelocity = velocityRef.current;
         if (Math.abs(releaseVelocity) >= 0.3) {
           applyMomentum(releaseVelocity);
         } else {
           finishManualScrolling();
         }
       } else {
+        currentScroll.style.overflowX = '';
         isManualScrollingRef.current = false;
       }
     }
@@ -231,10 +225,6 @@ const Scrollable = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       stopMomentum();
-      if (dragRafRef.current) {
-        cancelAnimationFrame(dragRafRef.current);
-        dragRafRef.current = null;
-      }
     };
   }, []);
 
@@ -338,13 +328,17 @@ const Scrollable = ({
     isManualScrollingRef.current = true;
     isTouchDraggingRef.current = true;
     hasMovedRef.current = false;
+    horizontalActiveRef.current = false;
     touchDirectionLockedRef.current = null;
-    velocitySamplesRef.current = [];
+    velocityRef.current = 0;
+    velTrackRef.current = { x: 0, t: 0 };
     startXRef.current = e.touches[0].pageX;
     startYRef.current = e.touches[0].pageY;
+    lastPointerXRef.current = e.touches[0].pageX;
     scrollLeftRef.current = scrollRef.current.scrollLeft;
-    addVelocitySample(e.touches[0].pageX);
+    trackVelocity(e.touches[0].pageX);
     scrollRef.current.style.scrollBehavior = 'auto';
+    scrollRef.current.style.overflowX = 'hidden';
     scrollRef.current.classList.add('is-dragging');
     
     // Bosilgan elementni saqlash (click event uchun)
@@ -388,7 +382,7 @@ const Scrollable = ({
     const deltaY = Math.abs(e.touches[0].pageY - startYRef.current);
 
     if (!touchDirectionLockedRef.current) {
-      if (deltaX > 10 || deltaY > 10) {
+      if (deltaX > 6 || deltaY > 6) {
         touchDirectionLockedRef.current = deltaX > deltaY ? 'h' : 'v';
       } else {
         return;
@@ -400,22 +394,31 @@ const Scrollable = ({
       hasMovedRef.current = true;
       isTouchDraggingRef.current = false;
       isManualScrollingRef.current = false;
-      scrollRef.current?.classList.remove('is-dragging');
+      scrollRef.current.style.overflowX = '';
+      scrollRef.current.classList.remove('is-dragging');
       return;
     }
 
-    // Gorizontal harakat – Scrollable ichida scroll
     const touchX = e.touches[0].pageX;
-    const walk = touchX - startXRef.current;
 
-    if (Math.abs(walk) > 5) {
+    if (!horizontalActiveRef.current) {
+      horizontalActiveRef.current = true;
+      lastPointerXRef.current = touchX;
+      if (e.cancelable) e.preventDefault();
+      return;
+    }
+
+    const delta = touchX - lastPointerXRef.current;
+    lastPointerXRef.current = touchX;
+
+    if (Math.abs(touchX - startXRef.current) > 3) {
       hasMovedRef.current = true;
       if (e.cancelable) e.preventDefault();
     }
 
     if (hasMovedRef.current) {
-      addVelocitySample(touchX);
-      scheduleDragScroll(scrollLeftRef.current - walk);
+      trackVelocity(touchX);
+      applyDragDelta(delta);
     }
   };
 
@@ -426,18 +429,20 @@ const Scrollable = ({
     if (scrollRef.current) {
       scrollRef.current.classList.remove('is-dragging');
       if (wasDragging) {
-        const releaseVelocity = getReleaseVelocity();
+        const releaseVelocity = velocityRef.current;
         if (Math.abs(releaseVelocity) >= 0.3) {
           applyMomentum(releaseVelocity);
         } else {
           finishManualScrolling();
         }
       } else {
+        scrollRef.current.style.overflowX = '';
         isManualScrollingRef.current = false;
       }
     }
 
     isTouchDraggingRef.current = false;
+    horizontalActiveRef.current = false;
     touchDirectionLockedRef.current = null;
     
     // Agar interaktiv elementga bosilgan bo'lsa (yurakcha, button, va h.k.), to'g'ridan-to'g'ri click event'ni trigger qilish
