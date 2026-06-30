@@ -522,3 +522,33 @@
   }
 }
 
+@media (max-width: 395px) {
+  .dropdown-section-title{
+    font-size: 1rem;
+  }
+
+  .close-dropdown {
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .dropdown-item{
+    padding: 7px;
+  }
+
+  .dropdown-item-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .dropdown-item-name {
+    font-size: 0.9rem;
+}
+
+  .dropdown-item-description{
+    font-size: 0.75rem;
+  }
+}

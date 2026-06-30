@@ -32,6 +32,69 @@ const Scrollable = ({
   const isTouchDraggingRef = useRef(false);
   const touchTargetRef = useRef(null);
   const shouldBlockClickRef = useRef(false);
+  const velocitySamplesRef = useRef([]);
+  const momentumRafRef = useRef(null);
+
+  const stopMomentum = () => {
+    if (momentumRafRef.current) {
+      cancelAnimationFrame(momentumRafRef.current);
+      momentumRafRef.current = null;
+    }
+  };
+
+  const addVelocitySample = (clientX) => {
+    const now = performance.now();
+    velocitySamplesRef.current.push({ x: clientX, t: now });
+    velocitySamplesRef.current = velocitySamplesRef.current.filter((s) => now - s.t < 100);
+  };
+
+  const getReleaseVelocity = () => {
+    const samples = velocitySamplesRef.current;
+    if (samples.length < 2) return 0;
+    const first = samples[0];
+    const last = samples[samples.length - 1];
+    const dt = last.t - first.t;
+    if (dt <= 0) return 0;
+    return ((last.x - first.x) / dt) * 16.67;
+  };
+
+  const applyMomentum = (initialVelocity) => {
+    const el = scrollRef.current;
+    if (!el || Math.abs(initialVelocity) < 0.3) return;
+
+    stopMomentum();
+    el.style.scrollBehavior = 'auto';
+
+    let velocity = initialVelocity;
+    const friction = 0.92;
+
+    const step = () => {
+      if (Math.abs(velocity) < 0.25) {
+        momentumRafRef.current = null;
+        return;
+      }
+
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const next = el.scrollLeft - velocity;
+
+      if (next <= 0) {
+        el.scrollLeft = 0;
+        momentumRafRef.current = null;
+        return;
+      }
+      if (next >= maxScroll) {
+        el.scrollLeft = maxScroll;
+        momentumRafRef.current = null;
+        return;
+      }
+
+      el.scrollLeft = next;
+      velocity *= friction;
+      momentumRafRef.current = requestAnimationFrame(step);
+    };
+
+    momentumRafRef.current = requestAnimationFrame(step);
+  };
 
   const updateScrollButtons = () => {
     const el = scrollRef.current;
@@ -50,12 +113,15 @@ const Scrollable = ({
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
     
+    stopMomentum();
     isMouseDownRef.current = true;
     setIsDragging(true);
     hasMovedRef.current = false;
     shouldBlockClickRef.current = false;
-    startXRef.current = e.pageX - scrollElement.offsetLeft;
+    velocitySamplesRef.current = [];
+    startXRef.current = e.pageX;
     scrollLeftRef.current = scrollElement.scrollLeft;
+    addVelocitySample(e.pageX);
     scrollElement.style.scrollBehavior = 'auto';
     scrollElement.classList.add('is-dragging');
     
@@ -68,14 +134,15 @@ const Scrollable = ({
     if (!isMouseDownRef.current || !scrollRef.current) return;
     
     e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startXRef.current) * 2;
-    
+    const x = e.pageX;
+    const walk = x - startXRef.current;
+
     if (Math.abs(walk) > 5) {
       hasMovedRef.current = true;
       shouldBlockClickRef.current = true;
     }
-    
+
+    addVelocitySample(x);
     scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
   };
 
@@ -86,10 +153,12 @@ const Scrollable = ({
     
     const currentScroll = scrollRef.current;
     if (currentScroll) {
-      currentScroll.style.scrollBehavior = 'smooth';
       currentScroll.classList.remove('is-dragging');
+      if (wasDragging) {
+        applyMomentum(getReleaseVelocity());
+      }
     }
-    
+
     // Agar scroll bo'lgan bo'lsa, click event'ni to'xtatish
     if (wasDragging && e) {
       e.preventDefault();
@@ -124,6 +193,7 @@ const Scrollable = ({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      stopMomentum();
     };
   }, []);
 
@@ -222,13 +292,16 @@ const Scrollable = ({
     }
     }
 
+    stopMomentum();
     isTouchDraggingRef.current = true;
     setIsDragging(true);
     hasMovedRef.current = false;
     touchDirectionLockedRef.current = null;
+    velocitySamplesRef.current = [];
     startXRef.current = e.touches[0].pageX;
     startYRef.current = e.touches[0].pageY;
     scrollLeftRef.current = scrollRef.current.scrollLeft;
+    addVelocitySample(e.touches[0].pageX);
     scrollRef.current.style.scrollBehavior = 'auto';
     
     // Bosilgan elementni saqlash (click event uchun)
@@ -284,14 +357,16 @@ const Scrollable = ({
     }
     
     // Gorizontal harakat – Scrollable ichida scroll
-    const walk = (e.touches[0].pageX - startXRef.current) * 2;
-    
+    const touchX = e.touches[0].pageX;
+    const walk = touchX - startXRef.current;
+
     if (Math.abs(walk) > 5) {
       hasMovedRef.current = true;
       if (e.cancelable) e.preventDefault();
     }
-    
+
     if (hasMovedRef.current) {
+      addVelocitySample(touchX);
       scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
     }
   };
@@ -300,10 +375,10 @@ const Scrollable = ({
     const wasDragging = hasMovedRef.current;
     const touchedElement = touchTargetRef.current;
     
-    if (scrollRef.current) {
-      scrollRef.current.style.scrollBehavior = 'smooth';
+    if (scrollRef.current && wasDragging) {
+      applyMomentum(getReleaseVelocity());
     }
-    
+
     isTouchDraggingRef.current = false;
     touchDirectionLockedRef.current = null;
     setIsDragging(false);
@@ -459,6 +534,8 @@ const Scrollable = ({
   // Scroll tugmalari
   const scroll = (direction) => {
     if (scrollRef.current) {
+      stopMomentum();
+      scrollRef.current.style.scrollBehavior = 'smooth';
       scrollRef.current.scrollBy({
         left: direction * 300,
         behavior: 'smooth'
