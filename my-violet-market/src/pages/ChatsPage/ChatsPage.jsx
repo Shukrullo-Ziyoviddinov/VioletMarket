@@ -160,8 +160,14 @@ export default function ChatsPage() {
   );
 
   useEffect(() => {
+    const bgUrl = `${process.env.PUBLIC_URL || ''}/img/chatspadeback.jpg`;
     document.body.classList.add('chats-page-active');
-    return () => document.body.classList.remove('chats-page-active');
+    document.body.style.setProperty('--chats-page-bg', `url("${bgUrl}")`);
+
+    return () => {
+      document.body.classList.remove('chats-page-active');
+      document.body.style.removeProperty('--chats-page-bg');
+    };
   }, []);
 
   const handleCloseChat = useCallback(() => {

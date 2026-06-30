@@ -12,7 +12,7 @@
 
 body.chats-page-active {
   background-color: #2a1842;
-  background-image: url('/img/chatspadeback.jpg');
+  background-image: var(--chats-page-bg);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
