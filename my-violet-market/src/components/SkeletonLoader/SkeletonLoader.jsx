@@ -3,6 +3,7 @@ import DragScroll from '../DragScroll';
 import '../ImageBanner/ImageBanner.css';
 import '../UzWarehouse/UzWarehouse.css';
 import './SkeletonLoader.css';
+import '../ProductSellerChatModal/ProductSellerChatMessageList/ProductSellerChatMessageList.css';
 
 /** Asosiy pulse blok (className bilan kengaytirish mumkin) */
 export function SkeletonPulse({ className = '', style, ...rest }) {
@@ -234,6 +235,33 @@ export function ProfilePendingReviewsSkeleton({ count = 3 }) {
         <ProfilePendingReviewItemSkeleton key={`pending-review-sk-${i}`} />
       ))}
     </ul>
+  );
+}
+
+/** Chat: xabarlar yuklanishi (seller/customer bubble shakllari) */
+export function SkeletonChatMessages() {
+  return (
+    <div
+      className="product-seller-chat-message-list product-seller-chat-message-list--skeleton"
+      aria-busy="true"
+      aria-label="Xabarlar yuklanmoqda"
+    >
+      <div className="message-chat-message-row message-chat-message-row--start">
+        <SkeletonPulse className="product-seller-chat-message-bubble product-seller-chat-message-bubble--seller skeleton-chat-bubble skeleton-chat-bubble--seller-md" />
+      </div>
+      <div className="message-chat-message-row message-chat-message-row--end">
+        <SkeletonPulse className="product-seller-chat-message-bubble product-seller-chat-message-bubble--customer skeleton-chat-bubble skeleton-chat-bubble--customer-sm" />
+      </div>
+      <div className="message-chat-message-row message-chat-message-row--start">
+        <SkeletonPulse className="product-seller-chat-message-bubble skeleton-chat-bubble skeleton-chat-bubble--seller-lg" />
+      </div>
+      <div className="message-chat-message-row message-chat-message-row--end">
+        <SkeletonPulse className="product-seller-chat-product-message product-seller-chat-product-message--customer skeleton-chat-product" />
+      </div>
+      <div className="message-chat-message-row message-chat-message-row--end">
+        <SkeletonPulse className="product-seller-chat-message-bubble product-seller-chat-message-bubble--customer skeleton-chat-bubble skeleton-chat-bubble--customer-md" />
+      </div>
+    </div>
   );
 }
 

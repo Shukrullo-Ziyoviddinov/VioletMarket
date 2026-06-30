@@ -72,7 +72,12 @@ export function useSellerMessageChat({ authToken, sellerId, enabled = true }) {
   }, [authToken, sellerId]);
 
   useEffect(() => {
-    if (!enabled || !authToken || !sellerId) return;
+    if (!enabled || !authToken || !sellerId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     loadMessages();
   }, [enabled, authToken, sellerId, loadMessages]);
 

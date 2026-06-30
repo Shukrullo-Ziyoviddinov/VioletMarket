@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMessageChatJumpTo } from '../../../hooks/useMessageChatJumpTo';
+import { SkeletonChatMessages } from '../../SkeletonLoader';
 import ProductSellerChatMessageBubble from '../ProductSellerChatMessageBubble/ProductSellerChatMessageBubble';
 import ProductSellerChatProductMessage from '../ProductSellerChatProductMessage/ProductSellerChatProductMessage';
 import './ProductSellerChatMessageList.css';
 
 export default function ProductSellerChatMessageList({
   messages = [],
+  loading = false,
   onMessagePress,
   deletingMessageId = null,
 }) {
@@ -25,6 +27,10 @@ export default function ProductSellerChatMessageList({
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, deletingMessageId]);
+
+  if (loading) {
+    return <SkeletonChatMessages />;
+  }
 
   return (
     <div className="product-seller-chat-message-list" role="log" aria-live="polite">

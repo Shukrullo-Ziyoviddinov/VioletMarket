@@ -152,3 +152,49 @@
   margin: 0;
   border-radius: 10px;
 }
+
+/* Chat skeleton — bubble shakllari */
+.product-seller-chat-message-list--skeleton {
+  pointer-events: none;
+}
+
+.skeleton-chat-bubble,
+.skeleton-chat-product {
+  display: block;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: default;
+  pointer-events: none;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.skeleton-chat-bubble--seller-md {
+  width: min(62%, 210px);
+  height: 50px;
+  border-radius: 18px 18px 18px 0;
+}
+
+.skeleton-chat-bubble--seller-lg {
+  width: min(70%, 250px);
+  height: 62px;
+  border-radius: 18px 18px 18px 0;
+}
+
+.skeleton-chat-bubble--customer-sm {
+  width: min(46%, 150px);
+  height: 38px;
+  border-radius: 18px 18px 0 18px;
+}
+
+.skeleton-chat-bubble--customer-md {
+  width: min(58%, 190px);
+  height: 48px;
+  border-radius: 18px 18px 0 18px;
+}
+
+.skeleton-chat-product {
+  width: min(72%, 240px);
+  height: 92px;
+  border-radius: 18px 18px 0 18px;
+}

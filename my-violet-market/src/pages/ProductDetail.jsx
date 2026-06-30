@@ -748,6 +748,7 @@ const ProductDetail = () => {
 
   const {
     messages: sellerChatMessages,
+    loading: isSellerChatLoading,
     isSending: isSellerChatSending,
     sendText: sendSellerChatText,
     sendImage: sendSellerChatImage,
@@ -2435,6 +2436,7 @@ const ProductDetail = () => {
           originalPrice: currentOriginalPrice != null ? formatPrice(currentOriginalPrice) : '',
         }}
         messages={sellerChatMessages}
+        loading={isSellerChatLoading}
         onClose={() => setIsSellerChatOpen(false)}
         onSendText={sendSellerChatText}
         onSendImage={sendSellerChatImage}

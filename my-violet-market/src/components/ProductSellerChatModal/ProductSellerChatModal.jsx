@@ -17,6 +17,7 @@ export default function ProductSellerChatModal({
   lang = 'uz',
   contextProduct = null,
   messages = [],
+  loading = false,
   onClose,
   onSendText,
   onSendImage,
@@ -187,6 +188,7 @@ export default function ProductSellerChatModal({
         />
         <ProductSellerChatMessageList
           messages={messages}
+          loading={loading}
           onMessagePress={setActionMessage}
           deletingMessageId={deletingMessageId}
         />

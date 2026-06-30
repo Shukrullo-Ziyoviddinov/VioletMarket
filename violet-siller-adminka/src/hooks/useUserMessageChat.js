@@ -73,7 +73,12 @@ export function useUserMessageChat({ token, userId, enabled = true }) {
   }, [token, userId]);
 
   useEffect(() => {
-    if (!enabled || !token || !userId) return;
+    if (!enabled || !token || !userId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     loadMessages();
   }, [enabled, token, userId, loadMessages]);
 

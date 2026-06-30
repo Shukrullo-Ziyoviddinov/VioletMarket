@@ -99,6 +99,20 @@
   height: 1px;
 }
 
+.seller-user-chat-message-list--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.seller-user-chat-message-list__loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+
 .message-chat-message-row {
   display: flex;
   flex-direction: column;

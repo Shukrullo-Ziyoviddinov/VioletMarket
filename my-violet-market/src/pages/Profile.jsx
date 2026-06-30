@@ -414,6 +414,7 @@ const Profile = () => {
 
   const {
     messages: profileChatMessages,
+    loading: isProfileChatLoading,
     isSending: isProfileChatSending,
     sendText: sendProfileChatText,
     sendImage: sendProfileChatImage,
@@ -1019,6 +1020,7 @@ const Profile = () => {
             seller={activeChatSeller}
             lang={lang}
             messages={profileChatMessages}
+            loading={isProfileChatLoading}
             onClose={() => {
               setIsProfileSellerChatOpen(false);
               setActiveChatSellerId(null);

@@ -62,6 +62,7 @@ export default function MessagesPage() {
 
   const {
     messages,
+    loading: chatLoading,
     isSending,
     sendText,
     sendImage,
@@ -173,6 +174,7 @@ export default function MessagesPage() {
         open={chatOpen}
         user={activeUser}
         messages={messages}
+        loading={chatLoading}
         onClose={handleCloseChat}
         onSendText={sendText}
         onSendImage={sendImage}

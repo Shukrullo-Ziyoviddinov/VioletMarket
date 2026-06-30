@@ -11,4 +11,5 @@ export {
   SellerProfileProductsTitleSkeleton,
   SellerProfileProductsGridSkeleton,
   ProfilePendingReviewsSkeleton,
+  SkeletonChatMessages,
 } from './SkeletonLoader';

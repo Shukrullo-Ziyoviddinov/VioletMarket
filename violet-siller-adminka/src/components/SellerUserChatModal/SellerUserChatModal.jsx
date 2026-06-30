@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Spin } from 'antd';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
@@ -118,7 +119,7 @@ function SellerUserChatHeader({
   );
 }
 
-function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId = null }) {
+function SellerUserChatMessageList({ messages, loading = false, onMessagePress, deletingMessageId = null }) {
   const endRef = useRef(null);
   const prevLengthRef = useRef(messages.length);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
@@ -133,6 +134,16 @@ function SellerUserChatMessageList({ messages, onMessagePress, deletingMessageId
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, deletingMessageId]);
+
+  if (loading) {
+    return (
+      <div className="seller-user-chat-message-list seller-user-chat-message-list--loading" aria-busy="true" aria-label="Xabarlar yuklanmoqda">
+        <div className="seller-user-chat-message-list__loader">
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="seller-user-chat-message-list">
@@ -317,6 +328,7 @@ export default function SellerUserChatModal({
   open = false,
   user = null,
   messages = [],
+  loading = false,
   onClose,
   onSendText,
   onSendImage,
@@ -441,6 +453,7 @@ export default function SellerUserChatModal({
         />
         <SellerUserChatMessageList
           messages={messages}
+          loading={loading}
           onMessagePress={setActionMessage}
           deletingMessageId={deletingMessageId}
         />
