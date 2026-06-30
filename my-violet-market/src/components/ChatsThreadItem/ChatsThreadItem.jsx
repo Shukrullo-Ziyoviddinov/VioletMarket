@@ -16,6 +16,8 @@ export default function ChatsThreadItem({
   isTyping = false,
   onOpen,
   onTogglePin,
+  onArchive,
+  onUnarchive,
   onDelete,
 }) {
   const { i18n, t } = useTranslation();
@@ -134,6 +136,7 @@ export default function ChatsThreadItem({
       <ChatsThreadActionsMenu
         open={actionsOpen}
         isPinned={Boolean(pref.pinned)}
+        isArchived={Boolean(pref.archived)}
         anchorRef={wrapRef}
         onClose={() => {
           suppressClickRef.current = false;
@@ -141,6 +144,14 @@ export default function ChatsThreadItem({
         }}
         onTogglePin={() => {
           onTogglePin?.(thread);
+          setActionsOpen(false);
+        }}
+        onArchive={() => {
+          onArchive?.(thread);
+          setActionsOpen(false);
+        }}
+        onUnarchive={() => {
+          onUnarchive?.(thread);
           setActionsOpen(false);
         }}
         onDelete={() => {

@@ -12,6 +12,8 @@ export default function ChatsThreadList({
   typingMap = {},
   onOpenThread,
   onTogglePin,
+  onArchiveThread,
+  onUnarchiveThread,
   onDeleteThread,
 }) {
   const { t } = useTranslation();
@@ -43,6 +45,8 @@ export default function ChatsThreadList({
           isTyping={Boolean(typingMap[String(thread.sellerId)])}
           onOpen={onOpenThread}
           onTogglePin={onTogglePin}
+          onArchive={onArchiveThread}
+          onUnarchive={onUnarchiveThread}
           onDelete={onDeleteThread}
         />
       ))}

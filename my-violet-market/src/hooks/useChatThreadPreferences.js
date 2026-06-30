@@ -68,7 +68,7 @@ export function useChatThreadPreferences() {
   }, []);
 
   const archiveThread = useCallback((sellerId) => {
-    updatePreference(sellerId, { archived: true, pinned: false, pinnedAt: null });
+    updatePreference(sellerId, { archived: true });
   }, [updatePreference]);
 
   const unarchiveThread = useCallback((sellerId) => {

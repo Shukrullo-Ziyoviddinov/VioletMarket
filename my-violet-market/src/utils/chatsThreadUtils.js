@@ -17,6 +17,25 @@ export function getThreadPreference(sellerId, preferences) {
   return preferences?.[String(sellerId)] || {};
 }
 
+export function getThreadActivityTime(thread) {
+  return new Date(thread?.lastMessage?.createdAt || 0).getTime();
+}
+
+export function sortChatThreadsByPinAndActivity(threads, preferences) {
+  return [...threads].sort((a, b) => {
+    const prefA = getThreadPreference(a.sellerId, preferences);
+    const prefB = getThreadPreference(b.sellerId, preferences);
+    const pinnedA = Boolean(prefA.pinned);
+    const pinnedB = Boolean(prefB.pinned);
+
+    if (pinnedA !== pinnedB) {
+      return pinnedA ? -1 : 1;
+    }
+
+    return getThreadActivityTime(b) - getThreadActivityTime(a);
+  });
+}
+
 export function filterAndSortChatThreads(threads, filter, preferences) {
   const list = Array.isArray(threads) ? [...threads] : [];
 
@@ -31,24 +50,7 @@ export function filterAndSortChatThreads(threads, filter, preferences) {
     return true;
   });
 
-  filtered.sort((a, b) => {
-    const prefA = getThreadPreference(a.sellerId, preferences);
-    const prefB = getThreadPreference(b.sellerId, preferences);
-
-    if (prefA.pinned !== prefB.pinned) {
-      return prefA.pinned ? -1 : 1;
-    }
-
-    if (prefA.pinned && prefB.pinned) {
-      return (prefB.pinnedAt || 0) - (prefA.pinnedAt || 0);
-    }
-
-    const timeA = new Date(a.lastMessage?.createdAt || 0).getTime();
-    const timeB = new Date(b.lastMessage?.createdAt || 0).getTime();
-    return timeB - timeA;
-  });
-
-  return filtered;
+  return sortChatThreadsByPinAndActivity(filtered, preferences);
 }
 
 export function countUnreadChatThreads(threads, preferences) {

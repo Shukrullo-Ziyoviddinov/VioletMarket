@@ -437,6 +437,8 @@
     "actions": {
       "pin": "Pin qilish",
       "unpin": "Pindan olib tashlash",
+      "archive": "Arxivlash",
+      "unarchive": "Arxivdan chiqarish",
       "delete": "O'chirish"
     }
   },

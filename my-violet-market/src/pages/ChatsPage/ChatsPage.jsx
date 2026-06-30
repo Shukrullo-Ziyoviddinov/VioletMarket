@@ -34,7 +34,7 @@ export default function ChatsPage() {
   const isAuthenticated = Boolean(userData.isAuthenticated && authToken);
 
   const { threads, loading, reload } = useMessageChatThreads(authToken, isAuthenticated);
-  const { preferences, togglePin } = useChatThreadPreferences();
+  const { preferences, togglePin, archiveThread, unarchiveThread } = useChatThreadPreferences();
 
   const filteredThreads = useMemo(
     () => filterAndSortChatThreads(threads, filter, preferences),
@@ -173,6 +173,8 @@ export default function ChatsPage() {
         typingMap={typingMap}
         onOpenThread={handleOpenThread}
         onTogglePin={(thread) => togglePin(thread.sellerId)}
+        onArchiveThread={(thread) => archiveThread(thread.sellerId)}
+        onUnarchiveThread={(thread) => unarchiveThread(thread.sellerId)}
         onDeleteThread={handleDeleteRequest}
       />
 
