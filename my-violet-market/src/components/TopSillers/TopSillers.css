@@ -1,0 +1,79 @@
+.top-sillers {
+  margin: 14px 0 18px;
+}
+
+.top-sillers__title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f1f2e;
+}
+
+.top-sillers__list {
+  display: grid;
+  gap: 10px;
+}
+
+.top-sillers__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.top-sillers__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f3edf9;
+}
+
+.top-sillers__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.top-sillers__name {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1f1f2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-sillers__stats {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.top-sillers__stats .seller-order-count,
+.top-sillers__stats .seller-subscriber-count {
+  font-size: 0.87rem;
+  line-height: 1.25;
+}
+
+.top-sillers__stats .seller-profile__rating-preview {
+  font-size: 0.87rem;
+}
+
+@media (max-width: 550px) {
+  .top-sillers__item {
+    padding: 10px;
+  }
+
+  .top-sillers__avatar {
+    width: 46px;
+    height: 46px;
+  }
+}
