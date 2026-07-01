@@ -7,6 +7,8 @@ function TopSillersItemSkeleton() {
   return (
     <div className="top-sillers__item-wrap">
       <article className="top-sillers__item top-sillers__item--skeleton" aria-hidden="true">
+        <SkeletonPulse className="top-sillers__rank top-sillers__rank--skeleton" />
+        <div className="top-sillers__content">
         <div className="top-sillers__head">
           <SkeletonPulse className="top-sillers__avatar top-sillers__avatar--skeleton" />
           <div className="top-sillers__meta">
@@ -22,6 +24,7 @@ function TopSillersItemSkeleton() {
         <div className="top-sillers__actions">
           <SkeletonPulse className="top-sillers__action-btn top-sillers__action-btn--skeleton" />
           <SkeletonPulse className="top-sillers__action-btn top-sillers__action-btn--skeleton" />
+        </div>
         </div>
       </article>
     </div>

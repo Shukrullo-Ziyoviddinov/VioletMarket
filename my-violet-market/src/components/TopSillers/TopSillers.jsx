@@ -17,6 +17,44 @@ import TopSillersSkeleton from './TopSillersSkeleton';
 import './TopSillers.css';
 
 const FALLBACK_AVATAR = '/img/no-image.png';
+const PUBLIC_ASSET_BASE = process.env.PUBLIC_URL || '';
+
+const TOP_SILLER_RANK_MEDALS = {
+  1: `${PUBLIC_ASSET_BASE}/img/1o'rinsiller.png`,
+  2: `${PUBLIC_ASSET_BASE}/img/2o'rinsiller.png`,
+  3: `${PUBLIC_ASSET_BASE}/img/3o'rinsiller.png`,
+};
+
+function TopSellerRankBadge({ rank }) {
+  const safeRank = Number(rank);
+  if (!Number.isFinite(safeRank) || safeRank < 1) return null;
+
+  if (safeRank <= 3) {
+    const medalSrc = TOP_SILLER_RANK_MEDALS[safeRank];
+    if (!medalSrc) return null;
+
+    return (
+      <div className="top-sillers__rank" aria-hidden="true">
+        <img
+          src={medalSrc}
+          alt=""
+          className="top-sillers__rank-medal"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  if (safeRank <= 10) {
+    return (
+      <div className="top-sillers__rank" aria-hidden="true">
+        <span className="top-sillers__rank-number">{safeRank}</span>
+      </div>
+    );
+  }
+
+  return null;
+}
 
 function formatRatingPreview(averageRating) {
   const value = Number(averageRating);
@@ -39,6 +77,7 @@ function normalizeTopSeller(rawItem, lang = 'uz') {
     subscriberCount: Math.max(0, Number(rawItem.subscriberCount) || 0),
     averageRating,
     ratingPreview: formatRatingPreview(averageRating),
+    rank: Number(rawItem.rank) > 0 ? Number(rawItem.rank) : null,
   };
 }
 
@@ -162,9 +201,15 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
           <TopSillersSkeleton count={4} />
         ) : (
           <Scrollable type="product" className="top-sillers-scrollable" skipInteractiveTouchHandling>
-          {normalized.map((seller) => (
+          {normalized.map((seller, index) => {
+            const rank = seller.rank ?? index + 1;
+
+            return (
             <div key={seller.id} className="top-sillers__item-wrap">
               <article className="top-sillers__item">
+                <TopSellerRankBadge rank={rank} />
+
+                <div className="top-sillers__content">
                 <div className="top-sillers__head">
                   <img
                     src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
@@ -208,9 +253,11 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
                     <span>{t('home.topSillersShop')}</span>
                   </button>
                 </div>
+                </div>
               </article>
             </div>
-          ))}
+            );
+          })}
           </Scrollable>
         )}
       </section>
