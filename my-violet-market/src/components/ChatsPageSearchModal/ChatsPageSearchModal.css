@@ -156,4 +156,8 @@
     position: relative;
     z-index: 1;
   }
+
+  .chats-page-search-modal__body .top-sillers--embedded .top-sillers__title {
+    font-size: 0.9rem;
+  }
 }

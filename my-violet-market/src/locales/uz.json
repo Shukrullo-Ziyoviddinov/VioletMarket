@@ -445,8 +445,8 @@
       "delete": "O'chirish"
     },
     "search": {
-      "label": "Chatlarni qidirish",
-      "placeholder": "Chatlarni qidirish...",
+      "label": "Sotuvchi qisirish",
+      "placeholder": "Sotuvchi qisirish",
       "hint": "Sotuvchi yoki xabar bo'yicha qidiring",
       "noResults": "Mos chat topilmadi"
     }
