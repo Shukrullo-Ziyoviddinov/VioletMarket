@@ -445,10 +445,11 @@
       "delete": "O'chirish"
     },
     "search": {
-      "label": "Sotuvchi qisirish",
-      "placeholder": "Sotuvchi qisirish",
-      "hint": "Sotuvchi yoki xabar bo'yicha qidiring",
-      "noResults": "Mos chat topilmadi"
+      "label": "Sotuvchi qidirish",
+      "placeholder": "Sotuvchi qidirish",
+      "hint": "Sotuvchi nomi bo'yicha qidiring",
+      "minChars": "Kamida 2 ta harf kiriting",
+      "noResults": "Sotuvchi topilmadi"
     }
   },
   "uzWarehouse": {

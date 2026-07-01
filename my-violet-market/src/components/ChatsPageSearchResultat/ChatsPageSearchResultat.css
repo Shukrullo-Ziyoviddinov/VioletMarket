@@ -1,0 +1,122 @@
+.chats-page-search-resultat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px 16px;
+}
+
+.chats-page-search-resultat__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.chats-page-search-resultat__item:hover {
+  background: #f8f4fd;
+  border-color: #d8c4f2;
+}
+
+.chats-page-search-resultat__avatar {
+  width: 52px;
+  height: 52px;
+  border: 2px solid #5b4d73;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #f3edf9;
+}
+
+.chats-page-search-resultat__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.chats-page-search-resultat__name {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1f1630;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chats-page-search-resultat__stats {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.chats-page-search-resultat__products {
+  font-size: 0.84rem;
+  color: #6d647a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chats-page-search-resultat__rating.seller-rating__average {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-weight: 700;
+  color: #111;
+  flex-shrink: 0;
+}
+
+.chats-page-search-resultat--skeleton .chats-page-search-resultat__item {
+  pointer-events: none;
+}
+
+.chats-page-search-resultat__avatar--skeleton {
+  border-color: transparent;
+}
+
+.chats-page-search-resultat__name--skeleton {
+  display: block;
+  height: 14px;
+  width: 68%;
+  border-radius: 6px;
+}
+
+.chats-page-search-resultat__stats--skeleton {
+  display: block;
+  height: 12px;
+  width: 46%;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+@media (max-width: 550px) {
+  .chats-page-search-resultat {
+    padding: 8px 12px 14px;
+  }
+
+  .chats-page-search-resultat__avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .chats-page-search-resultat__name {
+    font-size: 0.92rem;
+  }
+
+  .chats-page-search-resultat__products {
+    font-size: 0.8rem;
+  }
+
+  .chats-page-search-resultat__rating.seller-rating__average {
+    font-size: 0.95rem;
+  }
+}

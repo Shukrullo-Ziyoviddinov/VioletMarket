@@ -47,6 +47,7 @@ const sellerAuthRoutes = require("./sellerAuth.routes");
 const adminSellerApplicationsRoutes = require("./adminSellerApplications.routes");
 const adminSellerManagementRoutes = require("./adminSellerManagement.routes");
 const messageChatRoutes = require("./messageChat.routes");
+const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 
 const router = express.Router();
 
@@ -98,5 +99,6 @@ router.use(sellerAuthRoutes);
 router.use(adminSellerApplicationsRoutes);
 router.use(adminSellerManagementRoutes);
 router.use(messageChatRoutes);
+router.use(chatsPageSearchRoutes);
 
 module.exports = router;

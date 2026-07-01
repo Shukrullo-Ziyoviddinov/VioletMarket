@@ -16,16 +16,14 @@ import {
   filterAndSortChatThreads,
   countUnreadChatThreads,
   buildPreferencesMapFromThreads,
-  sortChatThreadsByPinAndActivity,
 } from '../../utils/chatsThreadUtils';
-import { filterChatThreadsByQuery } from '../../utils/filterChatThreadsByQuery';
-import { getLocalizedText } from '../../utils/utils';
 import ChatsFilter from '../../components/ChatsFilter';
 import ChatsThreadList from '../../components/ChatsThreadList';
 import ChatsPageSearch from '../../components/ChatsPageSearch';
 import ChatsPageSearchModal from '../../components/ChatsPageSearchModal';
 import ProductSellerChatModal from '../../components/ProductSellerChatModal';
 import MiniModal from '../../components/MiniModal';
+import { useChatsPageSellerSearch } from '../../hooks/useChatsPageSellerSearch';
 import './ChatsPage.css';
 
 export default function ChatsPage() {
@@ -57,20 +55,10 @@ export default function ChatsPage() {
     [threads, filter, preferences],
   );
 
-  const searchThreads = useMemo(() => {
-    const matched = filterChatThreadsByQuery(threads, searchQuery, (thread) =>
-      getLocalizedText(thread.sellerName, langKey),
-    );
-    return sortChatThreadsByPinAndActivity(matched, preferences);
-  }, [threads, searchQuery, langKey, preferences]);
-
-  const searchSellerIds = useMemo(
-    () => searchThreads.map((thread) => thread.sellerId),
-    [searchThreads],
+  const { results: sellerSearchResults, loading: sellerSearchLoading } = useChatsPageSellerSearch(
+    searchQuery,
+    searchOpen,
   );
-
-  const searchPresenceMap = useChatsListPresence(searchSellerIds, isAuthenticated && searchOpen);
-  const searchTypingMap = useChatsListTyping(searchSellerIds, isAuthenticated && searchOpen);
 
   const unreadThreadCount = useMemo(
     () => countUnreadChatThreads(threads, preferences),
@@ -159,14 +147,6 @@ export default function ChatsPage() {
     setSearchQuery('');
   }, []);
 
-  const handleOpenThreadFromSearch = useCallback(
-    (thread) => {
-      handleCloseSearch();
-      handleOpenThread(thread);
-    },
-    [handleCloseSearch, handleOpenThread],
-  );
-
   useEffect(() => {
     const bgUrl = `${process.env.PUBLIC_URL || ''}/img/chatspadeback.jpg`;
     document.body.classList.add('chats-page-active');
@@ -253,21 +233,12 @@ export default function ChatsPage() {
         query={searchQuery}
         onQueryChange={setSearchQuery}
         onClose={handleCloseSearch}
-        threads={searchThreads}
-        loading={loading}
-        threadListProps={{
-          preferences,
-          presenceMap: searchPresenceMap,
-          typingMap: searchTypingMap,
-          onOpenThread: handleOpenThreadFromSearch,
-          onTogglePin: togglePin,
-          onArchiveThread: archiveThread,
-          onUnarchiveThread: unarchiveThread,
-          onDeleteThread: handleDeleteRequest,
-        }}
         topSillers={topSillers}
         topSillersLoading={appDataLoading && topSillers.length === 0}
         onOpenTopSellerChat={handleOpenTopSellerChat}
+        sellerSearchResults={sellerSearchResults}
+        sellerSearchLoading={sellerSearchLoading}
+        langKey={langKey}
       />
 
       <ProductSellerChatModal

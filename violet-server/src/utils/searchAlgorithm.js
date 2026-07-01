@@ -168,4 +168,10 @@ module.exports = {
   getSimilarRecommended,
   getDefaultRecommended,
   productMatchesSearchFlexible,
+  getLocalizedText,
+  normalizeForSearch,
+  getTokens,
+  tokensMatch,
+  levenshteinDistance,
+  textContainsRelevantSubstring,
 };

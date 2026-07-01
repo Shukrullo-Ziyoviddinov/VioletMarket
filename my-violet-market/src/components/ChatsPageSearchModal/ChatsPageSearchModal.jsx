@@ -1,22 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ChatsThreadList from '../ChatsThreadList';
 import TopSillers from '../TopSillers/TopSillers';
+import ChatsPageSearchResultat from '../ChatsPageSearchResultat';
 import './ChatsPageSearchModal.css';
 
 const CLOSE_ANIMATION_MS = 340;
+const MIN_QUERY_LENGTH = 2;
 
 export default function ChatsPageSearchModal({
   open = false,
   query = '',
   onQueryChange,
   onClose,
-  threads = [],
-  loading = false,
-  threadListProps = {},
   topSillers = [],
   topSillersLoading = false,
   onOpenTopSellerChat,
+  sellerSearchResults = [],
+  sellerSearchLoading = false,
+  langKey = 'uz',
+  onSellerResultClick,
 }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
@@ -59,7 +61,14 @@ export default function ChatsPageSearchModal({
 
   if (!mounted) return null;
 
-  const showEmpty = !loading && query.trim() && !threads.length;
+  const trimmedQuery = query.trim();
+  const hasQuery = Boolean(trimmedQuery);
+  const isShortQuery = hasQuery && trimmedQuery.length < MIN_QUERY_LENGTH;
+  const showSellerEmpty =
+    hasQuery &&
+    trimmedQuery.length >= MIN_QUERY_LENGTH &&
+    !sellerSearchLoading &&
+    !sellerSearchResults.length;
 
   return (
     <div
@@ -102,7 +111,7 @@ export default function ChatsPageSearchModal({
       </div>
 
       <div className="chats-page-search-modal__body">
-        {!query.trim() ? (
+        {!hasQuery ? (
           topSillersLoading || topSillers.length > 0 ? (
             <TopSillers
               sellers={topSillers}
@@ -117,10 +126,26 @@ export default function ChatsPageSearchModal({
           ) : (
             <p className="chats-page-search-modal__hint">{t('chats.search.hint')}</p>
           )
-        ) : showEmpty ? (
-          <p className="chats-page-search-modal__empty">{t('chats.search.noResults')}</p>
+        ) : isShortQuery ? (
+          <p className="chats-page-search-modal__hint">{t('chats.search.minChars')}</p>
+        ) : showSellerEmpty ? (
+          <div className="chats-page-search-modal__empty-state">
+            <div className="chats-page-search-modal__empty-icons" aria-hidden="true">
+              <i className="bx bx-search" />
+              <i className="bx bx-x" />
+            </div>
+            <p className="chats-page-search-modal__empty">{t('search.noResults')}</p>
+          </div>
         ) : (
-          <ChatsThreadList threads={threads} loading={loading} {...threadListProps} />
+          <ChatsPageSearchResultat
+            sellers={sellerSearchResults}
+            loading={sellerSearchLoading}
+            langKey={langKey}
+            onSellerClick={(sellerId) => {
+              onClose?.();
+              onSellerResultClick?.(sellerId);
+            }}
+          />
         )}
       </div>
     </div>
