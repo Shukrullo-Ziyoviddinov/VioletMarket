@@ -20,10 +20,10 @@ export function useChatsPageSellerSearch(query, enabled = true) {
     }
 
     let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
+    const timer = window.setTimeout(async () => {
       try {
         const data = await fetchChatsPageSellerSearch(trimmed);
         if (!cancelled) {

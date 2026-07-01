@@ -130,10 +130,7 @@ export default function ChatsPageSearchModal({
           <p className="chats-page-search-modal__hint">{t('chats.search.minChars')}</p>
         ) : showSellerEmpty ? (
           <div className="chats-page-search-modal__empty-state">
-            <div className="chats-page-search-modal__empty-icons" aria-hidden="true">
-              <i className="bx bx-search" />
-              <i className="bx bx-x" />
-            </div>
+            <i className="bx bx-search chats-page-search-modal__empty-icon" aria-hidden="true" />
             <p className="chats-page-search-modal__empty">{t('search.noResults')}</p>
           </div>
         ) : (

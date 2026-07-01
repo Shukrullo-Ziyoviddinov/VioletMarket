@@ -15,6 +15,7 @@ const sellers = [
     sellerCountry: "uzb",
     logo: 'img/vm logo.jpg',
     subscriberCount: 10,
+    status: 'active',
   },
 ];
 

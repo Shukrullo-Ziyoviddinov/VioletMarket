@@ -33,9 +33,15 @@ function getSellerSearchableName(seller) {
   return [
     getLocalizedText(seller?.name, "uz"),
     getLocalizedText(seller?.name, "ru"),
+    String(seller?.id || ""),
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+function buildActiveSellerFilter(onlyActive = true) {
+  if (!onlyActive) return {};
+  return { status: { $ne: "paused" } };
 }
 
 function getSellerQueryTokens(str) {
@@ -159,6 +165,7 @@ function scoreSellerNameMatch(seller, rawQuery) {
   const variants = [
     normalizeForSearch(getLocalizedText(seller?.name, "uz")),
     normalizeForSearch(getLocalizedText(seller?.name, "ru")),
+    normalizeForSearch(String(seller?.id || "")),
     normalizeForSearch(getSellerSearchableName(seller)),
   ].filter(Boolean);
 
@@ -180,7 +187,7 @@ async function searchSellersFromDatabase({
     return [];
   }
 
-  const sellerFilter = onlyActive ? { status: "active" } : {};
+  const sellerFilter = buildActiveSellerFilter(onlyActive);
   const sellers = await SellerAccount.find(sellerFilter).lean();
 
   const ranked = sellers
