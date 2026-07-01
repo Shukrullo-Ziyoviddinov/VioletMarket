@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SkeletonPulse } from '../SkeletonLoader';
 import { getLocalizedText, normalizeImagePath } from '../../utils/utils';
-import '../SellerProfileReyting/SellerProfileReyting.css';
 import './ChatsPageSearchResultat.css';
 
 const FALLBACK_AVATAR = '/img/no-image.png';
@@ -25,15 +24,50 @@ function normalizeSellerItem(item, langKey) {
   };
 }
 
-function ChatsPageSearchResultatSkeleton({ count = 4 }) {
+function SellerResultContent({ seller, t }) {
   return (
-    <div className="chats-page-search-resultat chats-page-search-resultat--skeleton" aria-hidden="true">
+    <>
+      <img
+        src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
+        alt={seller.name}
+        className="chats-page-search-resultat__avatar"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.onerror = null;
+          event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
+        }}
+      />
+
+      <div className="chats-page-search-resultat__meta">
+        <p className="chats-page-search-resultat__name">{seller.name}</p>
+        <div className="chats-page-search-resultat__stats">
+          <span className="chats-page-search-resultat__products">
+            {t('seller.productCount', { count: seller.productCount })}
+          </span>
+          <span className="chats-page-search-resultat__rating seller-rating__average">
+            <i className="bx bxs-star" aria-hidden="true" />
+            <span>{formatRatingAverage(seller.averageRating)}</span>
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ChatsPageSearchResultatSkeleton({ count = 4, variant = 'results' }) {
+  return (
+    <div
+      className={`chats-page-search-resultat chats-page-search-resultat--skeleton chats-page-search-resultat--${variant}`}
+      aria-hidden="true"
+    >
       {Array.from({ length: count }).map((_, index) => (
-        <div key={`chats-seller-search-sk-${index}`} className="chats-page-search-resultat__item">
-          <SkeletonPulse className="chats-page-search-resultat__avatar chats-page-search-resultat__avatar--skeleton" />
-          <div className="chats-page-search-resultat__meta">
-            <SkeletonPulse className="chats-page-search-resultat__name chats-page-search-resultat__name--skeleton" />
-            <SkeletonPulse className="chats-page-search-resultat__stats chats-page-search-resultat__stats--skeleton" />
+        <div key={`chats-seller-search-sk-${index}`} className="chats-page-search-resultat__item-row">
+          <div className="chats-page-search-resultat__item">
+            <SkeletonPulse className="chats-page-search-resultat__avatar chats-page-search-resultat__avatar--skeleton" />
+            <div className="chats-page-search-resultat__meta">
+              <SkeletonPulse className="chats-page-search-resultat__name chats-page-search-resultat__name--skeleton" />
+              <SkeletonPulse className="chats-page-search-resultat__stats chats-page-search-resultat__stats--skeleton" />
+            </div>
           </div>
         </div>
       ))}
@@ -45,7 +79,10 @@ export default function ChatsPageSearchResultat({
   sellers = [],
   loading = false,
   langKey = 'uz',
+  variant = 'results',
+  className = '',
   onSellerClick,
+  onRemoveSeller,
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -55,7 +92,7 @@ export default function ChatsPageSearchResultat({
     .filter((item) => item?.id);
 
   if (loading) {
-    return <ChatsPageSearchResultatSkeleton />;
+    return <ChatsPageSearchResultatSkeleton variant={variant} />;
   }
 
   if (!normalized.length) {
@@ -67,38 +104,37 @@ export default function ChatsPageSearchResultat({
     navigate(`/seller/${sellerId}`);
   };
 
-  return (
-    <div className="chats-page-search-resultat">
-      {normalized.map((seller) => (
-        <button
-          key={seller.id}
-          type="button"
-          className="chats-page-search-resultat__item"
-          onClick={() => handleOpenSeller(seller.id)}
-        >
-          <img
-            src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
-            alt={seller.name}
-            className="chats-page-search-resultat__avatar"
-            loading="lazy"
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
-            }}
-          />
+  const rootClassName = [
+    'chats-page-search-resultat',
+    `chats-page-search-resultat--${variant}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-          <div className="chats-page-search-resultat__meta">
-            <p className="chats-page-search-resultat__name">{seller.name}</p>
-            <div className="chats-page-search-resultat__stats">
-              <span className="chats-page-search-resultat__products">
-                {t('seller.productCount', { count: seller.productCount })}
-              </span>
-              <span className="seller-rating__average chats-page-search-resultat__rating">
-                {formatRatingAverage(seller.averageRating)}
-              </span>
-            </div>
-          </div>
-        </button>
+  return (
+    <div className={rootClassName}>
+      {normalized.map((seller) => (
+        <div key={seller.id} className="chats-page-search-resultat__item-row">
+          <button
+            type="button"
+            className="chats-page-search-resultat__item"
+            onClick={() => handleOpenSeller(seller.id)}
+          >
+            <SellerResultContent seller={seller} t={t} />
+          </button>
+
+          {variant === 'history' ? (
+            <button
+              type="button"
+              className="chats-page-search-resultat__remove"
+              onClick={() => onRemoveSeller?.(seller.id)}
+              aria-label={t('search.remove')}
+            >
+              <i className="bx bx-x" aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
       ))}
     </div>
   );

@@ -24,6 +24,7 @@ import ChatsPageSearchModal from '../../components/ChatsPageSearchModal';
 import ProductSellerChatModal from '../../components/ProductSellerChatModal';
 import MiniModal from '../../components/MiniModal';
 import { useChatsPageSellerSearch } from '../../hooks/useChatsPageSellerSearch';
+import { useChatsPageSearchHistory } from '../../hooks/useChatsPageSearchHistory';
 import './ChatsPage.css';
 
 export default function ChatsPage() {
@@ -58,6 +59,21 @@ export default function ChatsPage() {
   const { results: sellerSearchResults, loading: sellerSearchLoading } = useChatsPageSellerSearch(
     searchQuery,
     searchOpen,
+  );
+
+  const {
+    items: searchHistoryItems,
+    loading: searchHistoryLoading,
+    addSeller: addSearchHistorySeller,
+    removeSeller: removeSearchHistorySeller,
+  } = useChatsPageSearchHistory(authToken, searchOpen);
+
+  const handleSellerSearchSelect = useCallback(
+    async (sellerId) => {
+      if (!sellerId) return;
+      await addSearchHistorySeller(sellerId);
+    },
+    [addSearchHistorySeller],
   );
 
   const unreadThreadCount = useMemo(
@@ -238,7 +254,11 @@ export default function ChatsPage() {
         onOpenTopSellerChat={handleOpenTopSellerChat}
         sellerSearchResults={sellerSearchResults}
         sellerSearchLoading={sellerSearchLoading}
+        searchHistoryItems={searchHistoryItems}
+        searchHistoryLoading={searchHistoryLoading}
         langKey={langKey}
+        onSellerResultClick={handleSellerSearchSelect}
+        onRemoveHistorySeller={removeSearchHistorySeller}
       />
 
       <ProductSellerChatModal

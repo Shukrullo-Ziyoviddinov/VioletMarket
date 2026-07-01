@@ -7,6 +7,30 @@ import './ChatsPageSearchModal.css';
 const CLOSE_ANIMATION_MS = 340;
 const MIN_QUERY_LENGTH = 2;
 
+function TopSillersSection({
+  topSillers,
+  topSillersLoading,
+  onClose,
+  onOpenTopSellerChat,
+}) {
+  if (!topSillersLoading && !topSillers.length) {
+    return null;
+  }
+
+  return (
+    <TopSillers
+      sellers={topSillers}
+      isLoading={topSillersLoading}
+      variant="embedded"
+      hideChatModal
+      onOpenChat={(sellerId) => {
+        onClose?.();
+        onOpenTopSellerChat?.(sellerId);
+      }}
+    />
+  );
+}
+
 export default function ChatsPageSearchModal({
   open = false,
   query = '',
@@ -17,8 +41,11 @@ export default function ChatsPageSearchModal({
   onOpenTopSellerChat,
   sellerSearchResults = [],
   sellerSearchLoading = false,
+  searchHistoryItems = [],
+  searchHistoryLoading = false,
   langKey = 'uz',
   onSellerResultClick,
+  onRemoveHistorySeller,
 }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
@@ -69,6 +96,7 @@ export default function ChatsPageSearchModal({
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
     !sellerSearchLoading &&
     !sellerSearchResults.length;
+  const showHistory = !hasQuery && (searchHistoryLoading || searchHistoryItems.length > 0);
 
   return (
     <div
@@ -114,38 +142,68 @@ export default function ChatsPageSearchModal({
       </div>
 
       <div className="chats-page-search-modal__body">
-        {!hasQuery ? (
-          topSillersLoading || topSillers.length > 0 ? (
-            <TopSillers
-              sellers={topSillers}
-              isLoading={topSillersLoading}
-              variant="embedded"
-              hideChatModal
-              onOpenChat={(sellerId) => {
-                onClose?.();
-                onOpenTopSellerChat?.(sellerId);
-              }}
+        {hasQuery ? (
+          <>
+            {isShortQuery ? (
+              <p className="chats-page-search-modal__hint">{t('chats.search.minChars')}</p>
+            ) : showSellerEmpty ? (
+              <div className="chats-page-search-modal__empty-state">
+                <i className="bx bx-search chats-page-search-modal__empty-icon" aria-hidden="true" />
+                <p className="chats-page-search-modal__empty">{t('search.noResults')}</p>
+              </div>
+            ) : (
+              <ChatsPageSearchResultat
+                sellers={sellerSearchResults}
+                loading={sellerSearchLoading}
+                langKey={langKey}
+                variant="results"
+                className="chats-page-search-resultat--results-inline"
+                onSellerClick={(sellerId) => {
+                  onClose?.();
+                  onSellerResultClick?.(sellerId);
+                }}
+              />
+            )}
+
+            <TopSillersSection
+              topSillers={topSillers}
+              topSillersLoading={topSillersLoading}
+              onClose={onClose}
+              onOpenTopSellerChat={onOpenTopSellerChat}
             />
-          ) : (
-            <p className="chats-page-search-modal__hint">{t('chats.search.hint')}</p>
-          )
-        ) : isShortQuery ? (
-          <p className="chats-page-search-modal__hint">{t('chats.search.minChars')}</p>
-        ) : showSellerEmpty ? (
-          <div className="chats-page-search-modal__empty-state">
-            <i className="bx bx-search chats-page-search-modal__empty-icon" aria-hidden="true" />
-            <p className="chats-page-search-modal__empty">{t('search.noResults')}</p>
-          </div>
+          </>
         ) : (
-          <ChatsPageSearchResultat
-            sellers={sellerSearchResults}
-            loading={sellerSearchLoading}
-            langKey={langKey}
-            onSellerClick={(sellerId) => {
-              onClose?.();
-              onSellerResultClick?.(sellerId);
-            }}
-          />
+          <>
+            {showHistory ? (
+              <section className="chats-page-search-modal__history">
+                <h3 className="chats-page-search-modal__history-title">
+                  {t('chats.search.historyTitle')}
+                </h3>
+                <ChatsPageSearchResultat
+                  sellers={searchHistoryItems}
+                  loading={searchHistoryLoading}
+                  langKey={langKey}
+                  variant="history"
+                  onSellerClick={(sellerId) => {
+                    onClose?.();
+                    onSellerResultClick?.(sellerId);
+                  }}
+                  onRemoveSeller={onRemoveHistorySeller}
+                />
+              </section>
+            ) : null}
+
+            {!showHistory && !topSillersLoading && !topSillers.length ? (
+              <p className="chats-page-search-modal__hint">{t('chats.search.hint')}</p>
+            ) : (
+              <TopSillersSection
+                topSillers={topSillers}
+                topSillersLoading={topSillersLoading}
+                onClose={onClose}
+                onOpenTopSellerChat={onOpenTopSellerChat}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

@@ -20,3 +20,31 @@ export function fetchChatsPageSellerSearch(query, limit = 20) {
     parseJsonResponse,
   );
 }
+
+function authHeaders(token) {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+export function fetchChatsPageSearchHistory(token) {
+  return fetch(apiUrl('/api/chats-page/search-history'), {
+    headers: authHeaders(token),
+  }).then(parseJsonResponse);
+}
+
+export function addChatsPageSearchHistorySeller(token, sellerId) {
+  return fetch(apiUrl('/api/chats-page/search-history'), {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ sellerId }),
+  }).then(parseJsonResponse);
+}
+
+export function removeChatsPageSearchHistorySeller(token, sellerId) {
+  return fetch(apiUrl(`/api/chats-page/search-history/${encodeURIComponent(sellerId)}`), {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  }).then(parseJsonResponse);
+}

@@ -138,6 +138,17 @@
   padding-top: 0;
 }
 
+.chats-page-search-modal__history {
+  padding: 12px 14px 0;
+}
+
+.chats-page-search-modal__history-title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f1630;
+}
+
 .chats-page-search-modal__hint,
 .chats-page-search-modal__empty {
   margin: 0;
@@ -200,6 +211,14 @@
   }
 
   .chats-page-search-modal__body .top-sillers--embedded .top-sillers__title {
+    font-size: 1rem;
+  }
+
+  .chats-page-search-modal__history {
+    padding: 10px 12px 0;
+  }
+
+  .chats-page-search-modal__history-title {
     font-size: 1rem;
   }
 }

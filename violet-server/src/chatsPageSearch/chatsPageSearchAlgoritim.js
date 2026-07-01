@@ -212,35 +212,79 @@ async function searchSellersFromDatabase({
     return [];
   }
 
+  const metrics = await loadSellerMetricsByIds(sellerIds);
+
+  return selected.map(({ seller, score }) =>
+    mapSellerRowForClient({ ...seller, matchScore: score }, metrics),
+  );
+}
+
+async function loadSellerMetricsByIds(sellerIds = []) {
+  const ids = [...new Set(
+    (Array.isArray(sellerIds) ? sellerIds : [])
+      .map((id) => String(id || "").trim())
+      .filter(Boolean),
+  )];
+
+  if (!ids.length) {
+    return {
+      ratingBySellerId: new Map(),
+      productCountBySellerId: new Map(),
+    };
+  }
+
   const [ratingRows, productCountRows] = await Promise.all([
-    SellerRatingSummary.find({ sellerId: { $in: sellerIds } }).lean(),
+    SellerRatingSummary.find({ sellerId: { $in: ids } }).lean(),
     Product.aggregate([
-      { $match: { sellerId: { $in: sellerIds } } },
+      { $match: { sellerId: { $in: ids } } },
       { $group: { _id: "$sellerId", productCount: { $sum: 1 } } },
     ]),
   ]);
 
-  const ratingBySellerId = new Map(
-    ratingRows.map((row) => [String(row.sellerId || ""), row]),
-  );
-  const productCountBySellerId = new Map(
-    productCountRows.map((row) => [String(row._id || ""), toNonNegativeNumber(row.productCount)]),
-  );
+  return {
+    ratingBySellerId: new Map(
+      ratingRows.map((row) => [String(row.sellerId || ""), row]),
+    ),
+    productCountBySellerId: new Map(
+      productCountRows.map((row) => [String(row._id || ""), toNonNegativeNumber(row.productCount)]),
+    ),
+  };
+}
 
-  return selected.map(({ seller, score }) => {
-    const sellerId = String(seller.id || "");
-    const summary = ratingBySellerId.get(sellerId);
+function mapSellerRowForClient(seller, metrics = {}) {
+  const sellerId = String(seller.id || seller.sellerId || "");
+  const summary = metrics.ratingBySellerId?.get(sellerId);
 
-    return {
-      sellerId,
-      name: seller.name,
-      logo: seller.logo,
-      productCount: productCountBySellerId.get(sellerId) || 0,
-      averageRating: buildAverageRatingFromSummary(summary),
-      totalReviews: toNonNegativeNumber(summary?.totalReviews),
-      matchScore: score,
-    };
-  });
+  return {
+    sellerId,
+    name: seller.name,
+    logo: seller.logo,
+    productCount: metrics.productCountBySellerId?.get(sellerId) || 0,
+    averageRating: buildAverageRatingFromSummary(summary),
+    totalReviews: toNonNegativeNumber(summary?.totalReviews),
+    matchScore: seller.matchScore,
+  };
+}
+
+async function enrichSellersByIds(sellerIds = []) {
+  const ids = [...new Set(
+    (Array.isArray(sellerIds) ? sellerIds : [])
+      .map((id) => String(id || "").trim())
+      .filter(Boolean),
+  )];
+
+  if (!ids.length) return [];
+
+  const sellers = await SellerAccount.find({
+    ...buildActiveSellerFilter(true),
+    id: { $in: ids },
+  }).lean();
+
+  const sellerById = new Map(sellers.map((seller) => [String(seller.id || ""), seller]));
+  const orderedSellers = ids.map((id) => sellerById.get(id)).filter(Boolean);
+  const metrics = await loadSellerMetricsByIds(orderedSellers.map((seller) => seller.id));
+
+  return orderedSellers.map((seller) => mapSellerRowForClient(seller, metrics));
 }
 
 function mapSellerSearchResultForClient(row) {
@@ -260,6 +304,7 @@ module.exports = {
   DEFAULT_SEARCH_LIMIT,
   MIN_QUERY_LENGTH,
   searchSellersFromDatabase,
+  enrichSellersByIds,
   mapSellerSearchResultForClient,
   scoreSellerNameMatch,
   stringsFuzzyMatch,
