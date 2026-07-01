@@ -242,7 +242,10 @@
     "flashSaleWatching": "Сейчас {{count}} человек смотрят товары",
     "flashSaleTopSelling": "Самые продаваемые сегодня",
     "flashSaleSold": "продано",
-    "more": "Больше"
+    "more": "Больше",
+    "topSillersTitle": "Топ продавцы",
+    "topSillersChat": "Чат",
+    "topSillersShop": "Магазин"
   },
   "common": {
     "more": "Больше"

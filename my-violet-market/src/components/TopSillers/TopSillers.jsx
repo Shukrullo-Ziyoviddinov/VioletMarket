@@ -38,36 +38,47 @@ export default function TopSillers({ sellers = [] }) {
   if (!normalized.length) return null;
 
   return (
-    <section className="top-sillers" aria-label={t('home.topSillersTitle', { defaultValue: 'Top sellerlar' })}>
-      <h2 className="top-sillers__title">
-        {t('home.topSillersTitle', { defaultValue: 'Top sellerlar' })}
-      </h2>
+    <section className="top-sillers" aria-label={t('home.topSillersTitle')}>
+      <h2 className="top-sillers__title">{t('home.topSillersTitle')}</h2>
 
-      <Scrollable type="product" className="top-sillers-scrollable">
+      <Scrollable type="product" className="top-sillers-scrollable" skipInteractiveTouchHandling>
         {normalized.map((seller) => (
           <div key={seller.id} className="top-sillers__item-wrap">
             <article className="top-sillers__item">
-              <img
-                src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
-                alt={seller.name}
-                className="top-sillers__avatar"
-                loading="lazy"
-                onError={(event) => {
-                  event.currentTarget.onerror = null;
-                  event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
-                }}
-              />
+              <div className="top-sillers__head">
+                <img
+                  src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
+                  alt={seller.name}
+                  className="top-sillers__avatar"
+                  loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
+                  }}
+                />
 
-              <div className="top-sillers__meta">
-                <p className="top-sillers__name">{seller.name}</p>
-                <div className="top-sillers__stats">
-                  <SellerOrderCount count={seller.orderCount} />
-                  <SellerSubscriberCount count={seller.subscriberCount} />
-                  <p className="seller-profile__rating-preview">
-                    <i className="bx bxs-star" aria-hidden="true" />
-                    <span>{seller.averageRating.toFixed(1)}</span>
-                  </p>
+                <div className="top-sillers__meta">
+                  <p className="top-sillers__name">{seller.name}</p>
+                  <div className="top-sillers__stats">
+                    <SellerOrderCount count={seller.orderCount} />
+                    <SellerSubscriberCount count={seller.subscriberCount} />
+                    <p className="seller-profile__rating-preview">
+                      <i className="bx bxs-star" aria-hidden="true" />
+                      <span>{seller.averageRating.toFixed(1)}</span>
+                    </p>
+                  </div>
                 </div>
+              </div>
+
+              <div className="top-sillers__actions">
+                <button type="button" className="top-sillers__action-btn">
+                  <i className="bx bx-chat" aria-hidden="true" />
+                  <span>{t('home.topSillersChat')}</span>
+                </button>
+                <button type="button" className="top-sillers__action-btn">
+                  <i className="bx bx-store" aria-hidden="true" />
+                  <span>{t('home.topSillersShop')}</span>
+                </button>
               </div>
             </article>
           </div>

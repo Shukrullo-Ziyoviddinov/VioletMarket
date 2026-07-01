@@ -242,7 +242,10 @@
     "flashSaleWatching": "Hozir {{count}} kishi mahsulotlarni ko'ryapti",
     "flashSaleTopSelling": "Bugun eng ko'p sotilayotganlar",
     "flashSaleSold": "sotildi",
-    "more": "Ko'proq"
+    "more": "Ko'proq",
+    "topSillersTitle": "Top sellerlar",
+    "topSillersChat": "Chat",
+    "topSillersShop": "Do'kon"
   },
   "common": {
     "more": "Ko'proq"
