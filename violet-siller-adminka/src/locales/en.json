@@ -29,5 +29,17 @@
     "logoUploadSuccess": "Logo uploaded",
     "logoUploadError": "Failed to upload logo",
     "logoResetInfo": "Logo reset to default"
+  },
+  "myProducts": {
+    "title": "My products",
+    "subtitle": "A list of all products in your shop.",
+    "addProduct": "Add product",
+    "edit": "Edit",
+    "more": "More",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "activate": "Activate",
+    "pause": "Pause temporarily"
   }
 }

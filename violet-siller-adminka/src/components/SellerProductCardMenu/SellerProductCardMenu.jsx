@@ -8,6 +8,7 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import { Button } from 'antd';
+import { useTranslation } from 'react-i18next';
 import './SellerProductCardMenu.css';
 
 function SellerProductCardMenuDropdown({
@@ -19,6 +20,8 @@ function SellerProductCardMenuDropdown({
   onEdit,
   onTogglePause,
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="seller-product-card-menu__dropdown" role="menu" style={style}>
       <button
@@ -29,7 +32,7 @@ function SellerProductCardMenuDropdown({
         disabled={deleting || togglingPause}
       >
         <DeleteOutlined aria-hidden="true" />
-        <span>{deleting ? "O'chirilmoqda..." : "O'chirish"}</span>
+        <span>{deleting ? t('myProducts.deleting') : t('myProducts.delete')}</span>
       </button>
       <button
         type="button"
@@ -39,7 +42,7 @@ function SellerProductCardMenuDropdown({
         disabled={deleting || togglingPause}
       >
         <EditOutlined aria-hidden="true" />
-        <span>Tahrirlash</span>
+        <span>{t('myProducts.edit')}</span>
       </button>
       <button
         type="button"
@@ -59,10 +62,10 @@ function SellerProductCardMenuDropdown({
         )}
         <span>
           {togglingPause
-            ? 'Saqlanmoqda...'
+            ? t('myProducts.saving')
             : isPaused
-              ? 'Faollashtirish'
-              : "Vaqtincha to'xtatish"}
+              ? t('myProducts.activate')
+              : t('myProducts.pause')}
         </span>
       </button>
     </div>
@@ -80,6 +83,7 @@ export default function SellerProductCardMenu({
   onDelete,
   onTogglePause,
 }) {
+  const { t } = useTranslation();
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const [dropdownStyle, setDropdownStyle] = useState(null);
@@ -160,7 +164,7 @@ export default function SellerProductCardMenu({
         size="small"
         icon={<MoreOutlined />}
         className="seller-product-card-menu__trigger"
-        aria-label="Ko'proq"
+        aria-label={t('myProducts.more')}
         aria-expanded={isOpen}
         onMouseDown={(event) => event.stopPropagation()}
         onClick={(event) => {

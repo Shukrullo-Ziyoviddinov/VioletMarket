@@ -29,5 +29,17 @@
     "logoUploadSuccess": "Logo yuklandi",
     "logoUploadError": "Logo yuklanmadi",
     "logoResetInfo": "Logo standart holatga qaytarildi"
+  },
+  "myProducts": {
+    "title": "Mening mahsulotlarim",
+    "subtitle": "Do'koningizga tegishli barcha mahsulotlar ro'yxati.",
+    "addProduct": "Mahsulot qo'shish",
+    "edit": "Tahrirlash",
+    "more": "Ko'proq",
+    "delete": "O'chirish",
+    "deleting": "O'chirilmoqda...",
+    "saving": "Saqlanmoqda...",
+    "activate": "Faollashtirish",
+    "pause": "Vaqtincha to'xtatish"
   }
 }

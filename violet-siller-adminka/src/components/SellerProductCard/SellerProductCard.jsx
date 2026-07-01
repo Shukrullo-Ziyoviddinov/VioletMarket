@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { resolveAssetUrl } from '../../utils/mediaUrl';
 import SellerProductCardMenu from '../SellerProductCardMenu/SellerProductCardMenu';
 import './SellerProductCard.css';
@@ -30,6 +31,7 @@ export default function SellerProductCard({
   onMenuClose,
   togglingPause = false,
 }) {
+  const { t } = useTranslation();
   const title = getProductTitle(product?.title);
   const price = String(product?.price || '').trim();
   const originalPrice = String(product?.originalPrice || '').trim();
@@ -83,7 +85,7 @@ export default function SellerProductCard({
             className="seller-product-card__edit-btn"
             onClick={handleEdit}
           >
-            Tahrirlash
+            {t('myProducts.edit')}
           </Button>
 
           <SellerProductCardMenu

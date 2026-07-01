@@ -29,5 +29,17 @@
     "logoUploadSuccess": "标志已上传",
     "logoUploadError": "标志上传失败",
     "logoResetInfo": "标志已恢复默认"
+  },
+  "myProducts": {
+    "title": "我的产品",
+    "subtitle": "您店铺中所有产品的列表。",
+    "addProduct": "添加产品",
+    "edit": "编辑",
+    "more": "更多",
+    "delete": "删除",
+    "deleting": "删除中...",
+    "saving": "保存中...",
+    "activate": "启用",
+    "pause": "暂时暂停"
   }
 }

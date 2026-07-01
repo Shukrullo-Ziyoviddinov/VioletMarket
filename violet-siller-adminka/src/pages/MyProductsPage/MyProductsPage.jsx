@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Typography } from 'antd';
 import { PlusCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import SellerProductsGrid, {
   SellerProductsDeleteModal,
 } from '../../components/SellerProductsGrid/SellerProductsGrid';
@@ -10,6 +11,7 @@ import '../MyProductsPage/MyProductsPage.css';
 const { Title, Text } = Typography;
 
 export default function MyProductsPage() {
+  const { t } = useTranslation();
   const {
     navigate,
     displayedProducts,
@@ -31,10 +33,10 @@ export default function MyProductsPage() {
       <div className="my-products-page__head">
         <div>
           <Title level={3} className="my-products-page__title">
-            Mening mahsulotlarim
+            {t('myProducts.title')}
           </Title>
           <Text type="secondary" className="my-products-page__subtitle">
-            Do&apos;koningizga tegishli barcha mahsulotlar ro&apos;yxati.
+            {t('myProducts.subtitle')}
           </Text>
         </div>
         <Button
@@ -42,7 +44,7 @@ export default function MyProductsPage() {
           icon={<PlusCircleOutlined />}
           onClick={() => navigate('/products/add')}
         >
-          Mahsulot qo&apos;shish
+          {t('myProducts.addProduct')}
         </Button>
       </div>
 
