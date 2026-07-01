@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { isOwnChatMessage } from '../../../utils/messageChatReadStatus';
 import './MessageChatActionsModal.css';
 
@@ -11,6 +12,7 @@ export default function MessageChatActionsModal({
   onEdit,
   onReply,
 }) {
+  const { t } = useTranslation();
   if (!open || !message) return null;
 
   const isOwn = isOwnChatMessage(message, viewerRole);
@@ -23,17 +25,17 @@ export default function MessageChatActionsModal({
 
   return (
     <div className="message-chat-actions-modal" role="presentation">
-      <button type="button" className="message-chat-actions-modal__backdrop" onClick={onClose} aria-label="Yopish" />
+      <button type="button" className="message-chat-actions-modal__backdrop" onClick={onClose} aria-label={t('messages.actions.close')} />
       <div className="message-chat-actions-modal__sheet" role="dialog" aria-modal="true">
         {canEdit ? (
           <button type="button" className="message-chat-actions-modal__item" onClick={() => handleAction(() => onEdit?.(message))}>
             <i className="bx bx-edit" aria-hidden="true" />
-            <span>Tahrirlash</span>
+            <span>{t('messages.actions.edit')}</span>
           </button>
         ) : null}
         <button type="button" className="message-chat-actions-modal__item" onClick={() => handleAction(() => onReply?.(message))}>
           <i className="bx bx-reply" aria-hidden="true" />
-          <span>Javob berish</span>
+          <span>{t('messages.actions.reply')}</span>
         </button>
         {isOwn ? (
           <button
@@ -42,7 +44,7 @@ export default function MessageChatActionsModal({
             onClick={() => handleAction(() => onDelete?.(message))}
           >
             <i className="bx bx-trash" aria-hidden="true" />
-            <span>O&apos;chirish</span>
+            <span>{t('messages.actions.delete')}</span>
           </button>
         ) : null}
       </div>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Empty, Spin, Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { fetchSellerMessageThreads } from '../../api/messageChatApi';
 import { useUserMessageChat } from '../../hooks/useUserMessageChat';
@@ -15,6 +16,7 @@ import './MessagesPage.css';
 const { Title } = Typography;
 
 export default function MessagesPage() {
+  const { t } = useTranslation();
   const { token } = useSellerAuth();
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -131,7 +133,7 @@ export default function MessagesPage() {
   return (
     <section className="messages-page">
       <Title level={3} className="messages-page__title">
-        Xabarlar
+        {t('messages.title')}
       </Title>
 
       {loading ? (

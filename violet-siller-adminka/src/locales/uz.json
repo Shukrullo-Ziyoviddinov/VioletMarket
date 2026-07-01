@@ -51,5 +51,14 @@
     "subtitle": "Mijozlar saytida vaqtincha ko'rinmaydigan mahsulotlar.",
     "emptyText": "Vaqtincha to'xtatilgan mahsulot yo'q.",
     "emptyActionLabel": "Barcha mahsulotlarga qaytish"
+  },
+  "messages": {
+    "title": "Xabarlar",
+    "actions": {
+      "edit": "Tahrirlash",
+      "reply": "Javob berish",
+      "delete": "O'chirish",
+      "close": "Yopish"
+    }
   }
 }

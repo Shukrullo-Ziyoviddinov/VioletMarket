@@ -51,5 +51,14 @@
     "subtitle": "Products that are temporarily hidden from the customer site.",
     "emptyText": "No temporarily paused products.",
     "emptyActionLabel": "Back to all products"
+  },
+  "messages": {
+    "title": "Messages",
+    "actions": {
+      "edit": "Edit",
+      "reply": "Reply",
+      "delete": "Delete",
+      "close": "Close"
+    }
   }
 }
