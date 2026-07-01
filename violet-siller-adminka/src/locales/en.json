@@ -62,6 +62,7 @@
       "reply": "Reply",
       "delete": "Delete",
       "close": "Close"
-    }
+    },
+    "composerPlaceholder": "Write a message..."
   }
 }

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Spin } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { DEFAULT_USER_AVATAR, resolveUserProfileImage } from '../../utils/mediaUrl';
 import { buildReplyToPayload } from '../../utils/messageChatReplyUtils';
 import { useMessageChatJumpTo } from '../../hooks/useMessageChatJumpTo';
@@ -23,6 +24,7 @@ function SellerUserChatHeader({
   isPartnerOnline = false,
   partnerLastActiveAt = null,
 }) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -86,7 +88,7 @@ function SellerUserChatHeader({
       <MiniModal open={menuOpen} onClose={() => setMenuOpen(false)} align="bottom-end">
         <button type="button" className="mini-modal__item mini-modal__item--danger" onClick={handleDeleteRequest}>
           <i className="bx bx-trash" aria-hidden="true" />
-          <span>O&apos;chirish</span>
+          <span>{t('messages.actions.delete')}</span>
         </button>
       </MiniModal>
 
@@ -204,6 +206,7 @@ function SellerUserChatComposer({
   replyTarget = null,
   onCancelComposerMode,
 }) {
+  const { t } = useTranslation();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -277,7 +280,7 @@ function SellerUserChatComposer({
           ref={textareaRef}
           className="seller-user-chat-composer__input"
           rows={1}
-          placeholder="Xabar yozing..."
+          placeholder={t('messages.composerPlaceholder')}
           value={text}
           onChange={(event) => {
             const nextText = event.target.value;

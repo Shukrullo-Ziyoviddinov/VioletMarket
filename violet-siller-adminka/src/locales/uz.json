@@ -62,6 +62,7 @@
       "reply": "Javob berish",
       "delete": "O'chirish",
       "close": "Yopish"
-    }
+    },
+    "composerPlaceholder": "Xabar yozing..."
   }
 }

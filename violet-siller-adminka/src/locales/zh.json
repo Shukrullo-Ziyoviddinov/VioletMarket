@@ -62,6 +62,7 @@
       "reply": "回复",
       "delete": "删除",
       "close": "关闭"
-    }
+    },
+    "composerPlaceholder": "输入消息..."
   }
 }
