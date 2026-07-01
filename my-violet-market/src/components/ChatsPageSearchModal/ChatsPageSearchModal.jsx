@@ -90,7 +90,10 @@ export default function ChatsPageSearchModal({
           <i className="bx bx-search chats-page-search-modal__search-icon" aria-hidden="true" />
           <input
             ref={inputRef}
-            type="search"
+            type="text"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
             className="chats-page-search-modal__input"
             value={query}
             onChange={(event) => onQueryChange?.(event.target.value)}

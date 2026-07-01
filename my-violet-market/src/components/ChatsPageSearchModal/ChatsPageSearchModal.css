@@ -72,6 +72,17 @@
   color: #1f1630;
   outline: none;
   font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.chats-page-search-modal__input::-webkit-search-cancel-button,
+.chats-page-search-modal__input::-webkit-search-decoration,
+.chats-page-search-modal__input::-webkit-search-results-button,
+.chats-page-search-modal__input::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .chats-page-search-modal__input::placeholder {
@@ -153,7 +164,7 @@
 .chats-page-search-modal__empty-icon {
   display: block;
   color: #b6adca;
-  font-size: 22px;
+  font-size: 62px;
   line-height: 1;
 }
 
