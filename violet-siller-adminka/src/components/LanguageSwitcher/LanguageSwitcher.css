@@ -1,20 +1,21 @@
 .language-switcher {
   position: relative;
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  width: 52px;
 }
 
 .language-switcher__trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
+  display: block;
+  width: 100%;
+  height: 36px;
   padding: 0;
   border: 1px solid #e8e0f0;
   border-radius: 8px;
   background: #fff;
   cursor: pointer;
+  overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -24,48 +25,47 @@
 }
 
 .language-switcher__flag {
-  width: 24px;
-  height: 16px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 2px;
   display: block;
 }
 
 .language-switcher__dropdown {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: calc(100% + 4px);
+  left: 0;
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 52px;
-  padding: 8px;
-  border: 1px solid #ece7f3;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(31, 18, 51, 0.12);
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .language-switcher__option {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 32px;
+  display: block;
+  width: 100%;
+  height: 36px;
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
+  border: 1px solid #e8e0f0;
+  border-radius: 8px;
+  background: #fff;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .language-switcher__option:hover {
-  background: #f7f3fb;
+  border-color: #c9b8e6;
+  box-shadow: 0 2px 8px rgba(118, 75, 162, 0.12);
 }
 
 .language-switcher__option--active {
   border-color: #764ba2;
-  background: #f3ecfa;
+  box-shadow: 0 0 0 1px #764ba2;
 }
