@@ -1,0 +1,33 @@
+{
+  "language": {
+    "switch": "Tilni o'zgartirish"
+  },
+  "marketInfo": {
+    "title": "Market haqida",
+    "edit": "Tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "shopId": "Do'kon ID",
+    "subscribers": "Obunachilar",
+    "sellerCountry": "Sotuvchi davlati",
+    "logo": "Logo",
+    "logoAlt": "Do'kon logosi",
+    "uploadImage": "Rasm yuklash",
+    "remove": "O'chirish",
+    "shopNameUz": "Do'kon nomi (UZ)",
+    "shopNameRu": "Do'kon nomi (RU)",
+    "descriptionUz": "Tavsif (UZ)",
+    "descriptionRu": "Tavsif (RU)",
+    "owner": "Egasi",
+    "placeholderShopName": "Violet market",
+    "placeholderDescriptionUz": "Do'kon haqida ma'lumot",
+    "placeholderDescriptionRu": "Описание магазина",
+    "validationShopName": "Do'kon nomini kiriting",
+    "loadError": "Ma'lumot yuklanmadi",
+    "saveSuccess": "Do'kon ma'lumotlari saqlandi",
+    "saveError": "Saqlash amalga oshmadi",
+    "logoUploadSuccess": "Logo yuklandi",
+    "logoUploadError": "Logo yuklanmadi",
+    "logoResetInfo": "Logo standart holatga qaytarildi"
+  }
+}

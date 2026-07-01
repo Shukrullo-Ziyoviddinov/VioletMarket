@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Button, Layout, Typography } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons';
 import { useSellerAuth } from '../../context/SellerAuthContext';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import './SellerHeader.css';
 
 const { Header } = Layout;
@@ -27,6 +28,7 @@ export default function SellerHeader({ collapsed, onToggle }) {
         </Text>
       </div>
       <div className="seller-header__right">
+        <LanguageSwitcher />
         <div className="seller-header__profile">
           <Avatar size="small" icon={<UserOutlined />} className="seller-header__avatar" />
           <Text className="seller-header__profile-name">{profileName}</Text>

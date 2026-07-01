@@ -1,0 +1,33 @@
+{
+  "language": {
+    "switch": "切换语言"
+  },
+  "marketInfo": {
+    "title": "关于市场",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "shopId": "店铺 ID",
+    "subscribers": "订阅者",
+    "sellerCountry": "卖家国家",
+    "logo": "标志",
+    "logoAlt": "店铺标志",
+    "uploadImage": "上传图片",
+    "remove": "删除",
+    "shopNameUz": "店铺名称 (UZ)",
+    "shopNameRu": "店铺名称 (RU)",
+    "descriptionUz": "描述 (UZ)",
+    "descriptionRu": "描述 (RU)",
+    "owner": "所有者",
+    "placeholderShopName": "Violet market",
+    "placeholderDescriptionUz": "店铺信息",
+    "placeholderDescriptionRu": "店铺描述",
+    "validationShopName": "请输入店铺名称",
+    "loadError": "数据加载失败",
+    "saveSuccess": "店铺信息已保存",
+    "saveError": "保存失败",
+    "logoUploadSuccess": "标志已上传",
+    "logoUploadError": "标志上传失败",
+    "logoResetInfo": "标志已恢复默认"
+  }
+}

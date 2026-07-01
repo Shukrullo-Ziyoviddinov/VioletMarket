@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import './i18n';
 import AuthLayout from './components/AuthLayout/AuthLayout';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import SellerLayout from './components/SellerLayout/SellerLayout';

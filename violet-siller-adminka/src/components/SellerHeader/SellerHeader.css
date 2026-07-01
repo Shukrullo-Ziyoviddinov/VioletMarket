@@ -38,6 +38,7 @@
 .seller-header__right {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .seller-header__profile {

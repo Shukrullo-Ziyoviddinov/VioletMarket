@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import GlobalModal from '../GlobalModal/GlobalModal';
 import MarketInfo from '../MarketInfo/MarketInfo';
@@ -13,6 +14,7 @@ import './SellerLayout.css';
 const { Sider, Content } = Layout;
 
 export default function SellerLayout() {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [isMarketInfoOpen, setIsMarketInfoOpen] = useState(false);
   const { isPausedNoticeOpen, closePausedNotice } = useSellerCabinetSession();
@@ -44,7 +46,7 @@ export default function SellerLayout() {
 
       <GlobalModal
         open={isMarketInfoOpen}
-        title="Market haqida"
+        title={t('marketInfo.title')}
         onClose={() => setIsMarketInfoOpen(false)}
       >
         <MarketInfo />

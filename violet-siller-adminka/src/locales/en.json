@@ -1,0 +1,33 @@
+{
+  "language": {
+    "switch": "Change language"
+  },
+  "marketInfo": {
+    "title": "About the market",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "shopId": "Shop ID",
+    "subscribers": "Subscribers",
+    "sellerCountry": "Seller country",
+    "logo": "Logo",
+    "logoAlt": "Shop logo",
+    "uploadImage": "Upload image",
+    "remove": "Remove",
+    "shopNameUz": "Shop name (UZ)",
+    "shopNameRu": "Shop name (RU)",
+    "descriptionUz": "Description (UZ)",
+    "descriptionRu": "Description (RU)",
+    "owner": "Owner",
+    "placeholderShopName": "Violet market",
+    "placeholderDescriptionUz": "Information about the shop",
+    "placeholderDescriptionRu": "Shop description",
+    "validationShopName": "Enter shop name",
+    "loadError": "Failed to load data",
+    "saveSuccess": "Shop information saved",
+    "saveError": "Failed to save",
+    "logoUploadSuccess": "Logo uploaded",
+    "logoUploadError": "Failed to upload logo",
+    "logoResetInfo": "Logo reset to default"
+  }
+}

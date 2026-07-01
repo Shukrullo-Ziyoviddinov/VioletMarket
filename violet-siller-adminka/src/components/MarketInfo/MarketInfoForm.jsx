@@ -9,6 +9,7 @@ import {
   ShopOutlined,
   TranslationOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import {
   fetchSellerCabinetProfile,
   updateSellerMarketProfile,
@@ -35,6 +36,7 @@ function buildFormValues(profile) {
 }
 
 export default function MarketInfoForm() {
+  const { t } = useTranslation();
   const { token } = useSellerAuth();
   const [form] = Form.useForm();
   const [profile, setProfile] = useState(null);
@@ -60,7 +62,7 @@ export default function MarketInfoForm() {
       setProfile(data);
       form.setFieldsValue(buildFormValues(data));
     } catch (err) {
-      setError(err.message || 'Ma\'lumot yuklanmadi');
+      setError(err.message || t('marketInfo.loadError'));
     } finally {
       setLoading(false);
     }
@@ -85,10 +87,10 @@ export default function MarketInfoForm() {
       setProfile(data);
       form.setFieldsValue(buildFormValues(data));
       setIsEditing(false);
-      message.success('Do\'kon ma\'lumotlari saqlandi');
+      message.success(t('marketInfo.saveSuccess'));
     } catch (err) {
       if (err?.errorFields) return;
-      message.error(err.message || 'Saqlash amalga oshmadi');
+      message.error(err.message || t('marketInfo.saveError'));
     } finally {
       setSaving(false);
     }
@@ -105,10 +107,10 @@ export default function MarketInfoForm() {
       const result = await uploadSellerMarketImage(token, file);
       form.setFieldValue('logo', result?.path || '');
       onSuccess?.(result);
-      message.success('Logo yuklandi');
+      message.success(t('marketInfo.logoUploadSuccess'));
     } catch (err) {
       onError?.(err);
-      message.error(err.message || 'Logo yuklanmadi');
+      message.error(err.message || t('marketInfo.logoUploadError'));
     } finally {
       setUploading(false);
     }
@@ -116,7 +118,7 @@ export default function MarketInfoForm() {
 
   const handleRemoveLogo = () => {
     form.setFieldValue('logo', DEFAULT_LOGO);
-    message.info('Logo standart holatga qaytarildi');
+    message.info(t('marketInfo.logoResetInfo'));
   };
 
   const handleClearDescription = (fieldName) => {
@@ -147,14 +149,14 @@ export default function MarketInfoForm() {
       <div className="market-info-form__toolbar">
         {!isEditing ? (
           <Button type="primary" icon={<EditOutlined />} onClick={() => setIsEditing(true)}>
-            Tahrirlash
+            {t('marketInfo.edit')}
           </Button>
         ) : (
           <Space wrap>
             <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={handleSave}>
-              Saqlash
+              {t('marketInfo.save')}
             </Button>
-            <Button onClick={handleCancel}>Bekor qilish</Button>
+            <Button onClick={handleCancel}>{t('marketInfo.cancel')}</Button>
           </Space>
         )}
       </div>
@@ -166,7 +168,7 @@ export default function MarketInfoForm() {
               <ShopOutlined />
             </div>
             <div>
-              <Text className="market-info-form__label">Do&apos;kon ID</Text>
+              <Text className="market-info-form__label">{t('marketInfo.shopId')}</Text>
               <Text className="market-info-form__value">{account?.id || '—'}</Text>
             </div>
           </div>
@@ -175,7 +177,7 @@ export default function MarketInfoForm() {
               <GlobalOutlined />
             </div>
             <div>
-              <Text className="market-info-form__label">Obunachilar</Text>
+              <Text className="market-info-form__label">{t('marketInfo.subscribers')}</Text>
               <Text className="market-info-form__value">{account?.subscriberCount ?? 0}</Text>
             </div>
           </div>
@@ -184,7 +186,7 @@ export default function MarketInfoForm() {
               <GlobalOutlined />
             </div>
             <div>
-              <Text className="market-info-form__label">Sotuvchi davlati</Text>
+              <Text className="market-info-form__label">{t('marketInfo.sellerCountry')}</Text>
               <Text className="market-info-form__value">
                 {String(account?.sellerCountry || '').toUpperCase() || '—'}
               </Text>
@@ -197,10 +199,10 @@ export default function MarketInfoForm() {
             <div className="market-info-form__icon-wrap market-info-form__icon-wrap--image">
               <PictureOutlined />
             </div>
-            <Text className="market-info-form__field-title">Logo</Text>
+            <Text className="market-info-form__field-title">{t('marketInfo.logo')}</Text>
           </div>
           <div className="market-info-form__logo-preview">
-            <img src={logoPreview} alt="Do'kon logosi" className="market-info-form__logo-img" />
+            <img src={logoPreview} alt={t('marketInfo.logoAlt')} className="market-info-form__logo-img" />
           </div>
           <Form.Item name="logo" hidden>
             <Input />
@@ -213,10 +215,10 @@ export default function MarketInfoForm() {
                 customRequest={handleLogoUpload}
                 disabled={uploading}
               >
-                <Button loading={uploading}>Rasm yuklash</Button>
+                <Button loading={uploading}>{t('marketInfo.uploadImage')}</Button>
               </Upload>
               <Button icon={<DeleteOutlined />} onClick={handleRemoveLogo}>
-                O&apos;chirish
+                {t('marketInfo.remove')}
               </Button>
             </Space>
           ) : null}
@@ -227,13 +229,13 @@ export default function MarketInfoForm() {
             <div className="market-info-form__icon-wrap">
               <ShopOutlined />
             </div>
-            <Text className="market-info-form__field-title">Do&apos;kon nomi (UZ)</Text>
+            <Text className="market-info-form__field-title">{t('marketInfo.shopNameUz')}</Text>
           </div>
           <Form.Item
             name="nameUz"
-            rules={[{ required: true, message: 'Do\'kon nomini kiriting' }]}
+            rules={[{ required: true, message: t('marketInfo.validationShopName') }]}
           >
-            <Input placeholder="Violet market" />
+            <Input placeholder={t('marketInfo.placeholderShopName')} />
           </Form.Item>
         </div>
 
@@ -242,13 +244,13 @@ export default function MarketInfoForm() {
             <div className="market-info-form__icon-wrap">
               <TranslationOutlined />
             </div>
-            <Text className="market-info-form__field-title">Do&apos;kon nomi (RU)</Text>
+            <Text className="market-info-form__field-title">{t('marketInfo.shopNameRu')}</Text>
           </div>
           <Form.Item
             name="nameRu"
-            rules={[{ required: true, message: 'Do\'kon nomini kiriting' }]}
+            rules={[{ required: true, message: t('marketInfo.validationShopName') }]}
           >
-            <Input placeholder="Violet market" />
+            <Input placeholder={t('marketInfo.placeholderShopName')} />
           </Form.Item>
         </div>
 
@@ -257,10 +259,10 @@ export default function MarketInfoForm() {
             <div className="market-info-form__icon-wrap">
               <PictureOutlined />
             </div>
-            <Text className="market-info-form__field-title">Tavsif (UZ)</Text>
+            <Text className="market-info-form__field-title">{t('marketInfo.descriptionUz')}</Text>
           </div>
           <Form.Item name="descriptionUz">
-            <TextArea rows={4} placeholder="Do'kon haqida ma'lumot" />
+            <TextArea rows={4} placeholder={t('marketInfo.placeholderDescriptionUz')} />
           </Form.Item>
           {isEditing ? (
             <Button
@@ -269,7 +271,7 @@ export default function MarketInfoForm() {
               icon={<DeleteOutlined />}
               onClick={() => handleClearDescription('descriptionUz')}
             >
-              O&apos;chirish
+              {t('marketInfo.remove')}
             </Button>
           ) : null}
         </div>
@@ -279,10 +281,10 @@ export default function MarketInfoForm() {
             <div className="market-info-form__icon-wrap">
               <PictureOutlined />
             </div>
-            <Text className="market-info-form__field-title">Tavsif (RU)</Text>
+            <Text className="market-info-form__field-title">{t('marketInfo.descriptionRu')}</Text>
           </div>
           <Form.Item name="descriptionRu">
-            <TextArea rows={4} placeholder="Описание магазина" />
+            <TextArea rows={4} placeholder={t('marketInfo.placeholderDescriptionRu')} />
           </Form.Item>
           {isEditing ? (
             <Button
@@ -291,14 +293,14 @@ export default function MarketInfoForm() {
               icon={<DeleteOutlined />}
               onClick={() => handleClearDescription('descriptionRu')}
             >
-              O&apos;chirish
+              {t('marketInfo.remove')}
             </Button>
           ) : null}
         </div>
       </Form>
 
       <div className="market-info-form__readonly market-info-form__readonly--footer">
-        <Text className="market-info-form__label">Egasi</Text>
+        <Text className="market-info-form__label">{t('marketInfo.owner')}</Text>
         <Text className="market-info-form__value">
           {registration?.firstName || '—'} {registration?.lastName || ''}
         </Text>
