@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
+import { masterCategoryLocaleKey } from '../../utils/masterCategoryLocaleKey';
 import './AddProductClassificationFields.css';
 
 function formatFilterLabel(value) {
@@ -58,10 +59,11 @@ export default function AddProductClassificationFields({
       (Array.isArray(masterCategories) ? masterCategories : []).map((row) => {
         const categoryId = String(row.id);
         const fallbackLabel = row?.name?.uz || categoryId;
+        const localeKey = masterCategoryLocaleKey(row?.name?.uz);
 
         return {
           value: categoryId,
-          label: t(`addProduct.classification.masterCategoryOptions.${categoryId}`, {
+          label: t(`addProduct.classification.masterCategoryOptions.${localeKey}`, {
             defaultValue: fallbackLabel,
           }),
           subLabel: row?.name?.ru || '',
