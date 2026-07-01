@@ -141,6 +141,24 @@
   border-color: #d8c4f2;
 }
 
+.top-sillers__action-btn--chat {
+  background: #022ff9;
+  border-color: #022ff9;
+  color: #fff;
+}
+
+.top-sillers__action-btn--chat:hover {
+  background: #0220d4;
+  border-color: #0220d4;
+  color: #fff;
+}
+
+.top-sillers__action-btn--shop {
+  background: #f8f4fd;
+  border-color: #e8dff5;
+  color: #5b4d73;
+}
+
 @media (max-width: 900px) {
   .top-sillers__item-wrap {
     width: 280px;
