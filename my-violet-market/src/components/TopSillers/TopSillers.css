@@ -4,7 +4,7 @@
 
 .top-sillers__title {
   margin: 0 0 10px;
-  font-size: 1.1rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #1f1f2e;
 }
@@ -48,6 +48,7 @@
 .top-sillers__avatar {
   width: 52px;
   height: 52px;
+  border: 2px solid #5b4d73;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -112,7 +113,7 @@
   justify-content: center;
   gap: 6px;
   min-width: 0;
-  padding: 8px 10px;
+  padding: 2px 5px;
   border: 1px solid #e8dff5;
   border-radius: 8px;
   background: #f8f4fd;
@@ -173,5 +174,9 @@
   .top-sillers__stats .seller-subscriber-count,
   .top-sillers__stats .seller-profile__rating-preview {
     font-size: 0.75rem;
+  }
+
+  .top-sillers__title {
+    font-size: 1.1rem;
   }
 }
