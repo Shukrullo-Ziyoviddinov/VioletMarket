@@ -81,7 +81,13 @@ function normalizeTopSeller(rawItem, lang = 'uz') {
   };
 }
 
-export default function TopSillers({ sellers = [], isLoading = false }) {
+export default function TopSillers({
+  sellers = [],
+  isLoading = false,
+  variant = 'default',
+  onOpenChat: onOpenChatExternal,
+  hideChatModal = false,
+}) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { getSellerById } = useAppData();
@@ -160,6 +166,11 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
       event?.stopPropagation?.();
       event?.preventDefault?.();
 
+      if (onOpenChatExternal) {
+        onOpenChatExternal(sellerId, event);
+        return;
+      }
+
       if (!userData?.isAuthenticated || !authToken) {
         showToast(t('profile.messagesLoginRequired'), 'info');
         navigate('/login');
@@ -169,7 +180,7 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
       setActiveChatSellerId(sellerId);
       setIsChatOpen(true);
     },
-    [authToken, navigate, showToast, t, userData?.isAuthenticated],
+    [authToken, navigate, onOpenChatExternal, showToast, t, userData?.isAuthenticated],
   );
 
   const handleOpenShop = useCallback(
@@ -188,10 +199,17 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
 
   if (!isLoading && !normalized.length) return null;
 
+  const sectionClassName = [
+    'top-sillers',
+    variant === 'embedded' ? 'top-sillers--embedded' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <>
       <section
-        className="top-sillers"
+        className={sectionClassName}
         aria-label={t('home.topSillersTitle')}
         aria-busy={isLoading}
       >
@@ -262,6 +280,7 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
         )}
       </section>
 
+      {!hideChatModal ? (
       <ProductSellerChatModal
         open={isChatOpen}
         seller={activeChatSeller}
@@ -289,6 +308,7 @@ export default function TopSillers({ sellers = [], isLoading = false }) {
         onComposerActivity={handleChatComposerActivity}
         onStopTyping={stopChatTyping}
       />
+      ) : null}
     </>
   );
 }

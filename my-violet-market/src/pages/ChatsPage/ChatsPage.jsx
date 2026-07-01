@@ -31,7 +31,7 @@ import './ChatsPage.css';
 export default function ChatsPage() {
   const { i18n, t } = useTranslation();
   const { userData, authToken } = useUser();
-  const { getSellerById } = useAppData();
+  const { getSellerById, topSillers, loading: appDataLoading } = useAppData();
   const lang = i18n.language || 'uz';
   const langKey = lang === 'ru' ? 'ru' : 'uz';
 
@@ -141,6 +141,14 @@ export default function ChatsPage() {
     setActiveChatSellerId(thread.sellerId);
     setIsChatOpen(true);
   }, []);
+
+  const handleOpenTopSellerChat = useCallback(
+    (sellerId) => {
+      setActiveChatSellerId(sellerId);
+      setIsChatOpen(true);
+    },
+    [],
+  );
 
   const handleOpenSearch = useCallback(() => {
     setSearchOpen(true);
@@ -257,6 +265,9 @@ export default function ChatsPage() {
           onUnarchiveThread: unarchiveThread,
           onDeleteThread: handleDeleteRequest,
         }}
+        topSillers={topSillers}
+        topSillersLoading={appDataLoading && topSillers.length === 0}
+        onOpenTopSellerChat={handleOpenTopSellerChat}
       />
 
       <ProductSellerChatModal

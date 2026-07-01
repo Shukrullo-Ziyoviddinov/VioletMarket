@@ -107,6 +107,22 @@
   background: #fff;
 }
 
+.chats-page-search-modal__body .top-sillers--embedded {
+  margin: 0;
+  padding: 12px 14px 16px;
+}
+
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers__title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f1630;
+}
+
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable.scrollable-section {
+  margin: 0;
+}
+
 .chats-page-search-modal__hint,
 .chats-page-search-modal__empty {
   margin: 0;

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ChatsThreadList from '../ChatsThreadList';
+import TopSillers from '../TopSillers/TopSillers';
 import './ChatsPageSearchModal.css';
 
 const CLOSE_ANIMATION_MS = 340;
@@ -13,6 +14,9 @@ export default function ChatsPageSearchModal({
   threads = [],
   loading = false,
   threadListProps = {},
+  topSillers = [],
+  topSillersLoading = false,
+  onOpenTopSellerChat,
 }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
@@ -99,7 +103,20 @@ export default function ChatsPageSearchModal({
 
       <div className="chats-page-search-modal__body">
         {!query.trim() ? (
-          <p className="chats-page-search-modal__hint">{t('chats.search.hint')}</p>
+          topSillersLoading || topSillers.length > 0 ? (
+            <TopSillers
+              sellers={topSillers}
+              isLoading={topSillersLoading}
+              variant="embedded"
+              hideChatModal
+              onOpenChat={(sellerId) => {
+                onClose?.();
+                onOpenTopSellerChat?.(sellerId);
+              }}
+            />
+          ) : (
+            <p className="chats-page-search-modal__hint">{t('chats.search.hint')}</p>
+          )
         ) : showEmpty ? (
           <p className="chats-page-search-modal__empty">{t('chats.search.noResults')}</p>
         ) : (
