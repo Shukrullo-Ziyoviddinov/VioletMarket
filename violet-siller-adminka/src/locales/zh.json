@@ -40,6 +40,16 @@
     "deleting": "删除中...",
     "saving": "保存中...",
     "activate": "启用",
-    "pause": "暂时暂停"
+    "pause": "暂时暂停",
+    "paused": "已暂时暂停"
+  },
+  "header": {
+    "adminDashboard": "管理后台"
+  },
+  "discontinuedProducts": {
+    "title": "已暂时暂停",
+    "subtitle": "在客户网站上暂时不可见的产品。",
+    "emptyText": "暂无已暂停的产品。",
+    "emptyActionLabel": "返回所有产品"
   }
 }

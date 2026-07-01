@@ -1,5 +1,6 @@
 import React from 'react';
 import { Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import SellerProductsGrid, {
   SellerProductsDeleteModal,
 } from '../../components/SellerProductsGrid/SellerProductsGrid';
@@ -10,6 +11,7 @@ import './DiscontinuedProductsPage.css';
 const { Title, Text } = Typography;
 
 export default function DiscontinuedProductsPage() {
+  const { t } = useTranslation();
   const {
     navigate,
     displayedProducts,
@@ -31,10 +33,10 @@ export default function DiscontinuedProductsPage() {
       <div className="my-products-page__head">
         <div>
           <Title level={3} className="my-products-page__title">
-            Vaqtincha to&apos;xtatilgan
+            {t('discontinuedProducts.title')}
           </Title>
           <Text type="secondary" className="my-products-page__subtitle">
-            Mijozlar saytida vaqtincha ko&apos;rinmaydigan mahsulotlar.
+            {t('discontinuedProducts.subtitle')}
           </Text>
         </div>
       </div>
@@ -43,8 +45,8 @@ export default function DiscontinuedProductsPage() {
         products={displayedProducts}
         loading={loading}
         error={error}
-        emptyText="Vaqtincha to'xtatilgan mahsulot yo'q."
-        emptyActionLabel="Barcha mahsulotlarga qaytish"
+        emptyText={t('discontinuedProducts.emptyText')}
+        emptyActionLabel={t('discontinuedProducts.emptyActionLabel')}
         onEmptyAction={() => navigate('/products')}
         openMenuProductId={openMenuProductId}
         setOpenMenuProductId={setOpenMenuProductId}

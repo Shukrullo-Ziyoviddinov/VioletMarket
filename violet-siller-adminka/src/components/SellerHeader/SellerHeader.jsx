@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, Button, Layout, Typography } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 import './SellerHeader.css';
@@ -9,6 +10,7 @@ const { Header } = Layout;
 const { Text } = Typography;
 
 export default function SellerHeader({ collapsed, onToggle }) {
+  const { t } = useTranslation();
   const { seller } = useSellerAuth();
   const brandName = seller?.shopDisplayName || 'Violet';
   const profileName = [seller?.firstName, seller?.lastName].filter(Boolean).join(' ') || 'Admin';
@@ -24,7 +26,7 @@ export default function SellerHeader({ collapsed, onToggle }) {
           aria-label={collapsed ? 'Sidebarni ochish' : 'Sidebarni yopish'}
         />
         <Text className="seller-header__title">
-          <span className="seller-header__brand">{brandName}</span> Admin dashboard
+          <span className="seller-header__brand">{brandName}</span> {t('header.adminDashboard')}
         </Text>
       </div>
       <div className="seller-header__right">

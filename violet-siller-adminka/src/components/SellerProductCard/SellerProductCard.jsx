@@ -63,7 +63,7 @@ export default function SellerProductCard({
         />
         {isPaused ? (
           <div className="seller-product-card__paused-overlay" aria-hidden="true">
-            <span>Vaqtincha to&apos;xtatilgan</span>
+            <span>{t('myProducts.paused')}</span>
           </div>
         ) : null}
       </div>

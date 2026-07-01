@@ -40,6 +40,16 @@
     "deleting": "Deleting...",
     "saving": "Saving...",
     "activate": "Activate",
-    "pause": "Pause temporarily"
+    "pause": "Pause temporarily",
+    "paused": "Temporarily paused"
+  },
+  "header": {
+    "adminDashboard": "Admin dashboard"
+  },
+  "discontinuedProducts": {
+    "title": "Temporarily paused",
+    "subtitle": "Products that are temporarily hidden from the customer site.",
+    "emptyText": "No temporarily paused products.",
+    "emptyActionLabel": "Back to all products"
   }
 }

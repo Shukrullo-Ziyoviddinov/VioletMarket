@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Menu } from 'antd';
 import { AppstoreOutlined, DashboardOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { useSellerMessageThreadsUnread } from '../../hooks/useSellerMessageThreadsUnread';
@@ -14,7 +15,7 @@ const menuItems = [
   {
     key: 'discontinued-products',
     icon: <PauseCircleOutlined />,
-    label: "Vaqtincha to'xtatilgan",
+    labelKey: 'discontinuedProducts.title',
     route: '/products/discontinued',
   },
   { key: 'add-products', icon: <PlusCircleOutlined />, label: "Mahsulot qo'shish", route: '/products/add' },
@@ -51,6 +52,7 @@ function getSelectedKeyFromPath(pathname) {
 }
 
 export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { token, isAuthenticated } = useSellerAuth();
@@ -59,9 +61,11 @@ export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
 
   const sidebarMenuItems = useMemo(
     () =>
-      menuItems.map(({ key, icon, label }) => {
+      menuItems.map(({ key, icon, label, labelKey, route }) => {
+        const resolvedLabel = labelKey ? t(labelKey) : label;
+
         if (key !== 'messages') {
-          return { key, icon, label };
+          return { key, icon, label: resolvedLabel, route };
         }
 
         return {
@@ -74,13 +78,14 @@ export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
           ),
           label: (
             <span className="seller-sidebar__menu-label">
-              <span>{label}</span>
+              <span>{resolvedLabel}</span>
               {!collapsed ? <SidebarUnreadBadge count={totalUnread} /> : null}
             </span>
           ),
+          route,
         };
       }),
-    [totalUnread, collapsed],
+    [t, totalUnread, collapsed],
   );
 
   const handleMenuClick = ({ key }) => {

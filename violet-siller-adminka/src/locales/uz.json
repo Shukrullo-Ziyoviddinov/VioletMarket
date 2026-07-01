@@ -40,6 +40,16 @@
     "deleting": "O'chirilmoqda...",
     "saving": "Saqlanmoqda...",
     "activate": "Faollashtirish",
-    "pause": "Vaqtincha to'xtatish"
+    "pause": "Vaqtincha to'xtatish",
+    "paused": "Vaqtincha to'xtatilgan"
+  },
+  "header": {
+    "adminDashboard": "Admin dashboard"
+  },
+  "discontinuedProducts": {
+    "title": "Vaqtincha to'xtatilgan",
+    "subtitle": "Mijozlar saytida vaqtincha ko'rinmaydigan mahsulotlar.",
+    "emptyText": "Vaqtincha to'xtatilgan mahsulot yo'q.",
+    "emptyActionLabel": "Barcha mahsulotlarga qaytish"
   }
 }
