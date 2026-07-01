@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Button, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import SellerProductIdPicker from '../SellerProductIdPicker/SellerProductIdPicker';
 import {
   MAX_RELATED_PRODUCTS_PER_GROUP,
@@ -63,6 +64,8 @@ export default function AddProductRelatedGroupsFields({
   productPickerOptions = [],
   productPickerLoading = false,
 }) {
+  const { t } = useTranslation();
+
   const relatedGroups = useMemo(
     () => (Array.isArray(values.relatedGroups) ? values.relatedGroups : []),
     [values.relatedGroups],
@@ -131,55 +134,48 @@ export default function AddProductRelatedGroupsFields({
 
   return (
     <section className="add-product-form__card add-product-related-groups">
-      <h3 className="add-product-form__card-title">Stil g&apos;oyalari</h3>
-      <p className="add-product-related-groups__intro">
-        Mijoz mahsulot sahifasida «bilan birga kiyish» yoki stil g&apos;oyalari blokida
-        ko&apos;rinadi. Har bir turkum — alohida stil yo&apos;nalishi (masalan pastki kiyimlar,
-        oyoq kiyim).
-      </p>
+      <h3 className="add-product-form__card-title">{t('addProduct.relatedGroups.title')}</h3>
+      <p className="add-product-related-groups__intro">{t('addProduct.relatedGroups.intro')}</p>
 
       <div className="add-product-related-groups__toolbar">
         <Button type="dashed" icon={<PlusOutlined />} onClick={addRelatedGroup}>
-          Boshqa turkum qo&apos;shish
+          {t('addProduct.relatedGroups.addGroup')}
         </Button>
       </div>
 
       {productPickerLoading ? (
-        <p className="add-product-related-groups__meta">Mahsulotlar ro&apos;yxati yuklanmoqda...</p>
+        <p className="add-product-related-groups__meta">{t('addProduct.relatedGroups.loadingProducts')}</p>
       ) : null}
 
       {!productPickerLoading && productPickerOptions.length === 0 ? (
-        <p className="add-product-related-groups__meta">
-          Hozircha biriktirish uchun boshqa mahsulotlaringiz yo&apos;q. Avval kamida bitta
-          mahsulot qo&apos;shilgan bo&apos;lishi kerak.
-        </p>
+        <p className="add-product-related-groups__meta">{t('addProduct.relatedGroups.noProducts')}</p>
       ) : null}
 
       {relatedGroups.length === 0 ? (
-        <p className="add-product-related-groups__empty">
-          Hozircha turkum yo&apos;q. «Boshqa turkum qo&apos;shish» tugmasini bosing.
-        </p>
+        <p className="add-product-related-groups__empty">{t('addProduct.relatedGroups.empty')}</p>
       ) : null}
 
       {relatedGroups.map((group, groupIndex) => (
         <div key={group.localId} className="add-product-related-groups__card">
           <div className="add-product-related-groups__card-head">
-            <span className="add-product-related-groups__card-index">Turkum #{groupIndex + 1}</span>
+            <span className="add-product-related-groups__card-index">
+              {t('addProduct.relatedGroups.groupIndex', { index: groupIndex + 1 })}
+            </span>
             <Button type="link" danger onClick={() => removeRelatedGroup(group.localId)}>
-              O&apos;chirish
+              {t('addProduct.common.remove')}
             </Button>
           </div>
 
-          <FieldRow hint="Bu turkum mijozga qanday stil yo&apos;nalishi ekanini tushuntiradi. Masalan: «Pastki kiyimlar» yoki «Ideal kombinatsiya».">
+          <FieldRow hint={t('addProduct.relatedGroups.titleRowHint')}>
             <FieldBlock
-              label="Turkum nomi (O'zbekcha)"
-              hint="Stil g'oyeasi sarlavhasi — mijoz ko'radigan nom."
+              label={t('addProduct.relatedGroups.titleUzLabel')}
+              hint={t('addProduct.relatedGroups.titleUzHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="Pastki kiyimlar"
+                placeholder={t('addProduct.relatedGroups.titleUzPlaceholder')}
                 value={group.titleUz}
                 onChange={(event) =>
                   changeGroupField(group.localId, 'titleUz', event.target.value)
@@ -187,14 +183,14 @@ export default function AddProductRelatedGroupsFields({
               />
             </FieldBlock>
             <FieldBlock
-              label="Turkum nomi (Ruscha)"
-              hint="Rus tilidagi xaridorlar uchun xuddi shu nom."
+              label={t('addProduct.relatedGroups.titleRuLabel')}
+              hint={t('addProduct.relatedGroups.titleRuHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="Нижняя одежда"
+                placeholder={t('addProduct.relatedGroups.titleRuPlaceholder')}
                 value={group.titleRu}
                 onChange={(event) =>
                   changeGroupField(group.localId, 'titleRu', event.target.value)
@@ -206,11 +202,13 @@ export default function AddProductRelatedGroupsFields({
           <div className="add-product-related-groups__products">
             <div className="add-product-related-groups__products-head">
               <div>
-                <span className="add-product-form__field-label">Biriktirilgan mahsulotlar</span>
+                <span className="add-product-form__field-label">
+                  {t('addProduct.relatedGroups.linkedProductsLabel')}
+                </span>
                 <p className="add-product-form__field-hint">
-                  Har bir turkumda maksimal {MAX_RELATED_PRODUCTS_PER_GROUP} ta mahsulot.
-                  Ro&apos;yxatda faqat sizning do&apos;koningizdagi mahsulotlar chiqadi — boshqa
-                  sotuvchilarning mahsulotlari ko&apos;rinmaydi.
+                  {t('addProduct.relatedGroups.linkedProductsHint', {
+                    max: MAX_RELATED_PRODUCTS_PER_GROUP,
+                  })}
                 </p>
               </div>
             </div>
@@ -228,15 +226,15 @@ export default function AddProductRelatedGroupsFields({
                     className="add-product-related-groups__product-slot"
                   >
                     <FieldBlock
-                      label={`Mahsulot ${slotIndex + 1}`}
-                      hint="Inputni bosing — pastda faqat sizning mahsulotlaringiz ro'yxati ochiladi. ID va nomi bilan tanlang."
+                      label={t('addProduct.relatedGroups.productLabel', { index: slotIndex + 1 })}
+                      hint={t('addProduct.relatedGroups.productHint')}
                     >
                       <SellerProductIdPicker
                         value={currentId}
                         options={productPickerOptions}
                         usedIds={usedProductIds}
                         disabled={pickerDisabled}
-                        placeholder="Mahsulot tanlang"
+                        placeholder={t('addProduct.relatedGroups.productPlaceholder')}
                         onSelect={(id) => changeGroupProductId(group.localId, slotIndex, id)}
                       />
                       {currentId ? (
@@ -246,7 +244,7 @@ export default function AddProductRelatedGroupsFields({
                           className="add-product-related-groups__remove-product"
                           onClick={() => removeGroupProductId(group.localId, slotIndex)}
                         >
-                          Olib tashlash
+                          {t('addProduct.common.detach')}
                         </Button>
                       ) : null}
                     </FieldBlock>

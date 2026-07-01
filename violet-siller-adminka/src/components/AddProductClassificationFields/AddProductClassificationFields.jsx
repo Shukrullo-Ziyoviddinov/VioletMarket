@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import './AddProductClassificationFields.css';
 
@@ -49,6 +50,7 @@ export default function AddProductClassificationFields({
   shippingCountries,
   onChange,
 }) {
+  const { t } = useTranslation();
   const [openKey, setOpenKey] = useState('');
 
   const masterCategoryOptions = useMemo(
@@ -121,20 +123,20 @@ export default function AddProductClassificationFields({
 
   return (
     <section className="add-product-form__card add-product-classification">
-      <h3 className="add-product-form__card-title">Mahsulot kategoriyasi va klassifikatsiyasi</h3>
+      <h3 className="add-product-form__card-title">{t('addProduct.classification.title')}</h3>
 
       <div className="add-product-classification__row add-product-classification__row--3">
         <FilterDropdownField
           fieldKey="masterCategoryId"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Mahsulot kategoriyasi"
-          hint="Mahsulot qaysi asosiy kategoriyaga tegishli ekanini tanlang."
+          label={t('addProduct.classification.masterCategoryLabel')}
+          hint={t('addProduct.classification.masterCategoryHint')}
           required
           value={values.masterCategoryId}
           options={masterCategoryOptions}
-          placeholder="Kategoriyani tanlang"
-          emptyText="Kategoriyalar topilmadi"
+          placeholder={t('addProduct.classification.masterCategoryPlaceholder')}
+          emptyText={t('addProduct.classification.masterCategoryEmpty')}
           onSelect={handleMasterCategorySelect}
           className="add-product-classification__field--compact"
         />
@@ -143,13 +145,13 @@ export default function AddProductClassificationFields({
           fieldKey="productType"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Mahsulot turi"
-          hint="Mahsulot qaysi turga kirishini tanlang."
+          label={t('addProduct.classification.productTypeLabel')}
+          hint={t('addProduct.classification.productTypeHint')}
           required
           value={values.productType}
           options={productTypeOptions}
-          placeholder="Mahsulot turini tanlang"
-          emptyText="Mahsulot turlari topilmadi"
+          placeholder={t('addProduct.classification.productTypePlaceholder')}
+          emptyText={t('addProduct.classification.productTypeEmpty')}
           onSelect={setField('productType')}
           className="add-product-classification__field--compact"
         />
@@ -158,13 +160,13 @@ export default function AddProductClassificationFields({
           fieldKey="countryCode"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Mahsulot qaysi davlatniki?"
-          hint="Mahsulot qaysi davlatga tegishli va qaysi davlatdan mijozgacha yuborilishini bildiradi."
+          label={t('addProduct.classification.countryCodeLabel')}
+          hint={t('addProduct.classification.countryCodeHint')}
           required
           value={values.countryCode}
           options={shippingCountryOptions}
-          placeholder="Davlatni tanlang"
-          emptyText="Davlatlar topilmadi"
+          placeholder={t('addProduct.classification.countryCodePlaceholder')}
+          emptyText={t('addProduct.classification.countryCodeEmpty')}
           onSelect={setField('countryCode')}
           className="add-product-classification__field--compact"
         />
@@ -175,13 +177,13 @@ export default function AddProductClassificationFields({
           fieldKey="productCountry"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Ishlab chiqarilgan davlat (Made in)"
-          hint="Mahsulot qaysi davlatda ishlab chiqarilganini bildiradi."
+          label={t('addProduct.classification.productCountryLabel')}
+          hint={t('addProduct.classification.productCountryHint')}
           required
           value={values.productCountry}
           options={countryFilterOptions}
-          placeholder="Davlatni tanlang"
-          emptyText="Davlatlar topilmadi"
+          placeholder={t('addProduct.classification.productCountryPlaceholder')}
+          emptyText={t('addProduct.classification.productCountryEmpty')}
           onSelect={setField('productCountry')}
           className="add-product-classification__field--compact"
         />
@@ -190,13 +192,13 @@ export default function AddProductClassificationFields({
           fieldKey="brandCategories"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Brend"
-          hint="Mahsulot qaysi brendga tegishli ekanini tanlang."
+          label={t('addProduct.classification.brandLabel')}
+          hint={t('addProduct.classification.brandHint')}
           required
           value={values.brandCategories}
           options={brandFilterOptions}
-          placeholder="Brendni tanlang"
-          emptyText="Brendlar topilmadi"
+          placeholder={t('addProduct.classification.brandPlaceholder')}
+          emptyText={t('addProduct.classification.brandEmpty')}
           onSelect={setField('brandCategories')}
           className="add-product-classification__field--compact"
         />
@@ -205,13 +207,13 @@ export default function AddProductClassificationFields({
           fieldKey="countriesCategories"
           openKey={openKey}
           onOpenKeyChange={setOpenKey}
-          label="Davlat bo'yicha kategoriya"
-          hint="Mahsulot qaysi davlat kategoriyasiga mos kelishini tanlang."
+          label={t('addProduct.classification.countriesCategoryLabel')}
+          hint={t('addProduct.classification.countriesCategoryHint')}
           required
           value={values.countriesCategories}
           options={countryFilterOptions}
-          placeholder="Kategoriyani tanlang"
-          emptyText="Kategoriyalar topilmadi"
+          placeholder={t('addProduct.classification.countriesCategoryPlaceholder')}
+          emptyText={t('addProduct.classification.countriesCategoryEmpty')}
           onSelect={setField('countriesCategories')}
           className="add-product-classification__field--compact"
         />

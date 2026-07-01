@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
 
 export default function AddProductSectionField({ value, options, onChange }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const pickerOptions = useMemo(
@@ -16,14 +18,14 @@ export default function AddProductSectionField({ value, options, onChange }) {
   return (
     <section className="add-product-form__card">
       <DropdownPicker
-        label="Mahsulot qaysi bo'limda ko'rinsin?"
-        hint="Mijoz saytida mahsulot shu bo'lim ostida chiqadi. Faqat bitta bo'lim tanlanadi."
+        label={t('addProduct.section.label')}
+        hint={t('addProduct.section.hint')}
         required
         mode="single"
         value={value}
         options={pickerOptions}
-        placeholder="Bo'limni tanlang"
-        emptyText="Bo'limlar topilmadi"
+        placeholder={t('addProduct.section.placeholder')}
+        emptyText={t('addProduct.section.emptyText')}
         isOpen={isOpen}
         onToggle={setIsOpen}
         onSelect={onChange}

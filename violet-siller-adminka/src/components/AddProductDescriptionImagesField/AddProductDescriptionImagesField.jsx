@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { DeleteOutlined, LoadingOutlined, PictureOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { uploadSellerProductImage } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { resolveAssetUrl } from '../../utils/mediaUrl';
@@ -8,6 +9,7 @@ import UploadProgressBar from '../UploadProgressBar/UploadProgressBar';
 import './AddProductDescriptionImagesField.css';
 
 export default function AddProductDescriptionImagesField({ images, onChange }) {
+  const { t } = useTranslation();
   const { token } = useSellerAuth();
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -36,7 +38,7 @@ export default function AddProductDescriptionImagesField({ images, onChange }) {
       });
       onChange?.([...imageList, uploadedPath]);
     } catch (err) {
-      setError(err.message || 'Rasm yuklashda xatolik');
+      setError(err.message || t('addProduct.descriptionImages.uploadError'));
     } finally {
       setUploading(false);
       setProgress(0);
@@ -50,10 +52,8 @@ export default function AddProductDescriptionImagesField({ images, onChange }) {
   return (
     <div className="add-product-description-images">
       <div className="add-product-description-images__head">
-        <h4 className="add-product-description-images__title">Tavsif rasmlari</h4>
-        <p className="add-product-description-images__hint">
-          Mahsulot tavsifi bo&apos;limida ko&apos;rsatiladigan rasmlar. Qurilmangizdan yuklang.
-        </p>
+        <h4 className="add-product-description-images__title">{t('addProduct.descriptionImages.title')}</h4>
+        <p className="add-product-description-images__hint">{t('addProduct.descriptionImages.hint')}</p>
       </div>
 
       <input
@@ -74,14 +74,14 @@ export default function AddProductDescriptionImagesField({ images, onChange }) {
           {uploading ? <LoadingOutlined /> : <UploadOutlined />}
         </div>
         <div className="add-product-description-images__text-wrap">
-          <strong>Rasm kiritish</strong>
-          <span>Telefon yoki kompyuterdan tanlash uchun bosing</span>
+          <strong>{t('addProduct.descriptionImages.uploadTitle')}</strong>
+          <span>{t('addProduct.descriptionImages.uploadHint')}</span>
         </div>
         <PictureOutlined className="add-product-description-images__picture-icon" aria-hidden="true" />
       </button>
 
       {uploading ? (
-        <UploadProgressBar progress={progress} label="Rasm yuklanmoqda..." />
+        <UploadProgressBar progress={progress} label={t('addProduct.descriptionImages.uploading')} />
       ) : null}
 
       {error ? <p className="add-product-description-images__error">{error}</p> : null}
@@ -92,7 +92,7 @@ export default function AddProductDescriptionImagesField({ images, onChange }) {
             <div key={imagePath} className="add-product-description-images__item">
               <img
                 src={resolveAssetUrl(imagePath)}
-                alt="Tavsif rasmi"
+                alt={t('addProduct.descriptionImages.imageAlt')}
                 className="add-product-description-images__preview"
               />
               <Button
@@ -103,7 +103,7 @@ export default function AddProductDescriptionImagesField({ images, onChange }) {
                 className="add-product-description-images__remove"
                 onClick={() => handleRemove(imagePath)}
               >
-                O&apos;chirish
+                {t('addProduct.common.remove')}
               </Button>
               <p className="add-product-description-images__path">{imagePath}</p>
             </div>

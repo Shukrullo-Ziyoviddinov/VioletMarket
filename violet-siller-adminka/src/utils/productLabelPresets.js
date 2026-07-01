@@ -1,20 +1,22 @@
-export const LABEL_OPTION_DEFS = [
-  {
-    value: 'chegirma',
-    title: 'Chegirma',
-    hint: 'Faqat foiz qo\'lda yoziladi. Matn va animatsiya avtomatik.',
-  },
-  {
-    value: 'original',
-    title: 'Original',
-    hint: 'Matn, icon va rang avtomatik beriladi.',
-  },
-  {
-    value: 'superNarx',
-    title: 'Super narx',
-    hint: 'Matn, icon va rang avtomatik beriladi.',
-  },
-];
+export function getLabelOptionDefs(t) {
+  return [
+    {
+      value: 'chegirma',
+      title: t('addProduct.labels.chegirma.title'),
+      hint: t('addProduct.labels.chegirma.hint'),
+    },
+    {
+      value: 'original',
+      title: t('addProduct.labels.original.title'),
+      hint: t('addProduct.labels.original.hint'),
+    },
+    {
+      value: 'superNarx',
+      title: t('addProduct.labels.superNarx.title'),
+      hint: t('addProduct.labels.superNarx.hint'),
+    },
+  ];
+}
 
 export const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
 export const SUPER_NARX_COLOR = '#13BE4C';

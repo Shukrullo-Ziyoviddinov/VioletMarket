@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 function FieldBlock({ label, hint, required = false, children, className = '' }) {
   return (
@@ -24,71 +25,85 @@ function FieldRow({ children, hint }) {
 }
 
 export default function AddProductMainInfoFields({ values, onChange }) {
+  const { t } = useTranslation();
+
   const setField = (key) => (event) => {
     onChange({ ...values, [key]: event.target.value });
   };
 
   return (
     <section className="add-product-form__card">
-      <h3 className="add-product-form__card-title">Asosiy ma&apos;lumotlar</h3>
+      <h3 className="add-product-form__card-title">{t('addProduct.mainInfo.title')}</h3>
 
-      <FieldRow hint="Mahsulot nomini ikkala tilda yozing — mijoz sayt tiliga qarab avtomatik ko'rsatiladi.">
-        <FieldBlock label="Mahsulot nomi (O'zbekcha)" required className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.mainInfo.titleNamesRowHint')}>
+        <FieldBlock
+          label={t('addProduct.mainInfo.titleUzLabel')}
+          required
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Masalan: Ayollar uchun yozgi yubka"
+            placeholder={t('addProduct.mainInfo.titleUzPlaceholder')}
             value={values.titleUz}
             onChange={setField('titleUz')}
           />
         </FieldBlock>
 
-        <FieldBlock label="Mahsulot nomi (Ruscha)" required className="add-product-form__field--in-row">
+        <FieldBlock
+          label={t('addProduct.mainInfo.titleRuLabel')}
+          required
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Masalan: Летняя юбка для женщин"
+            placeholder={t('addProduct.mainInfo.titleRuPlaceholder')}
             value={values.titleRu}
             onChange={setField('titleRu')}
           />
         </FieldBlock>
       </FieldRow>
 
-      <FieldRow hint="Hozirgi sotuv narxi majburiy. Eski narx faqat chegirma bo'lsa kerak bo'ladi.">
-        <FieldBlock label="Narxi (hozirgi sotuv narxi)" required className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.mainInfo.pricingRowHint')}>
+        <FieldBlock
+          label={t('addProduct.mainInfo.priceLabel')}
+          required
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="127 000UZS"
+            placeholder={t('addProduct.mainInfo.pricePlaceholder')}
             value={values.price}
             onChange={setField('price')}
           />
         </FieldBlock>
 
         <FieldBlock
-          label="Eski narxi (chegirmadan oldingi narx)"
+          label={t('addProduct.mainInfo.originalPriceLabel')}
           className="add-product-form__field--in-row"
         >
           <Input
             size="large"
-            placeholder="150 000"
+            placeholder={t('addProduct.mainInfo.originalPricePlaceholder')}
             value={values.originalPrice}
             onChange={setField('originalPrice')}
           />
         </FieldBlock>
       </FieldRow>
 
-      <FieldRow hint="Chegirma bo'lsa, kartochkada ko'rinadigan yozuvni kiriting.">
-        <FieldBlock label="Chegirma matni (O'zbekcha)" className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.mainInfo.discountRowHint')}>
+        <FieldBlock label={t('addProduct.mainInfo.discountUzLabel')} className="add-product-form__field--in-row">
           <Input
             size="large"
-            placeholder="30% chegirma"
+            placeholder={t('addProduct.mainInfo.discountUzPlaceholder')}
             value={values.discountUz}
             onChange={setField('discountUz')}
           />
         </FieldBlock>
 
-        <FieldBlock label="Chegirma matni (Ruscha)" className="add-product-form__field--in-row">
+        <FieldBlock label={t('addProduct.mainInfo.discountRuLabel')} className="add-product-form__field--in-row">
           <Input
             size="large"
-            placeholder="30% скидка"
+            placeholder={t('addProduct.mainInfo.discountRuPlaceholder')}
             value={values.discountRu}
             onChange={setField('discountRu')}
           />

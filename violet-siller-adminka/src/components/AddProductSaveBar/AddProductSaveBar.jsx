@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import './AddProductSaveBar.css';
 
 export default function AddProductSaveBar({
@@ -9,13 +10,13 @@ export default function AddProductSaveBar({
   onSave,
   disabled = false,
 }) {
+  const { t } = useTranslation();
+
   return (
-    <div className="add-product-save-bar" role="region" aria-label="Mahsulotni saqlash">
+    <div className="add-product-save-bar" role="region" aria-label={t('addProduct.saveBar.ariaLabel')}>
       <div className="add-product-save-bar__inner">
         <p className="add-product-save-bar__hint">
-          {isEditMode
-            ? 'O\'zgarishlarni saqlang — mijozlar saytida yangilanadi.'
-            : 'Ma\'lumotlarni tekshirib, mahsulotni saqlang — u mijozlar saytida ko\'rinadi.'}
+          {isEditMode ? t('addProduct.saveBar.hintEdit') : t('addProduct.saveBar.hintCreate')}
         </p>
         <Button
           type="primary"
@@ -26,7 +27,7 @@ export default function AddProductSaveBar({
           onClick={onSave}
           className="add-product-save-bar__button"
         >
-          Mahsulotni saqlash
+          {t('addProduct.saveBar.saveButton')}
         </Button>
       </div>
     </div>

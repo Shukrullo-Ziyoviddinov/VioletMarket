@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import ProductImageUploadField from '../ProductImageUploadField/ProductImageUploadField';
 import ProductThumbnailsUploadField from '../ProductThumbnailsUploadField/ProductThumbnailsUploadField';
@@ -14,12 +15,6 @@ import {
   colorHasVariantStockData,
 } from '../../utils/productColorsDraft';
 import './AddProductColorsFields.css';
-
-const COLOR_THUMBNAIL_HINTS = [
-  '2-rasm — boshqa burchak',
-  '3-rasm — detal ko‘rinish',
-  '4-rasm — qo‘shimcha foto',
-];
 
 function FieldBlock({ label, hint, required = false, children, className = '', alignInput = false }) {
   const fieldClassName = [
@@ -71,7 +66,13 @@ function updateColor(list, localId, patch) {
 }
 
 export default function AddProductColorsFields({ values, onChange }) {
+  const { t } = useTranslation();
   const [openKey, setOpenKey] = useState('');
+
+  const thumbnailSlotHints = useMemo(
+    () => t('addProduct.colors.thumbnailSlotHints', { returnObjects: true }),
+    [t],
+  );
 
   const colors = useMemo(
     () => (Array.isArray(values.colors) ? values.colors : []),
@@ -219,27 +220,17 @@ export default function AddProductColorsFields({ values, onChange }) {
 
   return (
     <section className="add-product-form__card add-product-colors">
-      <h3 className="add-product-form__card-title">Ranglar va ombor</h3>
-      <p className="add-product-colors__intro">
-        Agar mahsulot bir nechta rangda bo&apos;lsa, har bir rang uchun alohida ombor va rasmlar
-        kiriting. Bitta rang yoki rangsiz mahsulot uchun omborni yuqoridagi{' '}
-        <strong>Mahsulot ombori</strong> bo&apos;limida to&apos;ldiring. Bir nechta rangda —
-        kiyimlar uchun <strong>sizeStock</strong>, telefon modeli uchun <strong>modelStock</strong>,
-        xotira uchun <strong>storageStock</strong>. Faqat rang tanlovi bo&apos;lsa (o&apos;lcham,
-        model yoki xotira yo&apos;q) — har bir rang uchun <strong>quantity</strong> maydonini
-        to&apos;ldiring.
-      </p>
+      <h3 className="add-product-form__card-title">{t('addProduct.colors.title')}</h3>
+      <p className="add-product-colors__intro">{t('addProduct.colors.intro')}</p>
 
       <div className="add-product-colors__toolbar">
         <Button type="dashed" icon={<PlusOutlined />} onClick={addColor}>
-          Boshqa turkumdagi rang qo&apos;shish
+          {t('addProduct.colors.addColor')}
         </Button>
       </div>
 
       {colors.length === 0 ? (
-        <p className="add-product-colors__empty">
-          Hozircha rang yo&apos;q. «Boshqa turkumdagi rang qo&apos;shish» tugmasini bosing.
-        </p>
+        <p className="add-product-colors__empty">{t('addProduct.colors.empty')}</p>
       ) : null}
 
       {colors.map((color, colorIndex) => {
@@ -248,22 +239,24 @@ export default function AddProductColorsFields({ values, onChange }) {
         return (
         <div key={color.localId} className="add-product-colors__card">
           <div className="add-product-colors__card-head">
-            <span className="add-product-colors__card-index">Rang #{colorIndex + 1}</span>
+            <span className="add-product-colors__card-index">
+              {t('addProduct.colors.colorIndex', { index: colorIndex + 1 })}
+            </span>
             <Button type="link" danger onClick={() => removeColor(color.localId)}>
-              O&apos;chirish
+              {t('addProduct.common.remove')}
             </Button>
           </div>
 
-          <FieldRow hint="Mijoz ko'radigan rang nomi — masalan Yashil, Sariq.">
+          <FieldRow hint={t('addProduct.colors.nameRowHint')}>
             <FieldBlock
-              label="Rang nomi (O'zbekcha)"
-              hint="Mahsulot sahifasida chiqadigan rang nomi."
+              label={t('addProduct.colors.nameUzLabel')}
+              hint={t('addProduct.colors.nameUzHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="Yashil"
+                placeholder={t('addProduct.colors.nameUzPlaceholder')}
                 value={color.nameUz}
                 onChange={(event) =>
                   changeColorField(color.localId, 'nameUz', event.target.value)
@@ -271,14 +264,14 @@ export default function AddProductColorsFields({ values, onChange }) {
               />
             </FieldBlock>
             <FieldBlock
-              label="Rang nomi (Ruscha)"
-              hint="Rus tilidagi rang nomi."
+              label={t('addProduct.colors.nameRuLabel')}
+              hint={t('addProduct.colors.nameRuHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="Зелёный"
+                placeholder={t('addProduct.colors.nameRuPlaceholder')}
                 value={color.nameRu}
                 onChange={(event) =>
                   changeColorField(color.localId, 'nameRu', event.target.value)
@@ -289,13 +282,13 @@ export default function AddProductColorsFields({ values, onChange }) {
 
           <div className="add-product-colors__filter-field">
             <DropdownPicker
-              label="Rang filtri (colorFilter)"
-              hint="Saytda rang bo'yicha qidiruv uchun. Ro'yxatdan tanlang — qo'lda yozilmaydi."
+              label={t('addProduct.colors.colorFilterLabel')}
+              hint={t('addProduct.colors.colorFilterHint')}
               mode="single"
               value={color.colorFilter}
               options={COLOR_FILTER_OPTIONS}
-              placeholder="Rangni tanlang"
-              emptyText="Ranglar topilmadi"
+              placeholder={t('addProduct.colors.colorFilterPlaceholder')}
+              emptyText={t('addProduct.colors.colorFilterEmpty')}
               isOpen={openKey === color.localId}
               onToggle={(open) => setOpenKey(open ? color.localId : '')}
               onSelect={(nextValue) => changeColorField(color.localId, 'colorFilter', nextValue)}
@@ -303,17 +296,17 @@ export default function AddProductColorsFields({ values, onChange }) {
           </div>
 
           {showColorQuantity ? (
-            <FieldRow hint="Faqat rang tanlovi bo'lgan mahsulotlar uchun. O'lcham, model yoki xotira qo'shilsa bu maydon yashiriladi.">
+            <FieldRow hint={t('addProduct.colors.quantityRowHint')}>
               <FieldBlock
-                label="Rang miqdori (quantity)"
-                hint="Shu rangdan nechta dona bor. O'lcham, model yoki xotira to'ldirilmasa ishlatiladi."
+                label={t('addProduct.colors.colorQuantityLabel')}
+                hint={t('addProduct.colors.colorQuantityHint')}
                 className="add-product-form__field--in-row add-product-colors__quantity-field"
                 alignInput
               >
                 <Input
                   size="large"
                   inputMode="numeric"
-                  placeholder="5"
+                  placeholder={t('addProduct.colors.colorQuantityPlaceholder')}
                   value={color.quantity ?? ''}
                   onChange={(event) =>
                     changeColorField(color.localId, 'quantity', event.target.value)
@@ -326,12 +319,8 @@ export default function AddProductColorsFields({ values, onChange }) {
           <div className="add-product-colors__section add-product-colors__section--size">
             <div className="add-product-colors__section-head">
               <div>
-                <h4 className="add-product-colors__section-title">O&apos;lcham va miqdor (sizeStock)</h4>
-                <p className="add-product-colors__section-desc">
-                  Kiyim va o&apos;lchamli mahsulotlar uchun. Har bir qator: o&apos;lcham (S, M, L,
-                  38…) va nechta dona borligi. Telefon yoki model bo&apos;yicha sotilsa, bu qismni
-                  bo&apos;sh qoldiring.
-                </p>
+                <h4 className="add-product-colors__section-title">{t('addProduct.colors.sizeStockTitle')}</h4>
+                <p className="add-product-colors__section-desc">{t('addProduct.colors.sizeStockDesc')}</p>
               </div>
               <Button
                 type="dashed"
@@ -339,7 +328,7 @@ export default function AddProductColorsFields({ values, onChange }) {
                 icon={<PlusOutlined />}
                 onClick={() => addSizeStockRow(color.localId)}
               >
-                Yana
+                {t('addProduct.common.addMore')}
               </Button>
             </div>
 
@@ -347,13 +336,13 @@ export default function AddProductColorsFields({ values, onChange }) {
               {(color.sizeStockRows || []).map((row, rowIndex) => (
                 <div key={row.localId} className="add-product-colors__size-stock-row">
                   <FieldBlock
-                    label={`O'lcham ${rowIndex + 1}`}
-                    hint="Masalan: S, M, XL yoki 38."
+                    label={t('addProduct.colors.sizeLabel', { index: rowIndex + 1 })}
+                    hint={t('addProduct.colors.sizeHint')}
                     className="add-product-colors__size-field"
                   >
                     <Input
                       size="large"
-                      placeholder="S"
+                      placeholder={t('addProduct.colors.sizePlaceholder')}
                       value={row.label}
                       onChange={(event) =>
                         changeSizeStockRow(color.localId, row.localId, {
@@ -363,14 +352,14 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Miqdor (quantity)"
-                    hint="Shu o'lchamdan nechta dona bor."
+                    label={t('addProduct.colors.quantityLabel')}
+                    hint={t('addProduct.colors.quantityHint')}
                     className="add-product-colors__size-field"
                   >
                     <Input
                       size="large"
                       inputMode="numeric"
-                      placeholder="1"
+                      placeholder={t('addProduct.colors.quantityPlaceholder')}
                       value={row.quantity}
                       onChange={(event) =>
                         changeSizeStockRow(color.localId, row.localId, {
@@ -386,7 +375,7 @@ export default function AddProductColorsFields({ values, onChange }) {
                       className="add-product-colors__size-remove"
                       onClick={() => removeSizeStockRow(color.localId, row.localId)}
                     >
-                      O&apos;chirish
+                      {t('addProduct.common.remove')}
                     </Button>
                   ) : null}
                 </div>
@@ -397,12 +386,8 @@ export default function AddProductColorsFields({ values, onChange }) {
           <div className="add-product-colors__section add-product-colors__section--model">
             <div className="add-product-colors__section-head">
               <div>
-                <h4 className="add-product-colors__section-title">Model va narx (modelStock)</h4>
-                <p className="add-product-colors__section-desc">
-                  Telefon, planshet va model nomi bilan sotiladigan mahsulotlar uchun. Har bir
-                  qatorda model nomi (S20, A30…), miqdor va shu model uchun narxlar. Kiyim
-                  mahsulotlarida bu qism kerak emas.
-                </p>
+                <h4 className="add-product-colors__section-title">{t('addProduct.colors.modelStockTitle')}</h4>
+                <p className="add-product-colors__section-desc">{t('addProduct.colors.modelStockDesc')}</p>
               </div>
               <Button
                 type="dashed"
@@ -410,27 +395,25 @@ export default function AddProductColorsFields({ values, onChange }) {
                 icon={<PlusOutlined />}
                 onClick={() => addModelStockRow(color.localId)}
               >
-                Yana
+                {t('addProduct.common.addMore')}
               </Button>
             </div>
 
             {(color.modelStockRows || []).length === 0 ? (
-              <p className="add-product-colors__section-empty">
-                Model qatori yo&apos;q. «Yana» tugmasini bosing — masalan S20, S24 ULTRA.
-              </p>
+              <p className="add-product-colors__section-empty">{t('addProduct.colors.modelStockEmpty')}</p>
             ) : null}
 
             <div className="add-product-colors__model-stock-list">
               {(color.modelStockRows || []).map((row, rowIndex) => (
                 <div key={row.localId} className="add-product-colors__model-stock-row">
                   <FieldBlock
-                    label={`Model ${rowIndex + 1}`}
-                    hint="Model nomi. Masalan: S20, A30, S24 ULTRA."
+                    label={t('addProduct.colors.modelLabel', { index: rowIndex + 1 })}
+                    hint={t('addProduct.colors.modelHint')}
                     className="add-product-colors__model-field"
                   >
                     <Input
                       size="large"
-                      placeholder="S20"
+                      placeholder={t('addProduct.colors.modelPlaceholder')}
                       value={row.label}
                       onChange={(event) =>
                         changeModelStockRow(color.localId, row.localId, {
@@ -440,14 +423,14 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Miqdor"
-                    hint="Shu modeldan nechta dona bor."
+                    label={t('addProduct.colors.modelQuantityLabel')}
+                    hint={t('addProduct.colors.modelQuantityHint')}
                     className="add-product-colors__model-field"
                   >
                     <Input
                       size="large"
                       inputMode="numeric"
-                      placeholder="1"
+                      placeholder={t('addProduct.colors.quantityPlaceholder')}
                       value={row.quantity}
                       onChange={(event) =>
                         changeModelStockRow(color.localId, row.localId, {
@@ -457,13 +440,13 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Narxi"
-                    hint="Shu modelning sotuv narxi."
+                    label={t('addProduct.colors.priceLabel')}
+                    hint={t('addProduct.colors.priceHint')}
                     className="add-product-colors__model-field"
                   >
                     <Input
                       size="large"
-                      placeholder="70000UZS"
+                      placeholder={t('addProduct.colors.modelPricePlaceholder')}
                       value={row.price}
                       onChange={(event) =>
                         changeModelStockRow(color.localId, row.localId, {
@@ -473,13 +456,13 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Eski narxi"
-                    hint="Chegirma bo'lsa, chizilgan eski narx."
+                    label={t('addProduct.colors.originalPriceLabel')}
+                    hint={t('addProduct.colors.originalPriceHint')}
                     className="add-product-colors__model-field"
                   >
                     <Input
                       size="large"
-                      placeholder="70000UZS"
+                      placeholder={t('addProduct.colors.modelPricePlaceholder')}
                       value={row.originalPrice}
                       onChange={(event) =>
                         changeModelStockRow(color.localId, row.localId, {
@@ -494,7 +477,7 @@ export default function AddProductColorsFields({ values, onChange }) {
                     className="add-product-colors__model-remove"
                     onClick={() => removeModelStockRow(color.localId, row.localId)}
                   >
-                    O&apos;chirish
+                    {t('addProduct.common.remove')}
                   </Button>
                 </div>
               ))}
@@ -504,12 +487,8 @@ export default function AddProductColorsFields({ values, onChange }) {
           <div className="add-product-colors__section add-product-colors__section--storage">
             <div className="add-product-colors__section-head">
               <div>
-                <h4 className="add-product-colors__section-title">Xotira va narx (storageStock)</h4>
-                <p className="add-product-colors__section-desc">
-                  Telefon va xotira hajmi bo&apos;yicha sotiladigan mahsulotlar uchun. Har bir
-                  qatorda xotira kombinatsiyasi (12/256 — RAM/GB), miqdor va shu variant uchun
-                  narxlar. Kiyim yoki model bo&apos;yicha sotilsa, bu qismni bo&apos;sh qoldiring.
-                </p>
+                <h4 className="add-product-colors__section-title">{t('addProduct.colors.storageStockTitle')}</h4>
+                <p className="add-product-colors__section-desc">{t('addProduct.colors.storageStockDesc')}</p>
               </div>
               <Button
                 type="dashed"
@@ -517,27 +496,25 @@ export default function AddProductColorsFields({ values, onChange }) {
                 icon={<PlusOutlined />}
                 onClick={() => addStorageStockRow(color.localId)}
               >
-                Yana
+                {t('addProduct.common.addMore')}
               </Button>
             </div>
 
             {(color.storageStockRows || []).length === 0 ? (
-              <p className="add-product-colors__section-empty">
-                Xotira qatori yo&apos;q. «Yana» tugmasini bosing — masalan 12/256, 8/128.
-              </p>
+              <p className="add-product-colors__section-empty">{t('addProduct.colors.storageStockEmpty')}</p>
             ) : null}
 
             <div className="add-product-colors__storage-stock-list">
               {(color.storageStockRows || []).map((row, rowIndex) => (
                 <div key={row.localId} className="add-product-colors__storage-stock-row">
                   <FieldBlock
-                    label={`Xotira ${rowIndex + 1}`}
-                    hint="Xotira nomi. Masalan: 12/256, 8/128 (RAM/GB)."
+                    label={t('addProduct.colors.storageLabel', { index: rowIndex + 1 })}
+                    hint={t('addProduct.colors.storageHint')}
                     className="add-product-colors__storage-field"
                   >
                     <Input
                       size="large"
-                      placeholder="12/256"
+                      placeholder={t('addProduct.colors.storagePlaceholder')}
                       value={row.label}
                       onChange={(event) =>
                         changeStorageStockRow(color.localId, row.localId, {
@@ -547,14 +524,14 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Miqdor"
-                    hint="Shu xotira variantidan nechta dona bor."
+                    label={t('addProduct.colors.modelQuantityLabel')}
+                    hint={t('addProduct.colors.storageQuantityHint')}
                     className="add-product-colors__storage-field"
                   >
                     <Input
                       size="large"
                       inputMode="numeric"
-                      placeholder="1"
+                      placeholder={t('addProduct.colors.quantityPlaceholder')}
                       value={row.quantity}
                       onChange={(event) =>
                         changeStorageStockRow(color.localId, row.localId, {
@@ -564,13 +541,13 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Narxi"
-                    hint="Shu xotira varianti uchun sotuv narxi."
+                    label={t('addProduct.colors.priceLabel')}
+                    hint={t('addProduct.colors.storagePriceHint')}
                     className="add-product-colors__storage-field"
                   >
                     <Input
                       size="large"
-                      placeholder="$10"
+                      placeholder={t('addProduct.colors.modelPricePlaceholder')}
                       value={row.price}
                       onChange={(event) =>
                         changeStorageStockRow(color.localId, row.localId, {
@@ -580,13 +557,13 @@ export default function AddProductColorsFields({ values, onChange }) {
                     />
                   </FieldBlock>
                   <FieldBlock
-                    label="Eski narxi"
-                    hint="Chegirma bo'lsa, chizilgan eski narx."
+                    label={t('addProduct.colors.originalPriceLabel')}
+                    hint={t('addProduct.colors.originalPriceHint')}
                     className="add-product-colors__storage-field"
                   >
                     <Input
                       size="large"
-                      placeholder="$10"
+                      placeholder={t('addProduct.colors.colorOriginalPricePlaceholder')}
                       value={row.originalPrice}
                       onChange={(event) =>
                         changeStorageStockRow(color.localId, row.localId, {
@@ -601,36 +578,36 @@ export default function AddProductColorsFields({ values, onChange }) {
                     className="add-product-colors__storage-remove"
                     onClick={() => removeStorageStockRow(color.localId, row.localId)}
                   >
-                    O&apos;chirish
+                    {t('addProduct.common.remove')}
                   </Button>
                 </div>
               ))}
             </div>
           </div>
 
-          <FieldRow hint="Kiyim (sizeStock) mahsulotlarida har bir rang uchun umumiy narx shu yerda. modelStock yoki storageStock ishlatilsa, narx har qatorda yoziladi — bu maydon ixtiyoriy.">
+          <FieldRow hint={t('addProduct.colors.priceRowHint')}>
             <FieldBlock
-              label="Narxi (shu rang uchun)"
-              hint="Mijoz shu rangni tanlaganda ko'radigan narx."
+              label={t('addProduct.colors.colorPriceLabel')}
+              hint={t('addProduct.colors.colorPriceHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="110 so'm"
+                placeholder={t('addProduct.colors.colorPricePlaceholder')}
                 value={color.price}
                 onChange={(event) => changeColorField(color.localId, 'price', event.target.value)}
               />
             </FieldBlock>
             <FieldBlock
-              label="Eski narxi"
-              hint="Chegirma bo'lsa, chizilgan eski narx."
+              label={t('addProduct.colors.originalPriceLabel')}
+              hint={t('addProduct.colors.originalPriceHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="$200"
+                placeholder={t('addProduct.colors.colorOriginalPricePlaceholder')}
                 value={color.originalPrice}
                 onChange={(event) =>
                   changeColorField(color.localId, 'originalPrice', event.target.value)
@@ -641,14 +618,14 @@ export default function AddProductColorsFields({ values, onChange }) {
 
           <FieldRow>
             <FieldBlock
-              label="Chegirma matni (O'zbekcha)"
-              hint="Masalan: 80% chegirma"
+              label={t('addProduct.colors.discountUzLabel')}
+              hint={t('addProduct.colors.discountUzHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="80% chegirma"
+                placeholder={t('addProduct.colors.discountUzPlaceholder')}
                 value={color.discountUz}
                 onChange={(event) =>
                   changeColorField(color.localId, 'discountUz', event.target.value)
@@ -656,14 +633,14 @@ export default function AddProductColorsFields({ values, onChange }) {
               />
             </FieldBlock>
             <FieldBlock
-              label="Chegirma matni (Ruscha)"
-              hint="Rus tilidagi chegirma yozuvi."
+              label={t('addProduct.colors.discountRuLabel')}
+              hint={t('addProduct.colors.discountRuHint')}
               className="add-product-form__field--in-row"
               alignInput
             >
               <Input
                 size="large"
-                placeholder="80% скидка"
+                placeholder={t('addProduct.colors.discountRuPlaceholder')}
                 value={color.discountRu}
                 onChange={(event) =>
                   changeColorField(color.localId, 'discountRu', event.target.value)
@@ -674,14 +651,14 @@ export default function AddProductColorsFields({ values, onChange }) {
 
           <div className="add-product-colors__images">
             <FieldBlock
-              label="Rang asosiy rasmi (mainImage)"
-              hint="Mijoz shu rangni tanlaganda ko'rinadigan asosiy rasm."
+              label={t('addProduct.colors.mainImageLabel')}
+              hint={t('addProduct.colors.mainImageHint')}
             >
               <ProductImageUploadField
                 value={color.mainImage}
                 onChange={(path) => changeColorField(color.localId, 'mainImage', path)}
-                title="Rang rasmini yuklash"
-                hint="Shu rang uchun asosiy foto"
+                title={t('addProduct.colors.mainImageUploadTitle')}
+                hint={t('addProduct.colors.mainImageUploadHint')}
                 compact
               />
             </FieldBlock>
@@ -689,9 +666,9 @@ export default function AddProductColorsFields({ values, onChange }) {
             <ProductThumbnailsUploadField
               images={color.thumbnails}
               onChange={(nextImages) => changeColorField(color.localId, 'thumbnails', nextImages)}
-              title="Rang galereya rasmlari (thumbnails)"
-              hint="Shu rang tanlanganda ko'rinadigan qo'shimcha rasmlar."
-              slotHints={['1-qo‘shimcha rasm', ...COLOR_THUMBNAIL_HINTS]}
+              title={t('addProduct.colors.thumbnailsTitle')}
+              hint={t('addProduct.colors.thumbnailsHint')}
+              slotHints={thumbnailSlotHints}
             />
           </div>
         </div>

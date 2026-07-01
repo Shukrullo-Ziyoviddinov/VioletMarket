@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, message, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   fetchSellerProductFormOptions,
   fetchSellerRelatedProductPickerOptions,
@@ -55,6 +56,7 @@ const INITIAL_VALUES = {
 };
 
 export default function AddProductForm({ editProductId = null }) {
+  const { t } = useTranslation();
   const { token } = useSellerAuth();
   const navigate = useNavigate();
   const isEditMode = editProductId != null && String(editProductId).trim() !== '';
@@ -112,18 +114,18 @@ export default function AddProductForm({ editProductId = null }) {
 
         if (isEditMode) {
           if (!product) {
-            throw new Error('Mahsulot topilmadi');
+            throw new Error(t('addProduct.form.productNotFound'));
           }
           const mapped = mapSellerProductToFormValues(product);
           if (!mapped) {
-            throw new Error('Mahsulot ma\'lumotlarini yuklab bo\'lmadi');
+            throw new Error(t('addProduct.form.productLoadFailed'));
           }
           setValues({ ...INITIAL_VALUES, ...mapped });
           setSavedProductId(product.id);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err.message || 'Forma ma\'lumotlarini yuklab bo\'lmadi');
+          setError(err.message || t('addProduct.form.loadError'));
           setProductPickerOptions([]);
         }
       } finally {
@@ -139,12 +141,12 @@ export default function AddProductForm({ editProductId = null }) {
     return () => {
       cancelled = true;
     };
-  }, [token, editProductId, isEditMode]);
+  }, [token, editProductId, isEditMode, t]);
 
   const handleSave = async () => {
     if (!token || saving) return;
 
-    const validationErrors = validateSellerProductForm(values);
+    const validationErrors = validateSellerProductForm(values, t);
     if (validationErrors.length > 0) {
       setSaveError(validationErrors[0]);
       message.error(validationErrors[0]);
@@ -162,21 +164,21 @@ export default function AddProductForm({ editProductId = null }) {
 
       const productId = product?.id;
       if (!productId) {
-        throw new Error('Server mahsulot ID qaytarmadi');
+        throw new Error(t('addProduct.form.serverNoId'));
       }
 
       setSavedProductId(productId);
       message.success(
         isEditMode
-          ? `Mahsulot #${productId} yangilandi`
-          : `Mahsulot #${productId} muvaffaqiyatli qo'shildi`,
+          ? t('addProduct.form.successUpdated', { id: productId })
+          : t('addProduct.form.successCreated', { id: productId }),
       );
 
       if (!isEditMode) {
         navigate(`/products/${productId}/edit`, { replace: true });
       }
     } catch (err) {
-      const errorMessage = err.message || 'Mahsulotni saqlab bo\'lmadi';
+      const errorMessage = err.message || t('addProduct.form.saveFailed');
       setSaveError(errorMessage);
       message.error(errorMessage);
     } finally {
@@ -208,7 +210,7 @@ export default function AddProductForm({ editProductId = null }) {
             type="success"
             showIcon
             className="add-product-form__alert"
-            message={`Mahsulot #${savedProductId} mijozlar saytida ko'rinadi (clientActive: true).`}
+            message={t('addProduct.form.visibleOnSite', { id: savedProductId })}
           />
         ) : null}
 

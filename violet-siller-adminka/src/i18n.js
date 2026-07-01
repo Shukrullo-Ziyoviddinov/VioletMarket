@@ -4,11 +4,14 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import uz from './locales/uz.json';
 import en from './locales/en.json';
 import zh from './locales/zh.json';
+import addProductUz from './locales/addProduct.uz.json';
+import addProductEn from './locales/addProduct.en.json';
+import addProductZh from './locales/addProduct.zh.json';
 
 const resources = {
-  uz: { translation: uz },
-  en: { translation: en },
-  zh: { translation: zh },
+  uz: { translation: { ...uz, addProduct: addProductUz } },
+  en: { translation: { ...en, addProduct: addProductEn } },
+  zh: { translation: { ...zh, addProduct: addProductZh } },
 };
 
 i18n

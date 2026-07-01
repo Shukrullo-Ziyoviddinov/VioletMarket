@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import {
-  PRODUCT_ABOUT_TITLE,
   createMainFeatureRow,
   createTechnicalSpecRow,
 } from '../../utils/productDescriptionDraft';
@@ -38,6 +38,7 @@ function updateListItem(list, localId, patch) {
 }
 
 export default function AddProductDescriptionFields({ values, onChange }) {
+  const { t } = useTranslation();
   const mainFeatures = Array.isArray(values.mainFeatures) ? values.mainFeatures : [];
   const technicalSpecs = Array.isArray(values.technicalSpecs) ? values.technicalSpecs : [];
 
@@ -91,54 +92,78 @@ export default function AddProductDescriptionFields({ values, onChange }) {
 
   return (
     <section className="add-product-form__card add-product-description">
-      <h3 className="add-product-form__card-title">Mahsulot tavsifi</h3>
+      <h3 className="add-product-form__card-title">{t('addProduct.description.title')}</h3>
 
       <FieldBlock
-        label="Bo'lim sarlavhasi"
-        hint="Bu sarlavha doimiy — mijoz saytida mahsulot haqida bo'limi shu nom bilan chiqadi."
+        label={t('addProduct.description.sectionHeadingLabel')}
+        hint={t('addProduct.description.sectionHeadingHint')}
       >
         <FieldRow>
-          <FieldBlock label="O'zbekcha" className="add-product-form__field--in-row">
-            <Input size="large" readOnly value={PRODUCT_ABOUT_TITLE.uz} className="add-product-description__readonly" />
+          <FieldBlock label={t('addProduct.common.uzbek')} className="add-product-form__field--in-row">
+            <Input
+              size="large"
+              readOnly
+              value={t('addProduct.description.aboutTitleUz')}
+              className="add-product-description__readonly"
+            />
           </FieldBlock>
-          <FieldBlock label="Ruscha" className="add-product-form__field--in-row">
-            <Input size="large" readOnly value={PRODUCT_ABOUT_TITLE.ru} className="add-product-description__readonly" />
+          <FieldBlock label={t('addProduct.common.russian')} className="add-product-form__field--in-row">
+            <Input
+              size="large"
+              readOnly
+              value={t('addProduct.description.aboutTitleRu')}
+              className="add-product-description__readonly"
+            />
           </FieldBlock>
         </FieldRow>
       </FieldBlock>
 
-      <FieldRow hint="Mahsulot haqida qisqa va tushunarli ma'lumot yozing.">
-        <FieldBlock label="Ma'lumot (O'zbekcha)" required className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.description.infoRowHint')}>
+        <FieldBlock
+          label={t('addProduct.description.infoUzLabel')}
+          required
+          className="add-product-form__field--in-row"
+        >
           <TextArea
             rows={4}
-            placeholder="Mahsulot haqida batafsil ma'lumot"
+            placeholder={t('addProduct.description.infoUzPlaceholder')}
             value={values.descriptionInfoUz}
             onChange={setField('descriptionInfoUz')}
           />
         </FieldBlock>
-        <FieldBlock label="Ma'lumot (Ruscha)" required className="add-product-form__field--in-row">
+        <FieldBlock
+          label={t('addProduct.description.infoRuLabel')}
+          required
+          className="add-product-form__field--in-row"
+        >
           <TextArea
             rows={4}
-            placeholder="Подробная информация о товаре"
+            placeholder={t('addProduct.description.infoRuPlaceholder')}
             value={values.descriptionInfoRu}
             onChange={setField('descriptionInfoRu')}
           />
         </FieldBlock>
       </FieldRow>
 
-      <FieldRow hint="Asosiy xususiyatlar bo'limi sarlavhasi.">
-        <FieldBlock label="Asosiy xususiyatlar sarlavhasi (O'zbekcha)" className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.description.mainFeaturesHeadingRowHint')}>
+        <FieldBlock
+          label={t('addProduct.description.mainFeaturesHeadingUzLabel')}
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Asosiy xususiyatlar"
+            placeholder={t('addProduct.description.mainFeaturesHeadingUzPlaceholder')}
             value={values.mainFeaturesHeadingUz}
             onChange={setField('mainFeaturesHeadingUz')}
           />
         </FieldBlock>
-        <FieldBlock label="Asosiy xususiyatlar sarlavhasi (Ruscha)" className="add-product-form__field--in-row">
+        <FieldBlock
+          label={t('addProduct.description.mainFeaturesHeadingRuLabel')}
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Основные характеристики"
+            placeholder={t('addProduct.description.mainFeaturesHeadingRuPlaceholder')}
             value={values.mainFeaturesHeadingRu}
             onChange={setField('mainFeaturesHeadingRu')}
           />
@@ -147,36 +172,46 @@ export default function AddProductDescriptionFields({ values, onChange }) {
 
       <div className="add-product-description__section">
         <div className="add-product-description__section-head">
-          <h4 className="add-product-description__section-title">Asosiy xususiyatlar</h4>
+          <h4 className="add-product-description__section-title">
+            {t('addProduct.description.mainFeaturesTitle')}
+          </h4>
           <Button type="dashed" icon={<PlusOutlined />} onClick={addMainFeature}>
-            Yana
+            {t('addProduct.common.addMore')}
           </Button>
         </div>
 
         {mainFeatures.map((feature, index) => (
           <div key={feature.localId} className="add-product-description__item-card">
             <div className="add-product-description__item-head">
-              <span className="add-product-description__item-index">#{index + 1}</span>
+              <span className="add-product-description__item-index">
+                {t('addProduct.common.itemIndex', { index: index + 1 })}
+              </span>
               {mainFeatures.length > 1 ? (
                 <Button type="link" danger onClick={() => removeMainFeature(feature.localId)}>
-                  O&apos;chirish
+                  {t('addProduct.common.remove')}
                 </Button>
               ) : null}
             </div>
 
             <FieldRow>
-              <FieldBlock label="Sarlavha (O'zbekcha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.featureTitleUzLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Sifatli material"
+                  placeholder={t('addProduct.description.featureTitleUzPlaceholder')}
                   value={feature.titleUz}
                   onChange={handleMainFeatureChange(feature.localId, 'titleUz')}
                 />
               </FieldBlock>
-              <FieldBlock label="Sarlavha (Ruscha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.featureTitleRuLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Качественные материалы"
+                  placeholder={t('addProduct.description.featureTitleRuPlaceholder')}
                   value={feature.titleRu}
                   onChange={handleMainFeatureChange(feature.localId, 'titleRu')}
                 />
@@ -184,18 +219,24 @@ export default function AddProductDescriptionFields({ values, onChange }) {
             </FieldRow>
 
             <FieldRow>
-              <FieldBlock label="Tavsif (O'zbekcha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.featureTextUzLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <TextArea
                   rows={3}
-                  placeholder="Yuqori sifatli va ekologik jihatdan xavfsiz materiallardan tayyorlangan."
+                  placeholder={t('addProduct.description.featureTextUzPlaceholder')}
                   value={feature.textUz}
                   onChange={handleMainFeatureChange(feature.localId, 'textUz')}
                 />
               </FieldBlock>
-              <FieldBlock label="Tavsif (Ruscha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.featureTextRuLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <TextArea
                   rows={3}
-                  placeholder="Изготовлено из высококачественных и экологичных материалов."
+                  placeholder={t('addProduct.description.featureTextRuPlaceholder')}
                   value={feature.textRu}
                   onChange={handleMainFeatureChange(feature.localId, 'textRu')}
                 />
@@ -205,19 +246,25 @@ export default function AddProductDescriptionFields({ values, onChange }) {
         ))}
       </div>
 
-      <FieldRow hint="Texnik ma'lumotlar bo'limi sarlavhasi.">
-        <FieldBlock label="Texnik ma'lumotlar sarlavhasi (O'zbekcha)" className="add-product-form__field--in-row">
+      <FieldRow hint={t('addProduct.description.technicalHeadingRowHint')}>
+        <FieldBlock
+          label={t('addProduct.description.technicalHeadingUzLabel')}
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Texnik ma'lumotlar"
+            placeholder={t('addProduct.description.technicalHeadingUzPlaceholder')}
             value={values.technicalHeadingUz}
             onChange={setField('technicalHeadingUz')}
           />
         </FieldBlock>
-        <FieldBlock label="Texnik ma'lumotlar sarlavhasi (Ruscha)" className="add-product-form__field--in-row">
+        <FieldBlock
+          label={t('addProduct.description.technicalHeadingRuLabel')}
+          className="add-product-form__field--in-row"
+        >
           <Input
             size="large"
-            placeholder="Технические характеристики"
+            placeholder={t('addProduct.description.technicalHeadingRuPlaceholder')}
             value={values.technicalHeadingRu}
             onChange={setField('technicalHeadingRu')}
           />
@@ -226,36 +273,46 @@ export default function AddProductDescriptionFields({ values, onChange }) {
 
       <div className="add-product-description__section">
         <div className="add-product-description__section-head">
-          <h4 className="add-product-description__section-title">Texnik ma'lumotlar</h4>
+          <h4 className="add-product-description__section-title">
+            {t('addProduct.description.technicalTitle')}
+          </h4>
           <Button type="dashed" icon={<PlusOutlined />} onClick={addTechnicalSpec}>
-            Yana
+            {t('addProduct.common.addMore')}
           </Button>
         </div>
 
         {technicalSpecs.map((spec, index) => (
           <div key={spec.localId} className="add-product-description__item-card">
             <div className="add-product-description__item-head">
-              <span className="add-product-description__item-index">#{index + 1}</span>
+              <span className="add-product-description__item-index">
+                {t('addProduct.common.itemIndex', { index: index + 1 })}
+              </span>
               {technicalSpecs.length > 1 ? (
                 <Button type="link" danger onClick={() => removeTechnicalSpec(spec.localId)}>
-                  O&apos;chirish
+                  {t('addProduct.common.remove')}
                 </Button>
               ) : null}
             </div>
 
             <FieldRow>
-              <FieldBlock label="Label (O'zbekcha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.specLabelUzLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Mahsulot turi"
+                  placeholder={t('addProduct.description.specLabelUzPlaceholder')}
                   value={spec.labelUz}
                   onChange={handleTechnicalSpecChange(spec.localId, 'labelUz')}
                 />
               </FieldBlock>
-              <FieldBlock label="Label (Ruscha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.specLabelRuLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Тип товара"
+                  placeholder={t('addProduct.description.specLabelRuPlaceholder')}
                   value={spec.labelRu}
                   onChange={handleTechnicalSpecChange(spec.localId, 'labelRu')}
                 />
@@ -263,18 +320,24 @@ export default function AddProductDescriptionFields({ values, onChange }) {
             </FieldRow>
 
             <FieldRow>
-              <FieldBlock label="Value (O'zbekcha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.specValueUzLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Universal"
+                  placeholder={t('addProduct.description.specValueUzPlaceholder')}
                   value={spec.valueUz}
                   onChange={handleTechnicalSpecChange(spec.localId, 'valueUz')}
                 />
               </FieldBlock>
-              <FieldBlock label="Value (Ruscha)" className="add-product-form__field--in-row">
+              <FieldBlock
+                label={t('addProduct.description.specValueRuLabel')}
+                className="add-product-form__field--in-row"
+              >
                 <Input
                   size="large"
-                  placeholder="Универсальный"
+                  placeholder={t('addProduct.description.specValueRuPlaceholder')}
                   value={spec.valueRu}
                   onChange={handleTechnicalSpecChange(spec.localId, 'valueRu')}
                 />

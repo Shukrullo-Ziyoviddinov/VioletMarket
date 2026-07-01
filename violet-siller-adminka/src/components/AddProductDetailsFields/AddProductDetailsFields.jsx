@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Input } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
-  LABEL_OPTION_DEFS,
+  getLabelOptionDefs,
   buildProductLabelsFromDraft,
   toggleLabelType,
 } from '../../utils/productLabelPresets';
@@ -15,9 +16,9 @@ function renderLabelIcon(iconValue) {
   return <span dangerouslySetInnerHTML={{ __html: iconValue }} />;
 }
 
-function ProductLabelPreview({ labels }) {
+function ProductLabelPreview({ labels, emptyText }) {
   if (!labels.length) {
-    return <p className="add-product-details__preview-empty">Tanlangan yorliq yo&apos;q</p>;
+    return <p className="add-product-details__preview-empty">{emptyText}</p>;
   }
 
   return (
@@ -37,6 +38,9 @@ function ProductLabelPreview({ labels }) {
 }
 
 export default function AddProductDetailsFields({ values, onChange }) {
+  const { t } = useTranslation();
+  const labelOptionDefs = useMemo(() => getLabelOptionDefs(t), [t]);
+
   const selectedTypes = useMemo(
     () => (Array.isArray(values.labelTypes) ? values.labelTypes : []),
     [values.labelTypes],
@@ -73,37 +77,34 @@ export default function AddProductDetailsFields({ values, onChange }) {
 
   return (
     <section className="add-product-form__card add-product-details">
-      <h3 className="add-product-form__card-title">Og&apos;irlik va yorliqlar</h3>
+      <h3 className="add-product-form__card-title">{t('addProduct.details.title')}</h3>
 
       <div className="add-product-form__field">
         <label className="add-product-form__field-label" htmlFor="add-product-weight">
-          Mahsulot og&apos;irligi (gramm)
+          {t('addProduct.details.weightLabel')}
           <span className="add-product-form__required">*</span>
         </label>
-        <p className="add-product-form__field-hint">
-          Mahsulot og&apos;irligini gramm bilan kiriting. Masalan: 200, 700.
-        </p>
+        <p className="add-product-form__field-hint">{t('addProduct.details.weightHint')}</p>
         <Input
           id="add-product-weight"
           size="large"
           inputMode="numeric"
-          placeholder="200"
+          placeholder={t('addProduct.details.weightPlaceholder')}
           value={values.weight}
           onChange={handleWeightChange}
         />
       </div>
 
       <div className="add-product-details__labels">
-        <p className="add-product-form__field-label">
-          Mahsulot yorliqlari
-        </p>
-        <p className="add-product-form__field-hint">
-          Kerakli yorliqlarni tanlang. Matn, icon va ranglar avtomatik beriladi. Chegirma uchun
-          faqat foiz yoziladi.
-        </p>
+        <p className="add-product-form__field-label">{t('addProduct.details.labelsTitle')}</p>
+        <p className="add-product-form__field-hint">{t('addProduct.details.labelsHint')}</p>
 
-        <div className="add-product-details__label-options" role="group" aria-label="Mahsulot yorliqlari">
-          {LABEL_OPTION_DEFS.map((option) => {
+        <div
+          className="add-product-details__label-options"
+          role="group"
+          aria-label={t('addProduct.details.labelsAriaLabel')}
+        >
+          {labelOptionDefs.map((option) => {
             const isSelected = selectedTypes.includes(option.value);
 
             return (
@@ -132,17 +133,15 @@ export default function AddProductDetailsFields({ values, onChange }) {
         {selectedTypes.includes('chegirma') ? (
           <div className="add-product-form__field add-product-details__chegirma-field">
             <label className="add-product-form__field-label" htmlFor="add-product-chegirma-percent">
-              Chegirma foizi
+              {t('addProduct.details.chegirmaPercentLabel')}
               <span className="add-product-form__required">*</span>
             </label>
-            <p className="add-product-form__field-hint">
-              Masalan: 70 yozilsa yorliq matni avtomatik &quot;Chegirma 70%&quot; bo&apos;ladi.
-            </p>
+            <p className="add-product-form__field-hint">{t('addProduct.details.chegirmaPercentHint')}</p>
             <Input
               id="add-product-chegirma-percent"
               size="large"
               inputMode="numeric"
-              placeholder="70"
+              placeholder={t('addProduct.details.chegirmaPercentPlaceholder')}
               value={values.chegirmaPercent}
               onChange={handleChegirmaPercentChange}
               suffix="%"
@@ -151,8 +150,8 @@ export default function AddProductDetailsFields({ values, onChange }) {
         ) : null}
 
         <div className="add-product-details__preview">
-          <p className="add-product-details__preview-title">Ko&apos;rinishi</p>
-          <ProductLabelPreview labels={previewLabels} />
+          <p className="add-product-details__preview-title">{t('addProduct.details.previewTitle')}</p>
+          <ProductLabelPreview labels={previewLabels} emptyText={t('addProduct.details.previewEmpty')} />
         </div>
       </div>
     </section>

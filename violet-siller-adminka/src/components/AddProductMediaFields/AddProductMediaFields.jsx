@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { LoadingOutlined, UploadOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { toAbsoluteVideoUrl, uploadSellerProductVideo } from '../../api/sellerProductApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import UploadProgressBar from '../UploadProgressBar/UploadProgressBar';
@@ -7,19 +8,19 @@ import ProductImageUploadField from '../ProductImageUploadField/ProductImageUplo
 import ProductThumbnailsUploadField from '../ProductThumbnailsUploadField/ProductThumbnailsUploadField';
 import './AddProductMediaFields.css';
 
-const PRODUCT_THUMBNAIL_HINTS = [
-  '2-rasm — yon tomondan yoki yaqin plan',
-  '3-rasm — detal yoki orqa ko‘rinish',
-  '4-rasm — qo‘shimcha burchak',
-];
-
 export default function AddProductMediaFields({ values, onChange }) {
+  const { t } = useTranslation();
   const { token } = useSellerAuth();
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadPhase, setUploadPhase] = useState('idle');
   const [videoError, setVideoError] = useState('');
+
+  const thumbnailSlotHints = useMemo(
+    () => t('addProduct.media.thumbnailSlotHints', { returnObjects: true }),
+    [t],
+  );
 
   const hasColors = Array.isArray(values.colors) && values.colors.length > 0;
   const savedThumbnailsCount = (
@@ -29,7 +30,9 @@ export default function AddProductMediaFields({ values, onChange }) {
   )?.length || 0;
   const previewUrl = toAbsoluteVideoUrl(values.video);
   const progressLabel =
-    uploadPhase === 'verifying' ? "Serverga saqlanmoqda..." : 'Video yuklanmoqda...';
+    uploadPhase === 'verifying'
+      ? t('addProduct.media.videoVerifying')
+      : t('addProduct.media.videoUploading');
 
   const setField = (key, fieldValue) => {
     onChange({ ...values, [key]: fieldValue });
@@ -59,7 +62,7 @@ export default function AddProductMediaFields({ values, onChange }) {
       );
       setField('video', uploadedPath);
     } catch (err) {
-      setVideoError(err.message || 'Video yuklashda xatolik');
+      setVideoError(err.message || t('addProduct.media.videoUploadError'));
     } finally {
       setUploading(false);
       setUploadPhase('idle');
@@ -68,19 +71,14 @@ export default function AddProductMediaFields({ values, onChange }) {
 
   return (
     <section className="add-product-form__card add-product-media-fields">
-      <h3 className="add-product-form__card-title">Video va asosiy rasm</h3>
-      <p className="add-product-media-fields__intro">
-        Mahsulot kartochkasidagi asosiy ko&apos;rinish. Asosiy rasm doim kerak — bu mahsulotning
-        umumiy yuzasi. Ranglar bo&apos;lsa ham shu rasm saqlanadi.
-      </p>
+      <h3 className="add-product-form__card-title">{t('addProduct.media.title')}</h3>
+      <p className="add-product-media-fields__intro">{t('addProduct.media.intro')}</p>
 
       <div className="add-product-media-fields__grid">
         <div className="add-product-media-fields__column">
           <div className="add-product-media-fields__column-header">
-            <h4 className="add-product-media-fields__column-title">Mahsulot videosi</h4>
-            <p className="add-product-media-fields__column-hint">
-              Ixtiyoriy. Mahsulot sahifasida ko&apos;rsatiladigan qisqa video.
-            </p>
+            <h4 className="add-product-media-fields__column-title">{t('addProduct.media.videoTitle')}</h4>
+            <p className="add-product-media-fields__column-hint">{t('addProduct.media.videoHint')}</p>
           </div>
 
           <div className="add-product-media-fields__upload-slot">
@@ -102,8 +100,8 @@ export default function AddProductMediaFields({ values, onChange }) {
               {uploading ? <LoadingOutlined /> : <UploadOutlined />}
             </div>
             <div className="add-product-media-fields__text-wrap">
-              <strong>Video yuklash</strong>
-              <span>Telefon yoki kompyuterdan tanlash uchun bosing</span>
+              <strong>{t('addProduct.media.videoUploadTitle')}</strong>
+              <span>{t('addProduct.media.videoUploadHint')}</span>
             </div>
             <VideoCameraOutlined className="add-product-media-fields__camera-icon" aria-hidden="true" />
           </button>
@@ -128,19 +126,16 @@ export default function AddProductMediaFields({ values, onChange }) {
 
         <div className="add-product-media-fields__column">
           <div className="add-product-media-fields__column-header">
-            <h4 className="add-product-media-fields__column-title">Mahsulot asosiy rasmi</h4>
-            <p className="add-product-media-fields__column-hint">
-              Majburiy. Katalog va mahsulot sahifasidagi asosiy rasm — rang tanlovi bo&apos;lmasa ham
-              shu ko&apos;rinadi.
-            </p>
+            <h4 className="add-product-media-fields__column-title">{t('addProduct.media.mainImageTitle')}</h4>
+            <p className="add-product-media-fields__column-hint">{t('addProduct.media.mainImageHint')}</p>
           </div>
 
           <div className="add-product-media-fields__upload-slot">
           <ProductImageUploadField
             value={values.mainImage}
             onChange={(path) => setField('mainImage', path)}
-            title="Asosiy rasm yuklash"
-            hint="Mahsulotning eng yaxshi bitta fotosurati"
+            title={t('addProduct.media.mainImageUploadTitle')}
+            hint={t('addProduct.media.mainImageUploadHint')}
             className="add-product-media-fields__image-upload"
           />
           </div>
@@ -156,18 +151,17 @@ export default function AddProductMediaFields({ values, onChange }) {
         <ProductThumbnailsUploadField
           images={values.thumbnails}
           onChange={(nextImages) => setField('thumbnails', nextImages)}
-          title="Mahsulot galereya rasmlari (thumbnails)"
-          hint="Rang tanlovi yo‘q mahsulotlarda galereya shu yerdan olinadi. Birinchi rasm asosiy rasmdan keyin ko‘rinadi."
-          slotHints={['1-qo‘shimcha rasm', ...PRODUCT_THUMBNAIL_HINTS]}
+          title={t('addProduct.media.thumbnailsTitle')}
+          hint={t('addProduct.media.thumbnailsHint')}
+          slotHints={thumbnailSlotHints}
         />
       </div>
 
       {hasColors ? (
         <p className="add-product-media-fields__colors-note">
-          Ranglar qo&apos;shilgan — galereya rasmlari vaqtincha yashirildi. Har bir rang uchun rasmlar
-          rang bloki ichida yuklanadi.
+          {t('addProduct.media.colorsNote')}
           {savedThumbnailsCount > 0
-            ? ` Oldin kiritilgan ${savedThumbnailsCount} ta galereya rasmi saqlanib turibdi — barcha ranglar o'chirilsa qayta ko'rinadi.`
+            ? t('addProduct.media.colorsNoteSaved', { count: savedThumbnailsCount })
             : null}
         </p>
       ) : null}
