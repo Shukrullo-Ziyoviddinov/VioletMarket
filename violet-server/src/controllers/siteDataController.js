@@ -75,6 +75,14 @@ async function sellerById(req, res) {
   res.json(seller);
 }
 
+const { DEFAULT_TOP_SILLERS_LIMIT } = require("../topSillers");
+
+async function topSillers(req, res) {
+  const limit = Number(req.query.limit) || DEFAULT_TOP_SILLERS_LIMIT;
+  const data = await siteContentService.getTopSillers(limit);
+  res.json(data);
+}
+
 module.exports = {
   categories,
   navbar,
@@ -84,6 +92,7 @@ module.exports = {
   videoBanner,
   sellers,
   sellerById,
+  topSillers,
   defaultProductPolicy,
   uzWarehouse,
   uzbProductDeliveryInfo,

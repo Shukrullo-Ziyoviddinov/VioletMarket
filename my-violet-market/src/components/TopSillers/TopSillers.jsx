@@ -13,30 +13,36 @@ import { useMessageChatTyping } from '../../hooks/useMessageChatTyping';
 import { useMessageChatSending } from '../../hooks/useMessageChatSending';
 import { useMessageChatPresence } from '../../hooks/useMessageChatPresence';
 import { getLocalizedText, normalizeImagePath } from '../../utils/utils';
+import TopSillersSkeleton from './TopSillersSkeleton';
 import './TopSillers.css';
 
 const FALLBACK_AVATAR = '/img/no-image.png';
 
-function normalizeTopSeller(rawItem, index = 0, lang = 'uz') {
+function formatRatingPreview(averageRating) {
+  const value = Number(averageRating);
+  return Number.isFinite(value) ? value.toFixed(1) : '--';
+}
+
+function normalizeTopSeller(rawItem, lang = 'uz') {
   if (!rawItem || typeof rawItem !== 'object') return null;
 
-  const ratingRaw = Number(rawItem.averageRating);
-  const averageRating = Number.isFinite(ratingRaw) && ratingRaw > 0
-    ? Math.min(5, ratingRaw)
-    : Number((4.9 - index * 0.2).toFixed(1));
+  const averageRating = Number.isFinite(Number(rawItem.averageRating))
+    ? Number(Number(rawItem.averageRating).toFixed(1))
+    : 0;
 
   return {
-    id: String(rawItem.id ?? rawItem.sellerId ?? `top-siller-${index}`),
-    name: getLocalizedText(rawItem.name, lang) || rawItem.name || `Seller ${index + 1}`,
+    id: String(rawItem.id ?? rawItem.sellerId ?? ''),
+    name: getLocalizedText(rawItem.name, lang) || rawItem.name || 'Seller',
     rawName: rawItem.name,
     logo: rawItem.logo || FALLBACK_AVATAR,
     orderCount: Math.max(0, Number(rawItem.orderCount) || 0),
     subscriberCount: Math.max(0, Number(rawItem.subscriberCount) || 0),
     averageRating,
+    ratingPreview: formatRatingPreview(averageRating),
   };
 }
 
-export default function TopSillers({ sellers = [] }) {
+export default function TopSillers({ sellers = [], isLoading = false }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { getSellerById } = useAppData();
@@ -51,9 +57,8 @@ export default function TopSillers({ sellers = [] }) {
   const normalized = useMemo(
     () =>
       (Array.isArray(sellers) ? sellers : [])
-        .map((item, index) => normalizeTopSeller(item, index, langKey))
-        .filter(Boolean)
-        .slice(0, 8),
+        .map((item) => normalizeTopSeller(item, langKey))
+        .filter((item) => item?.id),
     [sellers, langKey],
   );
 
@@ -142,14 +147,21 @@ export default function TopSillers({ sellers = [] }) {
     setActiveChatSellerId(null);
   }, []);
 
-  if (!normalized.length) return null;
+  if (!isLoading && !normalized.length) return null;
 
   return (
     <>
-      <section className="top-sillers" aria-label={t('home.topSillersTitle')}>
+      <section
+        className="top-sillers"
+        aria-label={t('home.topSillersTitle')}
+        aria-busy={isLoading}
+      >
         <h2 className="top-sillers__title">{t('home.topSillersTitle')}</h2>
 
-        <Scrollable type="product" className="top-sillers-scrollable" skipInteractiveTouchHandling>
+        {isLoading ? (
+          <TopSillersSkeleton count={4} />
+        ) : (
+          <Scrollable type="product" className="top-sillers-scrollable" skipInteractiveTouchHandling>
           {normalized.map((seller) => (
             <div key={seller.id} className="top-sillers__item-wrap">
               <article className="top-sillers__item">
@@ -172,7 +184,7 @@ export default function TopSillers({ sellers = [] }) {
                       <SellerSubscriberCount count={seller.subscriberCount} />
                       <p className="seller-profile__rating-preview">
                         <i className="bx bxs-star" aria-hidden="true" />
-                        <span>{seller.averageRating.toFixed(1)}</span>
+                        <span className="seller-profile__rating-preview-value">{seller.ratingPreview}</span>
                       </p>
                     </div>
                   </div>
@@ -199,7 +211,8 @@ export default function TopSillers({ sellers = [] }) {
               </article>
             </div>
           ))}
-        </Scrollable>
+          </Scrollable>
+        )}
       </section>
 
       <ProductSellerChatModal

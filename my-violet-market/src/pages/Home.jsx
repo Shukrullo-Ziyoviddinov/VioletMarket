@@ -86,6 +86,7 @@ const Home = () => {
     categoriyCountries,
     categoriesBrend,
     sellers,
+    topSillers,
     homeBannerData,
     videoBannerData,
     newCollection,
@@ -111,10 +112,6 @@ const Home = () => {
     [homeBannerData, navbarItems, categoriyCountries, categoriesBrend]
   );
   const [activeHomeFeed, setActiveHomeFeed] = useState('recommended');
-  const topSillersUiList = useMemo(
-    () => (Array.isArray(sellers) ? sellers.slice(0, 8) : []),
-    [sellers],
-  );
   const flashSaleProducts = useMemo(() => {
     const active = (allProducts || []).filter(
       (product) => product?.flashSaleMeta?.flashSaleActive === true,
@@ -256,7 +253,12 @@ const Home = () => {
               </div>
             )}
 
-            <TopSillers sellers={topSillersUiList} />
+            {(topSillers.length > 0 || appLoading) && (
+              <TopSillers
+                sellers={topSillers}
+                isLoading={appLoading && topSillers.length === 0}
+              />
+            )}
 
             <HomeCollectionGrid
               categoryName="engArzonlare"

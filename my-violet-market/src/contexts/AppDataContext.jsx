@@ -32,6 +32,7 @@ export function AppDataProvider({ children }) {
         cargo,
         videoBanner,
         sellersWrap,
+        topSillersWrap,
         defaultProductPolicy,
         uzWarehouse,
         uzbProductDeliveryInfo,
@@ -44,6 +45,7 @@ export function AppDataProvider({ children }) {
         fetchJson("/api/cargo"),
         fetchJson("/api/video-banners"),
         fetchJson("/api/sellers"),
+        fetchJson("/api/top-sellers"),
         fetchJson("/api/default-product-policy"),
         fetchJson("/api/uz-warehouse"),
         fetchJson("/api/uzb-product-delivery-info"),
@@ -58,6 +60,7 @@ export function AppDataProvider({ children }) {
         cargo: cargo || {},
         videoBanner: videoBanner || {},
         sellersWrap: sellersWrap || {},
+        topSillersWrap: topSillersWrap || {},
         defaultProductPolicy: Array.isArray(defaultProductPolicy) ? defaultProductPolicy : [],
         uzWarehouse: uzWarehouse || {},
         uzbProductDeliveryInfo: uzbProductDeliveryInfo || {},
@@ -100,6 +103,7 @@ export function AppDataProvider({ children }) {
         cargoRates: {},
         deliveryPrices: {},
         sellers: [],
+        topSillers: [],
         getSellerById: () => undefined,
         uzWarehouseData: null,
         chinaWarehouseData: null,
@@ -111,6 +115,7 @@ export function AppDataProvider({ children }) {
 
     const cols = buildProductCollections(payload.productsArr);
     const sellers = payload.sellersWrap?.sellers || [];
+    const topSillers = payload.topSillersWrap?.items || [];
     const getSellerById = (id) => sellers.find((s) => String(s.id) === String(id));
 
     return {
@@ -128,6 +133,7 @@ export function AppDataProvider({ children }) {
       cargoRates: payload.cargo.cargoRates || {},
       deliveryPrices: payload.cargo.deliveryPrices || {},
       sellers,
+      topSillers,
       getSellerById,
       uzWarehouseData: payload.uzWarehouse?.uzWarehouseData || null,
       chinaWarehouseData: payload.uzWarehouse?.chinaWarehouseData || null,

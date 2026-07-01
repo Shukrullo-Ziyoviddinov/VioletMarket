@@ -126,6 +126,24 @@ async function getUzbProductDeliveryInfo() {
   };
 }
 
+const { DEFAULT_TOP_SILLERS_LIMIT } = require("../topSillers");
+
+async function getTopSillers(limit = DEFAULT_TOP_SILLERS_LIMIT) {
+  const {
+    buildTopSillersFromDatabase,
+    mapTopSellerForClient,
+  } = require("../topSillers");
+
+  const rows = await buildTopSillersFromDatabase({
+    limit: Math.max(1, Number(limit) || DEFAULT_TOP_SILLERS_LIMIT),
+    onlyActive: true,
+  });
+
+  return {
+    items: rows.map(mapTopSellerForClient),
+  };
+}
+
 /** Frontend to'g'ridan-to'g'ri massiv kutadi */
 async function getDefaultProductPolicy() {
   const blocks = await ProductPolicyBlock.find().sort({ order: 1 }).lean();
@@ -141,6 +159,7 @@ module.exports = {
   getCargo,
   getVideoBanner,
   getSellers,
+  getTopSillers,
   getUzWarehouse,
   getUzbProductDeliveryInfo,
   getDefaultProductPolicy,

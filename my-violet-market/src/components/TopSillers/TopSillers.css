@@ -6,7 +6,7 @@
   margin: 0 0 10px;
   font-size: 2rem;
   font-weight: 700;
-  color: #1f1f2e;
+  color: #444;
 }
 
 .top-sillers-scrollable.scrollable-section {
@@ -157,6 +157,60 @@
   background: #f8f4fd;
   border-color: #e8dff5;
   color: #5b4d73;
+}
+
+.top-sillers__item--skeleton {
+  pointer-events: none;
+}
+
+.top-sillers__avatar--skeleton {
+  border-color: transparent;
+  padding: 0;
+}
+
+.top-sillers__name--skeleton {
+  display: block;
+  height: 14px;
+  width: 72%;
+  margin: 0;
+  border-radius: 6px;
+}
+
+.top-sillers__stats--skeleton {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.top-sillers__stats-line {
+  height: 11px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.top-sillers__stats-line--a {
+  width: 52px;
+}
+
+.top-sillers__stats-line--b {
+  width: 44px;
+}
+
+.top-sillers__stats-line--c {
+  width: 28px;
+}
+
+.top-sillers__action-btn--skeleton {
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+}
+
+.top-sillers-scrollable--skeleton .scrollable-container {
+  pointer-events: none;
 }
 
 @media (max-width: 900px) {

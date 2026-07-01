@@ -5,13 +5,6 @@ const {
   buildPostOrderReviewPayload,
   shouldTriggerPostOrderReview,
 } = require("./postOrderCommentFlow");
-const {
-  RATING_WEIGHT,
-  SALES_WEIGHT,
-  calculateTopSellerBall,
-  rankTopSillers,
-  buildTopSillersFromDatabase,
-} = require("./topSillersAlgoritim");
 
 module.exports = {
   markProductsAsSold,
@@ -19,9 +12,4 @@ module.exports = {
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,
   shouldTriggerPostOrderReview,
-  RATING_WEIGHT,
-  SALES_WEIGHT,
-  calculateTopSellerBall,
-  rankTopSillers,
-  buildTopSillersFromDatabase,
 };
