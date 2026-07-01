@@ -10,17 +10,17 @@ import './SellerSidebar.css';
 const LOGO_SRC = `${process.env.PUBLIC_URL}/img/${encodeURIComponent('vio_preview_rev_1 (1).png')}`;
 
 const menuItems = [
-  { key: 'home', icon: <DashboardOutlined />, label: 'Bosh sahifa', route: '/' },
-  { key: 'my-products', icon: <AppstoreOutlined />, label: 'Mening mahsulotlarim', route: '/products' },
+  { key: 'home', icon: <DashboardOutlined />, labelKey: 'sidebar.home', route: '/' },
+  { key: 'my-products', icon: <AppstoreOutlined />, labelKey: 'myProducts.title', route: '/products' },
   {
     key: 'discontinued-products',
     icon: <PauseCircleOutlined />,
     labelKey: 'discontinuedProducts.title',
     route: '/products/discontinued',
   },
-  { key: 'add-products', icon: <PlusCircleOutlined />, label: "Mahsulot qo'shish", route: '/products/add' },
-  { key: 'messages', icon: <MessageOutlined />, label: 'Xabarlar', route: '/messages' },
-  { key: 'market-info', icon: <ShopOutlined />, label: 'Market haqida' },
+  { key: 'add-products', icon: <PlusCircleOutlined />, labelKey: 'myProducts.addProduct', route: '/products/add' },
+  { key: 'messages', icon: <MessageOutlined />, labelKey: 'messages.title', route: '/messages' },
+  { key: 'market-info', icon: <ShopOutlined />, labelKey: 'marketInfo.title' },
 ];
 
 function formatUnreadCount(count) {
@@ -61,8 +61,8 @@ export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
 
   const sidebarMenuItems = useMemo(
     () =>
-      menuItems.map(({ key, icon, label, labelKey, route }) => {
-        const resolvedLabel = labelKey ? t(labelKey) : label;
+      menuItems.map(({ key, icon, labelKey, route }) => {
+        const resolvedLabel = t(labelKey);
 
         if (key !== 'messages') {
           return { key, icon, label: resolvedLabel, route };

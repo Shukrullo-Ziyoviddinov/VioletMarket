@@ -2,6 +2,9 @@
   "language": {
     "switch": "Change language"
   },
+  "sidebar": {
+    "home": "Home"
+  },
   "marketInfo": {
     "title": "About the market",
     "edit": "Edit",

@@ -2,6 +2,9 @@
   "language": {
     "switch": "切换语言"
   },
+  "sidebar": {
+    "home": "首页"
+  },
   "marketInfo": {
     "title": "关于市场",
     "edit": "编辑",
