@@ -7,11 +7,39 @@ import zh from './locales/zh.json';
 import addProductUz from './locales/addProduct.uz.json';
 import addProductEn from './locales/addProduct.en.json';
 import addProductZh from './locales/addProduct.zh.json';
+import classificationPickerUz from './locales/classificationPicker.uz.json';
+import classificationPickerEn from './locales/classificationPicker.en.json';
+import classificationPickerZh from './locales/classificationPicker.zh.json';
+
+function mergeAddProductLocale(base, classificationPicker) {
+  return {
+    ...base,
+    classification: {
+      ...base.classification,
+      ...classificationPicker,
+    },
+  };
+}
 
 const resources = {
-  uz: { translation: { ...uz, addProduct: addProductUz } },
-  en: { translation: { ...en, addProduct: addProductEn } },
-  zh: { translation: { ...zh, addProduct: addProductZh } },
+  uz: {
+    translation: {
+      ...uz,
+      addProduct: mergeAddProductLocale(addProductUz, classificationPickerUz),
+    },
+  },
+  en: {
+    translation: {
+      ...en,
+      addProduct: mergeAddProductLocale(addProductEn, classificationPickerEn),
+    },
+  },
+  zh: {
+    translation: {
+      ...zh,
+      addProduct: mergeAddProductLocale(addProductZh, classificationPickerZh),
+    },
+  },
 };
 
 i18n

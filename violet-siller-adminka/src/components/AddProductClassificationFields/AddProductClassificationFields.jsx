@@ -55,22 +55,36 @@ export default function AddProductClassificationFields({
 
   const masterCategoryOptions = useMemo(
     () =>
-      (Array.isArray(masterCategories) ? masterCategories : []).map((row) => ({
-        value: String(row.id),
-        label: row?.name?.uz || String(row.id),
-        subLabel: row?.name?.ru || '',
-      })),
-    [masterCategories],
+      (Array.isArray(masterCategories) ? masterCategories : []).map((row) => {
+        const categoryId = String(row.id);
+        const fallbackLabel = row?.name?.uz || categoryId;
+
+        return {
+          value: categoryId,
+          label: t(`addProduct.classification.masterCategoryOptions.${categoryId}`, {
+            defaultValue: fallbackLabel,
+          }),
+          subLabel: row?.name?.ru || '',
+        };
+      }),
+    [masterCategories, t],
   );
 
   const productTypeOptions = useMemo(
     () =>
-      (Array.isArray(productTypes) ? productTypes : []).map((row) => ({
-        value: row.code,
-        label: row.title || row.code,
-        subLabel: row.group || '',
-      })),
-    [productTypes],
+      (Array.isArray(productTypes) ? productTypes : []).map((row) => {
+        const code = String(row.code || '');
+        const fallbackLabel = row.title || code;
+
+        return {
+          value: code,
+          label: t(`addProduct.classification.productTypeOptions.${code}`, {
+            defaultValue: fallbackLabel,
+          }),
+          subLabel: row.group || '',
+        };
+      }),
+    [productTypes, t],
   );
 
   const shippingCountryOptions = useMemo(
