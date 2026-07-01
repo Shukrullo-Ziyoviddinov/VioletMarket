@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import Scrollable from '../Scrollable/Scrollable';
 import SellerOrderCount from '../SellerOrderCount/SellerOrderCount';
 import SellerSubscriberCount from '../SellerSubscriberCount/SellerSubscriberCount';
 import { getLocalizedText, normalizeImagePath } from '../../utils/utils';
@@ -42,34 +43,36 @@ export default function TopSillers({ sellers = [] }) {
         {t('home.topSillersTitle', { defaultValue: 'Top sellerlar' })}
       </h2>
 
-      <div className="top-sillers__list">
+      <Scrollable type="product" className="top-sillers-scrollable">
         {normalized.map((seller) => (
-          <article key={seller.id} className="top-sillers__item">
-            <img
-              src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
-              alt={seller.name}
-              className="top-sillers__avatar"
-              loading="lazy"
-              onError={(event) => {
-                event.currentTarget.onerror = null;
-                event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
-              }}
-            />
+          <div key={seller.id} className="top-sillers__item-wrap">
+            <article className="top-sillers__item">
+              <img
+                src={normalizeImagePath(seller.logo || FALLBACK_AVATAR)}
+                alt={seller.name}
+                className="top-sillers__avatar"
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = normalizeImagePath(FALLBACK_AVATAR);
+                }}
+              />
 
-            <div className="top-sillers__meta">
-              <p className="top-sillers__name">{seller.name}</p>
-              <div className="top-sillers__stats">
-                <SellerOrderCount count={seller.orderCount} />
-                <SellerSubscriberCount count={seller.subscriberCount} />
-                <p className="seller-profile__rating-preview">
-                  <i className="bx bxs-star" aria-hidden="true" />
-                  <span>{seller.averageRating.toFixed(1)}</span>
-                </p>
+              <div className="top-sillers__meta">
+                <p className="top-sillers__name">{seller.name}</p>
+                <div className="top-sillers__stats">
+                  <SellerOrderCount count={seller.orderCount} />
+                  <SellerSubscriberCount count={seller.subscriberCount} />
+                  <p className="seller-profile__rating-preview">
+                    <i className="bx bxs-star" aria-hidden="true" />
+                    <span>{seller.averageRating.toFixed(1)}</span>
+                  </p>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          </div>
         ))}
-      </div>
+      </Scrollable>
     </section>
   );
 }
