@@ -17,7 +17,26 @@
     "label": "Which section should the product appear in?",
     "hint": "On the customer site, the product appears under this section. Only one section can be selected.",
     "placeholder": "Select a section",
-    "emptyText": "No sections found"
+    "emptyText": "No sections found",
+    "options": {
+      "products": "Products",
+      "newCollection": "New collection",
+      "womensCollection": "Women's collection",
+      "mensCollection": "Men's collection",
+      "engArzonlare": "Best prices",
+      "trendingItems": "Trending",
+      "electronicsCollection": "Electronics",
+      "booksCollection": "Books",
+      "stationeryCollection": "Stationery",
+      "beautyCareCollection": "Beauty & care",
+      "accessoriesCollection": "Accessories",
+      "giftsToysCollection": "Gifts & toys",
+      "vitaminsHealthCollection": "Vitamins & health",
+      "activeLifestyleCollection": "Active lifestyle",
+      "travelGearCollection": "Travel gear",
+      "householdAppliancesCollection": "Household appliances",
+      "allKindsProductsCollection": "All kinds of products"
+    }
   },
   "mainInfo": {
     "title": "Basic information",

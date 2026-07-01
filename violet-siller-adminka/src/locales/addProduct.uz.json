@@ -17,7 +17,26 @@
     "label": "Mahsulot qaysi bo'limda ko'rinsin?",
     "hint": "Mijoz saytida mahsulot shu bo'lim ostida chiqadi. Faqat bitta bo'lim tanlanadi.",
     "placeholder": "Bo'limni tanlang",
-    "emptyText": "Bo'limlar topilmadi"
+    "emptyText": "Bo'limlar topilmadi",
+    "options": {
+      "products": "Mahsulotlar",
+      "newCollection": "Yangi kolleksiya",
+      "womensCollection": "Ayollar kolleksiyasi",
+      "mensCollection": "Erkaklar kolleksiyasi",
+      "engArzonlare": "Eng arzonlar",
+      "trendingItems": "Trenddagilar",
+      "electronicsCollection": "Elektronika",
+      "booksCollection": "Kitoblar",
+      "stationeryCollection": "Kanselyariya",
+      "beautyCareCollection": "Go'zallik va parvarish",
+      "accessoriesCollection": "Aksessuarlar",
+      "giftsToysCollection": "Sovg'alar va o'yinchoqlar",
+      "vitaminsHealthCollection": "Vitaminlar va sog'liq",
+      "activeLifestyleCollection": "Faol hayot tarzi",
+      "travelGearCollection": "Sayohat jihozlari",
+      "householdAppliancesCollection": "Maishiy texnika",
+      "allKindsProductsCollection": "Har xil mahsulotlar"
+    }
   },
   "mainInfo": {
     "title": "Asosiy ma'lumotlar",

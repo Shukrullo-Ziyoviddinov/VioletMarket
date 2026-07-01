@@ -8,11 +8,16 @@ export default function AddProductSectionField({ value, options, onChange }) {
 
   const pickerOptions = useMemo(
     () =>
-      (Array.isArray(options) ? options : []).map((option) => ({
-        value: option.value,
-        label: option.label,
-      })),
-    [options],
+      (Array.isArray(options) ? options : []).map((option) => {
+        const optionValue = String(option.value || '');
+        return {
+          value: optionValue,
+          label: t(`addProduct.section.options.${optionValue}`, {
+            defaultValue: option.label || optionValue,
+          }),
+        };
+      }),
+    [options, t],
   );
 
   return (

@@ -17,7 +17,26 @@
     "label": "商品显示在哪个栏目？",
     "hint": "在客户网站上，商品将显示在该栏目下。只能选择一个栏目。",
     "placeholder": "选择栏目",
-    "emptyText": "未找到栏目"
+    "emptyText": "未找到栏目",
+    "options": {
+      "products": "产品",
+      "newCollection": "新品系列",
+      "womensCollection": "女装系列",
+      "mensCollection": "男装系列",
+      "engArzonlare": "最低价",
+      "trendingItems": "潮流热卖",
+      "electronicsCollection": "电子产品",
+      "booksCollection": "图书",
+      "stationeryCollection": "文具",
+      "beautyCareCollection": "美容护理",
+      "accessoriesCollection": "配饰",
+      "giftsToysCollection": "礼品与玩具",
+      "vitaminsHealthCollection": "维生素与健康",
+      "activeLifestyleCollection": "运动生活",
+      "travelGearCollection": "旅行装备",
+      "householdAppliancesCollection": "家用电器",
+      "allKindsProductsCollection": "各类产品"
+    }
   },
   "mainInfo": {
     "title": "基本信息",
