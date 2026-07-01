@@ -216,7 +216,7 @@ export default function TopSillers({
         <h2 className="top-sillers__title">{t('home.topSillersTitle')}</h2>
 
         {isLoading ? (
-          <TopSillersSkeleton count={4} />
+          <TopSillersSkeleton count={4} variant={variant} />
         ) : (
           <Scrollable type="product" className="top-sillers-scrollable" skipInteractiveTouchHandling>
           {normalized.map((seller, index) => {

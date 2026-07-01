@@ -120,11 +120,12 @@
 
 .chats-page-search-modal__body .top-sillers--embedded {
   margin: 0;
-  padding: 12px 14px 16px;
+  padding: 12px 0 16px;
 }
 
 .chats-page-search-modal__body .top-sillers--embedded .top-sillers__title {
   margin: 0 0 10px;
+  padding: 0 14px;
   font-size: 1.1rem;
   font-weight: 700;
   color: #1f1630;
@@ -134,19 +135,45 @@
   margin: 0;
 }
 
-.chats-page-search-modal__body .chats-page-search-resultat {
-  padding-top: 0;
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded,
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded.top-sillers-scrollable--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0 14px;
+  box-sizing: border-box;
+}
+
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded .top-sillers__item-wrap {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded .top-sillers__item,
+.chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded .top-sillers__item--skeleton {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
 }
 
 .chats-page-search-modal__history {
-  padding: 12px 14px 0;
+  padding: 12px 0 0;
 }
 
 .chats-page-search-modal__history-title {
   margin: 0 0 10px;
+  padding: 0 14px;
   font-size: 1.1rem;
   font-weight: 700;
   color: #1f1630;
+}
+
+.chats-page-search-modal__body .chats-page-search-resultat--results-inline,
+.chats-page-search-modal__body .chats-page-search-modal__history .chats-page-search-resultat {
+  padding: 0 14px;
+  box-sizing: border-box;
 }
 
 .chats-page-search-modal__hint,
@@ -212,13 +239,25 @@
 
   .chats-page-search-modal__body .top-sillers--embedded .top-sillers__title {
     font-size: 1rem;
+    padding: 0 12px;
+  }
+
+  .chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded,
+  .chats-page-search-modal__body .top-sillers--embedded .top-sillers-scrollable--embedded.top-sillers-scrollable--skeleton {
+    padding: 0 12px;
   }
 
   .chats-page-search-modal__history {
-    padding: 10px 12px 0;
+    padding: 10px 0 0;
   }
 
   .chats-page-search-modal__history-title {
     font-size: 1rem;
+    padding: 0 12px;
+  }
+
+  .chats-page-search-modal__body .chats-page-search-resultat--results-inline,
+  .chats-page-search-modal__body .chats-page-search-modal__history .chats-page-search-resultat {
+    padding: 0 12px;
   }
 }

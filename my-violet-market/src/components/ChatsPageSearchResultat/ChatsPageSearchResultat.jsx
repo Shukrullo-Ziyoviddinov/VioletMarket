@@ -61,14 +61,17 @@ function ChatsPageSearchResultatSkeleton({ count = 4, variant = 'results' }) {
       aria-hidden="true"
     >
       {Array.from({ length: count }).map((_, index) => (
-        <div key={`chats-seller-search-sk-${index}`} className="chats-page-search-resultat__item-row">
-          <div className="chats-page-search-resultat__item">
+        <div key={`chats-seller-search-sk-${index}`} className="chats-page-search-resultat__item">
+          <div className="chats-page-search-resultat__item-main">
             <SkeletonPulse className="chats-page-search-resultat__avatar chats-page-search-resultat__avatar--skeleton" />
             <div className="chats-page-search-resultat__meta">
               <SkeletonPulse className="chats-page-search-resultat__name chats-page-search-resultat__name--skeleton" />
               <SkeletonPulse className="chats-page-search-resultat__stats chats-page-search-resultat__stats--skeleton" />
             </div>
           </div>
+          {variant === 'history' ? (
+            <SkeletonPulse className="chats-page-search-resultat__remove chats-page-search-resultat__remove--skeleton" />
+          ) : null}
         </div>
       ))}
     </div>
@@ -115,10 +118,10 @@ export default function ChatsPageSearchResultat({
   return (
     <div className={rootClassName}>
       {normalized.map((seller) => (
-        <div key={seller.id} className="chats-page-search-resultat__item-row">
+        <div key={seller.id} className="chats-page-search-resultat__item">
           <button
             type="button"
-            className="chats-page-search-resultat__item"
+            className="chats-page-search-resultat__item-main"
             onClick={() => handleOpenSeller(seller.id)}
           >
             <SellerResultContent seller={seller} t={t} />
@@ -128,7 +131,10 @@ export default function ChatsPageSearchResultat({
             <button
               type="button"
               className="chats-page-search-resultat__remove"
-              onClick={() => onRemoveSeller?.(seller.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemoveSeller?.(seller.id);
+              }}
               aria-label={t('search.remove')}
             >
               <i className="bx bx-x" aria-hidden="true" />

@@ -31,12 +31,25 @@ function TopSillersItemSkeleton() {
   );
 }
 
-export default function TopSillersSkeleton({ count = 4 }) {
+export default function TopSillersSkeleton({ count = 4, variant = 'default' }) {
+  const items = Array.from({ length: count }).map((_, index) => (
+    <TopSillersItemSkeleton key={`top-sillers-sk-${index}`} />
+  ));
+
+  if (variant === 'embedded') {
+    return (
+      <div
+        className="top-sillers-scrollable top-sillers-scrollable--embedded top-sillers-scrollable--skeleton"
+        aria-hidden="true"
+      >
+        {items}
+      </div>
+    );
+  }
+
   return (
     <Scrollable type="product" className="top-sillers-scrollable top-sillers-scrollable--skeleton">
-      {Array.from({ length: count }).map((_, index) => (
-        <TopSillersItemSkeleton key={`top-sillers-sk-${index}`} />
-      ))}
+      {items}
     </Scrollable>
   );
 }
