@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Spin } from 'antd';
-import { fetchSalesStatistics } from '../../api/salesStatisticsAdminApi';
+import { fetchSalesRevenueChart, fetchSalesStatistics } from '../../api/salesStatisticsAdminApi';
+import SalesRevenueChart from '../../components/SalesRevenueChart/SalesRevenueChart';
 import SalesStatisticsFilterBar from '../../components/SalesStatisticsFilterBar/SalesStatisticsFilterBar';
 import SalesStatisticsMetrics from '../../components/SalesStatisticsMetrics/SalesStatisticsMetrics';
 import SalesStatisticsTotalRevenue from '../../components/SalesStatisticsTotalRevenue/SalesStatisticsTotalRevenue';
@@ -20,12 +21,37 @@ export default function SalesStatisticsPage() {
   const [filterOptions, setFilterOptions] = useState({ days: [], weeks: [], months: [] });
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [metrics, setMetrics] = useState(EMPTY_METRICS);
+  const [chartGranularity, setChartGranularity] = useState('day');
+  const [chartPoints, setChartPoints] = useState([]);
+  const [chartTone, setChartTone] = useState('neutral');
   const [openFilter, setOpenFilter] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const loadChart = useCallback(async (activeFilters, granularity) => {
+    setChartLoading(true);
+    try {
+      const payload = await fetchSalesRevenueChart({
+        ...activeFilters,
+        granularity,
+      });
+      setChartPoints(payload.points || []);
+      setChartTone(payload.overallTone || 'neutral');
+      if (payload.granularity) {
+        setChartGranularity(payload.granularity);
+      }
+    } catch {
+      setChartPoints([]);
+      setChartTone('neutral');
+    } finally {
+      setChartLoading(false);
+    }
+  }, []);
 
   const loadStatistics = useCallback(async (activeFilters, options = {}) => {
     const useGlobalLoader = options?.useGlobalLoader === true;
+    const granularity = options?.granularity || chartGranularity;
     setLoading(true);
     setError('');
     if (useGlobalLoader) {
@@ -33,16 +59,21 @@ export default function SalesStatisticsPage() {
     }
 
     try {
-      const payload = await fetchSalesStatistics(activeFilters);
-      if (payload?.filters) {
-        setFilters(payload.filters);
+      const [statsPayload] = await Promise.all([
+        fetchSalesStatistics(activeFilters),
+        loadChart(activeFilters, granularity),
+      ]);
+
+      if (statsPayload?.filters) {
+        setFilters(statsPayload.filters);
       }
-      setFilterOptions(payload.filterOptions || { days: [], weeks: [], months: [] });
-      setTotalRevenue(payload.totalRevenue || 0);
-      setMetrics(payload.metrics || EMPTY_METRICS);
+      setFilterOptions(statsPayload.filterOptions || { days: [], weeks: [], months: [] });
+      setTotalRevenue(statsPayload.totalRevenue || 0);
+      setMetrics(statsPayload.metrics || EMPTY_METRICS);
     } catch (err) {
       setMetrics(EMPTY_METRICS);
       setTotalRevenue(0);
+      setChartPoints([]);
       setError(err.message || "Sotuv statistikasini yuklashda xatolik yuz berdi");
     } finally {
       if (useGlobalLoader) {
@@ -50,12 +81,12 @@ export default function SalesStatisticsPage() {
       }
       setLoading(false);
     }
-  }, [setGlobalLoading]);
+  }, [chartGranularity, loadChart, setGlobalLoading]);
 
   useEffect(() => {
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
-      loadStatistics({}, { useGlobalLoader: true });
+      loadStatistics({}, { useGlobalLoader: true, granularity: 'day' });
     }
   }, [loadStatistics]);
 
@@ -69,9 +100,17 @@ export default function SalesStatisticsPage() {
   const handleFilterChange = useCallback(
     (nextFilters) => {
       setFilters(nextFilters);
-      loadStatistics(nextFilters, { useGlobalLoader: false });
+      loadStatistics(nextFilters, { useGlobalLoader: false, granularity: chartGranularity });
     },
-    [loadStatistics],
+    [chartGranularity, loadStatistics],
+  );
+
+  const handleChartGranularityChange = useCallback(
+    (nextGranularity) => {
+      setChartGranularity(nextGranularity);
+      loadChart(filters, nextGranularity);
+    },
+    [filters, loadChart],
   );
 
   return (
@@ -95,6 +134,14 @@ export default function SalesStatisticsPage() {
         {loading ? <Spin className="sales-statistics-page__spinner" /> : null}
         <SalesStatisticsMetrics metrics={metrics} loading={loading} />
       </div>
+
+      <SalesRevenueChart
+        granularity={chartGranularity}
+        onGranularityChange={handleChartGranularityChange}
+        points={chartPoints}
+        overallTone={chartTone}
+        loading={chartLoading}
+      />
     </section>
   );
 }

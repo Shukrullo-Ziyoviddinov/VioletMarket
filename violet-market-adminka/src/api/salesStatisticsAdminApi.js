@@ -21,6 +21,18 @@ function normalizeMetric(metric) {
   };
 }
 
+function normalizeChartPoint(point) {
+  return {
+    key: String(point?.key || ''),
+    label: String(point?.label || ''),
+    tooltipLabel: String(point?.tooltipLabel || point?.label || ''),
+    revenue: Number(point?.revenue) || 0,
+    previousRevenue: point?.previousRevenue == null ? null : Number(point.previousRevenue) || 0,
+    growthPercent: Number(point?.growthPercent) || 0,
+    tone: String(point?.tone || 'neutral'),
+  };
+}
+
 export async function fetchSalesDashboardStats() {
   const res = await fetch(apiUrl('/api/admin/sales/dashboard-stats'));
   const payload = await parseJson(res);
@@ -66,5 +78,28 @@ export async function fetchSalesStatistics(filters = {}) {
       weekly: normalizeMetric(data?.metrics?.weekly),
       monthly: normalizeMetric(data?.metrics?.monthly),
     },
+  };
+}
+
+export async function fetchSalesRevenueChart(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.granularity) params.set('granularity', String(filters.granularity));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/revenue-chart?${query}`
+    : '/api/admin/sales/revenue-chart';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    granularity: String(data?.granularity || 'day'),
+    overallTone: String(data?.overallTone || 'neutral'),
+    points: Array.isArray(data?.points) ? data.points.map(normalizeChartPoint) : [],
   };
 }
