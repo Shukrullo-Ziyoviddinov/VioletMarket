@@ -76,23 +76,9 @@
 }
 
 .sales-statistics-metric-card__inline-growth {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.sales-statistics-metric-card__inline-growth-percent {
-  font-weight: 700;
-}
-
-.sales-statistics-metric-card__inline-growth-chart {
-  width: 42px;
-  height: 18px;
-  flex-shrink: 0;
-  display: block;
 }
 
 .sales-statistics-metric-card__inline-growth--positive {
