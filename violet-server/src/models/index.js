@@ -29,6 +29,7 @@ const { UzbProductDeliveryInfo } = require("./uzbProductDeliveryInfo");
 const { SellerRegistration } = require("./sellerRegistration");
 const { Order } = require("./order");
 const { SellerSale } = require("./sellerSale");
+const { SellerProductSale } = require("./sellerProductSale");
 
 module.exports = {
   Product,
@@ -62,4 +63,5 @@ module.exports = {
   SellerRegistration,
   Order,
   SellerSale,
+  SellerProductSale,
 };

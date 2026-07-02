@@ -3,6 +3,7 @@ const { SellerAccount } = require("../../models/sellerAccount");
 const { toNumber } = require("./salesStatisticsHelpers");
 const { resolveSelectedFilters, buildSalesFilterOptions } = require("./salesFilterOptionsService");
 const { backfillSellerSalesFromOrders } = require("../../productManagement/recordSellerSales");
+const { backfillSellerProductSalesFromOrders } = require("../../productManagement/recordSellerProductSales");
 
 const PERIOD_LABELS = {
   day: "Kunlik",
@@ -36,6 +37,7 @@ function pickSellerName(seller) {
 
 async function buildTopSellersStatistics(query = {}) {
   await backfillSellerSalesFromOrders();
+  await backfillSellerProductSalesFromOrders();
 
   const filterOptions = await buildSalesFilterOptions();
   const filters = resolveSelectedFilters(query, filterOptions);
