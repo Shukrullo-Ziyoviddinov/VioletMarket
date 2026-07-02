@@ -8,9 +8,9 @@ import { useGlobalLoader } from '../../context/GlobalLoaderContext';
 import './SalesStatisticsPage.css';
 
 const EMPTY_METRICS = {
-  daily: { title: 'Kunlik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
-  weekly: { title: 'Haftalik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
-  monthly: { title: 'Oylik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
+  daily: { title: 'Kunlik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
+  weekly: { title: 'Haftalik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
+  monthly: { title: 'Oylik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
 };
 
 export default function SalesStatisticsPage() {

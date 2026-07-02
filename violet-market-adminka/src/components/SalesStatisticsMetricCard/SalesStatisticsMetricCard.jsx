@@ -1,6 +1,41 @@
 import React, { useId } from 'react';
 import './SalesStatisticsMetricCard.css';
 
+function SalesInlineGrowthChart({ tone = 'neutral' }) {
+  const palettes = {
+    positive: {
+      stroke: '#16a34a',
+      path: 'M1 13 L6 9 L11 11 L17 5 L23 7',
+    },
+    negative: {
+      stroke: '#dc2626',
+      path: 'M1 5 L6 8 L11 7 L17 12 L23 10',
+    },
+    neutral: {
+      stroke: '#2563eb',
+      path: 'M1 9 L23 9',
+    },
+  };
+  const palette = palettes[tone] || palettes.neutral;
+
+  return (
+    <svg
+      className="sales-statistics-metric-card__inline-growth-chart"
+      viewBox="0 0 24 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d={palette.path}
+        stroke={palette.stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function SalesTrendChart({ gradientId, tone = 'positive' }) {
   const palettes = {
     positive: {
@@ -60,7 +95,6 @@ export default function SalesStatisticsMetricCard({
   title,
   value,
   growthFormatted = '0%',
-  growthLabel = 'tekis',
   tone = 'neutral',
   loading = false,
 }) {
@@ -85,9 +119,7 @@ export default function SalesStatisticsMetricCard({
               <span className="sales-statistics-metric-card__inline-growth-percent">
                 {growthFormatted}
               </span>
-              <span className="sales-statistics-metric-card__inline-growth-label">
-                {growthLabel}
-              </span>
+              <SalesInlineGrowthChart tone={tone} />
             </span>
           ) : null}
         </div>

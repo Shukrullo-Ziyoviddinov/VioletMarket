@@ -18,7 +18,6 @@ export default function SalesStatisticsMetrics({ metrics, loading = false }) {
           title={metric?.title || ''}
           value={formatRevenue(metric?.value)}
           growthFormatted={metric?.growthFormatted}
-          growthLabel={metric?.growthLabel}
           tone={metric?.tone}
           loading={loading}
         />
