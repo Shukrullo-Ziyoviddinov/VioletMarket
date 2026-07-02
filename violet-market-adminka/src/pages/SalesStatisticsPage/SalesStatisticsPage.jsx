@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Spin } from 'antd';
 import { fetchSalesRevenueChart, fetchSalesStatistics } from '../../api/salesStatisticsAdminApi';
 import SalesRevenueChart from '../../components/SalesRevenueChart/SalesRevenueChart';
+import TopSellersSection from '../../components/TopSellersSection/TopSellersSection';
 import SalesStatisticsFilterBar from '../../components/SalesStatisticsFilterBar/SalesStatisticsFilterBar';
 import SalesStatisticsMetrics from '../../components/SalesStatisticsMetrics/SalesStatisticsMetrics';
 import SalesStatisticsTotalRevenue from '../../components/SalesStatisticsTotalRevenue/SalesStatisticsTotalRevenue';
@@ -142,6 +143,8 @@ export default function SalesStatisticsPage() {
         overallTone={chartTone}
         loading={chartLoading}
       />
+
+      <TopSellersSection pageFilters={filters} />
     </section>
   );
 }

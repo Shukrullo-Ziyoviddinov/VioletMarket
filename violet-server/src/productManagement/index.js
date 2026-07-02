@@ -11,6 +11,7 @@ const {
   calcOrderTotalAmount,
   recordCartPayment,
 } = require("./recordCartPayment");
+const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 
 module.exports = {
   markProductsAsSold,
@@ -22,4 +23,5 @@ module.exports = {
   buildOrderItemsFromCart,
   calcOrderTotalAmount,
   recordCartPayment,
+  recordSellerSalesFromOrder,
 };

@@ -103,3 +103,39 @@ export async function fetchSalesRevenueChart(filters = {}) {
     points: Array.isArray(data?.points) ? data.points.map(normalizeChartPoint) : [],
   };
 }
+
+function normalizeTopSeller(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    sellerId: String(row?.sellerId || ''),
+    name: String(row?.name || ''),
+    logo: String(row?.logo || ''),
+    status: String(row?.status || ''),
+    totalAmount: Number(row?.totalAmount) || 0,
+    totalQuantity: Number(row?.totalQuantity) || 0,
+    orderCount: Number(row?.orderCount) || 0,
+  };
+}
+
+export async function fetchTopSellersStatistics(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/top-sellers?${query}`
+    : '/api/admin/sales/top-sellers';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || 'Kunlik'),
+    sellers: Array.isArray(data?.sellers) ? data.sellers.map(normalizeTopSeller) : [],
+  };
+}

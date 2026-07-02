@@ -1,0 +1,86 @@
+.top-sellers-period-filter {
+  position: relative;
+  display: inline-flex;
+}
+
+.top-sellers-period-filter__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #fff;
+  color: #2a1842;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.top-sellers-period-filter__button:hover {
+  border-color: #c7cedf;
+}
+
+.top-sellers-period-filter__button--active {
+  border-color: #56337d;
+  background: #56337d;
+  color: #ffffff;
+}
+
+.top-sellers-period-filter__button-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.top-sellers-period-filter__button-value {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.top-sellers-period-filter__button-icon {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+
+.top-sellers-period-filter__button-icon--open {
+  transform: rotate(180deg);
+}
+
+.top-sellers-period-filter__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 100%;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+  box-sizing: border-box;
+}
+
+.top-sellers-period-filter__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #1f2937;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.top-sellers-period-filter__dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.top-sellers-period-filter__dropdown-item--selected {
+  background: #eef2ff;
+  color: #56337d;
+  font-weight: 600;
+}
