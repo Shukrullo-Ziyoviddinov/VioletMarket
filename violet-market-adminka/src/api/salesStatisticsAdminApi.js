@@ -219,3 +219,36 @@ export async function fetchSellerSoldProductsStatistics(filters = {}) {
   const payload = await parseJson(res);
   return normalizeSellerSoldProductsPayload(payload?.data || {});
 }
+
+function normalizeSaleDateRow(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    orderId: Number(row?.orderId) || 0,
+    quantity: Number(row?.quantity) || 0,
+    amount: Number(row?.amount) || 0,
+    paidAt: String(row?.paidAt || ''),
+    soldAtLabel: String(row?.soldAtLabel || ''),
+  };
+}
+
+export async function fetchSellerProductSaleDates(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.sellerId) params.set('sellerId', String(filters.sellerId));
+  if (filters?.productId) params.set('productId', String(filters.productId));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/seller-product-sale-dates?${query}`
+    : '/api/admin/sales/seller-product-sale-dates';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    sellerId: String(data?.sellerId || ''),
+    productId: Number(data?.productId) || 0,
+    productTitle: String(data?.productTitle || ''),
+    sales: Array.isArray(data?.sales) ? data.sales.map(normalizeSaleDateRow) : [],
+  };
+}

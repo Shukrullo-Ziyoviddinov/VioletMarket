@@ -9,5 +9,6 @@ router.get("/admin/sales/revenue-chart", controller.getSalesRevenueChart);
 router.get("/admin/sales/top-sellers", controller.getTopSellersStatistics);
 router.get("/admin/sales/top-selling-products", controller.getTopSellingProductsStatistics);
 router.get("/admin/sales/seller-sold-products", controller.getSellerSoldProductsStatistics);
+router.get("/admin/sales/seller-product-sale-dates", controller.getSellerProductSaleDates);
 
 module.exports = router;

@@ -10,6 +10,7 @@ import MiniGlobalModal from '../components/MiniGlobalModal/MiniGlobalModal';
 
 const MiniGlobalModalContext = createContext({
   openMiniGlobalModal: () => {},
+  openMiniGlobalViewModal: () => {},
   closeMiniGlobalModal: () => {},
 });
 
@@ -17,11 +18,17 @@ export function useMiniGlobalModal() {
   return useContext(MiniGlobalModalContext);
 }
 
+const EMPTY_VIEW_PROPS = {};
+
 export function MiniGlobalModalProvider({ children }) {
   const [modalState, setModalState] = useState({
     open: false,
+    mode: 'confirm',
     permissionKey: '',
     itemName: '',
+    viewKey: '',
+    viewTitle: '',
+    viewProps: EMPTY_VIEW_PROPS,
     loading: false,
   });
 
@@ -33,8 +40,12 @@ export function MiniGlobalModalProvider({ children }) {
       onConfirmRef.current = null;
       return {
         open: false,
+        mode: 'confirm',
         permissionKey: '',
         itemName: '',
+        viewKey: '',
+        viewTitle: '',
+        viewProps: EMPTY_VIEW_PROPS,
         loading: false,
       };
     });
@@ -44,8 +55,26 @@ export function MiniGlobalModalProvider({ children }) {
     onConfirmRef.current = typeof onConfirm === 'function' ? onConfirm : null;
     setModalState({
       open: true,
+      mode: 'confirm',
       permissionKey: String(permissionKey || '').trim(),
       itemName: String(itemName || '').trim(),
+      viewKey: '',
+      viewTitle: '',
+      viewProps: EMPTY_VIEW_PROPS,
+      loading: false,
+    });
+  }, []);
+
+  const openMiniGlobalViewModal = useCallback(({ viewKey, viewTitle = '', viewProps = {} }) => {
+    onConfirmRef.current = null;
+    setModalState({
+      open: true,
+      mode: 'view',
+      permissionKey: '',
+      itemName: '',
+      viewKey: String(viewKey || '').trim(),
+      viewTitle: String(viewTitle || '').trim(),
+      viewProps: viewProps && typeof viewProps === 'object' ? viewProps : EMPTY_VIEW_PROPS,
       loading: false,
     });
   }, []);
@@ -64,8 +93,12 @@ export function MiniGlobalModalProvider({ children }) {
       onConfirmRef.current = null;
       setModalState({
         open: false,
+        mode: 'confirm',
         permissionKey: '',
         itemName: '',
+        viewKey: '',
+        viewTitle: '',
+        viewProps: EMPTY_VIEW_PROPS,
         loading: false,
       });
     } catch (_error) {
@@ -76,9 +109,10 @@ export function MiniGlobalModalProvider({ children }) {
   const contextValue = useMemo(
     () => ({
       openMiniGlobalModal,
+      openMiniGlobalViewModal,
       closeMiniGlobalModal,
     }),
-    [openMiniGlobalModal, closeMiniGlobalModal],
+    [openMiniGlobalModal, openMiniGlobalViewModal, closeMiniGlobalModal],
   );
 
   return (
@@ -86,8 +120,12 @@ export function MiniGlobalModalProvider({ children }) {
       {children}
       <MiniGlobalModal
         open={modalState.open}
+        mode={modalState.mode}
         permissionKey={modalState.permissionKey}
         itemName={modalState.itemName}
+        viewKey={modalState.viewKey}
+        viewTitle={modalState.viewTitle}
+        viewProps={modalState.viewProps}
         loading={modalState.loading}
         onConfirm={handleConfirm}
         onCancel={closeMiniGlobalModal}

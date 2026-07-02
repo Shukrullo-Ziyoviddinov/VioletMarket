@@ -1,0 +1,85 @@
+.seller-product-sale-dates-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seller-product-sale-dates-modal__product {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b5f7d;
+}
+
+.seller-product-sale-dates-modal__state {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.seller-product-sale-dates-modal__error {
+  margin: 0;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.seller-product-sale-dates-modal__empty {
+  margin: 0;
+  font-size: 13px;
+  color: #6b5f7d;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.seller-product-sale-dates-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.seller-product-sale-dates-modal__item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border: 1px solid #ece7f3;
+  border-radius: 10px;
+  background: #faf8fd;
+}
+
+.seller-product-sale-dates-modal__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #f3ebfd;
+  color: #56337d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.seller-product-sale-dates-modal__info {
+  min-width: 0;
+}
+
+.seller-product-sale-dates-modal__date {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2a1842;
+  line-height: 1.4;
+}
+
+.seller-product-sale-dates-modal__meta {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: #6b5f7d;
+}

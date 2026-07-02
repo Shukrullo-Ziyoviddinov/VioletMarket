@@ -1,7 +1,7 @@
 .mini-global-modal {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 2000;
 }
 
 .mini-global-modal__backdrop {
@@ -38,6 +38,15 @@
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 18px 48px rgba(42, 24, 66, 0.18);
+}
+
+.mini-global-modal__dialog--view {
+  width: min(100%, 480px);
+}
+
+.mini-global-modal__actions--single {
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .mini-global-modal__title {

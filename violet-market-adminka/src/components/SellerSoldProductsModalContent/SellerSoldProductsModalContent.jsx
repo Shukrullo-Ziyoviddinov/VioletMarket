@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { fetchSellerSoldProductsStatistics } from '../../api/salesStatisticsAdminApi';
+import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
   formatRevenue,
   formatStatNumber,
@@ -21,6 +22,7 @@ export default function SellerSoldProductsModalContent({
   visible = false,
   sellerId = '',
 }) {
+  const { openMiniGlobalViewModal } = useMiniGlobalModal();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [payload, setPayload] = useState(null);
@@ -52,6 +54,18 @@ export default function SellerSoldProductsModalContent({
   const seller = payload?.seller;
   const products = Array.isArray(payload?.products) ? payload.products : [];
   const periodLabel = payload?.periodLabel || 'Barcha davr';
+
+  const handleOpenSaleDates = (product) => {
+    openMiniGlobalViewModal({
+      viewKey: 'seller-product-sale-dates',
+      viewTitle: 'Sotuv sanalari',
+      viewProps: {
+        sellerId,
+        productId: product.productId,
+        productTitle: getLocalizedText(product.title),
+      },
+    });
+  };
 
   return (
     <div className="seller-sold-products-modal">
@@ -108,6 +122,13 @@ export default function SellerSoldProductsModalContent({
                       {product.orderCount} ta buyurtma · {product.totalQuantity} ta sotilgan ·{' '}
                       {formatRemainingQuantity(product.remainingQuantity, product.statusKey)}
                     </p>
+                    <button
+                      type="button"
+                      className="seller-sold-products-modal__sale-date-btn"
+                      onClick={() => handleOpenSaleDates(product)}
+                    >
+                      Sotuv sana
+                    </button>
                   </div>
                   <div className="seller-sold-products-modal__side">
                     <SellerSoldProductStatusBadge
