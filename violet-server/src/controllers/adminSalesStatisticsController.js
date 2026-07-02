@@ -4,6 +4,7 @@ const pageService = require("../services/adminSales/buildSalesStatisticsPage");
 const chartService = require("../services/adminSales/salesRevenueChartService");
 const topSellersService = require("../services/adminSales/topSellersStatisticsService");
 const topSellingProductsService = require("../services/adminSales/topSellingProductsStatisticsService");
+const sellerSoldProductsService = require("../services/adminSales/sellerSoldProductsStatisticsService");
 
 const getSalesDashboardStats = asyncHandler(async (_req, res) => {
   const data = await dashboardService.buildSalesDashboardStats();
@@ -30,10 +31,16 @@ const getTopSellingProductsStatistics = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getSellerSoldProductsStatistics = asyncHandler(async (req, res) => {
+  const data = await sellerSoldProductsService.buildSellerSoldProductsStatistics(req.query || {});
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   getSalesDashboardStats,
   getSalesStatistics,
   getSalesRevenueChart,
   getTopSellersStatistics,
   getTopSellingProductsStatistics,
+  getSellerSoldProductsStatistics,
 };

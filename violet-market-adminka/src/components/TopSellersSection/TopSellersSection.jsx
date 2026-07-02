@@ -1,15 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { fetchTopSellersStatistics } from '../../api/salesStatisticsAdminApi';
-import { formatRevenue, resolveProductImageUrl } from '../../utils/productDisplay';
+import { useAdminModal } from '../../context/AdminModalContext';
+import TopSellerListItem from '../TopSellerListItem/TopSellerListItem';
 import TopSellersPeriodFilter from '../TopSellersPeriodFilter/TopSellersPeriodFilter';
 import './TopSellersSection.css';
 
 export default function TopSellersSection({ pageFilters }) {
+  const { openAdminModal } = useAdminModal();
   const [period, setPeriod] = useState('day');
   const [periodLabel, setPeriodLabel] = useState('Kunlik');
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [openMenuSellerId, setOpenMenuSellerId] = useState(null);
 
   const loadTopSellers = useCallback(async (activePeriod, filters) => {
     if (!filters?.day && !filters?.week && !filters?.month) return;
@@ -36,8 +39,22 @@ export default function TopSellersSection({ pageFilters }) {
     loadTopSellers(period, pageFilters);
   }, [loadTopSellers, pageFilters, period]);
 
+  useEffect(() => {
+    setOpenMenuSellerId(null);
+  }, [pageFilters, period]);
+
   const handlePeriodChange = (nextPeriod) => {
     setPeriod(nextPeriod);
+  };
+
+  const handleOpenSellerInfo = (seller) => {
+    openAdminModal({
+      key: 'seller-sold-products',
+      label: seller.name,
+      sellerId: seller.sellerId,
+      pageFilters,
+      period,
+    });
   };
 
   return (
@@ -66,21 +83,18 @@ export default function TopSellersSection({ pageFilters }) {
           </p>
         ) : (
           sellers.map((seller) => (
-            <article key={seller.sellerId} className="top-sellers-section__item">
-              <span className="top-sellers-section__rank">{seller.rank}</span>
-              <img
-                className="top-sellers-section__logo"
-                src={resolveProductImageUrl(seller.logo)}
-                alt={seller.name}
-              />
-              <div className="top-sellers-section__info">
-                <h3 className="top-sellers-section__name">{seller.name}</h3>
-                <p className="top-sellers-section__meta">
-                  {seller.orderCount} ta buyurtma · {seller.totalQuantity} ta mahsulot
-                </p>
-              </div>
-              <div className="top-sellers-section__amount">{formatRevenue(seller.totalAmount)}</div>
-            </article>
+            <TopSellerListItem
+              key={seller.sellerId}
+              seller={seller}
+              isMenuOpen={openMenuSellerId === seller.sellerId}
+              onMenuToggle={() =>
+                setOpenMenuSellerId((current) =>
+                  current === seller.sellerId ? null : seller.sellerId,
+                )
+              }
+              onMenuClose={() => setOpenMenuSellerId(null)}
+              onInfoClick={() => handleOpenSellerInfo(seller)}
+            />
           ))
         )}
       </div>

@@ -46,10 +46,10 @@
 
 .top-sellers-section__item {
   display: grid;
-  grid-template-columns: 36px 48px minmax(0, 1fr) auto;
+  grid-template-columns: 36px 48px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 7px 10px;
   border: 1px solid #ece7f3;
   border-radius: 14px;
   background: #fff;
@@ -124,15 +124,20 @@
   }
 
   .top-sellers-section__item {
-    grid-template-columns: 32px 40px minmax(0, 1fr);
+    grid-template-columns: 32px 40px minmax(0, 1fr) auto;
     grid-template-areas:
-      'rank logo info'
-      'rank logo amount';
+      'rank logo info menu'
+      'rank logo amount menu';
     row-gap: 8px;
   }
 
   .top-sellers-section__amount {
     grid-column: 3;
     justify-self: start;
+  }
+
+  .top-seller-item-actions-menu {
+    grid-area: menu;
+    justify-self: end;
   }
 }

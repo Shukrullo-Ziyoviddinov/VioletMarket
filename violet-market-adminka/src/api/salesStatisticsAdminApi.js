@@ -174,3 +174,53 @@ export async function fetchTopSellingProductsStatistics(filters = {}) {
     products: Array.isArray(data?.products) ? data.products.map(normalizeTopProduct) : [],
   };
 }
+
+function normalizeSoldProduct(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    productId: Number(row?.productId) || 0,
+    title: row?.title ?? '',
+    image: String(row?.image || ''),
+    totalAmount: Number(row?.totalAmount) || 0,
+    totalQuantity: Number(row?.totalQuantity) || 0,
+    orderCount: Number(row?.orderCount) || 0,
+    remainingQuantity: Number(row?.remainingQuantity) || 0,
+    statusKey: String(row?.statusKey || 'active'),
+    statusLabel: String(row?.statusLabel || 'Aktiv'),
+  };
+}
+
+function normalizeSellerSoldProductsPayload(data) {
+  const seller = data?.seller || {};
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || 'Kunlik'),
+    seller: {
+      sellerId: String(seller?.sellerId || ''),
+      name: String(seller?.name || ''),
+      logo: String(seller?.logo || ''),
+      totalAmount: Number(seller?.totalAmount) || 0,
+      totalQuantity: Number(seller?.totalQuantity) || 0,
+      orderCount: Number(seller?.orderCount) || 0,
+    },
+    products: Array.isArray(data?.products) ? data.products.map(normalizeSoldProduct) : [],
+  };
+}
+
+export async function fetchSellerSoldProductsStatistics(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.sellerId) params.set('sellerId', String(filters.sellerId));
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/seller-sold-products?${query}`
+    : '/api/admin/sales/seller-sold-products';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  return normalizeSellerSoldProductsPayload(payload?.data || {});
+}

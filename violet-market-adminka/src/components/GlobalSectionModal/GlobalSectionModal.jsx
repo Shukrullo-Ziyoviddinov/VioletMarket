@@ -50,6 +50,7 @@ import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
 import ProductEditForm from '../ProductEditForm/ProductEditForm';
 import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
+import SellerSoldProductsModalContent from '../SellerSoldProductsModalContent/SellerSoldProductsModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3226,6 +3227,13 @@ export default function GlobalSectionModal({ open, section, onClose }) {
         visible={open}
         productId={section?.productId}
         onRefresh={section?.onRefresh}
+      />
+    ) : section?.key === 'seller-sold-products' ? (
+      <SellerSoldProductsModalContent
+        visible={open}
+        sellerId={section?.sellerId}
+        pageFilters={section?.pageFilters}
+        period={section?.period}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

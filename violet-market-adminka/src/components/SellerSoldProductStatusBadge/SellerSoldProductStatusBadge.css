@@ -1,0 +1,25 @@
+.seller-sold-product-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.seller-sold-product-status-badge--active {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.seller-sold-product-status-badge--paused {
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+.seller-sold-product-status-badge--deleted {
+  color: #dc2626;
+  background: #fee2e2;
+}
