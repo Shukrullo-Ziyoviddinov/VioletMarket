@@ -1,5 +1,4 @@
 import React, { useId } from 'react';
-import { DownOutlined } from '@ant-design/icons';
 import './SalesStatisticsMetricCard.css';
 
 function SalesTrendChart({ gradientId, tone = 'positive' }) {
@@ -23,8 +22,8 @@ function SalesTrendChart({ gradientId, tone = 'positive' }) {
       dotY: 37,
     },
     neutral: {
-      stroke: '#6b7280',
-      fill: '#d1d5db',
+      stroke: '#2563eb',
+      fill: '#93c5fd',
       areaPath:
         'M0 24 C12 24 24 23 36 24 C48 25 60 24 72 24 C84 24 96 23 108 24 C114 24 118 24 120 24 L120 48 L0 48 Z',
       linePath:
@@ -61,6 +60,7 @@ export default function SalesStatisticsMetricCard({
   title,
   value,
   growthFormatted = '0%',
+  growthLabel = 'tekis',
   tone = 'neutral',
   loading = false,
 }) {
@@ -78,9 +78,18 @@ export default function SalesStatisticsMetricCard({
       <div className="sales-statistics-metric-card__body">
         <div className="sales-statistics-metric-card__value-row">
           <p className="sales-statistics-metric-card__value">{loading ? '...' : value}</p>
-          <span className={`sales-statistics-metric-card__inline-growth sales-statistics-metric-card__inline-growth--${tone}`}>
-            {loading ? '' : growthFormatted}
-          </span>
+          {!loading ? (
+            <span
+              className={`sales-statistics-metric-card__inline-growth sales-statistics-metric-card__inline-growth--${tone}`}
+            >
+              <span className="sales-statistics-metric-card__inline-growth-percent">
+                {growthFormatted}
+              </span>
+              <span className="sales-statistics-metric-card__inline-growth-label">
+                {growthLabel}
+              </span>
+            </span>
+          ) : null}
         </div>
         <div className="sales-statistics-metric-card__chart">
           <SalesTrendChart gradientId={gradientId} tone={tone} />

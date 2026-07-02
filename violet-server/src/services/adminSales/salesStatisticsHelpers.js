@@ -28,14 +28,22 @@ function resolveTrendTone(value) {
   return "neutral";
 }
 
+function resolveGrowthLabel(tone) {
+  if (tone === "positive") return "o'sadi";
+  if (tone === "negative") return "kamayadi";
+  return "tekis";
+}
+
 function buildMetricRow(current, previous) {
   const growthPercent = calcPercentageChange(current, previous);
+  const tone = resolveTrendTone(growthPercent);
   return {
     value: toNumber(current, 0),
     previousValue: toNumber(previous, 0),
     growthPercent,
     growthFormatted: formatSignedPercent(growthPercent),
-    tone: resolveTrendTone(growthPercent),
+    growthLabel: resolveGrowthLabel(tone),
+    tone,
   };
 }
 
@@ -65,6 +73,7 @@ module.exports = {
   calcPercentageChange,
   formatSignedPercent,
   resolveTrendTone,
+  resolveGrowthLabel,
   buildMetricRow,
   dateKeyToRange,
   parseWeekKey,

@@ -8,9 +8,9 @@ import { useGlobalLoader } from '../../context/GlobalLoaderContext';
 import './SalesStatisticsPage.css';
 
 const EMPTY_METRICS = {
-  daily: { title: 'Kunlik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
-  weekly: { title: 'Haftalik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
-  monthly: { title: 'Oylik Savdo', value: 0, growthFormatted: '0%', tone: 'neutral' },
+  daily: { title: 'Kunlik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
+  weekly: { title: 'Haftalik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
+  monthly: { title: 'Oylik Savdo', value: 0, growthFormatted: '0%', growthLabel: 'tekis', tone: 'neutral' },
 };
 
 export default function SalesStatisticsPage() {
@@ -76,13 +76,6 @@ export default function SalesStatisticsPage() {
 
   return (
     <section className="sales-statistics-page">
-      <header className="sales-statistics-page__header">
-        <h1 className="sales-statistics-page__title">Sotuvlar statistikasi</h1>
-        <p className="sales-statistics-page__subtitle">
-          Kun, hafta va oyni tanlab sotuv ko&apos;rsatkichlarini ko&apos;ring.
-        </p>
-      </header>
-
       {error ? (
         <Alert className="sales-statistics-page__alert" type="error" message={error} showIcon />
       ) : null}

@@ -4,27 +4,6 @@
   gap: 20px;
 }
 
-.sales-statistics-page__header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sales-statistics-page__title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #2a1842;
-}
-
-.sales-statistics-page__subtitle {
-  margin: 0;
-  max-width: 720px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #6b5f7d;
-}
-
 .sales-statistics-page__alert {
   margin: 0;
 }

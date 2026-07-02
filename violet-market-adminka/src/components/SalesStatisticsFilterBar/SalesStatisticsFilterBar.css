@@ -12,25 +12,31 @@
 
 .sales-statistics-filter-bar__button-wrap {
   position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 100%;
 }
 
 .sales-statistics-filter-bar__button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
   min-height: 44px;
   padding: 8px 14px;
   border: 1px solid #d8dce8;
   border-radius: 999px;
-  background: #f3f4f8;
+  background: #fff;
   color: #2a1842;
   cursor: pointer;
+  box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .sales-statistics-filter-bar__button:hover {
   border-color: #c7cedf;
-  background: #eceff6;
+  background: #fff;
 }
 
 .sales-statistics-filter-bar__button--active {
@@ -64,8 +70,8 @@
   top: calc(100% + 8px);
   left: 0;
   z-index: 20;
-  min-width: 220px;
-  max-width: 280px;
+  width: 100%;
+  min-width: 0;
   max-height: 280px;
   overflow: auto;
   padding: 8px;
@@ -73,6 +79,7 @@
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+  box-sizing: border-box;
 }
 
 .sales-statistics-filter-bar__dropdown-empty {
@@ -110,13 +117,12 @@
     flex-direction: column;
   }
 
+  .sales-statistics-filter-bar__button-wrap {
+    width: 100%;
+  }
+
   .sales-statistics-filter-bar__button {
     width: 100%;
     justify-content: space-between;
-  }
-
-  .sales-statistics-filter-bar__dropdown {
-    width: 100%;
-    max-width: none;
   }
 }

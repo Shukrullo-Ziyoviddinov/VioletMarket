@@ -17,6 +17,7 @@ function normalizeMetric(metric) {
     title: String(metric?.title || ''),
     value: Number(metric?.value) || 0,
     growthFormatted: String(metric?.growthFormatted || '0%'),
+    growthLabel: String(metric?.growthLabel || 'tekis'),
     tone: String(metric?.tone || 'neutral'),
   };
 }

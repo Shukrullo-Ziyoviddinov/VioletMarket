@@ -5,7 +5,7 @@
   min-height: 148px;
   padding: 18px 20px;
   border-radius: 16px;
-  background: #f3f4f8;
+  background: #fff;
   border: 1px solid #e7e9f0;
 }
 
@@ -47,8 +47,8 @@
 }
 
 .sales-statistics-metric-card__badge--neutral {
-  color: #4b5563;
-  background: #e5e7eb;
+  color: #1d4ed8;
+  background: #dbeafe;
 }
 
 .sales-statistics-metric-card__body {
@@ -76,9 +76,17 @@
 }
 
 .sales-statistics-metric-card__inline-growth {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.sales-statistics-metric-card__inline-growth-percent,
+.sales-statistics-metric-card__inline-growth-label {
+  font-weight: 700;
 }
 
 .sales-statistics-metric-card__inline-growth--positive {
@@ -90,7 +98,7 @@
 }
 
 .sales-statistics-metric-card__inline-growth--neutral {
-  color: #6b7280;
+  color: #2563eb;
 }
 
 .sales-statistics-metric-card__chart {
