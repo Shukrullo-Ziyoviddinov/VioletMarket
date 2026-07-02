@@ -5,6 +5,7 @@ import CustomerStatisticPage from './pages/CustomerStatisticPage/CustomerStatist
 import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellersPage from './pages/SellersPage/SellersPage';
+import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<AdminLayout />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="customers/statistics" element={<CustomerStatisticPage />} />
+          <Route path="sales/statistics" element={<SalesStatisticsPage />} />
           <Route path="products/paused" element={<PausedProductsPage />} />
           <Route path="products" element={<AllProductsPage />} />
           <Route path="flash-products" element={<FlashPage />} />

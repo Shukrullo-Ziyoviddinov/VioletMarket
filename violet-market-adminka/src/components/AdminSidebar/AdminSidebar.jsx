@@ -2,6 +2,7 @@ import React from 'react';
 import { Menu } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  BarChartOutlined,
   ControlOutlined,
   DashboardOutlined,
   FileProtectOutlined,
@@ -30,6 +31,12 @@ const menuItems = [
     icon: <TeamOutlined />,
     label: 'Mijozlar va statistika',
     route: '/customers/statistics',
+  },
+  {
+    key: 'sales-statistics',
+    icon: <BarChartOutlined />,
+    label: 'Sotuvlar statistikasi',
+    route: '/sales/statistics',
   },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
@@ -64,6 +71,7 @@ const menuItems = [
 
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/customers/statistics') return 'customers-statistics';
+  if (pathname === '/sales/statistics') return 'sales-statistics';
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';

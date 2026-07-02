@@ -126,8 +126,19 @@
 }
 
 .admin-stat-card__footer-highlight {
-  color: #22c55e;
   font-weight: 600;
+}
+
+.admin-stat-card__footer-highlight--positive {
+  color: #22c55e;
+}
+
+.admin-stat-card__footer-highlight--negative {
+  color: #ef4444;
+}
+
+.admin-stat-card__footer-highlight--neutral {
+  color: #8b79a8;
 }
 
 @media (max-width: 768px) {

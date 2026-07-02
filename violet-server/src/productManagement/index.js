@@ -5,6 +5,12 @@ const {
   buildPostOrderReviewPayload,
   shouldTriggerPostOrderReview,
 } = require("./postOrderCommentFlow");
+const {
+  PAYMENT_SOURCES,
+  buildOrderItemsFromCart,
+  calcOrderTotalAmount,
+  recordCartPayment,
+} = require("./recordCartPayment");
 
 module.exports = {
   markProductsAsSold,
@@ -12,4 +18,8 @@ module.exports = {
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,
   shouldTriggerPostOrderReview,
+  PAYMENT_SOURCES,
+  buildOrderItemsFromCart,
+  calcOrderTotalAmount,
+  recordCartPayment,
 };

@@ -4,6 +4,7 @@ const { HttpError } = require("../../utils/httpError");
 const {
   markProductsAsSold,
   buildPostOrderReviewPayload,
+  recordCartPayment,
 } = require("../../productManagement");
 const {
   generateInitialUrgencyStock,
@@ -597,6 +598,13 @@ async function checkoutCartForUser(userId) {
   }
 
   const postOrderReview = buildPostOrderReviewPayload(items);
+
+  await recordCartPayment({
+    userId,
+    cartItems: items,
+    productMap,
+    paymentMethod: "mock",
+  });
 
   await markProductsAsSold({
     requestedByProductId,

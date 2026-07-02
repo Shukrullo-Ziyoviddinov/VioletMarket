@@ -8,8 +8,9 @@ import {
 } from '@ant-design/icons';
 import { fetchCustomerDashboardStats } from '../../api/customerStatisticsAdminApi';
 import { fetchProductStats } from '../../api/productsAdminApi';
+import { fetchSalesDashboardStats } from '../../api/salesStatisticsAdminApi';
 import { useGlobalLoaderOnInitialLoad } from '../../hooks/useGlobalLoaderOnInitialLoad';
-import { formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
+import { formatRevenue, formatStatNumber, formatTodayHighlight } from '../../utils/productDisplay';
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
@@ -17,10 +18,16 @@ export default function AdminDashboardOverview() {
   const navigate = useNavigate();
   const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
   const [customerStats, setCustomerStats] = useState({ monthlyVisitors: 0, todayVisitors: 0 });
+  const [salesStats, setSalesStats] = useState({
+    monthlyRevenue: 0,
+    monthlyGrowthFormatted: '0%',
+    monthlyGrowthTone: 'neutral',
+  });
   const [statsLoading, setStatsLoading] = useState(true);
   const [customerStatsLoading, setCustomerStatsLoading] = useState(true);
+  const [salesStatsLoading, setSalesStatsLoading] = useState(true);
 
-  useGlobalLoaderOnInitialLoad(statsLoading || customerStatsLoading);
+  useGlobalLoaderOnInitialLoad(statsLoading || customerStatsLoading || salesStatsLoading);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,10 +35,12 @@ export default function AdminDashboardOverview() {
     async function loadDashboardStats() {
       setStatsLoading(true);
       setCustomerStatsLoading(true);
+      setSalesStatsLoading(true);
 
-      const [productResult, customerResult] = await Promise.allSettled([
+      const [productResult, customerResult, salesResult] = await Promise.allSettled([
         fetchProductStats(),
         fetchCustomerDashboardStats(),
+        fetchSalesDashboardStats(),
       ]);
 
       if (!cancelled) {
@@ -47,8 +56,19 @@ export default function AdminDashboardOverview() {
           setCustomerStats({ monthlyVisitors: 0, todayVisitors: 0 });
         }
 
+        if (salesResult.status === 'fulfilled') {
+          setSalesStats(salesResult.value);
+        } else {
+          setSalesStats({
+            monthlyRevenue: 0,
+            monthlyGrowthFormatted: '0%',
+            monthlyGrowthTone: 'neutral',
+          });
+        }
+
         setStatsLoading(false);
         setCustomerStatsLoading(false);
+        setSalesStatsLoading(false);
       }
     }
 
@@ -66,11 +86,14 @@ export default function AdminDashboardOverview() {
           icon={<BarChartOutlined />}
           iconTone="purple"
           title="Sotuvlar"
-          value="$15,200"
-          badgeText="this month"
+          value={salesStatsLoading ? '...' : formatRevenue(salesStats.monthlyRevenue)}
+          badgeText="shu oy"
           footerLabel="Oylik o'sish: "
-          footerHighlight="+12%"
+          footerHighlight={salesStatsLoading ? '...' : salesStats.monthlyGrowthFormatted}
+          footerHighlightTone={salesStats.monthlyGrowthTone}
           showChart
+          clickable
+          onClick={() => navigate('/sales/statistics')}
         />
         <AdminStatCard
           icon={<InboxOutlined />}

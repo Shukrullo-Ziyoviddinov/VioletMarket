@@ -35,6 +35,7 @@ export default function AdminStatCard({
   value,
   footerLabel,
   footerHighlight,
+  footerHighlightTone = 'positive',
   badgeText,
   showChart = false,
   onClick,
@@ -87,7 +88,11 @@ export default function AdminStatCard({
         <p className="admin-stat-card__footer">
           {footerLabel ? <span className="admin-stat-card__footer-label">{footerLabel}</span> : null}
           {footerHighlight ? (
-            <span className="admin-stat-card__footer-highlight">{footerHighlight}</span>
+            <span
+              className={`admin-stat-card__footer-highlight admin-stat-card__footer-highlight--${footerHighlightTone}`}
+            >
+              {footerHighlight}
+            </span>
           ) : null}
         </p>
       ) : null}

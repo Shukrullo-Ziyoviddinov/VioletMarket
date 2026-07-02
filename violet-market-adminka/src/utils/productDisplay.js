@@ -39,6 +39,11 @@ export function formatTodayHighlight(count) {
   return n > 0 ? `+${n}` : '0';
 }
 
+export function formatRevenue(value) {
+  const amount = Number(value) || 0;
+  return `${new Intl.NumberFormat('uz-UZ').format(amount)} UZS`;
+}
+
 export function resolveProductImageUrl(imagePath) {
   if (!imagePath) return FALLBACK_IMAGE;
 
