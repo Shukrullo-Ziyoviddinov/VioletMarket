@@ -73,7 +73,7 @@
 
 .seller-sold-products-modal__item {
   display: grid;
-  grid-template-columns: 32px 56px minmax(0, 1fr) auto;
+  grid-template-columns: 32px 60px minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px;
   padding: 10px 12px;
@@ -96,8 +96,8 @@
 }
 
 .seller-sold-products-modal__image {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 70px;
   border-radius: 12px;
   object-fit: cover;
   background: #f3f4f6;
@@ -196,7 +196,7 @@
   }
 
   .seller-sold-products-modal__item {
-    grid-template-columns: 28px 48px minmax(0, 1fr);
+    grid-template-columns: 28px 60px minmax(0, 1fr);
     grid-template-areas:
       'rank image info'
       'rank image side';

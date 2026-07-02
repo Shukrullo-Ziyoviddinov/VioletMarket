@@ -51,6 +51,7 @@ import LogisticsInfoForm from '../LogisticsInfoForm/LogisticsInfoForm';
 import ProductEditForm from '../ProductEditForm/ProductEditForm';
 import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import SellerSoldProductsModalContent from '../SellerSoldProductsModalContent/SellerSoldProductsModalContent';
+import ProductSellingSellersModalContent from '../ProductSellingSellersModalContent/ProductSellingSellersModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3232,6 +3233,11 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <SellerSoldProductsModalContent
         visible={open}
         sellerId={section?.sellerId}
+      />
+    ) : section?.key === 'product-selling-sellers' ? (
+      <ProductSellingSellersModalContent
+        visible={open}
+        productId={section?.productId}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

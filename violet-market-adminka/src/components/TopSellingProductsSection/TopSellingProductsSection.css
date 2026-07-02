@@ -46,7 +46,7 @@
 
 .top-selling-products-section__item {
   display: grid;
-  grid-template-columns: 36px 48px minmax(0, 1fr) auto;
+  grid-template-columns: 36px 48px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 14px;
   padding: 7px 10px;
@@ -124,15 +124,20 @@
   }
 
   .top-selling-products-section__item {
-    grid-template-columns: 32px 40px minmax(0, 1fr);
+    grid-template-columns: 32px 40px minmax(0, 1fr) auto;
     grid-template-areas:
-      'rank image info'
-      'rank image amount';
+      'rank image info menu'
+      'rank image amount menu';
     row-gap: 8px;
   }
 
   .top-selling-products-section__amount {
     grid-column: 3;
     justify-self: start;
+  }
+
+  .top-selling-product-item-actions-menu {
+    grid-area: menu;
+    justify-self: end;
   }
 }

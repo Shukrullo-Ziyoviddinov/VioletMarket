@@ -252,3 +252,46 @@ export async function fetchSellerProductSaleDates(filters = {}) {
     sales: Array.isArray(data?.sales) ? data.sales.map(normalizeSaleDateRow) : [],
   };
 }
+
+function normalizeProductSellingSeller(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    sellerId: String(row?.sellerId || ''),
+    name: String(row?.name || ''),
+    logo: String(row?.logo || ''),
+    status: String(row?.status || ''),
+    totalAmount: Number(row?.totalAmount) || 0,
+    totalQuantity: Number(row?.totalQuantity) || 0,
+    orderCount: Number(row?.orderCount) || 0,
+  };
+}
+
+function normalizeProductSellingSellersPayload(data) {
+  const product = data?.product || {};
+  return {
+    periodLabel: String(data?.periodLabel || 'Barcha davr'),
+    product: {
+      productId: Number(product?.productId) || 0,
+      title: product?.title ?? '',
+      image: String(product?.image || ''),
+      totalAmount: Number(product?.totalAmount) || 0,
+      totalQuantity: Number(product?.totalQuantity) || 0,
+      orderCount: Number(product?.orderCount) || 0,
+    },
+    sellers: Array.isArray(data?.sellers) ? data.sellers.map(normalizeProductSellingSeller) : [],
+  };
+}
+
+export async function fetchProductSellingSellersStatistics(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.productId) params.set('productId', String(filters.productId));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/product-selling-sellers?${query}`
+    : '/api/admin/sales/product-selling-sellers';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  return normalizeProductSellingSellersPayload(payload?.data || {});
+}
