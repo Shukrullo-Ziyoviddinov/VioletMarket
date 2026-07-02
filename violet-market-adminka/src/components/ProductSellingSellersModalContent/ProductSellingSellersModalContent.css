@@ -108,6 +108,13 @@
   min-width: 0;
 }
 
+.product-selling-sellers-modal__name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .product-selling-sellers-modal__name {
   margin: 0;
   font-size: 14px;
@@ -116,6 +123,29 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.product-selling-sellers-modal__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b79a8;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.product-selling-sellers-modal__copy-btn:hover {
+  background: #f3ebfd;
+  color: #56337d;
 }
 
 .product-selling-sellers-modal__meta {

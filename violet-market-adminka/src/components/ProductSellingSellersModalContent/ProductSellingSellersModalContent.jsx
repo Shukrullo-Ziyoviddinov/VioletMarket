@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { CopyOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { fetchProductSellingSellersStatistics } from '../../api/salesStatisticsAdminApi';
+import { useAdminToast } from '../../context/AdminToastContext';
 import {
   formatRevenue,
   getLocalizedText,
@@ -12,6 +14,7 @@ export default function ProductSellingSellersModalContent({
   visible = false,
   productId = 0,
 }) {
+  const { showSuccess, showError } = useAdminToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [payload, setPayload] = useState(null);
@@ -37,6 +40,18 @@ export default function ProductSellingSellersModalContent({
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleCopySellerId = async (sellerId) => {
+    const value = String(sellerId || '').trim();
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      showSuccess('Sotuvchi ID nusxalandi');
+    } catch {
+      showError('Sotuvchi ID nusxalanmadi');
+    }
+  };
 
   if (!visible) return null;
 
@@ -94,7 +109,18 @@ export default function ProductSellingSellersModalContent({
                     alt={seller.name}
                   />
                   <div className="product-selling-sellers-modal__info">
-                    <h4 className="product-selling-sellers-modal__name">{seller.name}</h4>
+                    <div className="product-selling-sellers-modal__name-row">
+                      <h4 className="product-selling-sellers-modal__name">{seller.name}</h4>
+                      <button
+                        type="button"
+                        className="product-selling-sellers-modal__copy-btn"
+                        aria-label="Sotuvchi ID nusxalash"
+                        title="Sotuvchi ID nusxalash"
+                        onClick={() => handleCopySellerId(seller.sellerId)}
+                      >
+                        <CopyOutlined />
+                      </button>
+                    </div>
                     <p className="product-selling-sellers-modal__meta">
                       {seller.orderCount} ta buyurtma · {seller.totalQuantity} ta sotilgan
                     </p>
