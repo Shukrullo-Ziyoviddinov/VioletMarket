@@ -143,7 +143,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
         <Input
           allowClear
           className="approved-sellers-section__search"
-          placeholder="Do'kon nomi, ism yoki familiya"
+          placeholder="Do'kon nomi, ID, ism yoki familiya"
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}

@@ -99,7 +99,7 @@ export default function ProductSellerSearch({
         <Input
           className="product-seller-search__input"
           prefix={<SearchOutlined />}
-          placeholder="Sotuvchi nomi bo‘yicha qidirish"
+          placeholder="Sotuvchi nomi yoki do'kon ID bo'yicha qidirish"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

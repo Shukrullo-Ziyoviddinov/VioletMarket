@@ -12,6 +12,7 @@ export function filterApprovedSellersBySearch(sellers, query) {
   return (Array.isArray(sellers) ? sellers : []).filter((seller) => {
     const fields = [
       seller?.shopDisplayName,
+      seller?.shopId,
       seller?.firstName,
       seller?.lastName,
     ]
