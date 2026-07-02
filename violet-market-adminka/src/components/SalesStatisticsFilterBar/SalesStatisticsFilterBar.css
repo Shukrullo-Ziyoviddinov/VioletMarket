@@ -6,8 +6,7 @@
 
 .sales-statistics-filter-bar__buttons {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -107,15 +106,14 @@
 }
 
 .sales-statistics-filter-bar__dropdown-item--selected {
-  background: #f3ebfd;
-  color: #56337d;
+  background: #eef2ff;
+  color: #1d4ed8;
   font-weight: 600;
 }
 
 @media (max-width: 768px) {
   .sales-statistics-filter-bar__buttons {
     flex-direction: column;
-    flex-wrap: wrap;
   }
 
   .sales-statistics-filter-bar__button-wrap {

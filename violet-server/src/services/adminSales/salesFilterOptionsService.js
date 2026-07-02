@@ -1,16 +1,11 @@
 const { Order } = require("../../models/order");
-const { SellerSale } = require("../../models/sellerSale");
 const { PAID_STATUSES } = require("./salesStatisticsHelpers");
 const {
   getStatisticsDateKey,
   getTashkentYmd,
   getIsoWeekFromYmd,
-  getIsoWeekStart,
   toDateKeyFromYmd,
   parseMonthKey,
-  getPreviousMonth,
-  addDaysToDateKey,
-  getRangeKeys,
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey } = require("./salesStatisticsHelpers");
 
@@ -32,7 +27,7 @@ const MONTH_LABELS_UZ = [
 function formatDayLabel(dateKey) {
   const [year, month, day] = String(dateKey).split("-").map(Number);
   const monthLabel = MONTH_LABELS_UZ[Math.max(0, Math.min(11, month - 1))] || "";
-  return `${day} ${monthLabel} ${year}`.trim();
+  return `${day} ${monthLabel}${year ? ` ${year}` : ""}`.trim();
 }
 
 function formatMonthLabel(monthKey) {
@@ -45,14 +40,7 @@ function formatWeekLabel(weekKey) {
   const raw = String(weekKey || "");
   const match = /^(\d{4})-W(\d{1,2})$/.exec(raw);
   if (!match) return raw;
-
-  const isoYear = Number(match[1]);
-  const week = Number(match[2]);
-  const weekStartKey = getIsoWeekStart(isoYear, week);
-  const weekEndKey = addDaysToDateKey(weekStartKey, 6);
-  const startLabel = formatDayLabel(weekStartKey).replace(/\s\d{4}$/, "");
-  const endLabel = formatDayLabel(weekEndKey);
-  return `${startLabel} - ${endLabel}`;
+  return `${match[2]}-hafta, ${match[1]}`;
 }
 
 function getDefaultFilterValues() {
@@ -75,100 +63,69 @@ function buildFallbackOptions(defaults) {
   };
 }
 
-async function loadEarliestPaidDateKey() {
-  const [orderRow, sellerRow] = await Promise.all([
-    Order.findOne({
-      status: { $in: PAID_STATUSES },
-      paidAt: { $ne: null },
-    })
-      .sort({ paidAt: 1 })
-      .select({ paidAt: 1 })
-      .lean(),
-    SellerSale.findOne({ paidAt: { $ne: null } })
-      .sort({ paidAt: 1 })
-      .select({ paidAt: 1, dateKey: 1 })
-      .lean(),
+async function loadDistinctPaidDateKeys() {
+  const rows = await Order.aggregate([
+    {
+      $match: {
+        status: { $in: PAID_STATUSES },
+        paidAt: { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$paidAt",
+            timezone: "Asia/Tashkent",
+          },
+        },
+      },
+    },
+    { $sort: { _id: -1 } },
   ]);
 
-  const keys = [];
-  if (orderRow?.paidAt) {
-    keys.push(getStatisticsDateKey(orderRow.paidAt));
-  }
-  if (sellerRow?.dateKey) {
-    keys.push(String(sellerRow.dateKey));
-  }
-
-  if (keys.length === 0) return null;
-  return keys.sort()[0];
-}
-
-function buildDayOptions(startKey, endKey) {
-  return getRangeKeys(startKey, addDaysToDateKey(endKey, 1))
-    .reverse()
-    .map((value) => ({ value, label: formatDayLabel(value) }));
-}
-
-function buildWeekOptions(startKey, endKey) {
-  const weekSet = new Set();
-  let current = startKey;
-  while (current <= endKey) {
-    const [year, month, day] = current.split("-").map(Number);
-    const { isoYear, week } = getIsoWeekFromYmd(year, month, day);
-    weekSet.add(formatWeekKey(isoYear, week));
-    current = addDaysToDateKey(current, 1);
-  }
-
-  return [...weekSet]
-    .sort((a, b) => b.localeCompare(a))
-    .map((value) => ({ value, label: formatWeekLabel(value) }));
-}
-
-function buildMonthOptions(startKey, endKey) {
-  const [startYear, startMonth] = startKey.split("-").map(Number);
-  const [endYear, endMonth] = endKey.split("-").map(Number);
-  const months = [];
-
-  let year = endYear;
-  let month = endMonth;
-
-  while (year > startYear || (year === startYear && month >= startMonth)) {
-    const value = `${year}-${String(month).padStart(2, "0")}`;
-    months.push({ value, label: formatMonthLabel(value) });
-
-    const prev = getPreviousMonth(year, month);
-    year = prev.year;
-    month = prev.month;
-  }
-
-  return months;
+  return rows.map((row) => String(row._id)).filter(Boolean);
 }
 
 async function buildSalesFilterOptions() {
   const defaults = getDefaultFilterValues();
-  const todayKey = defaults.day;
-  const earliestKey = await loadEarliestPaidDateKey();
+  const dateKeys = await loadDistinctPaidDateKeys();
 
-  if (!earliestKey) {
+  if (dateKeys.length === 0) {
     return buildFallbackOptions(defaults);
   }
 
-  const startKey = earliestKey <= todayKey ? earliestKey : todayKey;
-  const endKey = todayKey;
+  const daySet = new Set(dateKeys);
+  daySet.add(defaults.day);
 
-  const days = buildDayOptions(startKey, endKey);
-  const weeks = buildWeekOptions(startKey, endKey);
-  const months = buildMonthOptions(startKey, endKey);
+  const weekSet = new Set();
+  const monthSet = new Set();
 
-  const ensureSelected = (list, value, labelFn) => {
-    if (list.some((row) => row.value === value)) return list;
-    return [{ value, label: labelFn(value) }, ...list];
-  };
+  for (const dateKey of daySet) {
+    const [year, month, day] = dateKey.split("-").map(Number);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) continue;
+    const { isoYear, week } = getIsoWeekFromYmd(year, month, day);
+    weekSet.add(formatWeekKey(isoYear, week));
+    monthSet.add(`${year}-${String(month).padStart(2, "0")}`);
+  }
 
-  return {
-    days: ensureSelected(days, defaults.day, formatDayLabel),
-    weeks: ensureSelected(weeks, defaults.week, formatWeekLabel),
-    months: ensureSelected(months, defaults.month, formatMonthLabel),
-  };
+  monthSet.add(defaults.month);
+  weekSet.add(defaults.week);
+
+  const days = [...daySet]
+    .sort((a, b) => b.localeCompare(a))
+    .map((value) => ({ value, label: formatDayLabel(value) }));
+
+  const weeks = [...weekSet]
+    .sort((a, b) => b.localeCompare(a))
+    .map((value) => ({ value, label: formatWeekLabel(value) }));
+
+  const months = [...monthSet]
+    .sort((a, b) => b.localeCompare(a))
+    .map((value) => ({ value, label: formatMonthLabel(value) }));
+
+  return { days, weeks, months };
 }
 
 function resolveSelectedFilters(query = {}, options = {}) {
@@ -181,13 +138,13 @@ function resolveSelectedFilters(query = {}, options = {}) {
   let week = String(query.week || defaults.week).trim();
   let month = String(query.month || defaults.month).trim();
 
-  if (dayValues.size > 0 && !dayValues.has(day)) {
+  if (!dayValues.has(day)) {
     day = options.days?.[0]?.value || defaults.day;
   }
-  if (weekValues.size > 0 && !weekValues.has(week)) {
+  if (!weekValues.has(week)) {
     week = options.weeks?.[0]?.value || defaults.week;
   }
-  if (monthValues.size > 0 && !monthValues.has(month)) {
+  if (!monthValues.has(month)) {
     month = options.months?.[0]?.value || defaults.month;
   }
 
