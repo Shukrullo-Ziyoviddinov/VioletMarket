@@ -12,6 +12,15 @@ async function parseJson(res) {
   return data;
 }
 
+function normalizeMetric(metric) {
+  return {
+    title: String(metric?.title || ''),
+    value: Number(metric?.value) || 0,
+    growthFormatted: String(metric?.growthFormatted || '0%'),
+    tone: String(metric?.tone || 'neutral'),
+  };
+}
+
 export async function fetchSalesDashboardStats() {
   const res = await fetch(apiUrl('/api/admin/sales/dashboard-stats'));
   const payload = await parseJson(res);
@@ -22,5 +31,40 @@ export async function fetchSalesDashboardStats() {
     monthlyGrowthFormatted: String(payload?.data?.monthlyGrowthFormatted || '0%'),
     monthlyGrowthTone: String(payload?.data?.monthlyGrowthTone || 'neutral'),
     month: String(payload?.data?.month || ''),
+  };
+}
+
+export async function fetchSalesStatistics(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/statistics?${query}`
+    : '/api/admin/sales/statistics';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    filters: {
+      day: String(data?.filters?.day || ''),
+      week: String(data?.filters?.week || ''),
+      month: String(data?.filters?.month || ''),
+    },
+    filterOptions: {
+      days: Array.isArray(data?.filterOptions?.days) ? data.filterOptions.days : [],
+      weeks: Array.isArray(data?.filterOptions?.weeks) ? data.filterOptions.weeks : [],
+      months: Array.isArray(data?.filterOptions?.months) ? data.filterOptions.months : [],
+    },
+    totalRevenue: Number(data?.totalRevenue) || 0,
+    metrics: {
+      daily: normalizeMetric(data?.metrics?.daily),
+      weekly: normalizeMetric(data?.metrics?.weekly),
+      monthly: normalizeMetric(data?.metrics?.monthly),
+    },
   };
 }

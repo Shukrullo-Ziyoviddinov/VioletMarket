@@ -1,0 +1,122 @@
+.sales-statistics-filter-bar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-statistics-filter-bar__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sales-statistics-filter-bar__button-wrap {
+  position: relative;
+}
+
+.sales-statistics-filter-bar__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #f3f4f8;
+  color: #2a1842;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sales-statistics-filter-bar__button:hover {
+  border-color: #c7cedf;
+  background: #eceff6;
+}
+
+.sales-statistics-filter-bar__button--active {
+  border-color: #243b63;
+  background: #243b63;
+  color: #ffffff;
+}
+
+.sales-statistics-filter-bar__button-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sales-statistics-filter-bar__button-value {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+.sales-statistics-filter-bar__button-icon {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+
+.sales-statistics-filter-bar__button-icon--open {
+  transform: rotate(180deg);
+}
+
+.sales-statistics-filter-bar__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 220px;
+  max-width: 280px;
+  max-height: 280px;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+}
+
+.sales-statistics-filter-bar__dropdown-empty {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.sales-statistics-filter-bar__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #1f2937;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sales-statistics-filter-bar__dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.sales-statistics-filter-bar__dropdown-item--selected {
+  background: #eef2ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .sales-statistics-filter-bar__buttons {
+    flex-direction: column;
+  }
+
+  .sales-statistics-filter-bar__button {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sales-statistics-filter-bar__dropdown {
+    width: 100%;
+    max-width: none;
+  }
+}

@@ -24,3 +24,31 @@
   line-height: 1.5;
   color: #6b5f7d;
 }
+
+.sales-statistics-page__alert {
+  margin: 0;
+}
+
+.sales-statistics-page__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sales-statistics-page__metrics-wrap {
+  position: relative;
+}
+
+.sales-statistics-page__spinner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .sales-statistics-page__toolbar {
+    flex-direction: column;
+  }
+}

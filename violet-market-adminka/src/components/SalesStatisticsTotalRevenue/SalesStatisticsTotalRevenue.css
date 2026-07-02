@@ -1,0 +1,33 @@
+.sales-statistics-total-revenue {
+  min-width: 220px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: #f3f4f8;
+  border: 1px solid #e7e9f0;
+}
+
+.sales-statistics-total-revenue__label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a3d5c;
+}
+
+.sales-statistics-total-revenue__value {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .sales-statistics-total-revenue {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sales-statistics-total-revenue__value {
+    font-size: 24px;
+  }
+}
