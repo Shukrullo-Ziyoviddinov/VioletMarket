@@ -14,6 +14,12 @@ import { formatRevenue, formatStatNumber, formatTodayHighlight } from '../../uti
 import AdminStatCard from '../AdminStatCard/AdminStatCard';
 import './AdminDashboardOverview.css';
 
+function getSalesGrowthFooterLabel(tone) {
+  if (tone === 'positive') return "Oylik o'sish: ";
+  if (tone === 'negative') return 'Oylik pasayish: ';
+  return 'Oylik tekis: ';
+}
+
 export default function AdminDashboardOverview() {
   const navigate = useNavigate();
   const [productStats, setProductStats] = useState({ total: 0, addedToday: 0 });
@@ -88,7 +94,9 @@ export default function AdminDashboardOverview() {
           title="Sotuvlar"
           value={salesStatsLoading ? '...' : formatRevenue(salesStats.monthlyRevenue)}
           badgeText="shu oy"
-          footerLabel="Oylik o'sish: "
+          footerLabel={
+            salesStatsLoading ? "Oylik o'sish: " : getSalesGrowthFooterLabel(salesStats.monthlyGrowthTone)
+          }
           footerHighlight={salesStatsLoading ? '...' : salesStats.monthlyGrowthFormatted}
           footerHighlightTone={salesStats.monthlyGrowthTone}
           showChart
