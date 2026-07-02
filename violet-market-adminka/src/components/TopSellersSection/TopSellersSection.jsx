@@ -52,8 +52,6 @@ export default function TopSellersSection({ pageFilters }) {
       key: 'seller-sold-products',
       label: seller.name,
       sellerId: seller.sellerId,
-      pageFilters,
-      period,
     });
   };
 

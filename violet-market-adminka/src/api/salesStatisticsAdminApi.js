@@ -175,26 +175,10 @@ export async function fetchTopSellingProductsStatistics(filters = {}) {
   };
 }
 
-function normalizeSoldProduct(row) {
-  return {
-    rank: Number(row?.rank) || 0,
-    productId: Number(row?.productId) || 0,
-    title: row?.title ?? '',
-    image: String(row?.image || ''),
-    totalAmount: Number(row?.totalAmount) || 0,
-    totalQuantity: Number(row?.totalQuantity) || 0,
-    orderCount: Number(row?.orderCount) || 0,
-    remainingQuantity: Number(row?.remainingQuantity) || 0,
-    statusKey: String(row?.statusKey || 'active'),
-    statusLabel: String(row?.statusLabel || 'Aktiv'),
-  };
-}
-
 function normalizeSellerSoldProductsPayload(data) {
   const seller = data?.seller || {};
   return {
-    period: String(data?.period || 'day'),
-    periodLabel: String(data?.periodLabel || 'Kunlik'),
+    periodLabel: String(data?.periodLabel || 'Barcha davr'),
     seller: {
       sellerId: String(seller?.sellerId || ''),
       name: String(seller?.name || ''),
@@ -207,13 +191,24 @@ function normalizeSellerSoldProductsPayload(data) {
   };
 }
 
+function normalizeSoldProduct(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    productId: Number(row?.productId) || 0,
+    title: row?.title ?? '',
+    image: String(row?.image || ''),
+    totalAmount: Number(row?.totalAmount) || 0,
+    totalQuantity: Number(row?.totalQuantity) || 0,
+    orderCount: Number(row?.orderCount) || 0,
+    remainingQuantity: row?.remainingQuantity == null ? null : Number(row.remainingQuantity) || 0,
+    statusKey: String(row?.statusKey || 'active'),
+    statusLabel: String(row?.statusLabel || 'Aktiv'),
+  };
+}
+
 export async function fetchSellerSoldProductsStatistics(filters = {}) {
   const params = new URLSearchParams();
   if (filters?.sellerId) params.set('sellerId', String(filters.sellerId));
-  if (filters?.day) params.set('day', String(filters.day));
-  if (filters?.week) params.set('week', String(filters.week));
-  if (filters?.month) params.set('month', String(filters.month));
-  if (filters?.period) params.set('period', String(filters.period));
 
   const query = params.toString();
   const path = query

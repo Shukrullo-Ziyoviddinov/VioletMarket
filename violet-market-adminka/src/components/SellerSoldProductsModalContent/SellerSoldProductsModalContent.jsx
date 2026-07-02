@@ -10,11 +10,16 @@ import {
 import SellerSoldProductStatusBadge from '../SellerSoldProductStatusBadge/SellerSoldProductStatusBadge';
 import './SellerSoldProductsModalContent.css';
 
+function formatRemainingQuantity(value, statusKey) {
+  if (statusKey === 'deleted' || value == null) {
+    return "Ma'lumot yo'q";
+  }
+  return `${formatStatNumber(value)} ta qolgan`;
+}
+
 export default function SellerSoldProductsModalContent({
   visible = false,
   sellerId = '',
-  pageFilters = {},
-  period = 'day',
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,13 +30,10 @@ export default function SellerSoldProductsModalContent({
 
     setLoading(true);
     setError('');
+    setPayload(null);
 
     try {
-      const data = await fetchSellerSoldProductsStatistics({
-        sellerId,
-        period,
-        ...pageFilters,
-      });
+      const data = await fetchSellerSoldProductsStatistics({ sellerId });
       setPayload(data);
     } catch (err) {
       setPayload(null);
@@ -39,7 +41,7 @@ export default function SellerSoldProductsModalContent({
     } finally {
       setLoading(false);
     }
-  }, [visible, sellerId, period, pageFilters]);
+  }, [visible, sellerId]);
 
   useEffect(() => {
     loadData();
@@ -49,7 +51,7 @@ export default function SellerSoldProductsModalContent({
 
   const seller = payload?.seller;
   const products = Array.isArray(payload?.products) ? payload.products : [];
-  const periodLabel = payload?.periodLabel || '';
+  const periodLabel = payload?.periodLabel || 'Barcha davr';
 
   return (
     <div className="seller-sold-products-modal">
@@ -76,8 +78,7 @@ export default function SellerSoldProductsModalContent({
             <div className="seller-sold-products-modal__seller-info">
               <h3 className="seller-sold-products-modal__seller-name">{seller.name}</h3>
               <p className="seller-sold-products-modal__seller-meta">
-                {periodLabel} davr · {seller.orderCount} ta buyurtma · {seller.totalQuantity} ta
-                sotilgan
+                {periodLabel} · {seller.orderCount} ta buyurtma · {seller.totalQuantity} ta sotilgan
               </p>
             </div>
             <div className="seller-sold-products-modal__seller-amount">
@@ -88,7 +89,7 @@ export default function SellerSoldProductsModalContent({
           <div className="seller-sold-products-modal__list">
             {products.length === 0 ? (
               <p className="seller-sold-products-modal__empty">
-                Tanlangan davr uchun sotilgan mahsulot topilmadi
+                Sotuvchi bo&apos;yicha sotilgan mahsulot topilmadi
               </p>
             ) : (
               products.map((product) => (
@@ -105,7 +106,7 @@ export default function SellerSoldProductsModalContent({
                     </h4>
                     <p className="seller-sold-products-modal__meta">
                       {product.orderCount} ta buyurtma · {product.totalQuantity} ta sotilgan ·{' '}
-                      {formatStatNumber(product.remainingQuantity)} ta qolgan
+                      {formatRemainingQuantity(product.remainingQuantity, product.statusKey)}
                     </p>
                   </div>
                   <div className="seller-sold-products-modal__side">

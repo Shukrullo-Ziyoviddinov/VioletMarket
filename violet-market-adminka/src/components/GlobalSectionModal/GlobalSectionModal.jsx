@@ -3232,8 +3232,6 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <SellerSoldProductsModalContent
         visible={open}
         sellerId={section?.sellerId}
-        pageFilters={section?.pageFilters}
-        period={section?.period}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />
