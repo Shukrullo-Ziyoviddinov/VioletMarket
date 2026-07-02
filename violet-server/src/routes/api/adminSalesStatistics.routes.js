@@ -7,5 +7,6 @@ router.get("/admin/sales/dashboard-stats", controller.getSalesDashboardStats);
 router.get("/admin/sales/statistics", controller.getSalesStatistics);
 router.get("/admin/sales/revenue-chart", controller.getSalesRevenueChart);
 router.get("/admin/sales/top-sellers", controller.getTopSellersStatistics);
+router.get("/admin/sales/top-selling-products", controller.getTopSellingProductsStatistics);
 
 module.exports = router;
