@@ -5,7 +5,6 @@ import SalesBrandCategoryStatistics from '../../components/SalesBrandCategorySta
 import SalesCategoryStatistics from '../../components/SalesCategoryStatistics/SalesCategoryStatistics';
 import SalesCountryCategoryStatistics from '../../components/SalesCountryCategoryStatistics/SalesCountryCategoryStatistics';
 import SalesRevenueChart from '../../components/SalesRevenueChart/SalesRevenueChart';
-import SalesStatisticsChartsPeriodFilter from '../../components/SalesStatisticsChartsPeriodFilter/SalesStatisticsChartsPeriodFilter';
 import TopSellersSection from '../../components/TopSellersSection/TopSellersSection';
 import TopSellingProductsSection from '../../components/TopSellingProductsSection/TopSellingProductsSection';
 import SalesStatisticsFilterBar from '../../components/SalesStatisticsFilterBar/SalesStatisticsFilterBar';
@@ -30,24 +29,26 @@ export default function SalesStatisticsPage() {
   const [chartGranularity, setChartGranularity] = useState('day');
   const [chartPoints, setChartPoints] = useState([]);
   const [chartTone, setChartTone] = useState('neutral');
-  const [chartsPeriod, setChartsPeriod] = useState('day');
   const [categoryStats, setCategoryStats] = useState({
     categories: [],
     periodLabel: '',
     scopeLabel: '',
   });
+  const [categoryPeriod, setCategoryPeriod] = useState('day');
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [countryCategoryStats, setCountryCategoryStats] = useState({
     countries: [],
     periodLabel: '',
     scopeLabel: '',
   });
+  const [countryCategoryPeriod, setCountryCategoryPeriod] = useState('day');
   const [countryCategoryLoading, setCountryCategoryLoading] = useState(false);
   const [brandCategoryStats, setBrandCategoryStats] = useState({
     brands: [],
     periodLabel: '',
     scopeLabel: '',
   });
+  const [brandCategoryPeriod, setBrandCategoryPeriod] = useState('day');
   const [brandCategoryLoading, setBrandCategoryLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,9 @@ export default function SalesStatisticsPage() {
         period,
       });
       setCategoryStats(payload);
+      if (payload.period) {
+        setCategoryPeriod(payload.period);
+      }
     } catch {
       setCategoryStats({
         categories: [],
@@ -81,6 +85,9 @@ export default function SalesStatisticsPage() {
         period,
       });
       setCountryCategoryStats(payload);
+      if (payload.period) {
+        setCountryCategoryPeriod(payload.period);
+      }
     } catch {
       setCountryCategoryStats({
         countries: [],
@@ -100,6 +107,9 @@ export default function SalesStatisticsPage() {
         period,
       });
       setBrandCategoryStats(payload);
+      if (payload.period) {
+        setBrandCategoryPeriod(payload.period);
+      }
     } catch {
       setBrandCategoryStats({
         brands: [],
@@ -110,14 +120,6 @@ export default function SalesStatisticsPage() {
       setBrandCategoryLoading(false);
     }
   }, []);
-
-  const loadChartsStats = useCallback(async (activeFilters, period) => {
-    await Promise.all([
-      loadCategoryStats(activeFilters, period),
-      loadCountryCategoryStats(activeFilters, period),
-      loadBrandCategoryStats(activeFilters, period),
-    ]);
-  }, [loadBrandCategoryStats, loadCategoryStats, loadCountryCategoryStats]);
 
   const loadChart = useCallback(async (activeFilters, granularity) => {
     setChartLoading(true);
@@ -142,7 +144,9 @@ export default function SalesStatisticsPage() {
   const loadStatistics = useCallback(async (activeFilters, options = {}) => {
     const useGlobalLoader = options?.useGlobalLoader === true;
     const granularity = options?.granularity || chartGranularity;
-    const chartsGranularity = options?.chartsPeriod || chartsPeriod;
+    const categoryGranularity = options?.categoryPeriod || categoryPeriod;
+    const countryCategoryGranularity = options?.countryCategoryPeriod || countryCategoryPeriod;
+    const brandCategoryGranularity = options?.brandCategoryPeriod || brandCategoryPeriod;
     setLoading(true);
     setError('');
     if (useGlobalLoader) {
@@ -153,7 +157,9 @@ export default function SalesStatisticsPage() {
       const [statsPayload] = await Promise.all([
         fetchSalesStatistics(activeFilters),
         loadChart(activeFilters, granularity),
-        loadChartsStats(activeFilters, chartsGranularity),
+        loadCategoryStats(activeFilters, categoryGranularity),
+        loadCountryCategoryStats(activeFilters, countryCategoryGranularity),
+        loadBrandCategoryStats(activeFilters, brandCategoryGranularity),
       ]);
 
       if (statsPayload?.filters) {
@@ -173,12 +179,12 @@ export default function SalesStatisticsPage() {
       }
       setLoading(false);
     }
-  }, [chartGranularity, chartsPeriod, loadChart, loadChartsStats, setGlobalLoading]);
+  }, [brandCategoryPeriod, categoryPeriod, chartGranularity, countryCategoryPeriod, loadBrandCategoryStats, loadCategoryStats, loadCountryCategoryStats, loadChart, setGlobalLoading]);
 
   useEffect(() => {
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
-      loadStatistics({}, { useGlobalLoader: true, granularity: 'day', chartsPeriod: 'day' });
+      loadStatistics({}, { useGlobalLoader: true, granularity: 'day' });
     }
   }, [loadStatistics]);
 
@@ -195,10 +201,12 @@ export default function SalesStatisticsPage() {
       loadStatistics(nextFilters, {
         useGlobalLoader: false,
         granularity: chartGranularity,
-        chartsPeriod,
+        categoryPeriod,
+        countryCategoryPeriod,
+        brandCategoryPeriod,
       });
     },
-    [chartGranularity, chartsPeriod, loadStatistics],
+    [brandCategoryPeriod, categoryPeriod, chartGranularity, countryCategoryPeriod, loadStatistics],
   );
 
   const handleChartGranularityChange = useCallback(
@@ -209,12 +217,28 @@ export default function SalesStatisticsPage() {
     [filters, loadChart],
   );
 
-  const handleChartsPeriodChange = useCallback(
+  const handleCategoryPeriodChange = useCallback(
     (nextPeriod) => {
-      setChartsPeriod(nextPeriod);
-      loadChartsStats(filters, nextPeriod);
+      setCategoryPeriod(nextPeriod);
+      loadCategoryStats(filters, nextPeriod);
     },
-    [filters, loadChartsStats],
+    [filters, loadCategoryStats],
+  );
+
+  const handleCountryCategoryPeriodChange = useCallback(
+    (nextPeriod) => {
+      setCountryCategoryPeriod(nextPeriod);
+      loadCountryCategoryStats(filters, nextPeriod);
+    },
+    [filters, loadCountryCategoryStats],
+  );
+
+  const handleBrandCategoryPeriodChange = useCallback(
+    (nextPeriod) => {
+      setBrandCategoryPeriod(nextPeriod);
+      loadBrandCategoryStats(filters, nextPeriod);
+    },
+    [filters, loadBrandCategoryStats],
   );
 
   return (
@@ -247,36 +271,33 @@ export default function SalesStatisticsPage() {
         loading={chartLoading}
       />
 
-      <div className="sales-statistics-page__charts-section">
-        <div className="sales-statistics-page__charts-toolbar">
-          <SalesStatisticsChartsPeriodFilter
-            value={chartsPeriod}
-            onChange={handleChartsPeriodChange}
-          />
-        </div>
+      <div className="sales-statistics-page__category-grid">
+        <SalesCategoryStatistics
+          categories={categoryStats.categories}
+          period={categoryPeriod}
+          periodLabel={categoryStats.periodLabel}
+          scopeLabel={categoryStats.scopeLabel}
+          loading={categoryLoading}
+          onPeriodChange={handleCategoryPeriodChange}
+        />
 
-        <div className="sales-statistics-page__category-grid">
-          <SalesCategoryStatistics
-            categories={categoryStats.categories}
-            periodLabel={categoryStats.periodLabel}
-            scopeLabel={categoryStats.scopeLabel}
-            loading={categoryLoading}
-          />
+        <SalesCountryCategoryStatistics
+          countries={countryCategoryStats.countries}
+          period={countryCategoryPeriod}
+          periodLabel={countryCategoryStats.periodLabel}
+          scopeLabel={countryCategoryStats.scopeLabel}
+          loading={countryCategoryLoading}
+          onPeriodChange={handleCountryCategoryPeriodChange}
+        />
 
-          <SalesCountryCategoryStatistics
-            countries={countryCategoryStats.countries}
-            periodLabel={countryCategoryStats.periodLabel}
-            scopeLabel={countryCategoryStats.scopeLabel}
-            loading={countryCategoryLoading}
-          />
-
-          <SalesBrandCategoryStatistics
-            brands={brandCategoryStats.brands}
-            periodLabel={brandCategoryStats.periodLabel}
-            scopeLabel={brandCategoryStats.scopeLabel}
-            loading={brandCategoryLoading}
-          />
-        </div>
+        <SalesBrandCategoryStatistics
+          brands={brandCategoryStats.brands}
+          period={brandCategoryPeriod}
+          periodLabel={brandCategoryStats.periodLabel}
+          scopeLabel={brandCategoryStats.scopeLabel}
+          loading={brandCategoryLoading}
+          onPeriodChange={handleBrandCategoryPeriodChange}
+        />
       </div>
 
       <div className="sales-statistics-page__rankings">
