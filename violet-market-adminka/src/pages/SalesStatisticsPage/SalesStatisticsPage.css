@@ -26,6 +26,13 @@
   z-index: 2;
 }
 
+.sales-statistics-page__category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
 .sales-statistics-page__rankings {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -34,6 +41,10 @@
 }
 
 @media (max-width: 1100px) {
+  .sales-statistics-page__category-grid {
+    grid-template-columns: 1fr;
+  }
+
   .sales-statistics-page__rankings {
     grid-template-columns: 1fr;
   }
