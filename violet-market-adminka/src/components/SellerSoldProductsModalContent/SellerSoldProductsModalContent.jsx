@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { fetchSellerSoldProductsStatistics } from '../../api/salesStatisticsAdminApi';
+import { useAdminToast } from '../../context/AdminToastContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
+  buildProductDetailUrl,
   formatRevenue,
   formatStatNumber,
   getLocalizedText,
@@ -23,6 +25,7 @@ export default function SellerSoldProductsModalContent({
   sellerId = '',
 }) {
   const { openMiniGlobalViewModal } = useMiniGlobalModal();
+  const { showSuccess, showError } = useAdminToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [payload, setPayload] = useState(null);
@@ -65,6 +68,21 @@ export default function SellerSoldProductsModalContent({
         productTitle: getLocalizedText(product.title),
       },
     });
+  };
+
+  const handleCopyProductLink = async (product) => {
+    const productId = String(product?.productId || '').trim();
+    if (!productId) return;
+
+    const productUrl = buildProductDetailUrl(productId);
+    if (!productUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(productUrl);
+      showSuccess('Mahsulot havolasi nusxalandi');
+    } catch {
+      showError('Mahsulot havolasini nusxalab bo\'lmadi');
+    }
   };
 
   return (
@@ -122,13 +140,22 @@ export default function SellerSoldProductsModalContent({
                       {product.orderCount} ta buyurtma · {product.totalQuantity} ta sotilgan ·{' '}
                       {formatRemainingQuantity(product.remainingQuantity, product.statusKey)}
                     </p>
-                    <button
-                      type="button"
-                      className="seller-sold-products-modal__sale-date-btn"
-                      onClick={() => handleOpenSaleDates(product)}
-                    >
-                      Sotuv sana
-                    </button>
+                    <div className="seller-sold-products-modal__actions">
+                      <button
+                        type="button"
+                        className="seller-sold-products-modal__action-btn"
+                        onClick={() => handleOpenSaleDates(product)}
+                      >
+                        Sotuv sana
+                      </button>
+                      <button
+                        type="button"
+                        className="seller-sold-products-modal__action-btn"
+                        onClick={() => handleCopyProductLink(product)}
+                      >
+                        Nusxalash
+                      </button>
+                    </div>
                   </div>
                   <div className="seller-sold-products-modal__side">
                     <SellerSoldProductStatusBadge

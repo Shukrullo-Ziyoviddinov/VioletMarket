@@ -275,12 +275,62 @@ const ProductDetail = () => {
   const shareSheetCurrentYRef = useRef(0);
 
   // Mahsulot ma'lumotlarini yuklash va yangilash
-  const loadProductData = useCallback(() => {
+  const loadProductData = useCallback(async () => {
     setServerProductQty(null);
-    const savedProduct = sessionStorage.getItem('selectedProduct');
-    if (savedProduct) {
-      try {
-        const product = JSON.parse(savedProduct);
+
+    let product = null;
+    const urlProductId = new URLSearchParams(window.location.search).get('productId');
+
+    if (urlProductId) {
+      const savedProduct = sessionStorage.getItem('selectedProduct');
+      if (savedProduct) {
+        try {
+          const parsed = JSON.parse(savedProduct);
+          if (String(parsed?.id) === String(urlProductId)) {
+            product = parsed;
+          }
+        } catch {
+          // sessionStorage buzilgan bo'lsa URL orqali qayta yuklaymiz.
+        }
+      }
+
+      if (!product) {
+        product = catalog.find((item) => String(item.id) === String(urlProductId)) || null;
+        if (product) {
+          sessionStorage.setItem('selectedProduct', JSON.stringify(product));
+        } else {
+          try {
+            const res = await fetch(apiUrl(`/api/products/${encodeURIComponent(urlProductId)}`));
+            if (res.ok) {
+              product = await res.json();
+              if (product) {
+                sessionStorage.setItem('selectedProduct', JSON.stringify(product));
+              }
+            }
+          } catch (error) {
+            console.error('Error loading product from URL:', error);
+          }
+        }
+      }
+    } else {
+      const savedProduct = sessionStorage.getItem('selectedProduct');
+      if (savedProduct) {
+        try {
+          product = JSON.parse(savedProduct);
+        } catch (error) {
+          console.error('Error loading product:', error);
+          navigate('/');
+          return;
+        }
+      }
+    }
+
+    if (!product) {
+      navigate('/');
+      return;
+    }
+
+    try {
         const latestProduct =
           catalog.find((p) => String(p.id) === String(product?.id)) || product;
         // Debug: product ma'lumotlarini tekshirish
@@ -321,11 +371,8 @@ const ProductDetail = () => {
         setCurrentImageIndex(0);
         setImageErrors(new Set());
         window.scrollTo({ top: 0, behavior: 'instant' });
-      } catch (e) {
-        console.error('Error loading product:', e);
-        navigate('/');
-      }
-    } else {
+    } catch (e) {
+      console.error('Error loading product:', e);
       navigate('/');
     }
   }, [navigate, catalog, uzbProductDeliveryInfo]);

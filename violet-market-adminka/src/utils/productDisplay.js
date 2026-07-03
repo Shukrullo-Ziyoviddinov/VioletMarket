@@ -21,6 +21,15 @@ function getStorefrontBaseUrl() {
   return '';
 }
 
+export function buildProductDetailUrl(productId) {
+  const id = String(productId || '').trim();
+  if (!id) return '';
+
+  const base = getStorefrontBaseUrl();
+  const path = `/product-detail?productId=${encodeURIComponent(id)}`;
+  return base ? `${base}${path}` : path;
+}
+
 export function getLocalizedText(value, lang = 'uz') {
   if (!value) return '';
   if (typeof value === 'string') return value;

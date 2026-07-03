@@ -128,7 +128,15 @@
   color: #6b5f7d;
 }
 
-.seller-sold-products-modal__sale-date-btn {
+.seller-sold-products-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.seller-sold-products-modal__action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -144,7 +152,7 @@
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.seller-sold-products-modal__sale-date-btn:hover {
+.seller-sold-products-modal__action-btn:hover {
   background: #e8dcf8;
   border-color: #56337d;
 }
