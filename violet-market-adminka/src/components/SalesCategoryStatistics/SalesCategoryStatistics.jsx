@@ -60,7 +60,7 @@ export default function SalesCategoryStatistics({
       ) : (
         <div className="sales-category-statistics__body">
           <div className="sales-category-statistics__chart">
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
                   data={chartData}
@@ -68,8 +68,8 @@ export default function SalesCategoryStatistics({
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={62}
-                  outerRadius={96}
+                  innerRadius={46}
+                  outerRadius={72}
                   paddingAngle={chartData.length > 8 ? 1 : 2}
                   stroke="#ffffff"
                   strokeWidth={2}

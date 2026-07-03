@@ -35,21 +35,22 @@
 
 .sales-category-statistics__body {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  grid-template-columns: minmax(160px, 200px) minmax(0, 1fr);
   align-items: start;
   gap: 16px;
 }
 
 .sales-category-statistics__chart {
   width: 100%;
-  min-height: 240px;
+  max-width: 200px;
+  min-height: 180px;
 }
 
 .sales-category-statistics__legend {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 280px;
+  max-height: 220px;
   margin: 0;
   padding: 0 4px 0 0;
   overflow-y: auto;
@@ -90,7 +91,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 220px;
+  min-height: 180px;
   color: #6b5b7d;
   font-size: 14px;
   font-weight: 500;
@@ -119,7 +120,8 @@
   }
 
   .sales-category-statistics__chart {
-    min-height: 200px;
+    max-width: none;
+    min-height: 160px;
   }
 
   .sales-category-statistics__legend {
