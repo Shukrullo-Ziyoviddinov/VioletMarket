@@ -52,6 +52,7 @@ import ProductEditForm from '../ProductEditForm/ProductEditForm';
 import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import SellerSoldProductsModalContent from '../SellerSoldProductsModalContent/SellerSoldProductsModalContent';
 import ProductSellingSellersModalContent from '../ProductSellingSellersModalContent/ProductSellingSellersModalContent';
+import SalesStatisticsLegendModalContent from '../SalesStatisticsLegendModalContent/SalesStatisticsLegendModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3238,6 +3239,13 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <ProductSellingSellersModalContent
         visible={open}
         productId={section?.productId}
+      />
+    ) : section?.key === 'sales-statistics-legend' ? (
+      <SalesStatisticsLegendModalContent
+        visible={open}
+        periodLabel={section?.periodLabel}
+        scopeLabel={section?.scopeLabel}
+        items={section?.items}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

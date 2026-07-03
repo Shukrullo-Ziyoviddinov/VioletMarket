@@ -1,0 +1,50 @@
+.sales-statistics-chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sales-statistics-chart-legend--preview {
+  min-height: 170px;
+  max-height: 170px;
+  overflow: hidden;
+}
+
+.sales-statistics-chart-legend--scrollable {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sales-statistics-chart-legend__item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-statistics-chart-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.sales-statistics-chart-legend__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a1842;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-statistics-chart-legend__value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}

@@ -1,0 +1,18 @@
+.sales-statistics-more-button {
+  min-height: 20px;
+  padding: 2px 8px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #56337d;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sales-statistics-more-button:hover {
+  border-color: #56337d;
+  background: #f8f4fc;
+}

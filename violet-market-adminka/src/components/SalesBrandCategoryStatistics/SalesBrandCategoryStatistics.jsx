@@ -1,15 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { useAdminModal } from '../../context/AdminModalContext';
+import SalesStatisticsChartLegend, { LEGEND_PREVIEW_LIMIT } from '../SalesStatisticsChartLegend/SalesStatisticsChartLegend';
 import SalesStatisticsChartsPeriodFilter from '../SalesStatisticsChartsPeriodFilter/SalesStatisticsChartsPeriodFilter';
+import SalesStatisticsMoreButton from '../SalesStatisticsMoreButton/SalesStatisticsMoreButton';
 import './SalesBrandCategoryStatistics.css';
-
-function formatPercentage(value) {
-  const amount = Number(value) || 0;
-  if (Number.isInteger(amount)) {
-    return `${amount}%`;
-  }
-  return `${amount.toFixed(1)}%`;
-}
 
 export default function SalesBrandCategoryStatistics({
   brands = [],
@@ -19,6 +14,8 @@ export default function SalesBrandCategoryStatistics({
   loading = false,
   onPeriodChange,
 }) {
+  const { openAdminModal } = useAdminModal();
+
   const chartData = useMemo(
     () =>
       (Array.isArray(brands) ? brands : []).map((item) => ({
@@ -29,7 +26,29 @@ export default function SalesBrandCategoryStatistics({
     [brands],
   );
 
+  const legendItems = useMemo(
+    () =>
+      chartData.map((item) => ({
+        id: item.filterValue,
+        label: item.name,
+        color: item.color,
+        percentage: item.percentage,
+      })),
+    [chartData],
+  );
+
   const hasData = chartData.length > 0;
+  const hasMoreItems = legendItems.length > LEGEND_PREVIEW_LIMIT;
+
+  const handleOpenMore = useCallback(() => {
+    openAdminModal({
+      key: 'sales-statistics-legend',
+      label: 'Brend statistikasi',
+      periodLabel,
+      scopeLabel,
+      items: legendItems,
+    });
+  }, [legendItems, openAdminModal, periodLabel, scopeLabel]);
 
   return (
     <section className="sales-brand-category-statistics">
@@ -57,45 +76,38 @@ export default function SalesBrandCategoryStatistics({
           Tanlangan davr uchun brend bo&apos;yicha sotuv topilmadi
         </div>
       ) : (
-        <div className="sales-brand-category-statistics__body">
-          <div className="sales-brand-category-statistics__chart">
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={46}
-                  outerRadius={72}
-                  paddingAngle={chartData.length > 8 ? 1 : 2}
-                  stroke="#ffffff"
-                  strokeWidth={2}
-                >
-                  {chartData.map((item) => (
-                    <Cell key={item.filterValue} fill={item.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+        <>
+          <div className="sales-brand-category-statistics__body">
+            <div className="sales-brand-category-statistics__chart">
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={46}
+                    outerRadius={72}
+                    paddingAngle={chartData.length > 8 ? 1 : 2}
+                    stroke="#ffffff"
+                    strokeWidth={2}
+                  >
+                    {chartData.map((item) => (
+                      <Cell key={item.filterValue} fill={item.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <SalesStatisticsChartLegend items={legendItems} />
           </div>
 
-          <ul className="sales-brand-category-statistics__legend">
-            {chartData.map((item) => (
-              <li key={item.filterValue} className="sales-brand-category-statistics__legend-item">
-                <span
-                  className="sales-brand-category-statistics__legend-dot"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="sales-brand-category-statistics__legend-label">{item.name}</span>
-                <span className="sales-brand-category-statistics__legend-value">
-                  {formatPercentage(item.percentage)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="sales-brand-category-statistics__footer">
+            {hasMoreItems ? <SalesStatisticsMoreButton onClick={handleOpenMore} /> : null}
+          </div>
+        </>
       )}
     </section>
   );
