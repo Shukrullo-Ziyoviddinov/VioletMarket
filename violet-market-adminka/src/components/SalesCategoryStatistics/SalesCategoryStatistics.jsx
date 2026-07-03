@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { formatStatNumber } from '../../utils/productDisplay';
+import SalesCategoryStatisticsPeriodFilter from '../SalesCategoryStatisticsPeriodFilter/SalesCategoryStatisticsPeriodFilter';
 import './SalesCategoryStatistics.css';
 
 function formatPercentage(value) {
@@ -13,8 +14,11 @@ function formatPercentage(value) {
 
 export default function SalesCategoryStatistics({
   categories = [],
+  period = 'day',
   periodLabel = '',
+  scopeLabel = '',
   loading = false,
+  onPeriodChange,
 }) {
   const chartData = useMemo(
     () =>
@@ -31,10 +35,20 @@ export default function SalesCategoryStatistics({
   return (
     <section className="sales-category-statistics">
       <div className="sales-category-statistics__header">
-        <h2 className="sales-category-statistics__title">Kategoriya statistikasi</h2>
-        {periodLabel ? (
-          <p className="sales-category-statistics__subtitle">{periodLabel} davr bo&apos;yicha</p>
-        ) : null}
+        <div className="sales-category-statistics__heading">
+          <h2 className="sales-category-statistics__title">Kategoriya statistikasi</h2>
+          {scopeLabel ? (
+            <p className="sales-category-statistics__subtitle">
+              {periodLabel ? `${periodLabel} · ` : ''}
+              {scopeLabel}
+            </p>
+          ) : null}
+        </div>
+
+        <SalesCategoryStatisticsPeriodFilter
+          value={period}
+          onChange={onPeriodChange}
+        />
       </div>
 
       {loading ? (
@@ -46,7 +60,7 @@ export default function SalesCategoryStatistics({
       ) : (
         <div className="sales-category-statistics__body">
           <div className="sales-category-statistics__chart">
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie
                   data={chartData}
@@ -54,9 +68,9 @@ export default function SalesCategoryStatistics({
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={58}
-                  outerRadius={88}
-                  paddingAngle={2}
+                  innerRadius={62}
+                  outerRadius={96}
+                  paddingAngle={chartData.length > 8 ? 1 : 2}
                   stroke="#ffffff"
                   strokeWidth={2}
                 >

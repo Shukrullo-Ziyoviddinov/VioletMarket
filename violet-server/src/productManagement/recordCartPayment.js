@@ -1,6 +1,7 @@
 const { Order } = require("../models/order");
 const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
+const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProductSales");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
@@ -75,6 +76,7 @@ async function recordCartPayment({
 
   await recordSellerSalesFromOrder(order);
   await recordSellerProductSalesFromOrder(order);
+  await recordCategoryProductSalesFromOrder(order);
 
   return order;
 }

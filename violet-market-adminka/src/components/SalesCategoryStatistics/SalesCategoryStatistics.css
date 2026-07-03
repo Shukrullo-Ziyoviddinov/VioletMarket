@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 520px;
   padding: 20px 22px 18px;
   border: 1px solid #e7e9f0;
   border-radius: 16px;
@@ -11,8 +10,13 @@
 
 .sales-category-statistics__header {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sales-category-statistics__heading {
+  min-width: 0;
 }
 
 .sales-category-statistics__title {
@@ -24,29 +28,31 @@
 }
 
 .sales-category-statistics__subtitle {
-  margin: 0;
+  margin: 4px 0 0;
   font-size: 13px;
   color: #6b5f7d;
 }
 
 .sales-category-statistics__body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  align-items: center;
-  gap: 12px;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
 }
 
 .sales-category-statistics__chart {
   width: 100%;
-  min-height: 220px;
+  min-height: 240px;
 }
 
 .sales-category-statistics__legend {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 280px;
   margin: 0;
-  padding: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
   list-style: none;
 }
 
@@ -100,8 +106,12 @@
 
 @media (max-width: 768px) {
   .sales-category-statistics {
-    max-width: none;
     padding: 16px;
+  }
+
+  .sales-category-statistics__header {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .sales-category-statistics__body {
@@ -110,5 +120,10 @@
 
   .sales-category-statistics__chart {
     min-height: 200px;
+  }
+
+  .sales-category-statistics__legend {
+    max-height: none;
+    overflow: visible;
   }
 }

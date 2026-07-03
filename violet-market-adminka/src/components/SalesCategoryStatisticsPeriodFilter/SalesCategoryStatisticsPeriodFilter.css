@@ -1,0 +1,38 @@
+.sales-category-statistics-period-filter {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sales-category-statistics-period-filter__btn {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2a1842;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sales-category-statistics-period-filter__btn:hover {
+  border-color: #c7cedf;
+}
+
+.sales-category-statistics-period-filter__btn--active {
+  border-color: #56337d;
+  background: #56337d;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .sales-category-statistics-period-filter {
+    width: 100%;
+  }
+
+  .sales-category-statistics-period-filter__btn {
+    flex: 1;
+  }
+}

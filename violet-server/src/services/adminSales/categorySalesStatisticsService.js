@@ -1,9 +1,18 @@
-const { SellerProductSale } = require("../../models/sellerProductSale");
-const { Product } = require("../../models/product");
+const { CategoryProductSale } = require("../../models/categoryProductSale");
 const { toNumber } = require("./salesStatisticsHelpers");
 const { resolveSelectedFilters, buildSalesFilterOptions } = require("./salesFilterOptionsService");
-const { backfillSellerProductSalesFromOrders } = require("../../productManagement/recordSellerProductSales");
-const { parseMonthKey } = require("../../utils/customerStatisticsDate");
+const { backfillCategoryProductSalesFromOrders } = require("../../productManagement/recordCategoryProductSales");
+const {
+  addDaysToDateKey,
+  getIsoWeekStart,
+  parseMonthKey,
+} = require("../../utils/customerStatisticsDate");
+
+const PERIOD_LABELS = {
+  day: "Kunlik",
+  week: "Haftalik",
+  month: "Oylik",
+};
 
 const MONTH_LABELS_UZ = [
   "yanvar",
@@ -29,116 +38,117 @@ const CATEGORY_COLORS = [
   "#ec4899",
   "#14b8a6",
   "#6366f1",
+  "#ef4444",
+  "#84cc16",
+  "#06b6d4",
+  "#f97316",
+  "#64748b",
+  "#d946ef",
+  "#0ea5e9",
+  "#65a30d",
+  "#c026d3",
+  "#ea580c",
+  "#0891b2",
 ];
 
-const MAX_VISIBLE_CATEGORIES = 4;
-const OTHER_CATEGORY_LABEL = "Boshqa";
+function resolvePeriod(raw) {
+  const period = String(raw || "day").trim();
+  if (period === "week" || period === "month") return period;
+  return "day";
+}
+
+function buildPeriodMatch(period, filters) {
+  const match = { category: { $ne: "" } };
+  if (period === "week") {
+    match.weekKey = String(filters.week || "");
+  } else if (period === "month") {
+    match.monthKey = String(filters.month || "");
+  } else {
+    match.dateKey = String(filters.day || "");
+  }
+  return match;
+}
+
+function formatDayLabel(dateKey) {
+  const [year, month, day] = String(dateKey).split("-").map(Number);
+  const monthLabel = MONTH_LABELS_UZ[Math.max(0, Math.min(11, month - 1))] || "";
+  return `${day} ${monthLabel} ${year}`.trim();
+}
 
 function formatMonthLabel(monthKey) {
   const { year, month } = parseMonthKey(monthKey);
   const monthLabel = MONTH_LABELS_UZ[Math.max(0, Math.min(11, month - 1))] || "";
-  return `${monthLabel} ${year}`.trim();
+  return `${monthLabel} ${year}`;
 }
 
-function normalizeCategoryLabel(value) {
-  const label = String(value || "").trim();
-  return label || OTHER_CATEGORY_LABEL;
+function formatWeekLabel(weekKey) {
+  const raw = String(weekKey || "");
+  const match = /^(\d{4})-W(\d{1,2})$/.exec(raw);
+  if (!match) return raw;
+
+  const isoYear = Number(match[1]);
+  const week = Number(match[2]);
+  const weekStartKey = getIsoWeekStart(isoYear, week);
+  const weekEndKey = addDaysToDateKey(weekStartKey, 6);
+  const startLabel = formatDayLabel(weekStartKey).replace(/\s\d{4}$/, "");
+  const endLabel = formatDayLabel(weekEndKey);
+  return `${startLabel} - ${endLabel}`;
 }
 
-function buildCategoryRows(categoryTotals, totalQuantity) {
-  const sorted = [...categoryTotals.entries()]
-    .map(([category, quantity]) => ({
-      category,
-      quantity: toNumber(quantity, 0),
+function buildScopeLabel(period, filters) {
+  if (period === "week") {
+    return formatWeekLabel(filters.week);
+  }
+  if (period === "month") {
+    return formatMonthLabel(filters.month);
+  }
+  return formatDayLabel(filters.day);
+}
+
+function buildCategoryRows(rows, totalQuantity) {
+  return rows
+    .map((row, index) => ({
+      category: String(row._id || "").trim(),
+      quantity: toNumber(row.totalQuantity, 0),
+      percentage: totalQuantity > 0
+        ? Math.round((toNumber(row.totalQuantity, 0) / totalQuantity) * 1000) / 10
+        : 0,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
     }))
-    .filter((item) => item.quantity > 0)
-    .sort((left, right) => right.quantity - left.quantity || left.category.localeCompare(right.category, "uz"));
-
-  if (!sorted.length) {
-    return [];
-  }
-
-  const visible = sorted.slice(0, MAX_VISIBLE_CATEGORIES);
-  const hidden = sorted.slice(MAX_VISIBLE_CATEGORIES);
-
-  if (hidden.length) {
-    const otherQuantity = hidden.reduce((sum, item) => sum + item.quantity, 0);
-    const existingOther = visible.find((item) => item.category === OTHER_CATEGORY_LABEL);
-
-    if (existingOther) {
-      existingOther.quantity += otherQuantity;
-    } else {
-      visible.push({
-        category: OTHER_CATEGORY_LABEL,
-        quantity: otherQuantity,
-      });
-    }
-  }
-
-  return visible.map((item, index) => ({
-    category: item.category,
-    quantity: item.quantity,
-    percentage: totalQuantity > 0
-      ? Math.round((item.quantity / totalQuantity) * 1000) / 10
-      : 0,
-    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-  }));
+    .filter((item) => item.category && item.quantity > 0);
 }
 
 async function buildCategorySalesStatistics(query = {}) {
-  await backfillSellerProductSalesFromOrders();
+  await backfillCategoryProductSalesFromOrders();
 
   const filterOptions = await buildSalesFilterOptions();
   const filters = resolveSelectedFilters(query, filterOptions);
-  const monthKey = String(filters.month || "");
+  const period = resolvePeriod(query.period);
+  const match = buildPeriodMatch(period, filters);
 
-  const rows = await SellerProductSale.aggregate([
-    {
-      $match: {
-        productId: { $gt: 0 },
-        monthKey,
-      },
-    },
+  const rows = await CategoryProductSale.aggregate([
+    { $match: match },
     {
       $group: {
-        _id: "$productId",
+        _id: "$category",
         totalQuantity: { $sum: "$quantity" },
       },
     },
+    { $sort: { totalQuantity: -1, _id: 1 } },
   ]);
 
-  const productIds = rows
-    .map((row) => Number(row._id))
-    .filter((id) => Number.isFinite(id));
-
-  const products = productIds.length
-    ? await Product.find({ id: { $in: productIds } })
-      .select("id category")
-      .lean()
-    : [];
-
-  const categoryByProductId = new Map(
-    products.map((product) => [Number(product.id), normalizeCategoryLabel(product.category)]),
+  const totalQuantity = rows.reduce(
+    (sum, row) => sum + toNumber(row.totalQuantity, 0),
+    0,
   );
 
-  const categoryTotals = new Map();
-  let totalQuantity = 0;
-
-  for (const row of rows) {
-    const productId = Number(row._id);
-    const quantity = toNumber(row.totalQuantity, 0);
-    if (quantity <= 0) continue;
-
-    const category = categoryByProductId.get(productId) || OTHER_CATEGORY_LABEL;
-    categoryTotals.set(category, (categoryTotals.get(category) || 0) + quantity);
-    totalQuantity += quantity;
-  }
-
   return {
+    period,
+    periodLabel: PERIOD_LABELS[period] || PERIOD_LABELS.day,
+    scopeLabel: buildScopeLabel(period, filters),
     filters,
-    periodLabel: formatMonthLabel(monthKey),
     totalQuantity,
-    categories: buildCategoryRows(categoryTotals, totalQuantity),
+    categories: buildCategoryRows(rows, totalQuantity),
   };
 }
 

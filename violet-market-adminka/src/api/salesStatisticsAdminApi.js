@@ -310,6 +310,7 @@ export async function fetchCategorySalesStatistics(filters = {}) {
   if (filters?.day) params.set('day', String(filters.day));
   if (filters?.week) params.set('week', String(filters.week));
   if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
 
   const query = params.toString();
   const path = query
@@ -321,7 +322,9 @@ export async function fetchCategorySalesStatistics(filters = {}) {
   const data = payload?.data || {};
 
   return {
+    period: String(data?.period || 'day'),
     periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
     totalQuantity: Number(data?.totalQuantity) || 0,
     categories: Array.isArray(data?.categories) ? data.categories.map(normalizeCategoryStat) : [],
   };
