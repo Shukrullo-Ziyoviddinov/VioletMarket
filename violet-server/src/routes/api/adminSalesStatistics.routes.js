@@ -13,5 +13,6 @@ router.get("/admin/sales/seller-product-sale-dates", controller.getSellerProduct
 router.get("/admin/sales/product-selling-sellers", controller.getProductSellingSellersStatistics);
 router.get("/admin/sales/category-statistics", controller.getCategorySalesStatistics);
 router.get("/admin/sales/country-category-statistics", controller.getCountryCategorySalesStatistics);
+router.get("/admin/sales/brand-category-statistics", controller.getBrandCategorySalesStatistics);
 
 module.exports = router;

@@ -15,6 +15,7 @@ const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
 const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProductSales");
 const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
+const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
 
 module.exports = {
   markProductsAsSold,
@@ -30,4 +31,5 @@ module.exports = {
   recordSellerProductSalesFromOrder,
   recordCategoryProductSalesFromOrder,
   recordCountryCategoryProductSalesFromOrder,
+  recordBrandCategoryProductSalesFromOrder,
 };

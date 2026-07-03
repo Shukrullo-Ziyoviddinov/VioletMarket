@@ -9,6 +9,7 @@ const sellerProductSaleDatesService = require("../services/adminSales/sellerProd
 const productSellingSellersService = require("../services/adminSales/productSellingSellersStatisticsService");
 const categorySalesService = require("../services/adminSales/categorySalesStatisticsService");
 const countryCategorySalesService = require("../services/adminSales/countryCategorySalesStatisticsService");
+const brandCategorySalesService = require("../services/adminSales/brandCategorySalesStatisticsService");
 
 const getSalesDashboardStats = asyncHandler(async (_req, res) => {
   const data = await dashboardService.buildSalesDashboardStats();
@@ -60,6 +61,11 @@ const getCountryCategorySalesStatistics = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getBrandCategorySalesStatistics = asyncHandler(async (req, res) => {
+  const data = await brandCategorySalesService.buildBrandCategorySalesStatistics(req.query || {});
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   getSalesDashboardStats,
   getSalesStatistics,
@@ -71,4 +77,5 @@ module.exports = {
   getProductSellingSellersStatistics,
   getCategorySalesStatistics,
   getCountryCategorySalesStatistics,
+  getBrandCategorySalesStatistics,
 };
