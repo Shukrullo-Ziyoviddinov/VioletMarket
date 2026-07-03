@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { formatStatNumber } from '../../utils/productDisplay';
 import SalesCountryCategoryStatisticsPeriodFilter from '../SalesCountryCategoryStatisticsPeriodFilter/SalesCountryCategoryStatisticsPeriodFilter';
 import './SalesCountryCategoryStatistics.css';
 
@@ -36,7 +35,7 @@ export default function SalesCountryCategoryStatistics({
     <section className="sales-country-category-statistics">
       <div className="sales-country-category-statistics__header">
         <div className="sales-country-category-statistics__heading">
-          <h2 className="sales-country-category-statistics__title">Davlat kategoriya statistikasi</h2>
+          <h2 className="sales-country-category-statistics__title">Davlat statistikasi</h2>
           {scopeLabel ? (
             <p className="sales-country-category-statistics__subtitle">
               {periodLabel ? `${periodLabel} · ` : ''}
@@ -98,12 +97,6 @@ export default function SalesCountryCategoryStatistics({
           </ul>
         </div>
       )}
-
-      {hasData && !loading ? (
-        <p className="sales-country-category-statistics__footnote">
-          Jami {formatStatNumber(chartData.reduce((sum, item) => sum + item.value, 0))} ta sotilgan
-        </p>
-      ) : null}
     </section>
   );
 }

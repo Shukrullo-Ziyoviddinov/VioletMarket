@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { formatStatNumber } from '../../utils/productDisplay';
 import SalesCategoryStatisticsPeriodFilter from '../SalesCategoryStatisticsPeriodFilter/SalesCategoryStatisticsPeriodFilter';
 import './SalesCategoryStatistics.css';
 
@@ -98,12 +97,6 @@ export default function SalesCategoryStatistics({
           </ul>
         </div>
       )}
-
-      {hasData && !loading ? (
-        <p className="sales-category-statistics__footnote">
-          Jami {formatStatNumber(chartData.reduce((sum, item) => sum + item.value, 0))} ta sotilgan
-        </p>
-      ) : null}
     </section>
   );
 }

@@ -98,13 +98,6 @@
   text-align: center;
   padding: 0 12px;
 }
-
-.sales-category-statistics__footnote {
-  margin: 0;
-  font-size: 12px;
-  color: #6b5f7d;
-}
-
 @media (max-width: 768px) {
   .sales-category-statistics {
     padding: 16px;
