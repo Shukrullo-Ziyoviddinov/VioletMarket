@@ -53,6 +53,8 @@ import ProductPolicyForm from '../ProductPolicyForm/ProductPolicyForm';
 import SellerSoldProductsModalContent from '../SellerSoldProductsModalContent/SellerSoldProductsModalContent';
 import ProductSellingSellersModalContent from '../ProductSellingSellersModalContent/ProductSellingSellersModalContent';
 import SalesStatisticsLegendModalContent from '../SalesStatisticsLegendModalContent/SalesStatisticsLegendModalContent';
+import TopSellersStatisticsModalContent from '../TopSellersStatisticsModalContent/TopSellersStatisticsModalContent';
+import TopSellingProductsStatisticsModalContent from '../TopSellingProductsStatisticsModalContent/TopSellingProductsStatisticsModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3246,6 +3248,18 @@ export default function GlobalSectionModal({ open, section, onClose }) {
         periodLabel={section?.periodLabel}
         scopeLabel={section?.scopeLabel}
         items={section?.items}
+      />
+    ) : section?.key === 'top-sellers-statistics-list' ? (
+      <TopSellersStatisticsModalContent
+        visible={open}
+        periodLabel={section?.periodLabel}
+        sellers={section?.sellers}
+      />
+    ) : section?.key === 'top-selling-products-statistics-list' ? (
+      <TopSellingProductsStatisticsModalContent
+        visible={open}
+        periodLabel={section?.periodLabel}
+        products={section?.products}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchTopSellersStatistics } from '../../api/salesStatisticsAdminApi';
 import { useAdminModal } from '../../context/AdminModalContext';
+import SalesStatisticsMoreButton from '../SalesStatisticsMoreButton/SalesStatisticsMoreButton';
 import TopSellerListItem from '../TopSellerListItem/TopSellerListItem';
 import TopSellersPeriodFilter from '../TopSellersPeriodFilter/TopSellersPeriodFilter';
 import './TopSellersSection.css';
+
+const PREVIEW_LIMIT = 4;
 
 export default function TopSellersSection({ pageFilters }) {
   const { openAdminModal } = useAdminModal();
@@ -43,6 +46,12 @@ export default function TopSellersSection({ pageFilters }) {
     setOpenMenuSellerId(null);
   }, [pageFilters, period]);
 
+  const previewSellers = useMemo(
+    () => sellers.slice(0, PREVIEW_LIMIT),
+    [sellers],
+  );
+  const hasMoreSellers = sellers.length > PREVIEW_LIMIT;
+
   const handlePeriodChange = (nextPeriod) => {
     setPeriod(nextPeriod);
   };
@@ -54,6 +63,15 @@ export default function TopSellersSection({ pageFilters }) {
       sellerId: seller.sellerId,
     });
   };
+
+  const handleOpenMore = useCallback(() => {
+    openAdminModal({
+      key: 'top-sellers-statistics-list',
+      label: "Eng ko'p savdo qilgan sotuvchilar",
+      periodLabel,
+      sellers,
+    });
+  }, [openAdminModal, periodLabel, sellers]);
 
   return (
     <section className="top-sellers-section">
@@ -72,29 +90,37 @@ export default function TopSellersSection({ pageFilters }) {
         />
       </div>
 
-      <div className="top-sellers-section__list">
-        {loading ? (
-          <p className="top-sellers-section__empty">Yuklanmoqda...</p>
-        ) : sellers.length === 0 ? (
-          <p className="top-sellers-section__empty">
-            Tanlangan davr uchun sotuvchi ma&apos;lumoti topilmadi
-          </p>
-        ) : (
-          sellers.map((seller) => (
-            <TopSellerListItem
-              key={seller.sellerId}
-              seller={seller}
-              isMenuOpen={openMenuSellerId === seller.sellerId}
-              onMenuToggle={() =>
-                setOpenMenuSellerId((current) =>
-                  current === seller.sellerId ? null : seller.sellerId,
-                )
-              }
-              onMenuClose={() => setOpenMenuSellerId(null)}
-              onInfoClick={() => handleOpenSellerInfo(seller)}
-            />
-          ))
-        )}
+      <div className="top-sellers-section__content">
+        <div className="top-sellers-section__list top-sellers-section__list--preview">
+          {loading ? (
+            <p className="top-sellers-section__empty">Yuklanmoqda...</p>
+          ) : sellers.length === 0 ? (
+            <p className="top-sellers-section__empty">
+              Tanlangan davr uchun sotuvchi ma&apos;lumoti topilmadi
+            </p>
+          ) : (
+            previewSellers.map((seller) => (
+              <TopSellerListItem
+                key={seller.sellerId}
+                seller={seller}
+                isMenuOpen={openMenuSellerId === seller.sellerId}
+                onMenuToggle={() =>
+                  setOpenMenuSellerId((current) =>
+                    current === seller.sellerId ? null : seller.sellerId,
+                  )
+                }
+                onMenuClose={() => setOpenMenuSellerId(null)}
+                onInfoClick={() => handleOpenSellerInfo(seller)}
+              />
+            ))
+          )}
+        </div>
+
+        {!loading && hasMoreSellers ? (
+          <div className="top-sellers-section__footer">
+            <SalesStatisticsMoreButton onClick={handleOpenMore} />
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchTopSellingProductsStatistics } from '../../api/salesStatisticsAdminApi';
 import { useAdminModal } from '../../context/AdminModalContext';
 import { useAdminToast } from '../../context/AdminToastContext';
 import { buildProductDetailUrl, getLocalizedText } from '../../utils/productDisplay';
+import SalesStatisticsMoreButton from '../SalesStatisticsMoreButton/SalesStatisticsMoreButton';
 import TopSellingProductListItem from '../TopSellingProductListItem/TopSellingProductListItem';
 import TopSellingProductsPeriodFilter from '../TopSellingProductsPeriodFilter/TopSellingProductsPeriodFilter';
 import './TopSellingProductsSection.css';
+
+const PREVIEW_LIMIT = 4;
 
 export default function TopSellingProductsSection({ pageFilters }) {
   const { openAdminModal } = useAdminModal();
@@ -46,6 +49,12 @@ export default function TopSellingProductsSection({ pageFilters }) {
     setOpenMenuProductId(null);
   }, [pageFilters, period]);
 
+  const previewProducts = useMemo(
+    () => products.slice(0, PREVIEW_LIMIT),
+    [products],
+  );
+  const hasMoreProducts = products.length > PREVIEW_LIMIT;
+
   const handlePeriodChange = (nextPeriod) => {
     setPeriod(nextPeriod);
   };
@@ -73,6 +82,15 @@ export default function TopSellingProductsSection({ pageFilters }) {
     }
   };
 
+  const handleOpenMore = useCallback(() => {
+    openAdminModal({
+      key: 'top-selling-products-statistics-list',
+      label: "Eng ko'p sotilgan mahsulotlar",
+      periodLabel,
+      products,
+    });
+  }, [openAdminModal, periodLabel, products]);
+
   return (
     <section className="top-selling-products-section">
       <div className="top-selling-products-section__header">
@@ -90,30 +108,38 @@ export default function TopSellingProductsSection({ pageFilters }) {
         />
       </div>
 
-      <div className="top-selling-products-section__list">
-        {loading ? (
-          <p className="top-selling-products-section__empty">Yuklanmoqda...</p>
-        ) : products.length === 0 ? (
-          <p className="top-selling-products-section__empty">
-            Tanlangan davr uchun mahsulot ma&apos;lumoti topilmadi
-          </p>
-        ) : (
-          products.map((product) => (
-            <TopSellingProductListItem
-              key={product.productId}
-              product={product}
-              isMenuOpen={openMenuProductId === product.productId}
-              onMenuToggle={() =>
-                setOpenMenuProductId((current) =>
-                  current === product.productId ? null : product.productId,
-                )
-              }
-              onMenuClose={() => setOpenMenuProductId(null)}
-              onSellerClick={() => handleOpenProductSellers(product)}
-              onCopyClick={() => handleCopyProductLink(product)}
-            />
-          ))
-        )}
+      <div className="top-selling-products-section__content">
+        <div className="top-selling-products-section__list top-selling-products-section__list--preview">
+          {loading ? (
+            <p className="top-selling-products-section__empty">Yuklanmoqda...</p>
+          ) : products.length === 0 ? (
+            <p className="top-selling-products-section__empty">
+              Tanlangan davr uchun mahsulot ma&apos;lumoti topilmadi
+            </p>
+          ) : (
+            previewProducts.map((product) => (
+              <TopSellingProductListItem
+                key={product.productId}
+                product={product}
+                isMenuOpen={openMenuProductId === product.productId}
+                onMenuToggle={() =>
+                  setOpenMenuProductId((current) =>
+                    current === product.productId ? null : product.productId,
+                  )
+                }
+                onMenuClose={() => setOpenMenuProductId(null)}
+                onSellerClick={() => handleOpenProductSellers(product)}
+                onCopyClick={() => handleCopyProductLink(product)}
+              />
+            ))
+          )}
+        </div>
+
+        {!loading && hasMoreProducts ? (
+          <div className="top-selling-products-section__footer">
+            <SalesStatisticsMoreButton onClick={handleOpenMore} />
+          </div>
+        ) : null}
       </div>
     </section>
   );
