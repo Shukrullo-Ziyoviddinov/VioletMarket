@@ -1,0 +1,81 @@
+.sales-statistics-charts-period-filter {
+  position: relative;
+  display: inline-flex;
+}
+
+.sales-statistics-charts-period-filter__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+  padding: 5px 10px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2a1842;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sales-statistics-charts-period-filter__button:hover {
+  border-color: #c7cedf;
+}
+
+.sales-statistics-charts-period-filter__button--active {
+  border-color: #56337d;
+  background: #56337d;
+  color: #ffffff;
+}
+
+.sales-statistics-charts-period-filter__button-label {
+  white-space: nowrap;
+}
+
+.sales-statistics-charts-period-filter__button-icon {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.sales-statistics-charts-period-filter__button-icon--open {
+  transform: rotate(180deg);
+}
+
+.sales-statistics-charts-period-filter__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 140px;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+  box-sizing: border-box;
+}
+
+.sales-statistics-charts-period-filter__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sales-statistics-charts-period-filter__dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.sales-statistics-charts-period-filter__dropdown-item--selected {
+  background: #f3ebfd;
+  color: #56337d;
+  font-weight: 600;
+}

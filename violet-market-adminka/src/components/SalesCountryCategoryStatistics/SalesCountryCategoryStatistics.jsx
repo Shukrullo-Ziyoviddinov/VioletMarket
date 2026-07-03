@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import SalesCountryCategoryStatisticsPeriodFilter from '../SalesCountryCategoryStatisticsPeriodFilter/SalesCountryCategoryStatisticsPeriodFilter';
 import './SalesCountryCategoryStatistics.css';
 
 function formatPercentage(value) {
@@ -13,11 +12,9 @@ function formatPercentage(value) {
 
 export default function SalesCountryCategoryStatistics({
   countries = [],
-  period = 'day',
   periodLabel = '',
   scopeLabel = '',
   loading = false,
-  onPeriodChange,
 }) {
   const chartData = useMemo(
     () =>
@@ -43,11 +40,6 @@ export default function SalesCountryCategoryStatistics({
             </p>
           ) : null}
         </div>
-
-        <SalesCountryCategoryStatisticsPeriodFilter
-          value={period}
-          onChange={onPeriodChange}
-        />
       </div>
 
       {loading ? (
