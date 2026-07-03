@@ -7,6 +7,7 @@ const topSellingProductsService = require("../services/adminSales/topSellingProd
 const sellerSoldProductsService = require("../services/adminSales/sellerSoldProductsStatisticsService");
 const sellerProductSaleDatesService = require("../services/adminSales/sellerProductSaleDatesService");
 const productSellingSellersService = require("../services/adminSales/productSellingSellersStatisticsService");
+const categorySalesService = require("../services/adminSales/categorySalesStatisticsService");
 
 const getSalesDashboardStats = asyncHandler(async (_req, res) => {
   const data = await dashboardService.buildSalesDashboardStats();
@@ -48,6 +49,11 @@ const getProductSellingSellersStatistics = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getCategorySalesStatistics = asyncHandler(async (req, res) => {
+  const data = await categorySalesService.buildCategorySalesStatistics(req.query || {});
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   getSalesDashboardStats,
   getSalesStatistics,
@@ -57,4 +63,5 @@ module.exports = {
   getSellerSoldProductsStatistics,
   getSellerProductSaleDates,
   getProductSellingSellersStatistics,
+  getCategorySalesStatistics,
 };

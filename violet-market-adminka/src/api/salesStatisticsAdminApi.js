@@ -295,3 +295,34 @@ export async function fetchProductSellingSellersStatistics(filters = {}) {
   const payload = await parseJson(res);
   return normalizeProductSellingSellersPayload(payload?.data || {});
 }
+
+function normalizeCategoryStat(row) {
+  return {
+    category: String(row?.category || ''),
+    quantity: Number(row?.quantity) || 0,
+    percentage: Number(row?.percentage) || 0,
+    color: String(row?.color || '#3b82f6'),
+  };
+}
+
+export async function fetchCategorySalesStatistics(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/sales/category-statistics?${query}`
+    : '/api/admin/sales/category-statistics';
+
+  const res = await fetch(apiUrl(path));
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    periodLabel: String(data?.periodLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    categories: Array.isArray(data?.categories) ? data.categories.map(normalizeCategoryStat) : [],
+  };
+}

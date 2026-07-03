@@ -11,5 +11,6 @@ router.get("/admin/sales/top-selling-products", controller.getTopSellingProducts
 router.get("/admin/sales/seller-sold-products", controller.getSellerSoldProductsStatistics);
 router.get("/admin/sales/seller-product-sale-dates", controller.getSellerProductSaleDates);
 router.get("/admin/sales/product-selling-sellers", controller.getProductSellingSellersStatistics);
+router.get("/admin/sales/category-statistics", controller.getCategorySalesStatistics);
 
 module.exports = router;

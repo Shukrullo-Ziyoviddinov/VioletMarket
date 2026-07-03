@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Spin } from 'antd';
-import { fetchSalesRevenueChart, fetchSalesStatistics } from '../../api/salesStatisticsAdminApi';
+import { fetchCategorySalesStatistics, fetchSalesRevenueChart, fetchSalesStatistics } from '../../api/salesStatisticsAdminApi';
+import SalesCategoryStatistics from '../../components/SalesCategoryStatistics/SalesCategoryStatistics';
 import SalesRevenueChart from '../../components/SalesRevenueChart/SalesRevenueChart';
 import TopSellersSection from '../../components/TopSellersSection/TopSellersSection';
 import TopSellingProductsSection from '../../components/TopSellingProductsSection/TopSellingProductsSection';
@@ -26,10 +27,24 @@ export default function SalesStatisticsPage() {
   const [chartGranularity, setChartGranularity] = useState('day');
   const [chartPoints, setChartPoints] = useState([]);
   const [chartTone, setChartTone] = useState('neutral');
+  const [categoryStats, setCategoryStats] = useState({ categories: [], periodLabel: '' });
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const loadCategoryStats = useCallback(async (activeFilters) => {
+    setCategoryLoading(true);
+    try {
+      const payload = await fetchCategorySalesStatistics(activeFilters);
+      setCategoryStats(payload);
+    } catch {
+      setCategoryStats({ categories: [], periodLabel: '' });
+    } finally {
+      setCategoryLoading(false);
+    }
+  }, []);
 
   const loadChart = useCallback(async (activeFilters, granularity) => {
     setChartLoading(true);
@@ -64,6 +79,7 @@ export default function SalesStatisticsPage() {
       const [statsPayload] = await Promise.all([
         fetchSalesStatistics(activeFilters),
         loadChart(activeFilters, granularity),
+        loadCategoryStats(activeFilters),
       ]);
 
       if (statsPayload?.filters) {
@@ -83,7 +99,7 @@ export default function SalesStatisticsPage() {
       }
       setLoading(false);
     }
-  }, [chartGranularity, loadChart, setGlobalLoading]);
+  }, [chartGranularity, loadCategoryStats, loadChart, setGlobalLoading]);
 
   useEffect(() => {
     if (isInitialLoadRef.current) {
@@ -143,6 +159,12 @@ export default function SalesStatisticsPage() {
         points={chartPoints}
         overallTone={chartTone}
         loading={chartLoading}
+      />
+
+      <SalesCategoryStatistics
+        categories={categoryStats.categories}
+        periodLabel={categoryStats.periodLabel}
+        loading={categoryLoading}
       />
 
       <div className="sales-statistics-page__rankings">
