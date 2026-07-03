@@ -1,9 +1,7 @@
 const { CategoryProductSale } = require("../models/categoryProductSale");
 const { Product } = require("../models/product");
-const { Order } = require("../models/order");
-const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
-const { aggregateSellerProductLines } = require("./recordSellerProductSales");
+const { aggregateOrderProductLines } = require("./recordSellerProductSales");
 
 const PAID_STATUSES = ["paid", "delivered"];
 const UNKNOWN_CATEGORY_LABEL = "Boshqa";
@@ -35,14 +33,14 @@ async function recordCategoryProductSalesFromOrder(order) {
   if (!paidAt) return [];
 
   const periodKeys = getPeriodKeysFromPaidAt(paidAt);
-  const linesByKey = aggregateSellerProductLines(order.items);
-  if (linesByKey.size === 0) return [];
+  const linesByProductId = aggregateOrderProductLines(order.items);
+  if (linesByProductId.size === 0) return [];
 
-  const productIds = [...linesByKey.values()].map((line) => Number(line.productId));
+  const productIds = [...linesByProductId.values()].map((line) => Number(line.productId));
   const categoryByProductId = await loadCategoryByProductId(productIds);
 
   const docs = [];
-  for (const line of linesByKey.values()) {
+  for (const line of linesByProductId.values()) {
     const productId = Number(line.productId);
     const category = categoryByProductId.get(productId) || UNKNOWN_CATEGORY_LABEL;
 
@@ -71,23 +69,8 @@ async function recordCategoryProductSalesFromOrder(order) {
 }
 
 async function backfillCategoryProductSalesFromOrders() {
-  const existingCount = await CategoryProductSale.countDocuments();
-  if (existingCount > 0) return existingCount;
-
-  const orders = await Order.find({
-    status: { $in: PAID_STATUSES },
-    paidAt: { $ne: null },
-  })
-    .select("id items status paidAt createdAt")
-    .lean();
-
-  let created = 0;
-  for (const order of orders) {
-    const rows = await recordCategoryProductSalesFromOrder(order);
-    created += rows.length;
-  }
-
-  return created;
+  const { ensureSalesStatisticsSynced } = require("./salesOrderSyncService");
+  return ensureSalesStatisticsSynced();
 }
 
 module.exports = {

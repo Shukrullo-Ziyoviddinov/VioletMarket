@@ -1,5 +1,4 @@
 const { SellerProductSale } = require("../models/sellerProductSale");
-const { Order } = require("../models/order");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
 
@@ -37,6 +36,33 @@ function aggregateSellerProductLines(items) {
   }
 
   return linesByKey;
+}
+
+function aggregateOrderProductLines(items) {
+  const linesByProductId = new Map();
+
+  for (const item of Array.isArray(items) ? items : []) {
+    const productId = Number(item?.productId);
+    if (!Number.isFinite(productId)) continue;
+
+    const quantity = Math.max(0, toNumber(item?.quantity, 0));
+    const amount = Math.max(0, toNumber(item?.lineTotal, 0));
+    const existing = linesByProductId.get(productId);
+
+    if (existing) {
+      existing.quantity += quantity;
+      existing.amount += amount;
+      continue;
+    }
+
+    linesByProductId.set(productId, {
+      productId,
+      quantity,
+      amount,
+    });
+  }
+
+  return linesByProductId;
 }
 
 async function recordSellerProductSalesFromOrder(order) {
@@ -81,27 +107,13 @@ async function recordSellerProductSalesFromOrder(order) {
 }
 
 async function backfillSellerProductSalesFromOrders() {
-  const existingCount = await SellerProductSale.countDocuments();
-  if (existingCount > 0) return existingCount;
-
-  const orders = await Order.find({
-    status: { $in: PAID_STATUSES },
-    paidAt: { $ne: null },
-  })
-    .select("id items status paidAt createdAt")
-    .lean();
-
-  let created = 0;
-  for (const order of orders) {
-    const rows = await recordSellerProductSalesFromOrder(order);
-    created += rows.length;
-  }
-
-  return created;
+  const { ensureSalesStatisticsSynced } = require("./salesOrderSyncService");
+  return ensureSalesStatisticsSynced();
 }
 
 module.exports = {
   aggregateSellerProductLines,
+  aggregateOrderProductLines,
   recordSellerProductSalesFromOrder,
   backfillSellerProductSalesFromOrders,
 };

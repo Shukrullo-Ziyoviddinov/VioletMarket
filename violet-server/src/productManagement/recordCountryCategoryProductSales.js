@@ -1,10 +1,8 @@
 const { CountryCategoryProductSale } = require("../models/countryCategoryProductSale");
 const { BrandCountryFilterValue } = require("../models/brandCountryFilterValue");
 const { Product } = require("../models/product");
-const { Order } = require("../models/order");
-const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
-const { aggregateSellerProductLines } = require("./recordSellerProductSales");
+const { aggregateOrderProductLines } = require("./recordSellerProductSales");
 
 const PAID_STATUSES = ["paid", "delivered"];
 
@@ -56,18 +54,18 @@ async function recordCountryCategoryProductSalesFromOrder(order) {
   if (!paidAt) return [];
 
   const periodKeys = getPeriodKeysFromPaidAt(paidAt);
-  const linesByKey = aggregateSellerProductLines(order.items);
-  if (linesByKey.size === 0) return [];
+  const linesByProductId = aggregateOrderProductLines(order.items);
+  if (linesByProductId.size === 0) return [];
 
   const countryFilterRows = await loadCountryFilterRows();
-  const productIds = [...linesByKey.values()].map((line) => Number(line.productId));
+  const productIds = [...linesByProductId.values()].map((line) => Number(line.productId));
   const countriesCategoriesByProductId = await loadCountriesCategoriesByProductId(
     productIds,
     countryFilterRows,
   );
 
   const docs = [];
-  for (const line of linesByKey.values()) {
+  for (const line of linesByProductId.values()) {
     const productId = Number(line.productId);
     const countriesCategories = countriesCategoriesByProductId.get(productId);
     if (!countriesCategories) continue;
@@ -97,23 +95,8 @@ async function recordCountryCategoryProductSalesFromOrder(order) {
 }
 
 async function backfillCountryCategoryProductSalesFromOrders() {
-  const existingCount = await CountryCategoryProductSale.countDocuments();
-  if (existingCount > 0) return existingCount;
-
-  const orders = await Order.find({
-    status: { $in: PAID_STATUSES },
-    paidAt: { $ne: null },
-  })
-    .select("id items status paidAt createdAt")
-    .lean();
-
-  let created = 0;
-  for (const order of orders) {
-    const rows = await recordCountryCategoryProductSalesFromOrder(order);
-    created += rows.length;
-  }
-
-  return created;
+  const { ensureSalesStatisticsSynced } = require("./salesOrderSyncService");
+  return ensureSalesStatisticsSynced();
 }
 
 module.exports = {

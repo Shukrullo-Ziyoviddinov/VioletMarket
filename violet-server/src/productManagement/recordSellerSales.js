@@ -1,5 +1,4 @@
 const { SellerSale } = require("../models/sellerSale");
-const { Order } = require("../models/order");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { formatWeekKey } = require("../services/adminSales/salesStatisticsHelpers");
 const {
@@ -75,23 +74,8 @@ async function recordSellerSalesFromOrder(order) {
 }
 
 async function backfillSellerSalesFromOrders() {
-  const existingCount = await SellerSale.countDocuments();
-  if (existingCount > 0) return existingCount;
-
-  const orders = await Order.find({
-    status: { $in: PAID_STATUSES },
-    paidAt: { $ne: null },
-  })
-    .select("id items status paidAt createdAt")
-    .lean();
-
-  let created = 0;
-  for (const order of orders) {
-    const rows = await recordSellerSalesFromOrder(order);
-    created += rows.length;
-  }
-
-  return created;
+  const { ensureSalesStatisticsSynced } = require("./salesOrderSyncService");
+  return ensureSalesStatisticsSynced();
 }
 
 module.exports = {

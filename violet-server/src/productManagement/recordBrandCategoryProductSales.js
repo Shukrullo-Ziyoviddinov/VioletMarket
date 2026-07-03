@@ -1,9 +1,8 @@
 const { BrandCategoryProductSale } = require("../models/brandCategoryProductSale");
 const { BrandCountryFilterValue } = require("../models/brandCountryFilterValue");
 const { Product } = require("../models/product");
-const { Order } = require("../models/order");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
-const { aggregateSellerProductLines } = require("./recordSellerProductSales");
+const { aggregateOrderProductLines } = require("./recordSellerProductSales");
 
 const PAID_STATUSES = ["paid", "delivered"];
 
@@ -55,18 +54,18 @@ async function recordBrandCategoryProductSalesFromOrder(order) {
   if (!paidAt) return [];
 
   const periodKeys = getPeriodKeysFromPaidAt(paidAt);
-  const linesByKey = aggregateSellerProductLines(order.items);
-  if (linesByKey.size === 0) return [];
+  const linesByProductId = aggregateOrderProductLines(order.items);
+  if (linesByProductId.size === 0) return [];
 
   const brandFilterRows = await loadBrandFilterRows();
-  const productIds = [...linesByKey.values()].map((line) => Number(line.productId));
+  const productIds = [...linesByProductId.values()].map((line) => Number(line.productId));
   const brandCategoriesByProductId = await loadBrandCategoriesByProductId(
     productIds,
     brandFilterRows,
   );
 
   const docs = [];
-  for (const line of linesByKey.values()) {
+  for (const line of linesByProductId.values()) {
     const productId = Number(line.productId);
     const brandCategories = brandCategoriesByProductId.get(productId);
     if (!brandCategories) continue;
@@ -96,23 +95,8 @@ async function recordBrandCategoryProductSalesFromOrder(order) {
 }
 
 async function backfillBrandCategoryProductSalesFromOrders() {
-  const existingCount = await BrandCategoryProductSale.countDocuments();
-  if (existingCount > 0) return existingCount;
-
-  const orders = await Order.find({
-    status: { $in: PAID_STATUSES },
-    paidAt: { $ne: null },
-  })
-    .select("id items status paidAt createdAt")
-    .lean();
-
-  let created = 0;
-  for (const order of orders) {
-    const rows = await recordBrandCategoryProductSalesFromOrder(order);
-    created += rows.length;
-  }
-
-  return created;
+  const { ensureSalesStatisticsSynced } = require("./salesOrderSyncService");
+  return ensureSalesStatisticsSynced();
 }
 
 module.exports = {
