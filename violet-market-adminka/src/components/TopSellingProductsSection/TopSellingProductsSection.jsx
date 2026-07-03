@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { fetchTopSellingProductsStatistics } from '../../api/salesStatisticsAdminApi';
 import { useAdminModal } from '../../context/AdminModalContext';
-import { getLocalizedText } from '../../utils/productDisplay';
+import { useAdminToast } from '../../context/AdminToastContext';
+import { buildProductDetailUrl, getLocalizedText } from '../../utils/productDisplay';
 import TopSellingProductListItem from '../TopSellingProductListItem/TopSellingProductListItem';
 import TopSellingProductsPeriodFilter from '../TopSellingProductsPeriodFilter/TopSellingProductsPeriodFilter';
 import './TopSellingProductsSection.css';
 
 export default function TopSellingProductsSection({ pageFilters }) {
   const { openAdminModal } = useAdminModal();
+  const { showSuccess, showError } = useAdminToast();
   const [period, setPeriod] = useState('day');
   const [periodLabel, setPeriodLabel] = useState('Kunlik');
   const [products, setProducts] = useState([]);
@@ -56,6 +58,21 @@ export default function TopSellingProductsSection({ pageFilters }) {
     });
   };
 
+  const handleCopyProductLink = async (product) => {
+    const productId = String(product?.productId || '').trim();
+    if (!productId) return;
+
+    const productUrl = buildProductDetailUrl(productId);
+    if (!productUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(productUrl);
+      showSuccess('Mahsulot havolasi nusxalandi');
+    } catch {
+      showError('Mahsulot havolasini nusxalab bo\'lmadi');
+    }
+  };
+
   return (
     <section className="top-selling-products-section">
       <div className="top-selling-products-section__header">
@@ -93,6 +110,7 @@ export default function TopSellingProductsSection({ pageFilters }) {
               }
               onMenuClose={() => setOpenMenuProductId(null)}
               onSellerClick={() => handleOpenProductSellers(product)}
+              onCopyClick={() => handleCopyProductLink(product)}
             />
           ))
         )}

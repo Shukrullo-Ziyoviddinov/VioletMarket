@@ -8,6 +8,7 @@ export default function TopSellingProductListItem({
   onMenuToggle,
   onMenuClose,
   onSellerClick,
+  onCopyClick,
 }) {
   return (
     <article className="top-selling-products-section__item">
@@ -29,6 +30,7 @@ export default function TopSellingProductListItem({
         onToggle={onMenuToggle}
         onClose={onMenuClose}
         onSellerClick={onSellerClick}
+        onCopyClick={onCopyClick}
       />
     </article>
   );

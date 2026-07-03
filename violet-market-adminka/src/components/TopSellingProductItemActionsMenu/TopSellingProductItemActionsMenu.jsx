@@ -1,10 +1,10 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreOutlined, ShopOutlined } from '@ant-design/icons';
+import { CopyOutlined, MoreOutlined, ShopOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import './TopSellingProductItemActionsMenu.css';
 
-function TopSellingProductItemActionsDropdown({ style, onSellerClick }) {
+function TopSellingProductItemActionsDropdown({ style, onSellerClick, onCopyClick }) {
   return (
     <div className="top-selling-product-item-actions-menu__dropdown" role="menu" style={style}>
       <button
@@ -16,6 +16,15 @@ function TopSellingProductItemActionsDropdown({ style, onSellerClick }) {
         <ShopOutlined aria-hidden="true" />
         <span>Sotuvchi</span>
       </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="top-selling-product-item-actions-menu__item"
+        onClick={onCopyClick}
+      >
+        <CopyOutlined aria-hidden="true" />
+        <span>Nusxalash</span>
+      </button>
     </div>
   );
 }
@@ -25,6 +34,7 @@ export default function TopSellingProductItemActionsMenu({
   onToggle,
   onClose,
   onSellerClick,
+  onCopyClick,
 }) {
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
@@ -89,6 +99,11 @@ export default function TopSellingProductItemActionsMenu({
     onSellerClick?.();
   };
 
+  const handleCopyClick = () => {
+    onClose?.();
+    onCopyClick?.();
+  };
+
   return (
     <div className="top-selling-product-item-actions-menu" ref={rootRef}>
       <Button
@@ -111,6 +126,7 @@ export default function TopSellingProductItemActionsMenu({
             <TopSellingProductItemActionsDropdown
               style={dropdownStyle}
               onSellerClick={handleSellerClick}
+              onCopyClick={handleCopyClick}
             />,
             document.body,
           )
