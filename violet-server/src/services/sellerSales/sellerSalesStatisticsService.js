@@ -187,4 +187,5 @@ async function buildSellerSalesStatisticsPage(sellerId, query = {}) {
 
 module.exports = {
   buildSellerSalesStatisticsPage,
+  buildSellerSalesFilterOptions,
 };

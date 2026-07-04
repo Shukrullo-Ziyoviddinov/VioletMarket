@@ -76,6 +76,18 @@
       "weekly": "Weekly sales",
       "monthly": "Monthly sales"
     },
+    "chart": {
+      "title": "Revenue statistics",
+      "revenue": "Revenue",
+      "loading": "Loading...",
+      "empty": "No chart data for the selected period yet",
+      "noChange": "No change",
+      "granularity": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      }
+    },
     "filters": {
       "day": "Day",
       "week": "Week",

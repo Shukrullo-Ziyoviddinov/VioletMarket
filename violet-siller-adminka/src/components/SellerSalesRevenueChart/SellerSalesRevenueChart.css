@@ -1,0 +1,160 @@
+.seller-sales-revenue-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px 18px;
+  border: 1px solid #e7e9f0;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.seller-sales-revenue-chart__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.seller-sales-revenue-chart__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.seller-sales-revenue-chart__filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seller-sales-revenue-chart__filter-btn {
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.seller-sales-revenue-chart__filter-btn:hover {
+  border-color: #c7cedf;
+}
+
+.seller-sales-revenue-chart__filter-btn--active {
+  border-color: #56337d;
+  background: #56337d;
+  color: #ffffff;
+}
+
+.seller-sales-revenue-chart__canvas {
+  width: 100%;
+  min-height: 360px;
+}
+
+.seller-sales-revenue-chart__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  color: #6b5b7d;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.seller-sales-revenue-chart__tooltip {
+  min-width: 220px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+}
+
+.seller-sales-revenue-chart__tooltip-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.seller-sales-revenue-chart__tooltip-row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.seller-sales-revenue-chart__tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #7b49c8;
+}
+
+.seller-sales-revenue-chart__tooltip-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.seller-sales-revenue-chart__tooltip-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.seller-sales-revenue-chart__tooltip-delta {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.seller-sales-revenue-chart__tooltip-delta--positive {
+  color: #16a34a;
+}
+
+.seller-sales-revenue-chart__tooltip-delta--negative {
+  color: #dc2626;
+}
+
+.seller-sales-revenue-chart__point-label {
+  fill: #374151;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.seller-sales-revenue-chart__canvas .recharts-cartesian-grid-horizontal line:last-child {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .seller-sales-revenue-chart {
+    padding: 16px;
+  }
+
+  .seller-sales-revenue-chart__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seller-sales-revenue-chart__filters {
+    width: 100%;
+  }
+
+  .seller-sales-revenue-chart__filter-btn {
+    flex: 1;
+  }
+
+  .seller-sales-revenue-chart__canvas {
+    min-height: 280px;
+  }
+}

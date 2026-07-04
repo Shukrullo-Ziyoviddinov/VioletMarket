@@ -76,6 +76,18 @@
       "weekly": "Haftalik savdo",
       "monthly": "Oylik savdo"
     },
+    "chart": {
+      "title": "Daromad statistikasi",
+      "revenue": "Daromad",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun grafik ma'lumoti hali yo'q",
+      "noChange": "O'zgarish yo'q",
+      "granularity": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      }
+    },
     "filters": {
       "day": "Kun",
       "week": "Hafta",

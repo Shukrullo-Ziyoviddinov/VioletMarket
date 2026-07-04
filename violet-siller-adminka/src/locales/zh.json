@@ -76,6 +76,18 @@
       "weekly": "周销售",
       "monthly": "月销售"
     },
+    "chart": {
+      "title": "收入统计",
+      "revenue": "收入",
+      "loading": "加载中...",
+      "empty": "所选期间暂无图表数据",
+      "noChange": "无变化",
+      "granularity": {
+        "day": "日",
+        "week": "周",
+        "month": "月"
+      }
+    },
     "filters": {
       "day": "日",
       "week": "周",

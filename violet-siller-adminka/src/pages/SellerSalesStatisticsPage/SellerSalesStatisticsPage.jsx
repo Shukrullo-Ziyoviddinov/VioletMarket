@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Spin, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { fetchSellerSalesStatistics } from '../../api/sellerSalesStatisticsApi';
+import { fetchSellerSalesRevenueChart, fetchSellerSalesStatistics } from '../../api/sellerSalesStatisticsApi';
+import SellerSalesRevenueChart from '../../components/SellerSalesRevenueChart/SellerSalesRevenueChart';
 import SellerSalesStatisticsFilterBar from '../../components/SellerSalesStatisticsFilterBar/SellerSalesStatisticsFilterBar';
 import SellerSalesStatisticsMetrics from '../../components/SellerSalesStatisticsMetrics/SellerSalesStatisticsMetrics';
 import SellerSalesStatisticsTotalRevenue from '../../components/SellerSalesStatisticsTotalRevenue/SellerSalesStatisticsTotalRevenue';
@@ -24,47 +25,88 @@ export default function SellerSalesStatisticsPage() {
   const [filterOptions, setFilterOptions] = useState({ days: [], weeks: [], months: [] });
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [metrics, setMetrics] = useState(EMPTY_METRICS);
+  const [chartGranularity, setChartGranularity] = useState('day');
+  const [chartPoints, setChartPoints] = useState([]);
+  const [chartTone, setChartTone] = useState('neutral');
   const [openFilter, setOpenFilter] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const loadStatistics = useCallback(async (activeFilters) => {
+  const loadChart = useCallback(async (activeFilters, granularity) => {
+    if (!token) return;
+
+    setChartLoading(true);
+    try {
+      const payload = await fetchSellerSalesRevenueChart(token, {
+        ...activeFilters,
+        granularity,
+      });
+      setChartPoints(payload.points || []);
+      setChartTone(payload.overallTone || 'neutral');
+      if (payload.granularity) {
+        setChartGranularity(payload.granularity);
+      }
+    } catch {
+      setChartPoints([]);
+      setChartTone('neutral');
+    } finally {
+      setChartLoading(false);
+    }
+  }, [token]);
+
+  const loadStatistics = useCallback(async (activeFilters, options = {}) => {
     if (!token) {
       setLoading(false);
       return;
     }
 
+    const granularity = options?.granularity || chartGranularity;
+
     setLoading(true);
     setError('');
 
     try {
-      const payload = await fetchSellerSalesStatistics(token, activeFilters);
-      setFilters(payload.filters);
-      setFilterOptions(payload.filterOptions);
-      setTotalRevenue(payload.totalRevenue);
-      setMetrics(payload.metrics || EMPTY_METRICS);
+      const [statsPayload] = await Promise.all([
+        fetchSellerSalesStatistics(token, activeFilters),
+        loadChart(activeFilters, granularity),
+      ]);
+
+      setFilters(statsPayload.filters);
+      setFilterOptions(statsPayload.filterOptions);
+      setTotalRevenue(statsPayload.totalRevenue);
+      setMetrics(statsPayload.metrics || EMPTY_METRICS);
     } catch (err) {
       setTotalRevenue(0);
       setMetrics(EMPTY_METRICS);
+      setChartPoints([]);
       setError(err.message || t('salesStatistics.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [t, token]);
+  }, [chartGranularity, loadChart, t, token]);
 
   useEffect(() => {
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
-      loadStatistics({});
+      loadStatistics({}, { granularity: 'day' });
     }
   }, [loadStatistics]);
 
   const handleFilterChange = useCallback(
     (nextFilters) => {
       setFilters(nextFilters);
-      loadStatistics(nextFilters);
+      loadStatistics(nextFilters, { granularity: chartGranularity });
     },
-    [loadStatistics],
+    [chartGranularity, loadStatistics],
+  );
+
+  const handleChartGranularityChange = useCallback(
+    (nextGranularity) => {
+      setChartGranularity(nextGranularity);
+      loadChart(filters, nextGranularity);
+    },
+    [filters, loadChart],
   );
 
   const hasFilterOptions = filterOptions.days.length > 0
@@ -115,6 +157,14 @@ export default function SellerSalesStatisticsPage() {
             {loading ? <Spin className="seller-sales-statistics-page__spinner" /> : null}
             <SellerSalesStatisticsMetrics metrics={metrics} loading={loading} />
           </div>
+
+          <SellerSalesRevenueChart
+            granularity={chartGranularity}
+            onGranularityChange={handleChartGranularityChange}
+            points={chartPoints}
+            overallTone={chartTone}
+            loading={chartLoading}
+          />
         </>
       )}
     </section>

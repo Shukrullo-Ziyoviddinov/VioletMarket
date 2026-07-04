@@ -47,6 +47,11 @@ router.get(
   sellerSalesStatisticsController.getSellerSalesStatistics,
 );
 router.get(
+  "/seller-auth/sales/revenue-chart",
+  sellerAuthMiddleware,
+  sellerSalesStatisticsController.getSellerSalesRevenueChart,
+);
+router.get(
   "/seller-auth/product-form/options",
   sellerAuthMiddleware,
   sellerProductController.getProductFormOptions,
