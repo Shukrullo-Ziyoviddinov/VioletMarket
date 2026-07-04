@@ -9,22 +9,20 @@ import SellerSalesStatisticsChartLegend, {
 } from '../SellerSalesStatisticsChartLegend/SellerSalesStatisticsChartLegend';
 import SellerSalesStatisticsChartsPeriodFilter from '../SellerSalesStatisticsChartsPeriodFilter/SellerSalesStatisticsChartsPeriodFilter';
 import SellerSalesStatisticsMoreButton from '../SellerSalesStatisticsMoreButton/SellerSalesStatisticsMoreButton';
+import { useSellerStatisticsSubtitle } from '../../hooks/useSellerStatisticsSubtitle';
 import './SellerSalesCountryCategoryStatistics.css';
-
-const PERIOD_LABEL_KEYS = {
-  day: 'salesStatistics.countryStats.periodLabel.day',
-  week: 'salesStatistics.countryStats.periodLabel.week',
-  month: 'salesStatistics.countryStats.periodLabel.month',
-};
 
 export default function SellerSalesCountryCategoryStatistics({ token, pageFilters }) {
   const { t } = useTranslation();
   const [period, setPeriod] = useState('day');
-  const [periodLabel, setPeriodLabel] = useState('');
-  const [scopeLabel, setScopeLabel] = useState('');
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const { displayPeriodLabel, scopeLabel } = useSellerStatisticsSubtitle(
+    period,
+    pageFilters,
+    'salesStatistics.countryStats',
+  );
 
   const loadCountryStats = useCallback(async (activePeriod, filters) => {
     if (!token || (!filters?.day && !filters?.week && !filters?.month)) return;
@@ -36,21 +34,15 @@ export default function SellerSalesCountryCategoryStatistics({ token, pageFilter
         period: activePeriod,
       });
       setCountries(Array.isArray(payload.countries) ? payload.countries : []);
-      setScopeLabel(payload.scopeLabel || '');
       if (payload.period) {
         setPeriod(payload.period);
       }
-      setPeriodLabel(
-        payload.periodLabel
-          || t(PERIOD_LABEL_KEYS[payload.period] || PERIOD_LABEL_KEYS.day),
-      );
     } catch {
       setCountries([]);
-      setScopeLabel('');
     } finally {
       setLoading(false);
     }
-  }, [t, token]);
+  }, [token]);
 
   useEffect(() => {
     loadCountryStats(period, pageFilters);
@@ -79,7 +71,6 @@ export default function SellerSalesCountryCategoryStatistics({ token, pageFilter
 
   const hasData = chartData.length > 0;
   const hasMoreItems = legendItems.length > SELLER_LEGEND_PREVIEW_LIMIT;
-  const displayPeriodLabel = periodLabel || t(PERIOD_LABEL_KEYS[period] || PERIOD_LABEL_KEYS.day);
 
   return (
     <>

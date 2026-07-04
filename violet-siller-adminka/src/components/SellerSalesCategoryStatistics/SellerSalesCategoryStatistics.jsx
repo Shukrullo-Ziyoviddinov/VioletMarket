@@ -9,22 +9,20 @@ import SellerSalesStatisticsChartLegend, {
 } from '../SellerSalesStatisticsChartLegend/SellerSalesStatisticsChartLegend';
 import SellerSalesStatisticsChartsPeriodFilter from '../SellerSalesStatisticsChartsPeriodFilter/SellerSalesStatisticsChartsPeriodFilter';
 import SellerSalesStatisticsMoreButton from '../SellerSalesStatisticsMoreButton/SellerSalesStatisticsMoreButton';
+import { useSellerStatisticsSubtitle } from '../../hooks/useSellerStatisticsSubtitle';
 import './SellerSalesCategoryStatistics.css';
-
-const PERIOD_LABEL_KEYS = {
-  day: 'salesStatistics.categoryStats.periodLabel.day',
-  week: 'salesStatistics.categoryStats.periodLabel.week',
-  month: 'salesStatistics.categoryStats.periodLabel.month',
-};
 
 export default function SellerSalesCategoryStatistics({ token, pageFilters }) {
   const { t } = useTranslation();
   const [period, setPeriod] = useState('day');
-  const [periodLabel, setPeriodLabel] = useState('');
-  const [scopeLabel, setScopeLabel] = useState('');
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const { displayPeriodLabel, scopeLabel } = useSellerStatisticsSubtitle(
+    period,
+    pageFilters,
+    'salesStatistics.categoryStats',
+  );
 
   const loadCategoryStats = useCallback(async (activePeriod, filters) => {
     if (!token || (!filters?.day && !filters?.week && !filters?.month)) return;
@@ -36,21 +34,15 @@ export default function SellerSalesCategoryStatistics({ token, pageFilters }) {
         period: activePeriod,
       });
       setCategories(Array.isArray(payload.categories) ? payload.categories : []);
-      setScopeLabel(payload.scopeLabel || '');
       if (payload.period) {
         setPeriod(payload.period);
       }
-      setPeriodLabel(
-        payload.periodLabel
-          || t(PERIOD_LABEL_KEYS[payload.period] || PERIOD_LABEL_KEYS.day),
-      );
     } catch {
       setCategories([]);
-      setScopeLabel('');
     } finally {
       setLoading(false);
     }
-  }, [t, token]);
+  }, [token]);
 
   useEffect(() => {
     loadCategoryStats(period, pageFilters);
@@ -79,7 +71,6 @@ export default function SellerSalesCategoryStatistics({ token, pageFilters }) {
 
   const hasData = chartData.length > 0;
   const hasMoreItems = legendItems.length > SELLER_LEGEND_PREVIEW_LIMIT;
-  const displayPeriodLabel = periodLabel || t(PERIOD_LABEL_KEYS[period] || PERIOD_LABEL_KEYS.day);
 
   return (
     <>

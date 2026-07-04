@@ -9,22 +9,20 @@ import SellerSalesStatisticsChartLegend, {
 } from '../SellerSalesStatisticsChartLegend/SellerSalesStatisticsChartLegend';
 import SellerSalesStatisticsChartsPeriodFilter from '../SellerSalesStatisticsChartsPeriodFilter/SellerSalesStatisticsChartsPeriodFilter';
 import SellerSalesStatisticsMoreButton from '../SellerSalesStatisticsMoreButton/SellerSalesStatisticsMoreButton';
+import { useSellerStatisticsSubtitle } from '../../hooks/useSellerStatisticsSubtitle';
 import './SellerSalesBrandCategoryStatistics.css';
-
-const PERIOD_LABEL_KEYS = {
-  day: 'salesStatistics.brandStats.periodLabel.day',
-  week: 'salesStatistics.brandStats.periodLabel.week',
-  month: 'salesStatistics.brandStats.periodLabel.month',
-};
 
 export default function SellerSalesBrandCategoryStatistics({ token, pageFilters }) {
   const { t } = useTranslation();
   const [period, setPeriod] = useState('day');
-  const [periodLabel, setPeriodLabel] = useState('');
-  const [scopeLabel, setScopeLabel] = useState('');
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const { displayPeriodLabel, scopeLabel } = useSellerStatisticsSubtitle(
+    period,
+    pageFilters,
+    'salesStatistics.brandStats',
+  );
 
   const loadBrandStats = useCallback(async (activePeriod, filters) => {
     if (!token || (!filters?.day && !filters?.week && !filters?.month)) return;
@@ -36,21 +34,15 @@ export default function SellerSalesBrandCategoryStatistics({ token, pageFilters 
         period: activePeriod,
       });
       setBrands(Array.isArray(payload.brands) ? payload.brands : []);
-      setScopeLabel(payload.scopeLabel || '');
       if (payload.period) {
         setPeriod(payload.period);
       }
-      setPeriodLabel(
-        payload.periodLabel
-          || t(PERIOD_LABEL_KEYS[payload.period] || PERIOD_LABEL_KEYS.day),
-      );
     } catch {
       setBrands([]);
-      setScopeLabel('');
     } finally {
       setLoading(false);
     }
-  }, [t, token]);
+  }, [token]);
 
   useEffect(() => {
     loadBrandStats(period, pageFilters);
@@ -79,7 +71,6 @@ export default function SellerSalesBrandCategoryStatistics({ token, pageFilters 
 
   const hasData = chartData.length > 0;
   const hasMoreItems = legendItems.length > SELLER_LEGEND_PREVIEW_LIMIT;
-  const displayPeriodLabel = periodLabel || t(PERIOD_LABEL_KEYS[period] || PERIOD_LABEL_KEYS.day);
 
   return (
     <>
