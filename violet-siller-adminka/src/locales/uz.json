@@ -3,7 +3,8 @@
     "switch": "Tilni o'zgartirish"
   },
   "sidebar": {
-    "home": "Bosh sahifa"
+    "home": "Bosh sahifa",
+    "salesStatistics": "Sotuv va statistika"
   },
   "marketInfo": {
     "title": "Market haqida",
@@ -64,5 +65,17 @@
       "close": "Yopish"
     },
     "composerPlaceholder": "Xabar yozing..."
+  },
+  "salesStatistics": {
+    "title": "Sotuv va statistika",
+    "subtitle": "O'z do'koningiz bo'yicha sotuv natijalari va statistikalar.",
+    "totalRevenue": "Umumiy daromad",
+    "loadError": "Sotuv statistikasini yuklashda xatolik yuz berdi",
+    "filters": {
+      "day": "Kun",
+      "week": "Hafta",
+      "month": "Oy",
+      "empty": "Ma'lumot topilmadi"
+    }
   }
 }

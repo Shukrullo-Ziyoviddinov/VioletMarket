@@ -1,0 +1,38 @@
+.seller-sales-statistics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.seller-sales-statistics-page__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.seller-sales-statistics-page__title {
+  margin: 0 !important;
+}
+
+.seller-sales-statistics-page__subtitle {
+  display: block;
+  margin-top: 4px;
+}
+
+.seller-sales-statistics-page__alert {
+  margin: 0;
+}
+
+.seller-sales-statistics-page__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .seller-sales-statistics-page__toolbar {
+    flex-direction: column;
+  }
+}

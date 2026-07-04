@@ -4,6 +4,7 @@ const sellerProductController = require("../../controllers/sellerProductControll
 const sellerUploadController = require("../../controllers/sellerUploadController");
 const { sellerAuthMiddleware } = require("../../middleware/sellerAuthMiddleware");
 const sellerMessageChatController = require("../../controllers/messageChat/sellerMessageChatController");
+const sellerSalesStatisticsController = require("../../controllers/sellerSalesStatisticsController");
 
 const router = express.Router();
 
@@ -40,6 +41,11 @@ router.post("/seller-auth/register/submit-application", controller.submitApplica
 router.get("/seller-auth/application-status", controller.getApplicationStatus);
 router.post("/seller-auth/login", controller.loginSeller);
 router.get("/seller-auth/me", sellerAuthMiddleware, controller.getCabinetProfile);
+router.get(
+  "/seller-auth/sales/statistics",
+  sellerAuthMiddleware,
+  sellerSalesStatisticsController.getSellerSalesStatistics,
+);
 router.get(
   "/seller-auth/product-form/options",
   sellerAuthMiddleware,

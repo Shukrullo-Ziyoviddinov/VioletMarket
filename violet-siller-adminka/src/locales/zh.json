@@ -3,7 +3,8 @@
     "switch": "切换语言"
   },
   "sidebar": {
-    "home": "首页"
+    "home": "首页",
+    "salesStatistics": "销售与统计"
   },
   "marketInfo": {
     "title": "关于市场",
@@ -64,5 +65,17 @@
       "close": "关闭"
     },
     "composerPlaceholder": "输入消息..."
+  },
+  "salesStatistics": {
+    "title": "销售与统计",
+    "subtitle": "仅显示您店铺的销售结果和统计数据。",
+    "totalRevenue": "总收入",
+    "loadError": "加载销售统计失败",
+    "filters": {
+      "day": "日",
+      "week": "周",
+      "month": "月",
+      "empty": "未找到数据"
+    }
   }
 }

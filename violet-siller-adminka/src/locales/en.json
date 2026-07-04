@@ -3,7 +3,8 @@
     "switch": "Change language"
   },
   "sidebar": {
-    "home": "Home"
+    "home": "Home",
+    "salesStatistics": "Sales & statistics"
   },
   "marketInfo": {
     "title": "About the market",
@@ -64,5 +65,17 @@
       "close": "Close"
     },
     "composerPlaceholder": "Write a message..."
+  },
+  "salesStatistics": {
+    "title": "Sales & statistics",
+    "subtitle": "Sales results and statistics for your shop only.",
+    "totalRevenue": "Total revenue",
+    "loadError": "Failed to load sales statistics",
+    "filters": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "empty": "No data found"
+    }
   }
 }
