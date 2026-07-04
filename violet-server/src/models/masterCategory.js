@@ -9,10 +9,20 @@ const i18nNameSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const sellerDisplayNameSchema = new mongoose.Schema(
+  {
+    uz: { type: String, trim: true, default: "" },
+    en: { type: String, trim: true, default: "" },
+    zh: { type: String, trim: true, default: "" },
+  },
+  { _id: false }
+);
+
 const masterCategorySchema = new mongoose.Schema(
   {
     id: { type: Number, required: true, unique: true, index: true },
     name: { type: i18nNameSchema, required: true },
+    displayName: { type: sellerDisplayNameSchema, default: () => ({}) },
   },
   {
     collection: "master_categories",

@@ -1,11 +1,21 @@
 const mongoose = require("mongoose");
 const { assignAutoNumberId } = require("./autoIncrement");
 
+const sellerDisplayNameSchema = new mongoose.Schema(
+  {
+    uz: { type: String, trim: true, default: "" },
+    en: { type: String, trim: true, default: "" },
+    zh: { type: String, trim: true, default: "" },
+  },
+  { _id: false },
+);
+
 const productTypeSchema = new mongoose.Schema(
   {
     id: { type: Number, required: true, unique: true, index: true },
     code: { type: String, required: true, unique: true, trim: true, index: true },
     title: { type: String, required: true, trim: true },
+    displayName: { type: sellerDisplayNameSchema, default: () => ({}) },
     group: { type: String, default: "", trim: true },
     sortOrder: { type: Number, default: 0, index: true },
     active: { type: Boolean, default: true, index: true },

@@ -1,6 +1,7 @@
 const { Product } = require("../models");
 const { ProductType } = require("../models/productType");
 const { HttpError } = require("../utils/httpError");
+const { normalizeProductTypeDisplayName } = require("../utils/masterCategoryDisplay");
 
 const PRODUCT_TYPE_LEGACY_ALIASES = {
   "yozgi-keyim": "yozgi_keyim",
@@ -122,6 +123,10 @@ async function normalizeProductTypeValue(rawValue) {
   return String(row.code).trim();
 }
 
+function normalizeDisplayNamePayload(rawDisplayName, title) {
+  return normalizeProductTypeDisplayName(rawDisplayName, title);
+}
+
 async function createProductType(payload) {
   const code = normalizeCode(payload?.code);
   const duplicate = await ProductType.findOne({ code }).lean();
@@ -129,10 +134,12 @@ async function createProductType(payload) {
     throw new HttpError(409, "Bunday code allaqachon mavjud", "CONFLICT");
   }
 
+  const title = normalizeTitle(payload?.title);
   const defaultSortOrder = await getNextSortOrder();
   const row = new ProductType({
     code,
-    title: normalizeTitle(payload?.title),
+    title,
+    displayName: normalizeDisplayNamePayload(payload?.displayName, title),
     group: normalizeGroup(payload?.group),
     sortOrder: toSortOrder(payload?.sortOrder, defaultSortOrder),
     active: normalizeActive(payload?.active, true),
@@ -162,6 +169,16 @@ async function updateProductType(productTypeId, payload) {
 
   row.code = nextCode;
   if (payload?.title !== undefined) row.title = normalizeTitle(payload.title);
+  if (payload?.displayName !== undefined || payload?.title !== undefined) {
+    row.displayName = normalizeDisplayNamePayload(
+      {
+        uz: payload?.displayName?.uz ?? row?.displayName?.uz,
+        en: payload?.displayName?.en ?? row?.displayName?.en,
+        zh: payload?.displayName?.zh ?? row?.displayName?.zh,
+      },
+      row.title,
+    );
+  }
   if (payload?.group !== undefined) row.group = normalizeGroup(payload.group);
   if (payload?.sortOrder !== undefined) row.sortOrder = toSortOrder(payload.sortOrder, row.sortOrder);
   if (payload?.active !== undefined) row.active = normalizeActive(payload.active, row.active);

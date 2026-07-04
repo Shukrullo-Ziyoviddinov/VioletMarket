@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatSellerStatisticsScopeLabel } from './sellerStatisticsScopeLabel';
+import { formatSellerStatisticsScopeLabel } from '../utils/sellerStatisticsScopeLabel';
 
 export function useSellerStatisticsSubtitle(period, pageFilters, statsNamespace) {
   const { t, i18n } = useTranslation();

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
-import { masterCategoryLocaleKey } from '../../utils/masterCategoryLocaleKey';
+import { getMasterCategoryDisplayLabel, getProductTypeDisplayLabel } from '../../utils/masterCategoryDisplay';
 import './AddProductClassificationFields.css';
 
 function formatFilterLabel(value) {
@@ -51,42 +51,35 @@ export default function AddProductClassificationFields({
   shippingCountries,
   onChange,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [openKey, setOpenKey] = useState('');
 
   const masterCategoryOptions = useMemo(
     () =>
       (Array.isArray(masterCategories) ? masterCategories : []).map((row) => {
         const categoryId = String(row.id);
-        const fallbackLabel = row?.name?.uz || categoryId;
-        const localeKey = masterCategoryLocaleKey(row?.name?.uz);
 
         return {
           value: categoryId,
-          label: t(`addProduct.classification.masterCategoryOptions.${localeKey}`, {
-            defaultValue: fallbackLabel,
-          }),
+          label: getMasterCategoryDisplayLabel(row, i18n.language),
           subLabel: row?.name?.ru || '',
         };
       }),
-    [masterCategories, t],
+    [masterCategories, i18n.language],
   );
 
   const productTypeOptions = useMemo(
     () =>
       (Array.isArray(productTypes) ? productTypes : []).map((row) => {
         const code = String(row.code || '');
-        const fallbackLabel = row.title || code;
 
         return {
           value: code,
-          label: t(`addProduct.classification.productTypeOptions.${code}`, {
-            defaultValue: fallbackLabel,
-          }),
+          label: getProductTypeDisplayLabel(row, i18n.language),
           subLabel: row.group || '',
         };
       }),
-    [productTypes, t],
+    [productTypes, i18n.language],
   );
 
   const shippingCountryOptions = useMemo(

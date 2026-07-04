@@ -10,6 +10,9 @@ import {
 const EMPTY_DRAFT = {
   code: '',
   title: '',
+  displayNameUz: '',
+  displayNameEn: '',
+  displayNameZh: '',
   group: '',
   sortOrder: '',
   active: true,
@@ -48,6 +51,11 @@ function normalizePayload(draft) {
   const payload = {
     code,
     title,
+    displayName: {
+      uz: String(draft?.displayNameUz || '').trim(),
+      en: String(draft?.displayNameEn || '').trim(),
+      zh: String(draft?.displayNameZh || '').trim(),
+    },
     group,
     active: Boolean(draft?.active),
   };
@@ -60,6 +68,9 @@ function buildDraft(row) {
   return {
     code: row?.code || '',
     title: row?.title || '',
+    displayNameUz: row?.displayName?.uz || row?.title || '',
+    displayNameEn: row?.displayName?.en || '',
+    displayNameZh: row?.displayName?.zh || '',
     group: row?.group || '',
     sortOrder: row?.sortOrder ?? '',
     active: row?.active !== false,
@@ -142,6 +153,38 @@ function ProductTypeEditor({
           <span className="global-section-modal__hint">
             Belgini olib tashlasangiz, bu tur yashirin bo‘ladi va yangi mahsulotlarga tanlab bo‘lmaydi.
           </span>
+        </label>
+      </div>
+      <p className="global-section-modal__meta">
+        Seller admin UI matni (uz / en / zh). Bo&apos;sh qoldirilsa, en va zh uchun uz ishlatiladi.
+      </p>
+      <div className="global-section-modal__grid global-section-modal__grid--3">
+        <label className="global-section-modal__field">
+          <span className="global-section-modal__label">UI matni uz</span>
+          <input
+            className="global-section-modal__input"
+            placeholder="Masalan: Shimlar"
+            value={draft.displayNameUz}
+            onChange={(e) => onChange('displayNameUz', e.target.value)}
+          />
+        </label>
+        <label className="global-section-modal__field">
+          <span className="global-section-modal__label">UI matni en</span>
+          <input
+            className="global-section-modal__input"
+            placeholder="For example: Pants"
+            value={draft.displayNameEn}
+            onChange={(e) => onChange('displayNameEn', e.target.value)}
+          />
+        </label>
+        <label className="global-section-modal__field">
+          <span className="global-section-modal__label">UI matni zh</span>
+          <input
+            className="global-section-modal__input"
+            placeholder="例如：裤子"
+            value={draft.displayNameZh}
+            onChange={(e) => onChange('displayNameZh', e.target.value)}
+          />
         </label>
       </div>
       <div className="global-section-modal__actions">
@@ -281,6 +324,13 @@ export default function ProductTypeForm({ visible }) {
               <div className="global-section-modal__row-between">
                 <div>
                   <div className="global-section-modal__saved-name">{row.title}</div>
+                  <div className="global-section-modal__meta">
+                    UI: {row?.displayName?.uz || row?.title || '-'}
+                    {' / '}
+                    {row?.displayName?.en || row?.displayName?.uz || row?.title || '-'}
+                    {' / '}
+                    {row?.displayName?.zh || row?.displayName?.uz || row?.title || '-'}
+                  </div>
                   <div className="global-section-modal__meta">
                     Tizim kodi: {row.code}
                     {row.group ? ` | Guruh: ${row.group}` : ''} | Holat:{' '}

@@ -1,9 +1,11 @@
 const { SellerProductSale } = require("../../models/sellerProductSale");
 const { Product } = require("../../models/product");
+const { MasterCategory } = require("../../models/masterCategory");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { resolveSelectedFilters } = require("../adminSales/salesFilterOptionsService");
 const { buildSellerSalesFilterOptions } = require("./sellerSalesStatisticsService");
 const { ensureSalesStatisticsSynced } = require("../../productManagement/salesOrderSyncService");
+const { normalizeMasterCategoryDisplayName } = require("../../utils/masterCategoryDisplay");
 const {
   addDaysToDateKey,
   getIsoWeekStart,
@@ -119,17 +121,45 @@ function buildScopeLabel(period, filters) {
   return formatDayLabel(filters.day);
 }
 
-function buildCategoryRows(rows, totalQuantity) {
+function buildCategoryRows(rows, totalQuantity, masterCategoryByName) {
   return rows
-    .map((row, index) => ({
-      category: String(row._id || "").trim(),
-      quantity: toNumber(row.totalQuantity, 0),
-      percentage: totalQuantity > 0
-        ? Math.round((toNumber(row.totalQuantity, 0) / totalQuantity) * 1000) / 10
-        : 0,
-      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-    }))
+    .map((row, index) => {
+      const category = String(row._id || "").trim();
+      const masterMeta = masterCategoryByName.get(category);
+      const displayName = masterMeta?.displayName
+        || normalizeMasterCategoryDisplayName(null, { uz: category });
+
+      return {
+        category,
+        displayName,
+        masterCategoryId: masterMeta?.id ?? null,
+        quantity: toNumber(row.totalQuantity, 0),
+        percentage: totalQuantity > 0
+          ? Math.round((toNumber(row.totalQuantity, 0) / totalQuantity) * 1000) / 10
+          : 0,
+        color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+      };
+    })
     .filter((item) => item.category && item.quantity > 0);
+}
+
+async function loadMasterCategoryLookupByUzName() {
+  const rows = await MasterCategory.find()
+    .select({ id: 1, name: 1, displayName: 1 })
+    .lean();
+
+  const masterCategoryByName = new Map();
+  for (const row of rows) {
+    const uzName = String(row?.name?.uz || "").trim();
+    if (!uzName) continue;
+
+    masterCategoryByName.set(uzName, {
+      id: row.id,
+      displayName: normalizeMasterCategoryDisplayName(row.displayName, row.name),
+    });
+  }
+
+  return masterCategoryByName;
 }
 
 async function buildSellerCategorySalesStatistics(sellerId, query = {}) {
@@ -182,13 +212,15 @@ async function buildSellerCategorySalesStatistics(sellerId, query = {}) {
     0,
   );
 
+  const masterCategoryByName = await loadMasterCategoryLookupByUzName();
+
   return {
     period,
     periodLabel: PERIOD_LABELS[period] || PERIOD_LABELS.day,
     scopeLabel: buildScopeLabel(period, filters),
     filters,
     totalQuantity,
-    categories: buildCategoryRows(groupedRows, totalQuantity),
+    categories: buildCategoryRows(groupedRows, totalQuantity, masterCategoryByName),
   };
 }
 

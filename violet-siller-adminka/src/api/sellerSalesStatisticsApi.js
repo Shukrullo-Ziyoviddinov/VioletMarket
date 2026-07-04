@@ -139,8 +139,18 @@ export async function fetchSellerTopSellingProducts(token, filters = {}) {
 }
 
 function normalizeCategoryStat(row) {
+  const displayName = row?.displayName && typeof row.displayName === 'object'
+    ? {
+        uz: String(row.displayName.uz || '').trim(),
+        en: String(row.displayName.en || '').trim(),
+        zh: String(row.displayName.zh || '').trim(),
+      }
+    : { uz: '', en: '', zh: '' };
+
   return {
     category: String(row?.category || ''),
+    displayName,
+    masterCategoryId: row?.masterCategoryId ?? null,
     quantity: Number(row?.quantity) || 0,
     percentage: Number(row?.percentage) || 0,
     color: String(row?.color || '#3b82f6'),

@@ -10,10 +10,11 @@ import SellerSalesStatisticsChartLegend, {
 import SellerSalesStatisticsChartsPeriodFilter from '../SellerSalesStatisticsChartsPeriodFilter/SellerSalesStatisticsChartsPeriodFilter';
 import SellerSalesStatisticsMoreButton from '../SellerSalesStatisticsMoreButton/SellerSalesStatisticsMoreButton';
 import { useSellerStatisticsSubtitle } from '../../hooks/useSellerStatisticsSubtitle';
+import { getMasterCategoryDisplayLabelFromStat } from '../../utils/masterCategoryDisplay';
 import './SellerSalesCategoryStatistics.css';
 
 export default function SellerSalesCategoryStatistics({ token, pageFilters }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [period, setPeriod] = useState('day');
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -52,21 +53,21 @@ export default function SellerSalesCategoryStatistics({ token, pageFilters }) {
     () =>
       categories.map((item) => ({
         ...item,
-        name: item.category,
+        name: getMasterCategoryDisplayLabelFromStat(item, i18n.language),
         value: item.quantity,
       })),
-    [categories],
+    [categories, i18n.language],
   );
 
   const legendItems = useMemo(
     () =>
       chartData.map((item) => ({
         id: item.category,
-        label: item.category,
+        label: getMasterCategoryDisplayLabelFromStat(item, i18n.language),
         color: item.color,
         percentage: item.percentage,
       })),
-    [chartData],
+    [chartData, i18n.language],
   );
 
   const hasData = chartData.length > 0;

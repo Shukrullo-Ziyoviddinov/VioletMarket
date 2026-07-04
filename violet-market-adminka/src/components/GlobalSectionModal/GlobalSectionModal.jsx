@@ -1081,7 +1081,13 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
   const [filterDraft, setFilterDraft] = useState(buildDefaultFilterValueDraft());
   const [editingFilterId, setEditingFilterId] = useState(null);
   const [editingFilterDraft, setEditingFilterDraft] = useState(null);
-  const [masterDraft, setMasterDraft] = useState({ nameUz: '', nameRu: '' });
+  const [masterDraft, setMasterDraft] = useState({
+    nameUz: '',
+    nameRu: '',
+    displayNameUz: '',
+    displayNameEn: '',
+    displayNameZh: '',
+  });
   const [editingMasterId, setEditingMasterId] = useState(null);
   const [editingMasterDraft, setEditingMasterDraft] = useState(null);
 
@@ -1137,11 +1143,19 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
       uz: draft.nameUz.trim(),
       ru: draft.nameRu.trim(),
     },
+    displayName: {
+      uz: draft.displayNameUz.trim(),
+      en: draft.displayNameEn.trim(),
+      zh: draft.displayNameZh.trim(),
+    },
   });
 
   const validateMasterPayload = (payload) => {
     if (!payload.name.uz || !payload.name.ru) {
       return 'Master category: name.uz va name.ru majburiy';
+    }
+    if (!payload.displayName.uz) {
+      return 'Master category: UI matni (uz) majburiy';
     }
     return '';
   };
@@ -1157,7 +1171,13 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
     setError('');
     try {
       await createAdminMasterCategory(payload);
-      setMasterDraft({ nameUz: '', nameRu: '' });
+      setMasterDraft({
+        nameUz: '',
+        nameRu: '',
+        displayNameUz: '',
+        displayNameEn: '',
+        displayNameZh: '',
+      });
       await loadCategories();
     } catch (err) {
       setError(err.message || "Master category qo'shib bo'lmadi");
@@ -1171,6 +1191,9 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
     setEditingMasterDraft({
       nameUz: item?.name?.uz || '',
       nameRu: item?.name?.ru || '',
+      displayNameUz: item?.displayName?.uz || item?.name?.uz || '',
+      displayNameEn: item?.displayName?.en || '',
+      displayNameZh: item?.displayName?.zh || '',
     });
     setError('');
   };
@@ -1513,6 +1536,41 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
             />
           </label>
         </div>
+        <p className="global-section-modal__meta">
+          Seller admin UI matni (uz / en / zh). Bo&apos;sh qoldirilsa, en va zh uchun uz ishlatiladi.
+        </p>
+        <div className="global-section-modal__grid global-section-modal__grid--3">
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">UI matni uz</span>
+            <input
+              className="global-section-modal__input"
+              value={masterDraft.displayNameUz}
+              onChange={(e) =>
+                setMasterDraft((prev) => ({ ...prev, displayNameUz: e.target.value }))
+              }
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">UI matni en</span>
+            <input
+              className="global-section-modal__input"
+              value={masterDraft.displayNameEn}
+              onChange={(e) =>
+                setMasterDraft((prev) => ({ ...prev, displayNameEn: e.target.value }))
+              }
+            />
+          </label>
+          <label className="global-section-modal__field">
+            <span className="global-section-modal__label">UI matni zh</span>
+            <input
+              className="global-section-modal__input"
+              value={masterDraft.displayNameZh}
+              onChange={(e) =>
+                setMasterDraft((prev) => ({ ...prev, displayNameZh: e.target.value }))
+              }
+            />
+          </label>
+        </div>
         <div className="global-section-modal__actions">
           <button
             type="button"
@@ -1554,6 +1612,44 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
                       />
                     </label>
                   </div>
+                  <div className="global-section-modal__grid global-section-modal__grid--3">
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">UI matni uz</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingMasterDraft.displayNameUz}
+                        onChange={(e) =>
+                          setEditingMasterDraft((prev) =>
+                            prev ? { ...prev, displayNameUz: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">UI matni en</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingMasterDraft.displayNameEn}
+                        onChange={(e) =>
+                          setEditingMasterDraft((prev) =>
+                            prev ? { ...prev, displayNameEn: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="global-section-modal__field">
+                      <span className="global-section-modal__label">UI matni zh</span>
+                      <input
+                        className="global-section-modal__input"
+                        value={editingMasterDraft.displayNameZh}
+                        onChange={(e) =>
+                          setEditingMasterDraft((prev) =>
+                            prev ? { ...prev, displayNameZh: e.target.value } : prev,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
                   <div className="global-section-modal__saved-actions global-section-modal__saved-actions--end">
                     <button
                       type="button"
@@ -1577,6 +1673,13 @@ function BrandCountryCategoriesForm({ visible, mode = 'brand-country-categories'
                   <div>
                     <div className="global-section-modal__saved-name">
                       {item?.name?.uz || '-'} / {item?.name?.ru || '-'}
+                    </div>
+                    <div className="global-section-modal__meta">
+                      UI: {item?.displayName?.uz || item?.name?.uz || '-'}
+                      {' / '}
+                      {item?.displayName?.en || item?.displayName?.uz || item?.name?.uz || '-'}
+                      {' / '}
+                      {item?.displayName?.zh || item?.displayName?.uz || item?.name?.uz || '-'}
                     </div>
                     <div className="global-section-modal__meta">id: {item.id}</div>
                   </div>

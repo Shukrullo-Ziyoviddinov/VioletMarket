@@ -7,6 +7,7 @@ const {
   NavbarSection,
 } = require("../models");
 const { HttpError } = require("../utils/httpError");
+const { normalizeMasterCategoryDisplayName } = require("../utils/masterCategoryDisplay");
 
 function toInt(value, label) {
   const n = Number(value);
@@ -112,7 +113,16 @@ function normalizeMasterCategoryPayload(raw) {
   if (!uz || !ru) {
     throw new HttpError(400, "name.uz va name.ru to'ldirilishi shart", "VALIDATION_ERROR");
   }
-  return { name: { uz, ru } };
+
+  const displayName = normalizeMasterCategoryDisplayName(raw?.displayName, { uz, ru });
+  if (!displayName.uz) {
+    throw new HttpError(400, "displayName.uz to'ldirilishi shart", "VALIDATION_ERROR");
+  }
+
+  return {
+    name: { uz, ru },
+    displayName,
+  };
 }
 
 function stripMongoMeta(doc) {
@@ -283,9 +293,15 @@ async function updateMasterCategory(masterCategoryId, payload) {
       uz: payload?.name?.uz ?? row?.name?.uz,
       ru: payload?.name?.ru ?? row?.name?.ru,
     },
+    displayName: {
+      uz: payload?.displayName?.uz ?? row?.displayName?.uz,
+      en: payload?.displayName?.en ?? row?.displayName?.en,
+      zh: payload?.displayName?.zh ?? row?.displayName?.zh,
+    },
   };
   const normalized = normalizeMasterCategoryPayload(merged);
   row.name = normalized.name;
+  row.displayName = normalized.displayName;
   await row.save();
   return stripMongoMeta(row);
 }

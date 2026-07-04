@@ -7,6 +7,10 @@ const {
   FLASH_SECTION_CATEGORY_NAMES,
   FLASH_SECTION_CATEGORY_LABELS,
 } = require("../adminFlashCategory/adminFlashCategoryConstants");
+const {
+  normalizeMasterCategoryDisplayName,
+  normalizeProductTypeDisplayName,
+} = require("../../utils/masterCategoryDisplay");
 
 async function listActiveShippingCountriesForSeller() {
   const rows = await ShippingCountry.find({ active: { $ne: false } })
@@ -37,12 +41,13 @@ async function listBrandCountryFilterValuesForSeller() {
 async function listMasterCategoriesForSeller() {
   const rows = await MasterCategory.find()
     .sort({ id: 1 })
-    .select({ id: 1, name: 1 })
+    .select({ id: 1, name: 1, displayName: 1 })
     .lean();
 
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
+    displayName: normalizeMasterCategoryDisplayName(row.displayName, row.name),
   }));
 }
 
@@ -99,6 +104,7 @@ async function getSellerProductFormOptions() {
       code: String(row.code || "").trim(),
       title: String(row.title || "").trim(),
       group: String(row.group || "").trim(),
+      displayName: normalizeProductTypeDisplayName(row.displayName, row.title),
     })),
     filterValues,
     masterCategories,
