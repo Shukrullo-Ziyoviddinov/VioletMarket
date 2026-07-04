@@ -71,6 +71,11 @@
     "subtitle": "Sales results and statistics for your shop only.",
     "totalRevenue": "Total revenue",
     "loadError": "Failed to load sales statistics",
+    "metrics": {
+      "daily": "Daily sales",
+      "weekly": "Weekly sales",
+      "monthly": "Monthly sales"
+    },
     "filters": {
       "day": "Day",
       "week": "Week",

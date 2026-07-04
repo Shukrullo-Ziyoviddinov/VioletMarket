@@ -13,6 +13,14 @@ async function parseJson(res) {
   return data;
 }
 
+function normalizeMetric(metric) {
+  return {
+    value: Number(metric?.value) || 0,
+    growthFormatted: String(metric?.growthFormatted || '0%'),
+    tone: String(metric?.tone || 'neutral'),
+  };
+}
+
 export async function fetchSellerSalesStatistics(token, filters = {}) {
   const params = new URLSearchParams();
   if (filters?.day) params.set('day', String(filters.day));
@@ -44,5 +52,10 @@ export async function fetchSellerSalesStatistics(token, filters = {}) {
       months: Array.isArray(data?.filterOptions?.months) ? data.filterOptions.months : [],
     },
     totalRevenue: Number(data?.totalRevenue) || 0,
+    metrics: {
+      daily: normalizeMetric(data?.metrics?.daily),
+      weekly: normalizeMetric(data?.metrics?.weekly),
+      monthly: normalizeMetric(data?.metrics?.monthly),
+    },
   };
 }

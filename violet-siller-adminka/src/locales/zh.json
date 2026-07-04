@@ -71,6 +71,11 @@
     "subtitle": "仅显示您店铺的销售结果和统计数据。",
     "totalRevenue": "总收入",
     "loadError": "加载销售统计失败",
+    "metrics": {
+      "daily": "日销售",
+      "weekly": "周销售",
+      "monthly": "月销售"
+    },
     "filters": {
       "day": "日",
       "week": "周",

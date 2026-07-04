@@ -71,6 +71,11 @@
     "subtitle": "O'z do'koningiz bo'yicha sotuv natijalari va statistikalar.",
     "totalRevenue": "Umumiy daromad",
     "loadError": "Sotuv statistikasini yuklashda xatolik yuz berdi",
+    "metrics": {
+      "daily": "Kunlik savdo",
+      "weekly": "Haftalik savdo",
+      "monthly": "Oylik savdo"
+    },
     "filters": {
       "day": "Kun",
       "week": "Hafta",

@@ -24,11 +24,41 @@
   margin: 0;
 }
 
+.seller-sales-statistics-page__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}
+
 .seller-sales-statistics-page__toolbar {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.seller-sales-statistics-page__loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.seller-sales-statistics-page__metrics-wrap {
+  position: relative;
+}
+
+.seller-sales-statistics-page__spinner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
 }
 
 @media (max-width: 900px) {

@@ -1,0 +1,119 @@
+.seller-sales-statistics-metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 148px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e7e9f0;
+}
+
+.seller-sales-statistics-metric-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seller-sales-statistics-metric-card__title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.seller-sales-statistics-metric-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.seller-sales-statistics-metric-card__badge--positive {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.seller-sales-statistics-metric-card__badge--negative {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.seller-sales-statistics-metric-card__badge--neutral {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.seller-sales-statistics-metric-card__body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+}
+
+.seller-sales-statistics-metric-card__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.seller-sales-statistics-metric-card__value {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #111827;
+  flex-shrink: 0;
+}
+
+.seller-sales-statistics-metric-card__inline-growth {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.seller-sales-statistics-metric-card__inline-growth--positive {
+  color: #16a34a;
+}
+
+.seller-sales-statistics-metric-card__inline-growth--negative {
+  color: #dc2626;
+}
+
+.seller-sales-statistics-metric-card__inline-growth--neutral {
+  color: #2563eb;
+}
+
+.seller-sales-statistics-metric-card__chart {
+  width: 118px;
+  height: 48px;
+  flex: 1;
+  max-width: 118px;
+}
+
+.seller-sales-statistics-metric-card__chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .seller-sales-statistics-metric-card__value {
+    font-size: 24px;
+  }
+
+  .seller-sales-statistics-metric-card__chart {
+    width: 96px;
+    max-width: 96px;
+    height: 42px;
+  }
+}

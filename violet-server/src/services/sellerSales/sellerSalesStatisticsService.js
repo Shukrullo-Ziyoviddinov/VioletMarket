@@ -1,5 +1,20 @@
 const { SellerSale } = require("../../models/sellerSale");
-const { toNumber } = require("../adminSales/salesStatisticsHelpers");
+const {
+  buildMetricRow,
+  parseWeekKey,
+  formatWeekKey,
+  toNumber,
+} = require("../adminSales/salesStatisticsHelpers");
+const {
+  sumSellerRevenueForDayKey,
+  sumSellerRevenueForWeekKey,
+  sumSellerRevenueForMonthKey,
+} = require("./sellerSalesRevenueQueryService");
+const {
+  addDaysToDateKey,
+  parseMonthKey,
+  getPreviousMonth,
+} = require("../../utils/customerStatisticsDate");
 const {
   formatDayLabel,
   formatMonthLabel,
@@ -14,7 +29,6 @@ const {
   getRangeKeys,
   getPreviousMonth,
 } = require("../../utils/customerStatisticsDate");
-const { formatWeekKey } = require("../adminSales/salesStatisticsHelpers");
 const { ensureSalesStatisticsSynced } = require("../../productManagement/salesOrderSyncService");
 
 function buildFallbackOptions(defaults) {
@@ -128,12 +142,50 @@ async function buildSellerSalesStatisticsPage(sellerId, query = {}) {
 
   const filterOptions = await buildSellerSalesFilterOptions(sellerId);
   const filters = resolveSelectedFilters(query, filterOptions);
-  const totalRevenue = await sumSellerTotalRevenue(sellerId);
+  const { day, week, month } = filters;
+  const weekParsed = parseWeekKey(week);
+  const monthParsed = parseMonthKey(month);
+  const prevDayKey = addDaysToDateKey(day, -1);
+
+  const prevWeekParsed = weekParsed
+    ? (weekParsed.week === 1
+      ? { year: weekParsed.year - 1, week: 52 }
+      : { year: weekParsed.year, week: weekParsed.week - 1 })
+    : null;
+
+  const prevMonthParsed = getPreviousMonth(monthParsed.year, monthParsed.month);
+  const prevWeekKey = prevWeekParsed
+    ? formatWeekKey(prevWeekParsed.year, prevWeekParsed.week)
+    : "";
+  const prevMonthKey = `${prevMonthParsed.year}-${String(prevMonthParsed.month).padStart(2, "0")}`;
+
+  const [
+    totalRevenue,
+    dailyCurrent,
+    dailyPrevious,
+    weeklyCurrent,
+    weeklyPrevious,
+    monthlyCurrent,
+    monthlyPrevious,
+  ] = await Promise.all([
+    sumSellerTotalRevenue(sellerId),
+    sumSellerRevenueForDayKey(sellerId, day),
+    sumSellerRevenueForDayKey(sellerId, prevDayKey),
+    sumSellerRevenueForWeekKey(sellerId, week),
+    sumSellerRevenueForWeekKey(sellerId, prevWeekKey),
+    sumSellerRevenueForMonthKey(sellerId, month),
+    sumSellerRevenueForMonthKey(sellerId, prevMonthKey),
+  ]);
 
   return {
     filters,
     filterOptions,
     totalRevenue,
+    metrics: {
+      daily: buildMetricRow(dailyCurrent, dailyPrevious),
+      weekly: buildMetricRow(weeklyCurrent, weeklyPrevious),
+      monthly: buildMetricRow(monthlyCurrent, monthlyPrevious),
+    },
   };
 }
 
