@@ -129,6 +129,22 @@
         "week": "Haftalik",
         "month": "Oylik"
       }
+    },
+    "countryStats": {
+      "title": "Davlat statistikasi",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun davlat kategoriyasi bo'yicha sotuv topilmadi",
+      "filterLabel": "Filter: {{period}}",
+      "period": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      },
+      "periodLabel": {
+        "day": "Kunlik",
+        "week": "Haftalik",
+        "month": "Oylik"
+      }
     }
   }
 }

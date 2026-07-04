@@ -6,6 +6,7 @@ import './SellerSalesStatisticsChartsPeriodFilter.css';
 export default function SellerSalesStatisticsChartsPeriodFilter({
   value = 'day',
   onChange,
+  i18nNamespace = 'salesStatistics.categoryStats',
 }) {
   const { t } = useTranslation();
   const rootRef = useRef(null);
@@ -13,11 +14,11 @@ export default function SellerSalesStatisticsChartsPeriodFilter({
 
   const periodOptions = useMemo(
     () => [
-      { key: 'day', label: t('salesStatistics.categoryStats.period.day') },
-      { key: 'week', label: t('salesStatistics.categoryStats.period.week') },
-      { key: 'month', label: t('salesStatistics.categoryStats.period.month') },
+      { key: 'day', label: t(`${i18nNamespace}.period.day`) },
+      { key: 'week', label: t(`${i18nNamespace}.period.week`) },
+      { key: 'month', label: t(`${i18nNamespace}.period.month`) },
     ],
-    [t],
+    [i18nNamespace, t],
   );
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function SellerSalesStatisticsChartsPeriodFilter({
   }, []);
 
   const selectedLabel = periodOptions.find((item) => item.key === value)?.label
-    || t('salesStatistics.categoryStats.period.day');
+    || t(`${i18nNamespace}.period.day`);
 
   const handleSelect = (nextValue) => {
     setOpen(false);
@@ -52,7 +53,7 @@ export default function SellerSalesStatisticsChartsPeriodFilter({
         aria-expanded={open}
       >
         <span className="seller-sales-statistics-charts-period-filter__button-label">
-          {t('salesStatistics.categoryStats.filterLabel', { period: selectedLabel })}
+          {t(`${i18nNamespace}.filterLabel`, { period: selectedLabel })}
         </span>
         <DownOutlined
           className={`seller-sales-statistics-charts-period-filter__button-icon${

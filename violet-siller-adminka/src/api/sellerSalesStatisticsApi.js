@@ -175,3 +175,42 @@ export async function fetchSellerCategorySalesStatistics(token, filters = {}) {
     categories: Array.isArray(data?.categories) ? data.categories.map(normalizeCategoryStat) : [],
   };
 }
+
+function normalizeCountryCategoryStat(row) {
+  return {
+    filterValue: String(row?.filterValue || ''),
+    label: String(row?.label || row?.filterValue || ''),
+    quantity: Number(row?.quantity) || 0,
+    percentage: Number(row?.percentage) || 0,
+    color: String(row?.color || '#2563eb'),
+  };
+}
+
+export async function fetchSellerCountryCategorySalesStatistics(token, filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/seller-auth/sales/country-category-statistics?${query}`
+    : '/api/seller-auth/sales/country-category-statistics';
+
+  const res = await fetch(apiUrl(path), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    countries: Array.isArray(data?.countries) ? data.countries.map(normalizeCountryCategoryStat) : [],
+  };
+}

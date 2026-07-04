@@ -62,6 +62,11 @@ router.get(
   sellerSalesStatisticsController.getSellerCategorySalesStatistics,
 );
 router.get(
+  "/seller-auth/sales/country-category-statistics",
+  sellerAuthMiddleware,
+  sellerSalesStatisticsController.getSellerCountryCategorySalesStatistics,
+);
+router.get(
   "/seller-auth/product-form/options",
   sellerAuthMiddleware,
   sellerProductController.getProductFormOptions,

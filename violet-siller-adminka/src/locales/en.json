@@ -129,6 +129,22 @@
         "week": "Weekly",
         "month": "Monthly"
       }
+    },
+    "countryStats": {
+      "title": "Country statistics",
+      "loading": "Loading...",
+      "empty": "No country category sales found for the selected period",
+      "filterLabel": "Filter: {{period}}",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
     }
   }
 }
