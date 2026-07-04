@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Spin, Typography } from 'antd';
+import { Alert, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { fetchSellerSalesRevenueChart, fetchSellerSalesStatistics } from '../../api/sellerSalesStatisticsApi';
 import SellerSalesRevenueChart from '../../components/SellerSalesRevenueChart/SellerSalesRevenueChart';
@@ -12,8 +12,6 @@ import SellerSalesStatisticsMetrics from '../../components/SellerSalesStatistics
 import SellerSalesStatisticsTotalRevenue from '../../components/SellerSalesStatisticsTotalRevenue/SellerSalesStatisticsTotalRevenue';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import './SellerSalesStatisticsPage.css';
-
-const { Title, Text } = Typography;
 
 const EMPTY_METRICS = {
   daily: { value: 0, growthFormatted: '0%', tone: 'neutral' },
@@ -120,17 +118,6 @@ export default function SellerSalesStatisticsPage() {
 
   return (
     <section className="seller-sales-statistics-page">
-      <div className="seller-sales-statistics-page__head">
-        <div>
-          <Title level={3} className="seller-sales-statistics-page__title">
-            {t('salesStatistics.title')}
-          </Title>
-          <Text type="secondary" className="seller-sales-statistics-page__subtitle">
-            {t('salesStatistics.subtitle')}
-          </Text>
-        </div>
-      </div>
-
       {isInitialLoading ? (
         <div className="seller-sales-statistics-page__loading">
           <Spin size="large" />
