@@ -93,6 +93,26 @@
       "week": "Week",
       "month": "Month",
       "empty": "No data found"
+    },
+    "topProducts": {
+      "title": "Top selling products",
+      "subtitle": "Top selling products for the {{period}} period",
+      "modalTitle": "Top selling products",
+      "modalSubtitle": "Top selling products for the {{period}} period",
+      "filter": "Filter",
+      "more": "More",
+      "loading": "Loading...",
+      "empty": "No product data found for the selected period",
+      "meta": "{{orderCount}} orders · {{quantity}} sold",
+      "copyAction": "Copy link",
+      "copySuccess": "Product link copied",
+      "copyError": "Could not copy product link",
+      "actionsLabel": "Product actions",
+      "period": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
     }
   }
 }

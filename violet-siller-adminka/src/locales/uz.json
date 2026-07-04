@@ -93,6 +93,26 @@
       "week": "Hafta",
       "month": "Oy",
       "empty": "Ma'lumot topilmadi"
+    },
+    "topProducts": {
+      "title": "Eng ko'p sotilgan mahsulotlar",
+      "subtitle": "{{period}} davr bo'yicha eng ko'p sotilgan mahsulotlar",
+      "modalTitle": "Eng ko'p sotilgan mahsulotlar",
+      "modalSubtitle": "{{period}} davr bo'yicha eng ko'p sotilgan mahsulotlar",
+      "filter": "Filter",
+      "more": "Ko'proq",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun mahsulot ma'lumoti topilmadi",
+      "meta": "{{orderCount}} ta buyurtma · {{quantity}} ta sotilgan",
+      "copyAction": "Nusxalash",
+      "copySuccess": "Mahsulot havolasi nusxalandi",
+      "copyError": "Mahsulot havolasini nusxalab bo'lmadi",
+      "actionsLabel": "Mahsulot amallari",
+      "period": {
+        "day": "Kunlik",
+        "week": "Haftalik",
+        "month": "Oylik"
+      }
     }
   }
 }

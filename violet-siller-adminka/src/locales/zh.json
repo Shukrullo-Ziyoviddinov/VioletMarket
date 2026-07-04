@@ -93,6 +93,26 @@
       "week": "周",
       "month": "月",
       "empty": "未找到数据"
+    },
+    "topProducts": {
+      "title": "热销商品",
+      "subtitle": "{{period}}期间的热销商品",
+      "modalTitle": "热销商品",
+      "modalSubtitle": "{{period}}期间的热销商品",
+      "filter": "筛选",
+      "more": "更多",
+      "loading": "加载中...",
+      "empty": "所选期间暂无商品数据",
+      "meta": "{{orderCount}} 个订单 · 售出 {{quantity}} 件",
+      "copyAction": "复制链接",
+      "copySuccess": "商品链接已复制",
+      "copyError": "无法复制商品链接",
+      "actionsLabel": "商品操作",
+      "period": {
+        "day": "日",
+        "week": "周",
+        "month": "月"
+      }
     }
   }
 }

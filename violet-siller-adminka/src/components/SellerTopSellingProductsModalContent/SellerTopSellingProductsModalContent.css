@@ -1,0 +1,29 @@
+.seller-top-selling-products-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.seller-top-selling-products-modal__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b5f7d;
+}
+
+.seller-top-selling-products-modal__empty {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  color: #6b5b7d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.seller-top-selling-products-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  padding-right: 4px;
+}

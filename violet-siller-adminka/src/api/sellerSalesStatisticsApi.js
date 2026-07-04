@@ -98,3 +98,42 @@ export async function fetchSellerSalesRevenueChart(token, filters = {}) {
     points: Array.isArray(data?.points) ? data.points.map(normalizeChartPoint) : [],
   };
 }
+
+function normalizeTopProduct(row) {
+  return {
+    rank: Number(row?.rank) || 0,
+    productId: Number(row?.productId) || 0,
+    title: row?.title ?? '',
+    image: String(row?.image || ''),
+    totalAmount: Number(row?.totalAmount) || 0,
+    totalQuantity: Number(row?.totalQuantity) || 0,
+    orderCount: Number(row?.orderCount) || 0,
+  };
+}
+
+export async function fetchSellerTopSellingProducts(token, filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/seller-auth/sales/top-selling-products?${query}`
+    : '/api/seller-auth/sales/top-selling-products';
+
+  const res = await fetch(apiUrl(path), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    products: Array.isArray(data?.products) ? data.products.map(normalizeTopProduct) : [],
+  };
+}
