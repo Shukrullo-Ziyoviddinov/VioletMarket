@@ -1,0 +1,20 @@
+.seller-sales-category-statistics-legend-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.seller-sales-category-statistics-legend-modal__subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b5f7d;
+}
+
+.seller-sales-category-statistics-legend-modal__empty {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  color: #6b5b7d;
+  font-size: 14px;
+  font-weight: 500;
+}

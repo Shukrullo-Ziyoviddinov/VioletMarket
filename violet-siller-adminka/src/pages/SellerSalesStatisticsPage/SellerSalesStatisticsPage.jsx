@@ -3,6 +3,7 @@ import { Alert, Spin, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { fetchSellerSalesRevenueChart, fetchSellerSalesStatistics } from '../../api/sellerSalesStatisticsApi';
 import SellerSalesRevenueChart from '../../components/SellerSalesRevenueChart/SellerSalesRevenueChart';
+import SellerSalesCategoryStatistics from '../../components/SellerSalesCategoryStatistics/SellerSalesCategoryStatistics';
 import SellerTopSellingProductsSection from '../../components/SellerTopSellingProductsSection/SellerTopSellingProductsSection';
 import SellerSalesStatisticsFilterBar from '../../components/SellerSalesStatisticsFilterBar/SellerSalesStatisticsFilterBar';
 import SellerSalesStatisticsMetrics from '../../components/SellerSalesStatisticsMetrics/SellerSalesStatisticsMetrics';
@@ -166,6 +167,8 @@ export default function SellerSalesStatisticsPage() {
             overallTone={chartTone}
             loading={chartLoading}
           />
+
+          <SellerSalesCategoryStatistics token={token} pageFilters={filters} />
 
           <SellerTopSellingProductsSection token={token} pageFilters={filters} />
         </>

@@ -137,3 +137,41 @@ export async function fetchSellerTopSellingProducts(token, filters = {}) {
     products: Array.isArray(data?.products) ? data.products.map(normalizeTopProduct) : [],
   };
 }
+
+function normalizeCategoryStat(row) {
+  return {
+    category: String(row?.category || ''),
+    quantity: Number(row?.quantity) || 0,
+    percentage: Number(row?.percentage) || 0,
+    color: String(row?.color || '#3b82f6'),
+  };
+}
+
+export async function fetchSellerCategorySalesStatistics(token, filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+
+  const query = params.toString();
+  const path = query
+    ? `/api/seller-auth/sales/category-statistics?${query}`
+    : '/api/seller-auth/sales/category-statistics';
+
+  const res = await fetch(apiUrl(path), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    categories: Array.isArray(data?.categories) ? data.categories.map(normalizeCategoryStat) : [],
+  };
+}

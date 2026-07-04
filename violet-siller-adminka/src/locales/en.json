@@ -95,10 +95,10 @@
       "empty": "No data found"
     },
     "topProducts": {
-      "title": "Top selling products",
-      "subtitle": "Top selling products for the {{period}} period",
-      "modalTitle": "Top selling products",
-      "modalSubtitle": "Top selling products for the {{period}} period",
+      "title": "Sold products",
+      "subtitle": "Sold products for the {{period}} period",
+      "modalTitle": "Sold products",
+      "modalSubtitle": "Sold products for the {{period}} period",
       "filter": "Filter",
       "more": "More",
       "loading": "Loading...",
@@ -109,6 +109,22 @@
       "copyError": "Could not copy product link",
       "actionsLabel": "Product actions",
       "period": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
+    },
+    "categoryStats": {
+      "title": "Category statistics",
+      "loading": "Loading...",
+      "empty": "No category sales found for the selected period",
+      "filterLabel": "Filter: {{period}}",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
         "day": "Daily",
         "week": "Weekly",
         "month": "Monthly"
