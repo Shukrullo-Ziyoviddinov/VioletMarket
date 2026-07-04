@@ -145,6 +145,22 @@
         "week": "Weekly",
         "month": "Monthly"
       }
+    },
+    "brandStats": {
+      "title": "Brand statistics",
+      "loading": "Loading...",
+      "empty": "No brand category sales found for the selected period",
+      "filterLabel": "Filter: {{period}}",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
     }
   }
 }

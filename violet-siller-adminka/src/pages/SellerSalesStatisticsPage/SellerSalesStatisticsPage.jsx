@@ -5,6 +5,7 @@ import { fetchSellerSalesRevenueChart, fetchSellerSalesStatistics } from '../../
 import SellerSalesRevenueChart from '../../components/SellerSalesRevenueChart/SellerSalesRevenueChart';
 import SellerSalesCategoryStatistics from '../../components/SellerSalesCategoryStatistics/SellerSalesCategoryStatistics';
 import SellerSalesCountryCategoryStatistics from '../../components/SellerSalesCountryCategoryStatistics/SellerSalesCountryCategoryStatistics';
+import SellerSalesBrandCategoryStatistics from '../../components/SellerSalesBrandCategoryStatistics/SellerSalesBrandCategoryStatistics';
 import SellerTopSellingProductsSection from '../../components/SellerTopSellingProductsSection/SellerTopSellingProductsSection';
 import SellerSalesStatisticsFilterBar from '../../components/SellerSalesStatisticsFilterBar/SellerSalesStatisticsFilterBar';
 import SellerSalesStatisticsMetrics from '../../components/SellerSalesStatisticsMetrics/SellerSalesStatisticsMetrics';
@@ -172,6 +173,7 @@ export default function SellerSalesStatisticsPage() {
           <div className="seller-sales-statistics-page__stats-grid">
             <SellerSalesCategoryStatistics token={token} pageFilters={filters} />
             <SellerSalesCountryCategoryStatistics token={token} pageFilters={filters} />
+            <SellerSalesBrandCategoryStatistics token={token} pageFilters={filters} />
           </div>
 
           <SellerTopSellingProductsSection token={token} pageFilters={filters} />

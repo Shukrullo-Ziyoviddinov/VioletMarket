@@ -4,6 +4,7 @@ const sellerSalesRevenueChartService = require("../services/sellerSales/sellerSa
 const sellerTopSellingProductsStatisticsService = require("../services/sellerSales/sellerTopSellingProductsStatisticsService");
 const sellerCategorySalesStatisticsService = require("../services/sellerSales/sellerCategorySalesStatisticsService");
 const sellerCountryCategorySalesStatisticsService = require("../services/sellerSales/sellerCountryCategorySalesStatisticsService");
+const sellerBrandCategorySalesStatisticsService = require("../services/sellerSales/sellerBrandCategorySalesStatisticsService");
 
 const getSellerSalesStatistics = asyncHandler(async (req, res) => {
   const data = await sellerSalesStatisticsService.buildSellerSalesStatisticsPage(
@@ -45,10 +46,19 @@ const getSellerCountryCategorySalesStatistics = asyncHandler(async (req, res) =>
   res.json({ ok: true, data });
 });
 
+const getSellerBrandCategorySalesStatistics = asyncHandler(async (req, res) => {
+  const data = await sellerBrandCategorySalesStatisticsService.buildSellerBrandCategorySalesStatistics(
+    req.sellerShopId,
+    req.query || {},
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   getSellerSalesStatistics,
   getSellerSalesRevenueChart,
   getSellerTopSellingProducts,
   getSellerCategorySalesStatistics,
   getSellerCountryCategorySalesStatistics,
+  getSellerBrandCategorySalesStatistics,
 };
