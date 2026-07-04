@@ -14,6 +14,9 @@ const {
   addDaysToDateKey,
   parseMonthKey,
   getPreviousMonth,
+  getStatisticsDateKey,
+  getIsoWeekFromYmd,
+  getRangeKeys,
 } = require("../../utils/customerStatisticsDate");
 const {
   formatDayLabel,
@@ -22,13 +25,6 @@ const {
   getDefaultFilterValues,
   resolveSelectedFilters,
 } = require("../adminSales/salesFilterOptionsService");
-const {
-  getStatisticsDateKey,
-  getIsoWeekFromYmd,
-  addDaysToDateKey,
-  getRangeKeys,
-  getPreviousMonth,
-} = require("../../utils/customerStatisticsDate");
 const { ensureSalesStatisticsSynced } = require("../../productManagement/salesOrderSyncService");
 
 function buildFallbackOptions(defaults) {
