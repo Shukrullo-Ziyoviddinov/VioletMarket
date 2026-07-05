@@ -1,11 +1,24 @@
 import React from 'react';
+import { CloseOutlined } from '@ant-design/icons';
 import {
   formatPaymentRequestAmount,
   formatPaymentRequestDateTime,
   getPaymentRequestProductTitle,
-  PAYMENT_REQUEST_STATUS_LABELS,
 } from '../../../utils/paymentRequestDisplay';
+import PaymentRequestStatusBadge from '../PaymentRequestStatusBadge/PaymentRequestStatusBadge';
 import './PaymentRequestDetailsPanel.css';
+
+function formatRequestCode(code) {
+  const value = String(code || '').trim();
+  if (!value) return '—';
+  return value.startsWith('#') ? value : `#${value}`;
+}
+
+function formatProductCode(code) {
+  const value = String(code || '').trim();
+  if (!value) return '';
+  return value.startsWith('#') ? value : `#${value}`;
+}
 
 export default function PaymentRequestDetailsPanel({
   request,
@@ -13,36 +26,46 @@ export default function PaymentRequestDetailsPanel({
   actionLoading,
   onApprove,
   onReject,
+  onClose,
 }) {
   if (loading) {
     return (
-      <section className="payment-request-details-panel payment-request-details-panel--empty">
+      <aside className="payment-request-details-panel payment-request-details-panel--empty">
         <p>Yuklanmoqda...</p>
-      </section>
+      </aside>
     );
   }
 
   if (!request) {
     return (
-      <section className="payment-request-details-panel payment-request-details-panel--empty">
-        <h2>So&apos;rov tafsilotlari</h2>
-        <p>Ro&apos;yxatdan sotuvchini tanlang</p>
-      </section>
+      <aside className="payment-request-details-panel payment-request-details-panel--empty">
+        <div className="payment-request-details-panel__head">
+          <h2>So&apos;rov tafsilotlari</h2>
+        </div>
+        <p>Ro&apos;yxatdan so&apos;rovni tanlang</p>
+      </aside>
     );
   }
 
   const canReview = request.status === 'in_process';
 
   return (
-    <section className="payment-request-details-panel">
+    <aside className="payment-request-details-panel">
       <div className="payment-request-details-panel__head">
-        <div>
-          <h2>So&apos;rov tafsilotlari</h2>
-          <p>{request.requestCode}</p>
-        </div>
-        <span className={`payment-request-details-panel__status payment-request-details-panel__status--${request.status}`}>
-          {PAYMENT_REQUEST_STATUS_LABELS[request.status] || request.status}
-        </span>
+        <h2>So&apos;rov tafsilotlari</h2>
+        <button
+          type="button"
+          className="payment-request-details-panel__close"
+          aria-label="Yopish"
+          onClick={onClose}
+        >
+          <CloseOutlined />
+        </button>
+      </div>
+
+      <div className="payment-request-details-panel__hero">
+        <strong>{formatRequestCode(request.requestCode)}</strong>
+        <PaymentRequestStatusBadge status={request.status} withIcon />
       </div>
 
       <div className="payment-request-details-panel__seller">
@@ -54,20 +77,28 @@ export default function PaymentRequestDetailsPanel({
           )}
         </div>
         <div>
+          <span className="payment-request-details-panel__seller-label">Seller</span>
           <strong>{request.sellerName}</strong>
-          <p>{formatPaymentRequestDateTime(request.submittedAt)}</p>
         </div>
       </div>
 
       <div className="payment-request-details-panel__summary">
-        <div>
-          <span>Mahsulotlar</span>
+        <div className="payment-request-details-panel__summary-item">
+          <span>So&apos;rov sanasi</span>
+          <strong>{formatPaymentRequestDateTime(request.submittedAt)}</strong>
+        </div>
+        <div className="payment-request-details-panel__summary-item">
+          <span>Mahsulotlar soni</span>
           <strong>{request.itemCount} ta</strong>
         </div>
-        <div>
+        <div className="payment-request-details-panel__summary-item payment-request-details-panel__summary-item--wide">
           <span>Jami summa</span>
           <strong>{formatPaymentRequestAmount(request.totalAmount)}</strong>
         </div>
+      </div>
+
+      <div className="payment-request-details-panel__items-head">
+        <h3>Mahsulotlar ro&apos;yxati</h3>
       </div>
 
       <div className="payment-request-details-panel__items">
@@ -82,7 +113,7 @@ export default function PaymentRequestDetailsPanel({
             </div>
             <div className="payment-request-details-panel__item-content">
               <strong>{getPaymentRequestProductTitle(item)}</strong>
-              <p>{formatPaymentRequestDateTime(item.soldAt)}</p>
+              <p>{formatProductCode(item.productCode)}</p>
             </div>
             <div className="payment-request-details-panel__item-price">
               {formatPaymentRequestAmount(item.amount || item.price)}
@@ -95,22 +126,22 @@ export default function PaymentRequestDetailsPanel({
         <div className="payment-request-details-panel__actions">
           <button
             type="button"
-            className="payment-request-details-panel__btn payment-request-details-panel__btn--reject"
-            onClick={onReject}
-            disabled={actionLoading}
-          >
-            Rad etish
-          </button>
-          <button
-            type="button"
             className="payment-request-details-panel__btn payment-request-details-panel__btn--approve"
             onClick={onApprove}
             disabled={actionLoading}
           >
             Tasdiqlash
           </button>
+          <button
+            type="button"
+            className="payment-request-details-panel__btn payment-request-details-panel__btn--reject"
+            onClick={onReject}
+            disabled={actionLoading}
+          >
+            Rad etish
+          </button>
         </div>
       ) : null}
-    </section>
+    </aside>
   );
 }

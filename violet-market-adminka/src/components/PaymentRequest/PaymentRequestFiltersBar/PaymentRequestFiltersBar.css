@@ -1,12 +1,25 @@
 .payment-request-filters-bar {
-  display: grid;
-  grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
 }
 
-@media (max-width: 900px) {
-  .payment-request-filters-bar {
-    grid-template-columns: 1fr;
+.payment-request-filters-bar .payment-request-filter,
+.payment-request-filters-bar .payment-request-date-filter {
+  flex: 1 1 180px;
+  min-width: 160px;
+  max-width: 280px;
+}
+
+@media (max-width: 768px) {
+  .payment-request-filters-bar .payment-request-filter,
+  .payment-request-filters-bar .payment-request-date-filter {
+    max-width: none;
+    flex-basis: 100%;
   }
 }

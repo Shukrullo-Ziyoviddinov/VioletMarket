@@ -26,6 +26,8 @@ const EMPTY_STATS = {
   rejectedAmount: 0,
 };
 
+const PAGE_SIZE = 10;
+
 export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [dateRange, setDateRange] = useState(getDefaultPaymentRequestDateRange);
   const [sellerId, setSellerId] = useState('all');
@@ -34,6 +36,7 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [sellers, setSellers] = useState([]);
   const [requests, setRequests] = useState([]);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [listLoading, setListLoading] = useState(false);
   const [activeRequestId, setActiveRequestId] = useState(null);
@@ -74,6 +77,7 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
       });
       setRequests(data.requests);
       setTotalPages(data.totalPages);
+      setTotal(data.total);
       setPage(data.page);
 
       setActiveRequestId((currentId) => {
@@ -84,6 +88,7 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     } catch {
       setRequests([]);
       setTotalPages(1);
+      setTotal(0);
       setActiveRequestId(null);
       setActiveRequest(null);
     } finally {
@@ -186,6 +191,8 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
           onSelect={setActiveRequestId}
           page={page}
           totalPages={totalPages}
+          total={total}
+          limit={PAGE_SIZE}
           onPageChange={setPage}
           loading={listLoading}
         />
@@ -195,6 +202,7 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
           actionLoading={actionLoading}
           onApprove={handleApprove}
           onReject={handleReject}
+          onClose={() => setActiveRequestId(null)}
         />
       </div>
     </div>

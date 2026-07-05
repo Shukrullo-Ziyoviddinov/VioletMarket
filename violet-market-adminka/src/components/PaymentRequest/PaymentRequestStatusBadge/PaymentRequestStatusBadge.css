@@ -1,0 +1,30 @@
+.payment-request-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.payment-request-status-badge .anticon {
+  font-size: 12px;
+}
+
+.payment-request-status-badge--in_process {
+  background: #fff7e8;
+  color: #d48806;
+}
+
+.payment-request-status-badge--withdrawn {
+  background: #f0faf4;
+  color: #389e0d;
+}
+
+.payment-request-status-badge--rejected {
+  background: #fff1f0;
+  color: #cf1322;
+}

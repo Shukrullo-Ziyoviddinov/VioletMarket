@@ -10,7 +10,7 @@ export default function PaymentRequestSellerFilter({
   onOpenChange,
 }) {
   const rootRef = useRef(null);
-  const options = [{ value: 'all', label: 'Barcha sotuvchilar' }].concat(
+  const options = [{ value: 'all', label: 'Barcha sellerlar' }].concat(
     sellers.map((seller) => ({
       value: seller.sellerId,
       label: seller.name || seller.sellerId,

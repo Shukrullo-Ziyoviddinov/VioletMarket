@@ -1,13 +1,13 @@
 .payment-request-workspace {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
 .payment-request-workspace__grid {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1.05fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 16px;
   align-items: start;
 }
 
