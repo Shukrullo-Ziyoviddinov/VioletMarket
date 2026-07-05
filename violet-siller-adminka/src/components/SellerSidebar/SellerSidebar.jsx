@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Menu } from 'antd';
-import { AppstoreOutlined, DashboardOutlined, LineChartOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, DashboardOutlined, DollarOutlined, LineChartOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../../context/SellerAuthContext';
@@ -20,6 +20,7 @@ const menuItems = [
   },
   { key: 'add-products', icon: <PlusCircleOutlined />, labelKey: 'myProducts.addProduct', route: '/products/add' },
   { key: 'sales-statistics', icon: <LineChartOutlined />, labelKey: 'sidebar.salesStatistics', route: '/sales/statistics' },
+  { key: 'sales-earnings', icon: <DollarOutlined />, labelKey: 'sidebar.salesEarnings', route: '/sales/earnings' },
   { key: 'messages', icon: <MessageOutlined />, labelKey: 'messages.title', route: '/messages' },
   { key: 'market-info', icon: <ShopOutlined />, labelKey: 'marketInfo.title' },
 ];
@@ -48,6 +49,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products/discontinued') return 'discontinued-products';
   if (pathname === '/messages') return 'messages';
   if (pathname === '/sales/statistics') return 'sales-statistics';
+  if (pathname === '/sales/earnings') return 'sales-earnings';
   if (pathname === '/products' || /^\/products\/\d+\/edit$/.test(pathname)) return 'my-products';
   if (pathname === '/') return 'home';
   return 'home';

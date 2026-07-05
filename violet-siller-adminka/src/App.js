@@ -12,6 +12,7 @@ import DiscontinuedProductsPage from './pages/DiscontinuedProductsPage/Discontin
 import EditProductPage from './pages/EditProductPage/EditProductPage';
 import MessagesPage from './pages/MessagesPage/MessagesPage';
 import SellerSalesStatisticsPage from './pages/SellerSalesStatisticsPage/SellerSalesStatisticsPage';
+import SellerEarningsPage from './pages/SellerEarningsPage/SellerEarningsPage';
 import MyProductsPage from './pages/MyProductsPage/MyProductsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterStartPage from './pages/RegisterStartPage/RegisterStartPage';
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="products/add" element={<AddProductsPage />} />
             <Route path="products/:productId/edit" element={<EditProductPage />} />
             <Route path="sales/statistics" element={<SellerSalesStatisticsPage />} />
+            <Route path="sales/earnings" element={<SellerEarningsPage />} />
             <Route path="messages" element={<MessagesPage />} />
           </Route>
         </Route>

@@ -4,7 +4,8 @@
   },
   "sidebar": {
     "home": "Home",
-    "salesStatistics": "Sales & statistics"
+    "salesStatistics": "Sales & statistics",
+    "salesEarnings": "Sales & earnings"
   },
   "marketInfo": {
     "title": "About the market",

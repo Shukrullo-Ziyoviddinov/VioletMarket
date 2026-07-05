@@ -4,7 +4,8 @@
   },
   "sidebar": {
     "home": "首页",
-    "salesStatistics": "销售与统计"
+    "salesStatistics": "销售与统计",
+    "salesEarnings": "销售与收入"
   },
   "marketInfo": {
     "title": "关于市场",
