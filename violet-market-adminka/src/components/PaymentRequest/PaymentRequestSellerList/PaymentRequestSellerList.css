@@ -1,0 +1,28 @@
+.payment-request-seller-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100%;
+}
+
+.payment-request-seller-list__head h2 {
+  margin: 0;
+  color: #2a1842;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.payment-request-seller-list__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-request-seller-list__empty {
+  margin: 0;
+  padding: 24px 16px;
+  border: 1px dashed #ddd3ee;
+  border-radius: 14px;
+  color: #8b7aa8;
+  text-align: center;
+}

@@ -31,6 +31,7 @@ const { Order } = require("./order");
 const { SellerSale } = require("./sellerSale");
 const { SellerProductSale } = require("./sellerProductSale");
 const { SellerSoldItem } = require("./sellerSoldItem");
+const { SellerPaymentRequest } = require("./sellerPaymentRequest");
 
 module.exports = {
   Product,
@@ -66,4 +67,5 @@ module.exports = {
   SellerSale,
   SellerProductSale,
   SellerSoldItem,
+  SellerPaymentRequest,
 };

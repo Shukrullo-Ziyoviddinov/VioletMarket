@@ -47,6 +47,7 @@ const pendingReviewRoutes = require("./pendingReview.routes");
 const sellerAuthRoutes = require("./sellerAuth.routes");
 const adminSellerApplicationsRoutes = require("./adminSellerApplications.routes");
 const adminSellerManagementRoutes = require("./adminSellerManagement.routes");
+const adminPaymentRequestRoutes = require("./adminPaymentRequest.routes");
 const messageChatRoutes = require("./messageChat.routes");
 const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 
@@ -100,6 +101,7 @@ router.use(pendingReviewRoutes);
 router.use(sellerAuthRoutes);
 router.use(adminSellerApplicationsRoutes);
 router.use(adminSellerManagementRoutes);
+router.use(adminPaymentRequestRoutes);
 router.use(messageChatRoutes);
 router.use(chatsPageSearchRoutes);
 

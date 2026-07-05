@@ -1,8 +1,9 @@
 import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
+import { formatPaymentRequestAmount } from '../../../utils/paymentRequestDisplay';
 import '../paymentRequestStatCardShared.css';
 
-export default function PaymentRequestRejectedRequestsCard() {
+export default function PaymentRequestRejectedRequestsCard({ count = 0, amount = 0 }) {
   return (
     <article className="payment-request-stat-card payment-request-stat-card--rejected">
       <div className="payment-request-stat-card__top">
@@ -11,8 +12,10 @@ export default function PaymentRequestRejectedRequestsCard() {
           <DeleteOutlined />
         </span>
       </div>
-      <p className="payment-request-stat-card__value">16</p>
-      <p className="payment-request-stat-card__footer">Jami summa: 98 750 000 so&apos;m</p>
+      <p className="payment-request-stat-card__value">{count}</p>
+      <p className="payment-request-stat-card__footer">
+        Jami summa: {formatPaymentRequestAmount(amount)}
+      </p>
     </article>
   );
 }

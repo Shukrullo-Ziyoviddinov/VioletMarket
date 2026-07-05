@@ -1,0 +1,12 @@
+.payment-request-filters-bar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .payment-request-filters-bar {
+    grid-template-columns: 1fr;
+  }
+}

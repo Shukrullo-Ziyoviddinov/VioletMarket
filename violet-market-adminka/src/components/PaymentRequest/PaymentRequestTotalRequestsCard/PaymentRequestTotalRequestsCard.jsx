@@ -2,7 +2,7 @@ import React from 'react';
 import { FileTextOutlined } from '@ant-design/icons';
 import '../paymentRequestStatCardShared.css';
 
-export default function PaymentRequestTotalRequestsCard() {
+export default function PaymentRequestTotalRequestsCard({ count = 0 }) {
   return (
     <article className="payment-request-stat-card payment-request-stat-card--total">
       <div className="payment-request-stat-card__top">
@@ -11,7 +11,7 @@ export default function PaymentRequestTotalRequestsCard() {
           <FileTextOutlined />
         </span>
       </div>
-      <p className="payment-request-stat-card__value">156</p>
+      <p className="payment-request-stat-card__value">{count}</p>
       <p className="payment-request-stat-card__footer">Barcha vaqt</p>
     </article>
   );

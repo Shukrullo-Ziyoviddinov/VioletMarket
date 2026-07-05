@@ -4,6 +4,7 @@ const { HttpError } = require("../../utils/httpError");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { ensureSellerSoldItemsSynced } = require("./sellerSoldItemsSyncService");
+const { createSellerPaymentRequest } = require("../adminPaymentRequests/adminPaymentRequestService");
 
 const VALID_STATUSES = new Set(["available", "in_process", "withdrawn", "rejected"]);
 
@@ -178,16 +179,7 @@ async function submitSellerWithdrawalRequest(sellerId, payload = {}) {
     );
   }
 
-  await SellerSoldItem.updateMany(
-    {
-      id: { $in: itemIds },
-      sellerId: normalizedSellerId,
-      status: "available",
-    },
-    {
-      $set: { status: "in_process" },
-    },
-  );
+  await createSellerPaymentRequest(normalizedSellerId, rows);
 
   const summary = await buildSellerEarningsSummary(normalizedSellerId);
   return {

@@ -1,0 +1,212 @@
+.payment-request-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 100%;
+  padding: 20px;
+  border: 1px solid #ece8f4;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.payment-request-details-panel--empty {
+  align-items: flex-start;
+  justify-content: center;
+  color: #8b7aa8;
+}
+
+.payment-request-details-panel--empty h2 {
+  margin: 0 0 8px;
+  color: #2a1842;
+}
+
+.payment-request-details-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.payment-request-details-panel__head h2 {
+  margin: 0 0 4px;
+  color: #2a1842;
+  font-size: 18px;
+}
+
+.payment-request-details-panel__head p {
+  margin: 0;
+  color: #8b7aa8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.payment-request-details-panel__status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-request-details-panel__status--in_process {
+  background: #fff4e5;
+  color: #d97706;
+}
+
+.payment-request-details-panel__status--withdrawn {
+  background: #e8f8ef;
+  color: #059669;
+}
+
+.payment-request-details-panel__status--rejected {
+  background: #fdecec;
+  color: #dc2626;
+}
+
+.payment-request-details-panel__seller {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #faf7ff;
+}
+
+.payment-request-details-panel__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1ebff;
+  color: #764ba2;
+  font-weight: 700;
+}
+
+.payment-request-details-panel__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.payment-request-details-panel__seller strong {
+  display: block;
+  color: #2a1842;
+  font-size: 16px;
+}
+
+.payment-request-details-panel__seller p {
+  margin: 4px 0 0;
+  color: #7a6b92;
+  font-size: 13px;
+}
+
+.payment-request-details-panel__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.payment-request-details-panel__summary > div {
+  padding: 14px;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+}
+
+.payment-request-details-panel__summary span {
+  display: block;
+  margin-bottom: 6px;
+  color: #8b7aa8;
+  font-size: 13px;
+}
+
+.payment-request-details-panel__summary strong {
+  color: #2a1842;
+  font-size: 16px;
+}
+
+.payment-request-details-panel__items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.payment-request-details-panel__item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #f0ebf8;
+  border-radius: 12px;
+}
+
+.payment-request-details-panel__item-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f6fc;
+}
+
+.payment-request-details-panel__item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.payment-request-details-panel__item-content strong {
+  display: block;
+  color: #2a1842;
+  font-size: 14px;
+}
+
+.payment-request-details-panel__item-content p {
+  margin: 4px 0 0;
+  color: #7a6b92;
+  font-size: 12px;
+}
+
+.payment-request-details-panel__item-price {
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.payment-request-details-panel__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: auto;
+}
+
+.payment-request-details-panel__btn {
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-request-details-panel__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-request-details-panel__btn--reject {
+  background: #fdecec;
+  color: #dc2626;
+}
+
+.payment-request-details-panel__btn--approve {
+  background: #764ba2;
+  color: #fff;
+}

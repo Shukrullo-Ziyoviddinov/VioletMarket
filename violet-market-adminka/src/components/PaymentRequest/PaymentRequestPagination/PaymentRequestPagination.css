@@ -1,0 +1,30 @@
+.payment-request-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.payment-request-pagination__btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #e7e9f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-request-pagination__btn:hover {
+  border-color: #c9b8e6;
+}
+
+.payment-request-pagination__btn--active {
+  border-color: #764ba2;
+  background: #764ba2;
+  color: #fff;
+}
