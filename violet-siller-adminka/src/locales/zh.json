@@ -163,5 +163,22 @@
         "month": "月"
       }
     }
+  },
+  "sellerEarnings": {
+    "availableBalance": {
+      "title": "可用余额",
+      "description": "尚未提现的余额",
+      "action": "提现"
+    },
+    "inProcessBalance": {
+      "title": "处理中",
+      "description": "已提交提现的金额",
+      "action": "处理中的请求"
+    },
+    "withdrawnBalance": {
+      "title": "已提现",
+      "description": "累计已提现金额",
+      "action": "提现历史"
+    }
   }
 }

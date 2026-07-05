@@ -163,5 +163,22 @@
         "month": "Monthly"
       }
     }
+  },
+  "sellerEarnings": {
+    "availableBalance": {
+      "title": "Available balance",
+      "description": "Balance not yet withdrawn",
+      "action": "Withdraw funds"
+    },
+    "inProcessBalance": {
+      "title": "In process",
+      "description": "Amount submitted for withdrawal",
+      "action": "Requests in process"
+    },
+    "withdrawnBalance": {
+      "title": "Withdrawn",
+      "description": "Total withdrawn amount",
+      "action": "Withdrawal history"
+    }
   }
 }

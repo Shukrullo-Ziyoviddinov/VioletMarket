@@ -1,0 +1,155 @@
+.seller-earnings-balance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 220px;
+  padding: 20px 22px 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e7e9f0;
+}
+
+.seller-earnings-balance-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seller-earnings-balance-card__title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.seller-earnings-balance-card__title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.seller-earnings-balance-card__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.seller-earnings-balance-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.seller-earnings-balance-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.seller-earnings-balance-card__amount {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.seller-earnings-balance-card__description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.seller-earnings-balance-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  margin-top: auto;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.seller-earnings-balance-card__action:hover {
+  filter: brightness(0.98);
+}
+
+.seller-earnings-balance-card--available .seller-earnings-balance-card__icon {
+  color: #16a34a;
+  background: #dcfce7;
+}
+
+.seller-earnings-balance-card--available .seller-earnings-balance-card__amount {
+  color: #16a34a;
+}
+
+.seller-earnings-balance-card--available .seller-earnings-balance-card__action {
+  color: #16a34a;
+  border-color: #86efac;
+}
+
+.seller-earnings-balance-card--available .seller-earnings-balance-card__action:hover {
+  background: #f0fdf4;
+}
+
+.seller-earnings-balance-card--in-process .seller-earnings-balance-card__icon {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.seller-earnings-balance-card--in-process .seller-earnings-balance-card__amount {
+  color: #d97706;
+}
+
+.seller-earnings-balance-card--in-process .seller-earnings-balance-card__action {
+  color: #d97706;
+  border-color: #fcd34d;
+}
+
+.seller-earnings-balance-card--in-process .seller-earnings-balance-card__action:hover {
+  background: #fffbeb;
+}
+
+.seller-earnings-balance-card--withdrawn .seller-earnings-balance-card__icon {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.seller-earnings-balance-card--withdrawn .seller-earnings-balance-card__amount {
+  color: #2563eb;
+}
+
+.seller-earnings-balance-card--withdrawn .seller-earnings-balance-card__action {
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+.seller-earnings-balance-card--withdrawn .seller-earnings-balance-card__action:hover {
+  background: #eff6ff;
+}
+
+@media (max-width: 768px) {
+  .seller-earnings-balance-card__amount {
+    font-size: 24px;
+  }
+}

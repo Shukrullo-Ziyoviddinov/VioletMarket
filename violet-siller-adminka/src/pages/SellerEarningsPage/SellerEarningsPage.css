@@ -1,3 +1,6 @@
 .seller-earnings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   min-height: 200px;
 }
