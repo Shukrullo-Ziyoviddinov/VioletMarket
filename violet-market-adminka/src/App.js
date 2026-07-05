@@ -6,6 +6,7 @@ import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellersPage from './pages/SellersPage/SellersPage';
 import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
+import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -27,6 +28,7 @@ function App() {
           <Route path="products" element={<AllProductsPage />} />
           <Route path="flash-products" element={<FlashPage />} />
           <Route path="sellers" element={<SellersPage />} />
+          <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
