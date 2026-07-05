@@ -12,6 +12,7 @@ const STATUS_LABEL_KEYS = {
   [SELLER_EARNINGS_SOLD_PRODUCT_STATUS.AVAILABLE]: 'sellerEarnings.soldProducts.status.available',
   [SELLER_EARNINGS_SOLD_PRODUCT_STATUS.IN_PROCESS]: 'sellerEarnings.soldProducts.status.inProcess',
   [SELLER_EARNINGS_SOLD_PRODUCT_STATUS.WITHDRAWN]: 'sellerEarnings.soldProducts.status.withdrawn',
+  [SELLER_EARNINGS_SOLD_PRODUCT_STATUS.REJECTED]: 'sellerEarnings.soldProducts.status.rejected',
 };
 
 function isRowSelectable(row) {

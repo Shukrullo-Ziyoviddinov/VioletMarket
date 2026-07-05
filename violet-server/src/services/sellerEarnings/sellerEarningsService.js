@@ -5,7 +5,7 @@ const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { ensureSellerSoldItemsSynced } = require("./sellerSoldItemsSyncService");
 
-const VALID_STATUSES = new Set(["available", "in_process", "withdrawn"]);
+const VALID_STATUSES = new Set(["available", "in_process", "withdrawn", "rejected"]);
 
 function cleanSellerId(value) {
   return String(value || "").trim();

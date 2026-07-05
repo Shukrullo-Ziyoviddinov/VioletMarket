@@ -200,7 +200,8 @@
         "all": "Barcha holatlar",
         "available": "Mavjud",
         "inProcess": "Jarayonda",
-        "withdrawn": "Yechilgan"
+        "withdrawn": "Yechilgan",
+        "rejected": "Rad etilgan"
       },
       "footer": {
         "selectedCount": "Jami tanlangan: {{count}} ta mahsulot",

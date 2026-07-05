@@ -2,6 +2,7 @@ export const SELLER_EARNINGS_SOLD_PRODUCT_STATUS = {
   AVAILABLE: 'available',
   IN_PROCESS: 'in_process',
   WITHDRAWN: 'withdrawn',
+  REJECTED: 'rejected',
 };
 
 export function formatSellerEarningsSoldProductDate(value) {

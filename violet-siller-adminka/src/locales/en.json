@@ -200,7 +200,8 @@
         "all": "All statuses",
         "available": "Available",
         "inProcess": "In process",
-        "withdrawn": "Withdrawn"
+        "withdrawn": "Withdrawn",
+        "rejected": "Rejected"
       },
       "footer": {
         "selectedCount": "Total selected: {{count}} products",

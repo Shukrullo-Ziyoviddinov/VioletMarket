@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { assignAutoNumberId } = require("./autoIncrement");
 
-const SELLER_SOLD_ITEM_STATUSES = ["available", "in_process", "withdrawn"];
+const SELLER_SOLD_ITEM_STATUSES = ["available", "in_process", "withdrawn", "rejected"];
 
 const sellerSoldItemSchema = new mongoose.Schema(
   {

@@ -8,6 +8,7 @@ const STATUS_OPTIONS = [
   { value: 'available', labelKey: 'sellerEarnings.soldProducts.status.available' },
   { value: 'in_process', labelKey: 'sellerEarnings.soldProducts.status.inProcess' },
   { value: 'withdrawn', labelKey: 'sellerEarnings.soldProducts.status.withdrawn' },
+  { value: 'rejected', labelKey: 'sellerEarnings.soldProducts.status.rejected' },
 ];
 
 export default function SellerEarningsSoldProductsStatusFilter({

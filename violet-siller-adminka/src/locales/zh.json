@@ -200,7 +200,8 @@
         "all": "全部状态",
         "available": "可用",
         "inProcess": "处理中",
-        "withdrawn": "已提现"
+        "withdrawn": "已提现",
+        "rejected": "已拒绝"
       },
       "footer": {
         "selectedCount": "已选：{{count}} 件商品",
