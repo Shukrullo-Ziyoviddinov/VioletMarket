@@ -31,7 +31,9 @@ export default function PaymentRequestDetailsPanel({
   if (loading) {
     return (
       <aside className="payment-request-details-panel payment-request-details-panel--empty">
-        <p>Yuklanmoqda...</p>
+        <div className="payment-request-details-panel__empty-body">
+          <p>Yuklanmoqda...</p>
+        </div>
       </aside>
     );
   }
@@ -42,7 +44,9 @@ export default function PaymentRequestDetailsPanel({
         <div className="payment-request-details-panel__head">
           <h2>So&apos;rov tafsilotlari</h2>
         </div>
-        <p>Ro&apos;yxatdan so&apos;rovni tanlang</p>
+        <div className="payment-request-details-panel__empty-body">
+          <p>Ro&apos;yxatdan so&apos;rovni tanlang</p>
+        </div>
       </aside>
     );
   }

@@ -12,7 +12,7 @@
 }
 
 .payment-request-details-panel--empty {
-  justify-content: flex-start;
+  min-height: 520px;
   color: #8c8c8c;
 }
 
@@ -20,6 +20,20 @@
   margin: 0;
   color: #2a1842;
   font-size: 18px;
+}
+
+.payment-request-details-panel__empty-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.payment-request-details-panel__empty-body p {
+  margin: 0;
+  color: #8c8c8c;
+  font-size: 14px;
 }
 
 .payment-request-details-panel__head {
@@ -114,7 +128,7 @@
   gap: 12px;
   padding: 16px;
   border-radius: 10px;
-  background: #fafafa;
+  background: #ebe6f3;
 }
 
 .payment-request-details-panel__summary-item span {
@@ -185,11 +199,18 @@
   object-fit: cover;
 }
 
+.payment-request-details-panel__item-content {
+  min-width: 0;
+}
+
 .payment-request-details-panel__item-content strong {
   display: block;
   color: #2a1842;
   font-size: 13px;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .payment-request-details-panel__item-content p {
@@ -228,21 +249,21 @@
 }
 
 .payment-request-details-panel__btn--approve {
-  background: #52c41a;
+  background: #16a34a;
   color: #fff;
 }
 
 .payment-request-details-panel__btn--approve:hover:not(:disabled) {
-  background: #49ad17;
+  background: #15803d;
 }
 
 .payment-request-details-panel__btn--reject {
-  background: #ff4d4f;
+  background: #dc2626;
   color: #fff;
 }
 
 .payment-request-details-panel__btn--reject:hover:not(:disabled) {
-  background: #e84749;
+  background: #b91c1c;
 }
 
 @media (max-width: 1100px) {
