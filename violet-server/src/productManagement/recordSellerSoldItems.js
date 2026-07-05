@@ -1,8 +1,34 @@
 const { SellerSoldItem } = require("../models/sellerSoldItem");
+const { nextSequence } = require("../models/autoIncrement");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
 
 const PAID_STATUSES = ["paid", "delivered"];
+
+async function upsertSellerSoldItemUnit(filter, fields) {
+  const existing = await SellerSoldItem.findOne(filter).select({ id: 1 }).lean();
+
+  if (existing) {
+    return SellerSoldItem.findOneAndUpdate(
+      filter,
+      { $set: fields },
+      { returnDocument: "after" },
+    );
+  }
+
+  const id = await nextSequence("seller_sold_item_id");
+  return SellerSoldItem.findOneAndUpdate(
+    filter,
+    {
+      $set: fields,
+      $setOnInsert: {
+        id,
+        status: "available",
+      },
+    },
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+  );
+}
 
 async function recordSellerSoldItemsFromOrder(order) {
   if (!order || !PAID_STATUSES.includes(String(order.status || ""))) {
@@ -30,7 +56,7 @@ async function recordSellerSoldItemsFromOrder(order) {
       : unitPrice;
 
     for (let unitIndex = 0; unitIndex < quantity; unitIndex += 1) {
-      const row = await SellerSoldItem.findOneAndUpdate(
+      const row = await upsertSellerSoldItemUnit(
         {
           orderId: Number(order.id),
           sellerId,
@@ -38,19 +64,13 @@ async function recordSellerSoldItemsFromOrder(order) {
           unitIndex,
         },
         {
-          $set: {
-            price: unitAmount,
-            amount: unitAmount,
-            soldAt: paidAt,
-            dateKey: periodKeys.dateKey,
-            weekKey: periodKeys.weekKey,
-            monthKey: periodKeys.monthKey,
-          },
-          $setOnInsert: {
-            status: "available",
-          },
+          price: unitAmount,
+          amount: unitAmount,
+          soldAt: paidAt,
+          dateKey: periodKeys.dateKey,
+          weekKey: periodKeys.weekKey,
+          monthKey: periodKeys.monthKey,
         },
-        { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
       );
       docs.push(row);
     }
@@ -61,4 +81,5 @@ async function recordSellerSoldItemsFromOrder(order) {
 
 module.exports = {
   recordSellerSoldItemsFromOrder,
+  upsertSellerSoldItemUnit,
 };

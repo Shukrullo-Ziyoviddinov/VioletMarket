@@ -20,4 +20,4 @@ async function assignAutoNumberId(doc, counterKey, field = "id") {
   doc[field] = await nextSequence(counterKey);
 }
 
-module.exports = { assignAutoNumberId };
+module.exports = { assignAutoNumberId, nextSequence };

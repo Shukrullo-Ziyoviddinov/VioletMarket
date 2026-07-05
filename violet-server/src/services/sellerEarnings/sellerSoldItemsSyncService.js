@@ -1,10 +1,26 @@
 const { Order } = require("../../models/order");
 const { SellerSoldItem } = require("../../models/sellerSoldItem");
+const { nextSequence } = require("../../models/autoIncrement");
 const { PAID_STATUSES } = require("../adminSales/salesStatisticsHelpers");
 const { recordSellerSoldItemsFromOrder } = require("../../productManagement/recordSellerSoldItems");
 const { enrichOrderItemsWithProductData } = require("../../productManagement/salesOrderSyncService");
 
 let syncInFlight = null;
+
+async function repairSellerSoldItemsWithMissingIds() {
+  const brokenRows = await SellerSoldItem.find({
+    $or: [{ id: null }, { id: { $exists: false } }],
+  })
+    .select({ _id: 1 })
+    .lean();
+
+  for (const row of brokenRows) {
+    const id = await nextSequence("seller_sold_item_id");
+    await SellerSoldItem.updateOne({ _id: row._id }, { $set: { id } });
+  }
+
+  return brokenRows.length;
+}
 
 async function findOrderIdsNeedingSoldItemsSync() {
   const [paidOrderIds, syncedOrderIds] = await Promise.all([
@@ -20,6 +36,8 @@ async function findOrderIdsNeedingSoldItemsSync() {
 }
 
 async function runSellerSoldItemsSync() {
+  await repairSellerSoldItemsWithMissingIds();
+
   const orderIds = await findOrderIdsNeedingSoldItemsSync();
   if (!orderIds.length) return 0;
 
