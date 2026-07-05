@@ -51,6 +51,11 @@
   "header": {
     "adminDashboard": "Admin dashboard"
   },
+  "notifications": {
+    "open": "Bildirishnomalar",
+    "title": "Bildirishnomalar",
+    "empty": "Hozircha bildirishnoma yo'q"
+  },
   "discontinuedProducts": {
     "title": "Vaqtincha to'xtatilgan",
     "subtitle": "Mijozlar saytida vaqtincha ko'rinmaydigan mahsulotlar.",

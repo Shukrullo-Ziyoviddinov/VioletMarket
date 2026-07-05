@@ -1,0 +1,29 @@
+.admin-notifications-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #e8e0f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #2a1842;
+  font-size: 17px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.admin-notifications-bell:hover {
+  border-color: #c9b8e6;
+  box-shadow: 0 2px 8px rgba(118, 75, 162, 0.12);
+  color: #764ba2;
+}
+
+.admin-notifications-bell__empty {
+  padding: 28px 12px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #64748b;
+}

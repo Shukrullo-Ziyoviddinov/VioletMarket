@@ -61,7 +61,7 @@ const menuItems = [
   { key: 'video-banner', icon: <VideoCameraOutlined />, label: 'Video banner' },
   { key: 'country-seller-banner', icon: <ShopOutlined />, label: 'Davlat seller banner' },
   { key: 'navbar-category', icon: <MenuOutlined />, label: 'Navbar category' },
-  { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Product policy' },
+  { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Mahsulot siyosati' },
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar', route: '/sellers' },
   { key: 'payment-requests', icon: <DollarOutlined />, label: "To'lov so'rovlari", route: '/payment-requests' },
   { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar, Button, Layout, Space, Typography } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons';
+import AdminNotificationsBell from '../AdminNotificationsBell/AdminNotificationsBell';
 import './AdminHeader.css';
 
 const { Header } = Layout;
@@ -19,6 +20,7 @@ export default function AdminHeader({ collapsed, onToggle }) {
         <Text className="admin-header__title">Admin dashboard overview</Text>
       </div>
       <div className="admin-header__right">
+        <AdminNotificationsBell />
         <Space className="admin-header__user">
           <Avatar size="small" icon={<UserOutlined />} className="admin-header__avatar" />
           <Text>Admin</Text>

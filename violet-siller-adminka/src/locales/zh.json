@@ -51,6 +51,11 @@
   "header": {
     "adminDashboard": "管理后台"
   },
+  "notifications": {
+    "open": "通知",
+    "title": "通知",
+    "empty": "暂无通知"
+  },
   "discontinuedProducts": {
     "title": "已暂时暂停",
     "subtitle": "在客户网站上暂时不可见的产品。",

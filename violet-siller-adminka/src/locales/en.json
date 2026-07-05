@@ -51,6 +51,11 @@
   "header": {
     "adminDashboard": "Admin dashboard"
   },
+  "notifications": {
+    "open": "Notifications",
+    "title": "Notifications",
+    "empty": "No notifications yet"
+  },
   "discontinuedProducts": {
     "title": "Temporarily paused",
     "subtitle": "Products that are temporarily hidden from the customer site.",
