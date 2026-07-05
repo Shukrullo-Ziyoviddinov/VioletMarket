@@ -30,6 +30,7 @@ const { SellerRegistration } = require("./sellerRegistration");
 const { Order } = require("./order");
 const { SellerSale } = require("./sellerSale");
 const { SellerProductSale } = require("./sellerProductSale");
+const { SellerSoldItem } = require("./sellerSoldItem");
 
 module.exports = {
   Product,
@@ -64,4 +65,5 @@ module.exports = {
   Order,
   SellerSale,
   SellerProductSale,
+  SellerSoldItem,
 };

@@ -4,12 +4,12 @@ import SellerEarningsInProcessBalanceCard from '../SellerEarningsInProcessBalanc
 import SellerEarningsWithdrawnBalanceCard from '../SellerEarningsWithdrawnBalanceCard/SellerEarningsWithdrawnBalanceCard';
 import './SellerEarningsBalanceOverview.css';
 
-export default function SellerEarningsBalanceOverview() {
+export default function SellerEarningsBalanceOverview({ summary = {} }) {
   return (
     <div className="seller-earnings-balance-overview">
-      <SellerEarningsAvailableBalanceCard />
-      <SellerEarningsInProcessBalanceCard />
-      <SellerEarningsWithdrawnBalanceCard />
+      <SellerEarningsAvailableBalanceCard amount={summary.availableAmount} />
+      <SellerEarningsInProcessBalanceCard amount={summary.inProcessAmount} />
+      <SellerEarningsWithdrawnBalanceCard amount={summary.withdrawnAmount} />
     </div>
   );
 }

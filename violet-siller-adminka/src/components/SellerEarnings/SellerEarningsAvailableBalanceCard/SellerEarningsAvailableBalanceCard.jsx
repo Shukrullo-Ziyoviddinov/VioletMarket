@@ -1,11 +1,10 @@
 import React from 'react';
 import { InfoCircleOutlined, WalletOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { formatSellerEarningsAmount } from '../../../utils/sellerEarningsDisplay';
 import '../sellerEarningsBalanceCardShared.css';
 
-const STATIC_AMOUNT = "14 250 000 so'm";
-
-export default function SellerEarningsAvailableBalanceCard() {
+export default function SellerEarningsAvailableBalanceCard({ amount = 0 }) {
   const { t } = useTranslation();
 
   return (
@@ -25,7 +24,7 @@ export default function SellerEarningsAvailableBalanceCard() {
       </div>
 
       <div className="seller-earnings-balance-card__content">
-        <p className="seller-earnings-balance-card__amount">{STATIC_AMOUNT}</p>
+        <p className="seller-earnings-balance-card__amount">{formatSellerEarningsAmount(amount)}</p>
         <p className="seller-earnings-balance-card__description">
           {t('sellerEarnings.availableBalance.description')}
         </p>

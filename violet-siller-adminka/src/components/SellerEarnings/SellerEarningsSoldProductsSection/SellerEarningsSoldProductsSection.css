@@ -1,0 +1,56 @@
+.seller-earnings-sold-products-section {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e7e9f0;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.seller-earnings-sold-products-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eef0f5;
+}
+
+.seller-earnings-sold-products-section__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.seller-earnings-sold-products-section__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .seller-earnings-sold-products-section__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seller-earnings-sold-products-section__filters {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .seller-earnings-sold-products-section__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seller-earnings-sold-products-status-filter,
+  .seller-earnings-sold-products-date-filter {
+    width: 100%;
+    min-width: 0;
+  }
+}

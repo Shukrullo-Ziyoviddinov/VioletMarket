@@ -5,6 +5,7 @@ const sellerUploadController = require("../../controllers/sellerUploadController
 const { sellerAuthMiddleware } = require("../../middleware/sellerAuthMiddleware");
 const sellerMessageChatController = require("../../controllers/messageChat/sellerMessageChatController");
 const sellerSalesStatisticsController = require("../../controllers/sellerSalesStatisticsController");
+const sellerEarningsController = require("../../controllers/sellerEarningsController");
 
 const router = express.Router();
 
@@ -70,6 +71,21 @@ router.get(
   "/seller-auth/sales/brand-category-statistics",
   sellerAuthMiddleware,
   sellerSalesStatisticsController.getSellerBrandCategorySalesStatistics,
+);
+router.get(
+  "/seller-auth/earnings/summary",
+  sellerAuthMiddleware,
+  sellerEarningsController.getSellerEarningsSummary,
+);
+router.get(
+  "/seller-auth/earnings/sold-items",
+  sellerAuthMiddleware,
+  sellerEarningsController.getSellerSoldItems,
+);
+router.post(
+  "/seller-auth/earnings/withdrawal-requests",
+  sellerAuthMiddleware,
+  sellerEarningsController.submitSellerWithdrawalRequest,
 );
 router.get(
   "/seller-auth/product-form/options",

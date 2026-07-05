@@ -184,6 +184,32 @@
       "title": "已提现",
       "description": "累计已提现金额",
       "action": "提现历史"
+    },
+    "soldProducts": {
+      "title": "已售商品",
+      "loading": "加载中...",
+      "empty": "所选期间内没有已售商品",
+      "selectAll": "全选",
+      "columns": {
+        "product": "商品",
+        "soldAt": "售出日期",
+        "price": "价格",
+        "status": "状态"
+      },
+      "status": {
+        "all": "全部状态",
+        "available": "可用",
+        "inProcess": "处理中",
+        "withdrawn": "已提现"
+      },
+      "footer": {
+        "selectedCount": "已选：{{count}} 件商品",
+        "selectedTotal": "合计：{{amount}}",
+        "submit": "提交提现申请",
+        "submitting": "提交中...",
+        "submitSuccess": "{{count}} 件商品已转为处理中",
+        "submitError": "无法提交申请"
+      }
     }
   }
 }

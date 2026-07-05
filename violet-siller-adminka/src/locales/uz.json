@@ -184,6 +184,32 @@
       "title": "Yechilgan",
       "description": "Jami yechilgan summa",
       "action": "Pul yechish tarixi"
+    },
+    "soldProducts": {
+      "title": "Sotilgan mahsulotlar",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun sotilgan mahsulot topilmadi",
+      "selectAll": "Barchasini tanlash",
+      "columns": {
+        "product": "Mahsulot",
+        "soldAt": "Sotilgan sana",
+        "price": "Narxi",
+        "status": "Holati"
+      },
+      "status": {
+        "all": "Barcha holatlar",
+        "available": "Mavjud",
+        "inProcess": "Jarayonda",
+        "withdrawn": "Yechilgan"
+      },
+      "footer": {
+        "selectedCount": "Jami tanlangan: {{count}} ta mahsulot",
+        "selectedTotal": "Jami summa: {{amount}}",
+        "submit": "Pul yechish so'rovini yuborish",
+        "submitting": "Yuborilmoqda...",
+        "submitSuccess": "{{count}} ta mahsulot jarayonga o'tkazildi",
+        "submitError": "So'rov yuborib bo'lmadi"
+      }
     }
   }
 }

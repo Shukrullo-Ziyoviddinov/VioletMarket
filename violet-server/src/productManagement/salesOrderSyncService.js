@@ -4,10 +4,12 @@ const { SellerProductSale } = require("../models/sellerProductSale");
 const { CategoryProductSale } = require("../models/categoryProductSale");
 const { CountryCategoryProductSale } = require("../models/countryCategoryProductSale");
 const { BrandCategoryProductSale } = require("../models/brandCategoryProductSale");
+const { SellerSoldItem } = require("../models/sellerSoldItem");
 const { Product } = require("../models/product");
 const { PAID_STATUSES } = require("../services/adminSales/salesStatisticsHelpers");
 const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
+const { recordSellerSoldItemsFromOrder } = require("./recordSellerSoldItems");
 const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProductSales");
 const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
 const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
@@ -53,6 +55,7 @@ async function recordAllSalesFromOrder(order) {
   const enrichedOrder = await enrichOrderItemsWithProductData(order);
   await recordSellerSalesFromOrder(enrichedOrder);
   await recordSellerProductSalesFromOrder(enrichedOrder);
+  await recordSellerSoldItemsFromOrder(enrichedOrder);
   await recordCategoryProductSalesFromOrder(enrichedOrder);
   await recordCountryCategoryProductSalesFromOrder(enrichedOrder);
   await recordBrandCategoryProductSalesFromOrder(enrichedOrder);
@@ -63,6 +66,7 @@ async function findOrderIdsNeedingSync() {
     paidOrderIds,
     sellerSaleOrderIds,
     sellerProductSaleOrderIds,
+    sellerSoldItemOrderIds,
     categorySaleOrderIds,
     countrySaleOrderIds,
     brandSaleOrderIds,
@@ -73,6 +77,7 @@ async function findOrderIdsNeedingSync() {
     }),
     SellerSale.distinct("orderId"),
     SellerProductSale.distinct("orderId"),
+    SellerSoldItem.distinct("orderId"),
     CategoryProductSale.distinct("orderId"),
     CountryCategoryProductSale.distinct("orderId"),
     BrandCategoryProductSale.distinct("orderId"),
@@ -81,6 +86,7 @@ async function findOrderIdsNeedingSync() {
   const syncedSets = [
     sellerSaleOrderIds,
     sellerProductSaleOrderIds,
+    sellerSoldItemOrderIds,
     categorySaleOrderIds,
     countrySaleOrderIds,
     brandSaleOrderIds,

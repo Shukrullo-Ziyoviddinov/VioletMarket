@@ -1,0 +1,18 @@
+.seller-earnings-sold-products-date-filter {
+  min-width: 260px;
+}
+
+.seller-earnings-sold-products-date-filter__picker {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px !important;
+}
+
+.seller-earnings-sold-products-date-filter__picker.ant-picker {
+  border-color: #e7e9f0;
+}
+
+.seller-earnings-sold-products-date-filter__picker.ant-picker:hover,
+.seller-earnings-sold-products-date-filter__picker.ant-picker-focused {
+  border-color: #c9b8e6;
+}

@@ -184,6 +184,32 @@
       "title": "Withdrawn",
       "description": "Total withdrawn amount",
       "action": "Withdrawal history"
+    },
+    "soldProducts": {
+      "title": "Sold products",
+      "loading": "Loading...",
+      "empty": "No sold products found for the selected period",
+      "selectAll": "Select all",
+      "columns": {
+        "product": "Product",
+        "soldAt": "Sold date",
+        "price": "Price",
+        "status": "Status"
+      },
+      "status": {
+        "all": "All statuses",
+        "available": "Available",
+        "inProcess": "In process",
+        "withdrawn": "Withdrawn"
+      },
+      "footer": {
+        "selectedCount": "Total selected: {{count}} products",
+        "selectedTotal": "Total amount: {{amount}}",
+        "submit": "Send withdrawal request",
+        "submitting": "Submitting...",
+        "submitSuccess": "{{count}} products moved to in process",
+        "submitError": "Could not submit the request"
+      }
     }
   }
 }
