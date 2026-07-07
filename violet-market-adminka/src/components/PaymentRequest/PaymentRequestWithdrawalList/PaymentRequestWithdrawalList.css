@@ -16,7 +16,24 @@
   width: 100%;
   min-width: 860px;
   border-collapse: collapse;
-  table-layout: fixed;
+}
+
+.payment-request-withdrawal-list__table th:nth-child(1),
+.payment-request-withdrawal-table-row td:nth-child(1),
+.payment-request-withdrawal-list__table th:nth-child(4),
+.payment-request-withdrawal-table-row td:nth-child(4),
+.payment-request-withdrawal-list__table th:nth-child(5),
+.payment-request-withdrawal-table-row td:nth-child(5),
+.payment-request-withdrawal-list__table th:nth-child(6),
+.payment-request-withdrawal-table-row td:nth-child(6) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.payment-request-withdrawal-list__table th:nth-child(3),
+.payment-request-withdrawal-table-row__product-cell {
+  width: auto;
+  min-width: 220px;
 }
 
 .payment-request-withdrawal-list__table thead th {

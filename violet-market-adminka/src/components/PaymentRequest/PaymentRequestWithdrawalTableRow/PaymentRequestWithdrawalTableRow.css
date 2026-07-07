@@ -37,11 +37,6 @@
   object-fit: cover;
 }
 
-.payment-request-withdrawal-table-row__product-cell {
-  max-width: 0;
-  width: 28%;
-}
-
 .payment-request-withdrawal-table-row__product {
   display: flex;
   align-items: center;
