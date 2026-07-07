@@ -115,9 +115,13 @@ export async function approvePaymentRequest(paymentRequestId) {
   };
 }
 
-export async function rejectPaymentRequest(paymentRequestId) {
+export async function rejectPaymentRequest(paymentRequestId, comment = '') {
   const res = await fetch(apiUrl(`/api/admin/payment-requests/${paymentRequestId}/reject`), {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ comment }),
   });
   const payload = await parseJson(res);
   const data = payload?.data || {};

@@ -1,0 +1,56 @@
+.payment-request-reject-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-request-reject-modal__label {
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.payment-request-reject-modal__input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  resize: vertical;
+  color: #2a1842;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+.payment-request-reject-modal__input:focus {
+  outline: none;
+  border-color: #764ba2;
+}
+
+.payment-request-reject-modal__input:disabled {
+  background: #fafafa;
+}
+
+.payment-request-reject-modal__submit {
+  align-self: flex-end;
+  min-width: 120px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-request-reject-modal__submit:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.payment-request-reject-modal__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -13,6 +13,7 @@ import SellerEarningsSoldProductsDateFilter, {
 import SellerEarningsSoldProductsFooter from '../SellerEarningsSoldProductsFooter/SellerEarningsSoldProductsFooter';
 import SellerEarningsSoldProductsStatusFilter from '../SellerEarningsSoldProductsStatusFilter/SellerEarningsSoldProductsStatusFilter';
 import SellerEarningsSoldProductsTable from '../SellerEarningsSoldProductsTable/SellerEarningsSoldProductsTable';
+import SellerEarningsRejectionCommentModal from '../SellerEarningsRejectionCommentModal/SellerEarningsRejectionCommentModal';
 import './SellerEarningsSoldProductsSection.css';
 
 export default function SellerEarningsSoldProductsSection({ token, onSummaryChange }) {
@@ -24,6 +25,8 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [activeComment, setActiveComment] = useState('');
 
   const loadSoldItems = useCallback(async () => {
     if (!token) return;
@@ -98,6 +101,16 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
     }
   };
 
+  const handleViewComment = (comment) => {
+    setActiveComment(comment);
+    setCommentModalOpen(true);
+  };
+
+  const handleCloseCommentModal = () => {
+    setCommentModalOpen(false);
+    setActiveComment('');
+  };
+
   return (
     <section className="seller-earnings-sold-products-section">
       <div className="seller-earnings-sold-products-section__header">
@@ -122,11 +135,20 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
         loading={loading}
         onToggleRow={handleToggleRow}
         onToggleAll={handleToggleAll}
+        onViewComment={handleViewComment}
+      />
+
+      <SellerEarningsRejectionCommentModal
+        open={commentModalOpen}
+        comment={activeComment}
+        onClose={handleCloseCommentModal}
       />
 
       <SellerEarningsSoldProductsFooter
         selectedCount={selectedRows.filter(
-          (row) => row.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.AVAILABLE,
+          (row) =>
+            row.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.AVAILABLE
+            || row.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.REJECTED,
         ).length}
         selectedTotal={selectedTotal}
         submitting={submitting}

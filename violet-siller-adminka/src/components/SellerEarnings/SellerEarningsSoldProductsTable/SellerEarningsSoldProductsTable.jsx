@@ -6,6 +6,7 @@ import {
   getSoldProductTitle,
   SELLER_EARNINGS_SOLD_PRODUCT_STATUS,
 } from '../../../utils/sellerEarningsDisplay';
+import SellerEarningsSoldProductsCommentCell from '../SellerEarningsSoldProductsCommentCell/SellerEarningsSoldProductsCommentCell';
 import './SellerEarningsSoldProductsTable.css';
 
 const STATUS_LABEL_KEYS = {
@@ -16,7 +17,10 @@ const STATUS_LABEL_KEYS = {
 };
 
 function isRowSelectable(row) {
-  return row?.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.AVAILABLE;
+  return (
+    row?.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.AVAILABLE
+    || row?.status === SELLER_EARNINGS_SOLD_PRODUCT_STATUS.REJECTED
+  );
 }
 
 export default function SellerEarningsSoldProductsTable({
@@ -25,6 +29,7 @@ export default function SellerEarningsSoldProductsTable({
   loading = false,
   onToggleRow,
   onToggleAll,
+  onViewComment,
 }) {
   const { t, i18n } = useTranslation();
 
@@ -63,6 +68,7 @@ export default function SellerEarningsSoldProductsTable({
               <th>{t('sellerEarnings.soldProducts.columns.soldAt')}</th>
               <th>{t('sellerEarnings.soldProducts.columns.price')}</th>
               <th>{t('sellerEarnings.soldProducts.columns.status')}</th>
+              <th>{t('sellerEarnings.soldProducts.columns.comment')}</th>
             </tr>
           </thead>
           <tbody>
@@ -107,6 +113,12 @@ export default function SellerEarningsSoldProductsTable({
                     >
                       {t(STATUS_LABEL_KEYS[row.status] || STATUS_LABEL_KEYS.available)}
                     </span>
+                  </td>
+                  <td>
+                    <SellerEarningsSoldProductsCommentCell
+                      comment={row.rejectionComment}
+                      onView={onViewComment}
+                    />
                   </td>
                 </tr>
               );

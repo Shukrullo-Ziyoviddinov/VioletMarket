@@ -15,6 +15,7 @@ import PaymentRequestFiltersBar, {
 import PaymentRequestSellerList from '../PaymentRequestSellerList/PaymentRequestSellerList';
 import PaymentRequestDetailsPanel from '../PaymentRequestDetailsPanel/PaymentRequestDetailsPanel';
 import PaymentRequestViewModal from '../PaymentRequestViewModal/PaymentRequestViewModal';
+import PaymentRequestRejectModal from '../PaymentRequestRejectModal/PaymentRequestRejectModal';
 import './PaymentRequestWorkspace.css';
 
 const EMPTY_STATS = {
@@ -47,6 +48,8 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [modalRequestId, setModalRequestId] = useState(null);
   const [modalRequest, setModalRequest] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState(null);
 
   const loadStats = useCallback(async () => {
     try {
@@ -181,6 +184,45 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     setModalRequest(null);
   };
 
+  const handleOpenRejectModal = (paymentRequestId) => {
+    if (!paymentRequestId) return;
+    setRejectTargetId(paymentRequestId);
+    setRejectModalOpen(true);
+  };
+
+  const handleCloseRejectModal = () => {
+    if (actionLoading) return;
+    setRejectModalOpen(false);
+    setRejectTargetId(null);
+  };
+
+  const handleRejectSubmit = async (comment) => {
+    if (!rejectTargetId) return;
+
+    const targetId = rejectTargetId;
+    setActionLoading(true);
+    try {
+      const detail = await rejectPaymentRequest(targetId, comment);
+      setRejectModalOpen(false);
+      setRejectTargetId(null);
+
+      if (activeRequestId === targetId) {
+        setActiveRequest(detail);
+      }
+      if (modalRequestId === targetId) {
+        setModalRequest(detail);
+      }
+      setActiveRequestId(targetId);
+
+      message.success("So'rov rad etildi");
+      await refreshAll(targetId, modalRequestId === targetId ? targetId : modalRequestId);
+    } catch (error) {
+      message.error(error?.message || 'Rad etishda xatolik');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleModalApprove = async () => {
     if (!modalRequestId) return;
     setActionLoading(true);
@@ -198,21 +240,8 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     }
   };
 
-  const handleModalReject = async () => {
-    if (!modalRequestId) return;
-    setActionLoading(true);
-    try {
-      const detail = await rejectPaymentRequest(modalRequestId);
-      setModalRequest(detail);
-      setActiveRequestId(modalRequestId);
-      setActiveRequest(detail);
-      message.success("So'rov rad etildi");
-      await refreshAll(modalRequestId, modalRequestId);
-    } catch (error) {
-      message.error(error?.message || 'Rad etishda xatolik');
-    } finally {
-      setActionLoading(false);
-    }
+  const handleModalReject = () => {
+    handleOpenRejectModal(modalRequestId);
   };
 
   const handleApprove = async () => {
@@ -230,19 +259,8 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     }
   };
 
-  const handleReject = async () => {
-    if (!activeRequestId) return;
-    setActionLoading(true);
-    try {
-      const detail = await rejectPaymentRequest(activeRequestId);
-      setActiveRequest(detail);
-      message.success("So'rov rad etildi");
-      await refreshAll(activeRequestId);
-    } catch (error) {
-      message.error(error?.message || 'Rad etishda xatolik');
-    } finally {
-      setActionLoading(false);
-    }
+  const handleReject = () => {
+    handleOpenRejectModal(activeRequestId);
   };
 
   return (
@@ -290,6 +308,13 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
         onClose={handleCloseViewModal}
         onApprove={handleModalApprove}
         onReject={handleModalReject}
+      />
+
+      <PaymentRequestRejectModal
+        open={rejectModalOpen}
+        loading={actionLoading}
+        onClose={handleCloseRejectModal}
+        onSubmit={handleRejectSubmit}
       />
     </div>
   );

@@ -140,6 +140,7 @@ async function listSellerSoldItems(sellerId, query = {}) {
       price: toNumber(row.price, 0),
       amount: toNumber(row.amount, 0),
       status: String(row.status || "available"),
+      rejectionComment: String(row.rejectionComment || "").trim() || null,
     };
   });
 }
@@ -170,11 +171,11 @@ async function submitSellerWithdrawalRequest(sellerId, payload = {}) {
     throw new HttpError(404, "Tanlangan mahsulotlardan ba'zilari topilmadi", "NOT_FOUND");
   }
 
-  const invalidRow = rows.find((row) => String(row.status) !== "available");
+  const invalidRow = rows.find((row) => !["available", "rejected"].includes(String(row.status)));
   if (invalidRow) {
     throw new HttpError(
       409,
-      "Faqat mavjud holatdagi mahsulotlar uchun so'rov yuborish mumkin",
+      "Faqat mavjud yoki rad etilgan mahsulotlar uchun so'rov yuborish mumkin",
       "CONFLICT",
     );
   }

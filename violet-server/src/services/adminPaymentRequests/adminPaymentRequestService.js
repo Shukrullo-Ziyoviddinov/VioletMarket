@@ -225,6 +225,7 @@ async function listPaymentRequests(query = {}) {
       sellerName: resolveSellerDisplayName(account) || cleanSellerId(row.sellerId),
       sellerLogoUrl: resolvePublicAssetUrl(account?.logo || ""),
       status: String(row.status || "in_process"),
+      rejectionComment: String(row.rejectionComment || "").trim() || null,
       totalAmount: toNumber(row.totalAmount, 0),
       itemCount: toNumber(row.itemCount, 0),
       submittedAt: row.submittedAt,
@@ -266,6 +267,7 @@ async function loadPaymentRequestItems(paymentRequestId) {
       price: toNumber(row.price, 0),
       amount: toNumber(row.amount, 0),
       status: String(row.status || "in_process"),
+      rejectionComment: String(row.rejectionComment || "").trim() || null,
     };
   });
 }
@@ -302,6 +304,7 @@ async function getPaymentRequestDetail(paymentRequestId) {
     itemCount: toNumber(row.itemCount, 0),
     submittedAt: row.submittedAt,
     reviewedAt: row.reviewedAt || null,
+    rejectionComment: String(row.rejectionComment || "").trim() || null,
     items,
   };
 }
@@ -325,20 +328,25 @@ async function approvePaymentRequest(paymentRequestId) {
   return getPaymentRequestDetail(row.id);
 }
 
-async function rejectPaymentRequest(paymentRequestId) {
+async function rejectPaymentRequest(paymentRequestId, payload = {}) {
   const row = await getPaymentRequestByIdOrThrow(paymentRequestId);
   if (String(row.status) !== "in_process") {
     throw new HttpError(409, "Faqat jarayondagi so'rov rad etiladi", "CONFLICT");
   }
 
+  const rejectionComment = String(payload.comment || "").trim();
+  if (!rejectionComment) {
+    throw new HttpError(400, "Rad etish sababi yozilishi shart", "VALIDATION_ERROR");
+  }
+
   const reviewedAt = new Date();
   await SellerPaymentRequest.updateOne(
     { id: row.id },
-    { $set: { status: "rejected", reviewedAt } },
+    { $set: { status: "rejected", reviewedAt, rejectionComment } },
   );
   await SellerSoldItem.updateMany(
     { paymentRequestId: row.id },
-    { $set: { status: "rejected" } },
+    { $set: { status: "rejected", rejectionComment } },
   );
 
   return getPaymentRequestDetail(row.id);
@@ -372,7 +380,7 @@ async function createSellerPaymentRequest(sellerId, itemRows) {
 
   await SellerSoldItem.updateMany(
     { id: { $in: rows.map((row) => Number(row.id)) }, sellerId: normalizedSellerId },
-    { $set: { status: "in_process", paymentRequestId: id } },
+    { $set: { status: "in_process", paymentRequestId: id, rejectionComment: null } },
   );
 
   return paymentRequest;

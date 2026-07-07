@@ -39,6 +39,7 @@ function normalizeSoldItem(row) {
     price: Number(row?.price) || 0,
     amount: Number(row?.amount) || 0,
     status: String(row?.status || 'available'),
+    rejectionComment: String(row?.rejectionComment || '').trim() || '',
   };
 }
 

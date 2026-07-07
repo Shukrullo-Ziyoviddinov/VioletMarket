@@ -18,6 +18,7 @@ const sellerPaymentRequestSchema = new mongoose.Schema(
     itemCount: { type: Number, default: 0 },
     submittedAt: { type: Date, required: true, index: true },
     reviewedAt: { type: Date, default: null },
+    rejectionComment: { type: String, default: null, trim: true },
     dateKey: { type: String, required: true, index: true },
     weekKey: { type: String, required: true, index: true },
     monthKey: { type: String, required: true, index: true },

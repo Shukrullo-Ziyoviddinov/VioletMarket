@@ -27,7 +27,10 @@ const approvePaymentRequest = asyncHandler(async (req, res) => {
 });
 
 const rejectPaymentRequest = asyncHandler(async (req, res) => {
-  const data = await adminPaymentRequestService.rejectPaymentRequest(req.params.paymentRequestId);
+  const data = await adminPaymentRequestService.rejectPaymentRequest(
+    req.params.paymentRequestId,
+    req.body || {},
+  );
   res.json({ ok: true, data });
 });
 

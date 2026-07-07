@@ -23,6 +23,7 @@ const sellerSoldItemSchema = new mongoose.Schema(
     weekKey: { type: String, required: true, index: true },
     monthKey: { type: String, required: true, index: true },
     paymentRequestId: { type: Number, default: null, index: true },
+    rejectionComment: { type: String, default: null, trim: true },
   },
   {
     collection: "seller_sold_items",

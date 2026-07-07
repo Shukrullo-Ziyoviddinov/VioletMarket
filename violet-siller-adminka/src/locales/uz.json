@@ -194,7 +194,11 @@
         "product": "Mahsulot",
         "soldAt": "Sotilgan sana",
         "price": "Narxi",
-        "status": "Holati"
+        "status": "Holati",
+        "comment": "Izoh"
+      },
+      "comment": {
+        "view": "Ko'rish"
       },
       "status": {
         "all": "Barcha holatlar",

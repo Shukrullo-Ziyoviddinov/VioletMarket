@@ -194,7 +194,11 @@
         "product": "商品",
         "soldAt": "售出日期",
         "price": "价格",
-        "status": "状态"
+        "status": "状态",
+        "comment": "备注"
+      },
+      "comment": {
+        "view": "查看"
       },
       "status": {
         "all": "全部状态",

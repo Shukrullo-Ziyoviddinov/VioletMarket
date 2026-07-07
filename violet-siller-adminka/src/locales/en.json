@@ -194,7 +194,11 @@
         "product": "Product",
         "soldAt": "Sold date",
         "price": "Price",
-        "status": "Status"
+        "status": "Status",
+        "comment": "Comment"
+      },
+      "comment": {
+        "view": "View"
       },
       "status": {
         "all": "All statuses",

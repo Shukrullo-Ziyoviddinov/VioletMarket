@@ -1,0 +1,18 @@
+.seller-earnings-sold-products-comment-cell__empty {
+  color: #8c8c8c;
+}
+
+.seller-earnings-sold-products-comment-cell__btn {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: #764ba2;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.seller-earnings-sold-products-comment-cell__btn:hover {
+  color: #56337d;
+}
