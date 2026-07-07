@@ -65,11 +65,6 @@ export default function PaymentRequestRejectedProductsModalContent({ visible = f
 
   return (
     <div className="payment-request-rejected-products-modal">
-      <p className="payment-request-rejected-products-modal__subtitle">
-        Har bir mahsulot bitta kartochkada ko&apos;rinadi. Necha marta rad etilgani son bilan
-        yozilgan.
-      </p>
-
       <div className="payment-request-rejected-products-modal__list">
         {products.map((product) => (
           <article

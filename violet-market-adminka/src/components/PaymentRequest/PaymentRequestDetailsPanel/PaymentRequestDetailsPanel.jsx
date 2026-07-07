@@ -81,8 +81,8 @@ export default function PaymentRequestDetailsPanel({
           )}
         </div>
         <div>
-          <span className="payment-request-details-panel__seller-label">Seller</span>
           <strong>{request.sellerName}</strong>
+          <span className="payment-request-details-panel__seller-label">Seller</span>
         </div>
       </div>
 
