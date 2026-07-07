@@ -37,6 +37,11 @@
   object-fit: cover;
 }
 
+.payment-request-withdrawal-table-row__product-cell {
+  max-width: 0;
+  width: 28%;
+}
+
 .payment-request-withdrawal-table-row__product {
   display: flex;
   align-items: center;
@@ -62,10 +67,18 @@
   object-fit: cover;
 }
 
+.payment-request-withdrawal-table-row__product-text {
+  min-width: 0;
+  flex: 1;
+}
+
 .payment-request-withdrawal-table-row__product strong {
   display: block;
   font-size: 14px;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .payment-request-withdrawal-table-row__product p {

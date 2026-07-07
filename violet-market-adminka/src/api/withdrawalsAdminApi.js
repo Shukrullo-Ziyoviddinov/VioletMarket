@@ -60,6 +60,7 @@ export async function fetchWithdrawals(filters = {}) {
   }
   if (filters?.dateFrom) params.set('dateFrom', String(filters.dateFrom));
   if (filters?.dateTo) params.set('dateTo', String(filters.dateTo));
+  if (filters?.search) params.set('search', String(filters.search).trim());
   if (filters?.page) params.set('page', String(filters.page));
 
   const query = params.toString();

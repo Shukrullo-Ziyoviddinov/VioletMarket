@@ -1,11 +1,37 @@
 .payment-request-withdrawal-filters-bar {
   display: grid;
-  grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 1fr);
+  grid-template-columns: minmax(220px, 1.4fr) minmax(240px, 1.2fr) minmax(180px, 1fr);
   gap: 12px;
   padding: 16px;
   border: 1px solid #e8e8e8;
   border-radius: 12px;
   background: #fff;
+}
+
+.payment-request-withdrawal-filters-bar__search {
+  border-radius: 10px;
+  background: #f8f6fc;
+  border: 1px solid #e3d9ef;
+}
+
+.payment-request-withdrawal-filters-bar__search:hover,
+.payment-request-withdrawal-filters-bar__search.ant-input-affix-wrapper-focused {
+  background: #f3eef9;
+  border-color: #d8c9ea;
+}
+
+.payment-request-withdrawal-filters-bar__search .ant-input {
+  font-size: 14px;
+  background: #f8f6fc;
+}
+
+.payment-request-withdrawal-filters-bar__search.ant-input-affix-wrapper > input.ant-input {
+  background: #f8f6fc;
+}
+
+.payment-request-withdrawal-filters-bar__search:hover .ant-input,
+.payment-request-withdrawal-filters-bar__search.ant-input-affix-wrapper-focused > input.ant-input {
+  background: #f3eef9;
 }
 
 @media (max-width: 768px) {

@@ -31,7 +31,7 @@ export default function PaymentRequestWithdrawalTableRow({ withdrawal, onView })
           <span>{withdrawal.sellerName || 'Sotuvchi'}</span>
         </div>
       </td>
-      <td>
+      <td className="payment-request-withdrawal-table-row__product-cell">
         <div className="payment-request-withdrawal-table-row__product">
           <div className="payment-request-withdrawal-table-row__product-image">
             {withdrawal.imageUrl ? (
@@ -43,8 +43,10 @@ export default function PaymentRequestWithdrawalTableRow({ withdrawal, onView })
               <span>—</span>
             )}
           </div>
-          <div>
-            <strong>{getPaymentRequestProductTitle(withdrawal)}</strong>
+          <div className="payment-request-withdrawal-table-row__product-text">
+            <strong title={getPaymentRequestProductTitle(withdrawal)}>
+              {getPaymentRequestProductTitle(withdrawal)}
+            </strong>
             <p>{withdrawal.productCode}</p>
           </div>
         </div>

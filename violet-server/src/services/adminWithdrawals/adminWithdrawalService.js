@@ -69,6 +69,38 @@ function resolveSellerDisplayName(account) {
   return String(account?.name?.uz || account?.name?.ru || account?.id || "").trim();
 }
 
+function escapeRegex(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function resolveSellerIdsBySearch(search) {
+  const query = String(search || "").trim();
+  if (!query) return null;
+
+  const regex = new RegExp(escapeRegex(query), "i");
+  const accounts = await SellerAccount.find({
+    $or: [{ id: regex }, { "name.uz": regex }, { "name.ru": regex }],
+  })
+    .select({ id: 1 })
+    .lean();
+
+  return accounts.map((account) => cleanSellerId(account.id)).filter(Boolean);
+}
+
+function buildEmptyWithdrawalsPage(page, limit) {
+  return {
+    page,
+    limit,
+    total: 0,
+    totalPages: 1,
+    withdrawals: [],
+  };
+}
+
+function resolveRequestSubmittedAt(request) {
+  return request?.submittedAt || request?.createdAt || null;
+}
+
 async function backfillWithdrawalsFromApprovedRequests() {
   const approvedRequests = await SellerPaymentRequest.find({ status: "withdrawn" })
     .sort({ reviewedAt: 1, id: 1 })
@@ -85,6 +117,7 @@ async function backfillWithdrawalsFromApprovedRequests() {
     if (!items.length) continue;
 
     const withdrawnAt = request.reviewedAt || new Date();
+    const submittedAt = resolveRequestSubmittedAt(request);
     const periodKeys = getPeriodKeysFromPaidAt(withdrawnAt);
     const requestCode = String(request.requestCode || `PR-${String(request.id).padStart(5, "0")}`);
 
@@ -99,6 +132,7 @@ async function backfillWithdrawalsFromApprovedRequests() {
         soldItemId: Number(item.id),
         productId: Number(item.productId),
         amount: toNumber(item.amount, 0),
+        submittedAt,
         withdrawnAt,
         dateKey: periodKeys.dateKey,
         weekKey: periodKeys.weekKey,
@@ -115,8 +149,41 @@ async function backfillWithdrawalsFromApprovedRequests() {
   return createdCount;
 }
 
+async function backfillWithdrawalSubmittedAt() {
+  const rows = await SellerWithdrawal.find({
+    $or: [{ submittedAt: { $exists: false } }, { submittedAt: null }],
+  })
+    .select({ id: 1, paymentRequestId: 1 })
+    .lean();
+
+  if (!rows.length) return 0;
+
+  const paymentRequestIds = [
+    ...new Set(rows.map((row) => Number(row.paymentRequestId)).filter(Number.isFinite)),
+  ];
+  const paymentRequests = paymentRequestIds.length
+    ? await SellerPaymentRequest.find({ id: { $in: paymentRequestIds } })
+        .select({ id: 1, submittedAt: 1, createdAt: 1 })
+        .lean()
+    : [];
+
+  const requestById = new Map(paymentRequests.map((row) => [Number(row.id), row]));
+  let updatedCount = 0;
+
+  for (const row of rows) {
+    const submittedAt = resolveRequestSubmittedAt(requestById.get(Number(row.paymentRequestId)));
+    if (!submittedAt) continue;
+
+    await SellerWithdrawal.updateOne({ id: row.id }, { $set: { submittedAt } });
+    updatedCount += 1;
+  }
+
+  return updatedCount;
+}
+
 async function buildWithdrawalStats() {
   await backfillWithdrawalsFromApprovedRequests();
+  await backfillWithdrawalSubmittedAt();
 
   const [amountRows, requestRows] = await Promise.all([
     SellerWithdrawal.aggregate([
@@ -138,6 +205,7 @@ async function recordWithdrawalsForPaymentRequest(paymentRequest, itemRows, with
   if (!rows.length) return [];
 
   const reviewedAt = withdrawnAt || new Date();
+  const submittedAt = resolveRequestSubmittedAt(request);
   const periodKeys = getPeriodKeysFromPaidAt(reviewedAt);
   const paymentRequestId = Number(request.id);
   const requestCode = String(request.requestCode || `PR-${String(paymentRequestId).padStart(5, "0")}`);
@@ -158,6 +226,7 @@ async function recordWithdrawalsForPaymentRequest(paymentRequest, itemRows, with
       soldItemId,
       productId: Number(item.productId),
       amount: toNumber(item.amount, 0),
+      submittedAt,
       withdrawnAt: reviewedAt,
       dateKey: periodKeys.dateKey,
       weekKey: periodKeys.weekKey,
@@ -195,14 +264,29 @@ async function listWithdrawalSellerOptions() {
 
 async function listWithdrawals(query = {}) {
   await backfillWithdrawalsFromApprovedRequests();
+  await backfillWithdrawalSubmittedAt();
 
   const sellerId = cleanSellerId(query.sellerId);
+  const searchSellerIds = await resolveSellerIdsBySearch(query.search);
   const withdrawnAtRange = buildWithdrawnAtRange(query);
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(50, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
 
+  if (searchSellerIds && !searchSellerIds.length) {
+    return buildEmptyWithdrawalsPage(page, limit);
+  }
+
   const match = {};
-  if (sellerId) match.sellerId = sellerId;
+  if (sellerId && searchSellerIds) {
+    if (!searchSellerIds.includes(sellerId)) {
+      return buildEmptyWithdrawalsPage(page, limit);
+    }
+    match.sellerId = sellerId;
+  } else if (sellerId) {
+    match.sellerId = sellerId;
+  } else if (searchSellerIds) {
+    match.sellerId = { $in: searchSellerIds };
+  }
   if (withdrawnAtRange) match.withdrawnAt = withdrawnAtRange;
 
   const [total, rows] = await Promise.all([
@@ -233,7 +317,7 @@ async function listWithdrawals(query = {}) {
       : [],
     paymentRequestIds.length
       ? SellerPaymentRequest.find({ id: { $in: paymentRequestIds } })
-          .select({ id: 1, submittedAt: 1 })
+          .select({ id: 1, submittedAt: 1, createdAt: 1 })
           .lean()
       : [],
   ]);
@@ -260,7 +344,7 @@ async function listWithdrawals(query = {}) {
       title: resolveProductTitle(product),
       imageUrl: resolveProductImage(product),
       amount: toNumber(row.amount, 0),
-      submittedAt: paymentRequest?.submittedAt || null,
+      submittedAt: row.submittedAt || resolveRequestSubmittedAt(paymentRequest),
       withdrawnAt: row.withdrawnAt,
     };
   });

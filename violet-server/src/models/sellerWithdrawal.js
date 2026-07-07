@@ -10,6 +10,7 @@ const sellerWithdrawalSchema = new mongoose.Schema(
     soldItemId: { type: Number, required: true, index: true },
     productId: { type: Number, required: true, index: true },
     amount: { type: Number, default: 0 },
+    submittedAt: { type: Date, default: null, index: true },
     withdrawnAt: { type: Date, required: true, index: true },
     dateKey: { type: String, required: true, index: true },
     weekKey: { type: String, required: true, index: true },

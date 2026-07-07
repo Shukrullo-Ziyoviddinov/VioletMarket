@@ -13,6 +13,11 @@ function formatRequestCode(code) {
   return value.startsWith('#') ? value : `#${value}`;
 }
 
+function formatSubmittedAt(value) {
+  const formatted = formatPaymentRequestDateTime(value);
+  return formatted || '—';
+}
+
 export default function PaymentRequestWithdrawalModal({ open, withdrawal, onClose }) {
   const title = withdrawal
     ? `Yechish ${formatRequestCode(withdrawal.requestCode)}`
@@ -48,11 +53,11 @@ export default function PaymentRequestWithdrawalModal({ open, withdrawal, onClos
             </div>
             <div className="payment-request-withdrawal-modal__row">
               <span>📅 So&apos;rov yuborilgan sana:</span>
-              <strong>{formatPaymentRequestDateTime(withdrawal.submittedAt)}</strong>
+              <strong>{formatSubmittedAt(withdrawal.submittedAt)}</strong>
             </div>
             <div className="payment-request-withdrawal-modal__row">
               <span>✅ Yechilgan sana:</span>
-              <strong>{formatPaymentRequestDateTime(withdrawal.withdrawnAt)}</strong>
+              <strong>{formatSubmittedAt(withdrawal.withdrawnAt)}</strong>
             </div>
             <div className="payment-request-withdrawal-modal__row">
               <span>💰 Yechilgan summa:</span>

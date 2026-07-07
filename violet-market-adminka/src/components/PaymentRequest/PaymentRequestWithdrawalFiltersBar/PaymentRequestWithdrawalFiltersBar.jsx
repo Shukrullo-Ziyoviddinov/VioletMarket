@@ -1,4 +1,6 @@
 import React from 'react';
+import { Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import PaymentRequestDateFilter, {
   formatPaymentRequestDateParam,
   getDefaultPaymentRequestDateRange,
@@ -14,11 +16,21 @@ export default function PaymentRequestWithdrawalFiltersBar({
   sellerId,
   onSellerIdChange,
   sellers,
+  search,
+  onSearchChange,
   openFilter,
   onOpenFilterChange,
 }) {
   return (
     <div className="payment-request-withdrawal-filters-bar">
+      <Input
+        allowClear
+        className="payment-request-withdrawal-filters-bar__search"
+        placeholder="Seller nomi yoki ID"
+        prefix={<SearchOutlined />}
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
+      />
       <PaymentRequestDateFilter value={dateRange} onChange={onDateRangeChange} />
       <PaymentRequestSellerFilter
         value={sellerId}

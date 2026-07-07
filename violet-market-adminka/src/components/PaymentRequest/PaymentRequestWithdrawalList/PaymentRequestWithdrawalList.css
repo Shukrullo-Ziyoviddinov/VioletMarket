@@ -16,6 +16,7 @@
   width: 100%;
   min-width: 860px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .payment-request-withdrawal-list__table thead th {

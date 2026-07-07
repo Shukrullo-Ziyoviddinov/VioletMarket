@@ -16,6 +16,8 @@ const PAGE_SIZE = 10;
 export default function PaymentRequestWithdrawalWorkspace() {
   const [dateRange, setDateRange] = useState(getDefaultPaymentRequestDateRange);
   const [sellerId, setSellerId] = useState('all');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [openFilter, setOpenFilter] = useState(null);
   const [sellers, setSellers] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
@@ -41,6 +43,7 @@ export default function PaymentRequestWithdrawalWorkspace() {
       const data = await fetchWithdrawals({
         page,
         sellerId,
+        search: debouncedSearch,
         dateFrom: start ? formatPaymentRequestDateParam(start) : '',
         dateTo: end ? formatPaymentRequestDateParam(end) : '',
       });
@@ -55,7 +58,15 @@ export default function PaymentRequestWithdrawalWorkspace() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, page, sellerId]);
+  }, [dateRange, debouncedSearch, page, sellerId]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     loadSellerOptions();
@@ -78,6 +89,8 @@ export default function PaymentRequestWithdrawalWorkspace() {
         sellerId={sellerId}
         onSellerIdChange={(nextSellerId) => handleFilterChange(() => setSellerId(nextSellerId))}
         sellers={sellers}
+        search={search}
+        onSearchChange={(value) => handleFilterChange(() => setSearch(value))}
         openFilter={openFilter}
         onOpenFilterChange={setOpenFilter}
       />
