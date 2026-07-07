@@ -6,7 +6,6 @@ import './PaymentRequestSellerList.css';
 const TABLE_COLUMNS = [
   "So'rov raqami",
   'Seller',
-  'Sana',
   'Mahsulotlar soni',
   'Jami summa',
   'Holati',
@@ -17,6 +16,7 @@ export default function PaymentRequestSellerList({
   requests,
   activeRequestId,
   onSelect,
+  onView,
   page,
   totalPages,
   total = 0,
@@ -55,7 +55,7 @@ export default function PaymentRequestSellerList({
                   request={request}
                   isActive={activeRequestId === request.id}
                   onSelect={onSelect}
-                  onView={onSelect}
+                  onView={onView}
                 />
               ))
             )}

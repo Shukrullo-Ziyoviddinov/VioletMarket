@@ -27,3 +27,13 @@ export const PAYMENT_REQUEST_STATUS_LABELS = {
   withdrawn: 'Yechilgan',
   rejected: 'Rad etilgan',
 };
+
+export const PAYMENT_REQUEST_MODAL_STATUS_LABELS = {
+  in_process: 'Jarayonda',
+  withdrawn: 'Tasdiqlangan',
+  rejected: 'Rad etilgan',
+};
+
+export function getPaymentRequestModalStatusLabel(status) {
+  return PAYMENT_REQUEST_MODAL_STATUS_LABELS[status] || status;
+}

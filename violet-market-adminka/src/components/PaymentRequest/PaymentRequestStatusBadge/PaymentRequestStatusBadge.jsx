@@ -13,14 +13,14 @@ const STATUS_ICONS = {
   rejected: CloseCircleOutlined,
 };
 
-export default function PaymentRequestStatusBadge({ status, withIcon = false }) {
+export default function PaymentRequestStatusBadge({ status, withIcon = false, label }) {
   const Icon = STATUS_ICONS[status];
-  const label = PAYMENT_REQUEST_STATUS_LABELS[status] || status;
+  const displayLabel = label || PAYMENT_REQUEST_STATUS_LABELS[status] || status;
 
   return (
     <span className={`payment-request-status-badge payment-request-status-badge--${status}`}>
       {withIcon && Icon ? <Icon /> : null}
-      {label}
+      {displayLabel}
     </span>
   );
 }

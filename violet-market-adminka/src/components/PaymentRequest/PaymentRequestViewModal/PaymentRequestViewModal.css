@@ -1,0 +1,39 @@
+.payment-request-view-modal__loading {
+  margin: 0;
+  color: #8c8c8c;
+  text-align: center;
+}
+
+.payment-request-view-modal__info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.payment-request-view-modal__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #ece8f4;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.payment-request-view-modal__row--status {
+  align-items: center;
+}
+
+.payment-request-view-modal__label {
+  color: #595959;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.payment-request-view-modal__row strong {
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}

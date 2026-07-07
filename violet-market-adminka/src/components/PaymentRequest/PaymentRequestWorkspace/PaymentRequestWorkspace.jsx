@@ -14,6 +14,7 @@ import PaymentRequestFiltersBar, {
 } from '../PaymentRequestFiltersBar/PaymentRequestFiltersBar';
 import PaymentRequestSellerList from '../PaymentRequestSellerList/PaymentRequestSellerList';
 import PaymentRequestDetailsPanel from '../PaymentRequestDetailsPanel/PaymentRequestDetailsPanel';
+import PaymentRequestViewModal from '../PaymentRequestViewModal/PaymentRequestViewModal';
 import './PaymentRequestWorkspace.css';
 
 const EMPTY_STATS = {
@@ -43,6 +44,9 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [activeRequest, setActiveRequest] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [modalRequestId, setModalRequestId] = useState(null);
+  const [modalRequest, setModalRequest] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const loadStats = useCallback(async () => {
     try {
@@ -126,17 +130,88 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     loadDetail(activeRequestId);
   }, [activeRequestId, loadDetail]);
 
+  const loadModalDetail = useCallback(async (paymentRequestId) => {
+    if (!paymentRequestId) {
+      setModalRequest(null);
+      return;
+    }
+
+    setModalLoading(true);
+    try {
+      const detail = await fetchPaymentRequestDetail(paymentRequestId);
+      setModalRequest(detail);
+    } catch {
+      setModalRequest(null);
+    } finally {
+      setModalLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!modalRequestId) {
+      setModalRequest(null);
+      return;
+    }
+    loadModalDetail(modalRequestId);
+  }, [modalRequestId, loadModalDetail]);
+
   const handleFilterChange = (updater) => {
     setPage(1);
     updater();
   };
 
-  const refreshAll = async (nextRequestId = activeRequestId) => {
+  const refreshAll = async (nextRequestId = activeRequestId, nextModalRequestId = modalRequestId) => {
     await loadStats();
     await loadSellerOptions();
     await loadRequests();
     if (nextRequestId) {
       await loadDetail(nextRequestId);
+    }
+    if (nextModalRequestId) {
+      await loadModalDetail(nextModalRequestId);
+    }
+  };
+
+  const handleOpenViewModal = (paymentRequestId) => {
+    setModalRequestId(paymentRequestId);
+  };
+
+  const handleCloseViewModal = () => {
+    setModalRequestId(null);
+    setModalRequest(null);
+  };
+
+  const handleModalApprove = async () => {
+    if (!modalRequestId) return;
+    setActionLoading(true);
+    try {
+      const detail = await approvePaymentRequest(modalRequestId);
+      setModalRequest(detail);
+      setActiveRequestId(modalRequestId);
+      setActiveRequest(detail);
+      message.success("So'rov tasdiqlandi");
+      await refreshAll(modalRequestId, modalRequestId);
+    } catch (error) {
+      message.error(error?.message || 'Tasdiqlashda xatolik');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleModalReject = async () => {
+    if (!modalRequestId) return;
+    setActionLoading(true);
+    try {
+      const detail = await rejectPaymentRequest(modalRequestId);
+      setModalRequest(detail);
+      setActiveRequestId(modalRequestId);
+      setActiveRequest(detail);
+      message.success("So'rov rad etildi");
+      await refreshAll(modalRequestId, modalRequestId);
+    } catch (error) {
+      message.error(error?.message || 'Rad etishda xatolik');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -189,6 +264,7 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
           requests={requests}
           activeRequestId={activeRequestId}
           onSelect={setActiveRequestId}
+          onView={handleOpenViewModal}
           page={page}
           totalPages={totalPages}
           total={total}
@@ -205,6 +281,16 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
           onClose={() => setActiveRequestId(null)}
         />
       </div>
+
+      <PaymentRequestViewModal
+        open={Boolean(modalRequestId)}
+        request={modalRequest}
+        loading={modalLoading}
+        actionLoading={actionLoading}
+        onClose={handleCloseViewModal}
+        onApprove={handleModalApprove}
+        onReject={handleModalReject}
+      />
     </div>
   );
 }

@@ -1,9 +1,6 @@
 import React from 'react';
 import { EyeOutlined } from '@ant-design/icons';
-import {
-  formatPaymentRequestAmount,
-  formatPaymentRequestDateTime,
-} from '../../../utils/paymentRequestDisplay';
+import { formatPaymentRequestAmount } from '../../../utils/paymentRequestDisplay';
 import PaymentRequestStatusBadge from '../PaymentRequestStatusBadge/PaymentRequestStatusBadge';
 import './PaymentRequestTableRow.css';
 
@@ -40,9 +37,6 @@ export default function PaymentRequestTableRow({ request, isActive, onSelect, on
             {request.sellerName || 'Sotuvchi'}
           </span>
         </div>
-      </td>
-      <td className="payment-request-table-row__date">
-        {formatPaymentRequestDateTime(request.submittedAt)}
       </td>
       <td className="payment-request-table-row__count">{request.itemCount} ta</td>
       <td className="payment-request-table-row__amount">
