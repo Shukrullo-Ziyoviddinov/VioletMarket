@@ -8,6 +8,7 @@ import {
   fetchPaymentRequestStats,
   rejectPaymentRequest,
 } from '../../../api/paymentRequestsAdminApi';
+import { useGlobalLoaderOnInitialLoad } from '../../../hooks/useGlobalLoaderOnInitialLoad';
 import PaymentRequestFiltersBar, {
   formatPaymentRequestDateParam,
   getDefaultPaymentRequestDateRange,
@@ -42,7 +43,9 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [listLoading, setListLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [sellersLoading, setSellersLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [activeRequestId, setActiveRequestId] = useState(null);
   const [activeRequest, setActiveRequest] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -53,7 +56,10 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectTargetId, setRejectTargetId] = useState(null);
 
+  useGlobalLoaderOnInitialLoad(statsLoading || sellersLoading || listLoading);
+
   const loadStats = useCallback(async () => {
+    setStatsLoading(true);
     try {
       const stats = await fetchPaymentRequestStats();
       onStatsChange?.(stats);
@@ -61,15 +67,20 @@ export default function PaymentRequestWorkspace({ onStatsChange }) {
     } catch {
       onStatsChange?.(EMPTY_STATS);
       return EMPTY_STATS;
+    } finally {
+      setStatsLoading(false);
     }
   }, [onStatsChange]);
 
   const loadSellerOptions = useCallback(async () => {
+    setSellersLoading(true);
     try {
       const options = await fetchPaymentRequestSellerOptions();
       setSellers(options);
     } catch {
       setSellers([]);
+    } finally {
+      setSellersLoading(false);
     }
   }, []);
 

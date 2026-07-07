@@ -3,6 +3,7 @@ import {
   fetchWithdrawalSellerOptions,
   fetchWithdrawals,
 } from '../../../api/withdrawalsAdminApi';
+import { useGlobalLoaderOnInitialLoad } from '../../../hooks/useGlobalLoaderOnInitialLoad';
 import PaymentRequestWithdrawalFiltersBar, {
   formatPaymentRequestDateParam,
   getDefaultPaymentRequestDateRange,
@@ -24,15 +25,21 @@ export default function PaymentRequestWithdrawalWorkspace() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [sellersLoading, setSellersLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [activeWithdrawal, setActiveWithdrawal] = useState(null);
 
+  useGlobalLoaderOnInitialLoad(sellersLoading || loading);
+
   const loadSellerOptions = useCallback(async () => {
+    setSellersLoading(true);
     try {
       const options = await fetchWithdrawalSellerOptions();
       setSellers(options);
     } catch {
       setSellers([]);
+    } finally {
+      setSellersLoading(false);
     }
   }, []);
 
