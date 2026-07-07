@@ -11,6 +11,10 @@
   align-items: start;
 }
 
+.payment-request-workspace__grid > * {
+  min-width: 0;
+}
+
 @media (max-width: 1100px) {
   .payment-request-workspace__grid {
     grid-template-columns: 1fr;
