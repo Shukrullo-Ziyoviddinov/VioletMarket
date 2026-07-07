@@ -26,6 +26,14 @@ export default function PaymentRequestWithdrawalList({
     <section className="payment-request-withdrawal-list">
       <div className="payment-request-withdrawal-list__table-wrap">
         <table className="payment-request-withdrawal-list__table">
+          <colgroup>
+            <col className="payment-request-withdrawal-list__col-code" />
+            <col className="payment-request-withdrawal-list__col-seller" />
+            <col className="payment-request-withdrawal-list__col-product" />
+            <col className="payment-request-withdrawal-list__col-date" />
+            <col className="payment-request-withdrawal-list__col-amount" />
+            <col className="payment-request-withdrawal-list__col-actions" />
+          </colgroup>
           <thead>
             <tr>
               {TABLE_COLUMNS.map((column) => (

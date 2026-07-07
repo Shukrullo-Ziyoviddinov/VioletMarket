@@ -4,6 +4,11 @@
   color: #2a1842;
   font-size: 14px;
   vertical-align: middle;
+  overflow: hidden;
+}
+
+.payment-request-withdrawal-table-row__product-cell {
+  max-width: 0;
 }
 
 .payment-request-withdrawal-table-row__code strong {
@@ -14,6 +19,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.payment-request-withdrawal-table-row__seller > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .payment-request-withdrawal-table-row__avatar {
@@ -42,6 +56,8 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .payment-request-withdrawal-table-row__product-image {
@@ -65,10 +81,12 @@
 .payment-request-withdrawal-table-row__product-text {
   min-width: 0;
   flex: 1;
+  overflow: hidden;
 }
 
 .payment-request-withdrawal-table-row__product strong {
   display: block;
+  max-width: 100%;
   font-size: 14px;
   line-height: 1.35;
   white-space: nowrap;
@@ -80,6 +98,9 @@
   margin: 4px 0 0;
   color: #8c8c8c;
   font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .payment-request-withdrawal-table-row__date {
