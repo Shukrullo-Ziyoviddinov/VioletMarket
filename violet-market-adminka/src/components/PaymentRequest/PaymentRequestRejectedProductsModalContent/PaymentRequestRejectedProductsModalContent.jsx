@@ -72,21 +72,23 @@ export default function PaymentRequestRejectedProductsModalContent({ visible = f
             className="payment-request-rejected-products-modal__item"
           >
             <div className="payment-request-rejected-products-modal__product">
-              <div className="payment-request-rejected-products-modal__image">
-                {product.imageUrl ? (
-                  <img
-                    src={product.imageUrl}
-                    alt={getPaymentRequestProductTitle(product)}
-                  />
-                ) : (
-                  <span>—</span>
-                )}
-              </div>
-              <div className="payment-request-rejected-products-modal__product-content">
-                <strong>{getPaymentRequestProductTitle(product)}</strong>
-                <p>{product.productCode}</p>
-                <p>{product.sellerName}</p>
-                <p>{formatPaymentRequestAmount(product.amount)}</p>
+              <div className="payment-request-rejected-products-modal__product-body">
+                <div className="payment-request-rejected-products-modal__image">
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={getPaymentRequestProductTitle(product)}
+                    />
+                  ) : (
+                    <span>—</span>
+                  )}
+                </div>
+                <div className="payment-request-rejected-products-modal__product-content">
+                  <strong>{getPaymentRequestProductTitle(product)}</strong>
+                  <p>{product.productCode}</p>
+                  <p>{product.sellerName}</p>
+                  <p>{formatPaymentRequestAmount(product.amount)}</p>
+                </div>
               </div>
               <span className="payment-request-rejected-products-modal__summary-badge">
                 {buildProductSummary(product)}
@@ -96,7 +98,7 @@ export default function PaymentRequestRejectedProductsModalContent({ visible = f
             <div className="payment-request-rejected-products-modal__timeline">
               {product.rejections.map((rejection, index) => (
                 <div
-                  key={`${product.soldItemId}-${rejection.paymentRequestId || index}`}
+                  key={`${product.soldItemId}-${index}-${rejection.rejectedAt}`}
                   className="payment-request-rejected-products-modal__timeline-row"
                 >
                   <span>Rad etildi:</span>
