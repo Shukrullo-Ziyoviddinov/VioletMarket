@@ -1,0 +1,15 @@
+.payment-request-withdrawal-filters-bar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .payment-request-withdrawal-filters-bar {
+    grid-template-columns: 1fr;
+  }
+}

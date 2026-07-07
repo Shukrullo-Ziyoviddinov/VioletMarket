@@ -1,0 +1,36 @@
+.payment-request-withdrawal-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.payment-request-withdrawal-list__table-wrap {
+  overflow-x: auto;
+}
+
+.payment-request-withdrawal-list__table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.payment-request-withdrawal-list__table thead th {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ece8f4;
+  background: #fff;
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.payment-request-withdrawal-list__empty {
+  padding: 48px 16px !important;
+  color: #8c8c8c;
+  text-align: center;
+}

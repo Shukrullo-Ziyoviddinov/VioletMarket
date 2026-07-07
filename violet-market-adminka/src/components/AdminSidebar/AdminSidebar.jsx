@@ -79,6 +79,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products') return 'products';
   if (pathname === '/sellers') return 'sellers';
   if (pathname === '/payment-requests') return 'payment-requests';
+  if (pathname === '/withdrawals') return 'payment-requests';
   return 'dashboard';
 }
 

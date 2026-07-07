@@ -1,0 +1,17 @@
+.payment-request-withdrawals-card {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.payment-request-withdrawals-card:hover {
+  border-color: #86efac;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.12);
+  transform: translateY(-1px);
+}
+
+.payment-request-withdrawals-card:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}

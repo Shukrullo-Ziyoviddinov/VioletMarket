@@ -1,0 +1,18 @@
+.withdrawal-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.withdrawal-page__head h1 {
+  margin: 0 0 6px;
+  color: #2a1842;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.withdrawal-page__head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}

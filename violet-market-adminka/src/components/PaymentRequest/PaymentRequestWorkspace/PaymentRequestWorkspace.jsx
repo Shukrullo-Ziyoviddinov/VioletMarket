@@ -23,6 +23,7 @@ const EMPTY_STATS = {
   inProcessCount: 0,
   inProcessAmount: 0,
   withdrawnCount: 0,
+  withdrawnProductCount: 0,
   withdrawnAmount: 0,
   rejectedCount: 0,
   rejectedUniqueProductCount: 0,

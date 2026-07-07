@@ -7,6 +7,10 @@ const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("../../productManagement/recordSellerSales");
 const { nextSequence } = require("../../models/autoIncrement");
+const {
+  recordWithdrawalsForPaymentRequest,
+  buildWithdrawalStats,
+} = require("../adminWithdrawals/adminWithdrawalService");
 
 const VALID_STATUSES = new Set(["in_process", "withdrawn", "rejected"]);
 const DEFAULT_PAGE_SIZE = 10;
@@ -145,10 +149,10 @@ async function sumAmountByRequestStatus(status) {
 async function buildPaymentRequestStats() {
   await backfillOrphanInProcessItems();
 
-  const [totalCount, inProcess, withdrawn, rejectedProducts] = await Promise.all([
+  const [totalCount, inProcess, withdrawnStats, rejectedProducts] = await Promise.all([
     SellerPaymentRequest.countDocuments({}),
     sumAmountByRequestStatus("in_process"),
-    sumAmountByRequestStatus("withdrawn"),
+    buildWithdrawalStats(),
     buildRejectedProductsStats(),
   ]);
 
@@ -156,8 +160,9 @@ async function buildPaymentRequestStats() {
     totalCount,
     inProcessCount: inProcess.count,
     inProcessAmount: inProcess.totalAmount,
-    withdrawnCount: withdrawn.count,
-    withdrawnAmount: withdrawn.totalAmount,
+    withdrawnCount: withdrawnStats.withdrawnCount,
+    withdrawnProductCount: withdrawnStats.withdrawnProductCount,
+    withdrawnAmount: withdrawnStats.withdrawnAmount,
     rejectedCount: rejectedProducts.rejectedEventCount,
     rejectedUniqueProductCount: rejectedProducts.uniqueProductCount,
     rejectedAmount: rejectedProducts.rejectedAmount,
@@ -395,6 +400,8 @@ async function approvePaymentRequest(paymentRequestId) {
   }
 
   const reviewedAt = new Date();
+  const itemRows = await SellerSoldItem.find({ paymentRequestId: row.id }).lean();
+
   await SellerPaymentRequest.updateOne(
     { id: row.id },
     { $set: { status: "withdrawn", reviewedAt } },
@@ -403,6 +410,8 @@ async function approvePaymentRequest(paymentRequestId) {
     { paymentRequestId: row.id },
     { $set: { status: "withdrawn", withdrawnAt: reviewedAt } },
   );
+
+  await recordWithdrawalsForPaymentRequest(row, itemRows, reviewedAt);
 
   return getPaymentRequestDetail(row.id);
 }

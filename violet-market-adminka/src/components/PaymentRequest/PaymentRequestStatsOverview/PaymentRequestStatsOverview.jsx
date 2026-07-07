@@ -1,7 +1,7 @@
 import React from 'react';
 import PaymentRequestTotalRequestsCard from '../PaymentRequestTotalRequestsCard/PaymentRequestTotalRequestsCard';
 import PaymentRequestInProgressRequestsCard from '../PaymentRequestInProgressRequestsCard/PaymentRequestInProgressRequestsCard';
-import PaymentRequestResolvedRequestsCard from '../PaymentRequestResolvedRequestsCard/PaymentRequestResolvedRequestsCard';
+import PaymentRequestWithdrawalsSection from '../PaymentRequestWithdrawalsSection/PaymentRequestWithdrawalsSection';
 import PaymentRequestRejectedProductsSection from '../PaymentRequestRejectedProductsSection/PaymentRequestRejectedProductsSection';
 import './PaymentRequestStatsOverview.css';
 
@@ -13,9 +13,10 @@ export default function PaymentRequestStatsOverview({ stats = {} }) {
         count={stats.inProcessCount}
         amount={stats.inProcessAmount}
       />
-      <PaymentRequestResolvedRequestsCard
-        count={stats.withdrawnCount}
-        amount={stats.withdrawnAmount}
+      <PaymentRequestWithdrawalsSection
+        withdrawnCount={stats.withdrawnCount}
+        withdrawnProductCount={stats.withdrawnProductCount}
+        withdrawnAmount={stats.withdrawnAmount}
       />
       <PaymentRequestRejectedProductsSection
         rejectedEventCount={stats.rejectedCount}

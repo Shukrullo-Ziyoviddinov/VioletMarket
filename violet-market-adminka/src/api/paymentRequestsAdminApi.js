@@ -18,6 +18,7 @@ function normalizeStats(data) {
     inProcessCount: Number(data?.inProcessCount) || 0,
     inProcessAmount: Number(data?.inProcessAmount) || 0,
     withdrawnCount: Number(data?.withdrawnCount) || 0,
+    withdrawnProductCount: Number(data?.withdrawnProductCount) || 0,
     withdrawnAmount: Number(data?.withdrawnAmount) || 0,
     rejectedCount: Number(data?.rejectedCount) || 0,
     rejectedUniqueProductCount: Number(data?.rejectedUniqueProductCount) || 0,
