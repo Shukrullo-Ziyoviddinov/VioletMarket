@@ -9,6 +9,7 @@ import {
   FileProtectOutlined,
   FireOutlined,
   GlobalOutlined,
+  HistoryOutlined,
   InboxOutlined,
   LayoutOutlined,
   LogoutOutlined,
@@ -64,6 +65,7 @@ const menuItems = [
   { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Mahsulot siyosati' },
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar', route: '/sellers' },
   { key: 'payment-requests', icon: <DollarOutlined />, label: "To'lov so'rovlari", route: '/payment-requests' },
+  { key: 'withdrawals', icon: <HistoryOutlined />, label: 'Yechilgan summalar tarixi', route: '/withdrawals' },
   { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },
   { key: 'product-uzb-warehouse-info', icon: <InboxOutlined />, label: "Mahsulot UZB omborida" },
   { key: 'logistics-info', icon: <ControlOutlined />, label: "Logistika ma'lumoti" },
@@ -79,7 +81,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products') return 'products';
   if (pathname === '/sellers') return 'sellers';
   if (pathname === '/payment-requests') return 'payment-requests';
-  if (pathname === '/withdrawals') return 'payment-requests';
+  if (pathname === '/withdrawals') return 'withdrawals';
   return 'dashboard';
 }
 

@@ -64,14 +64,6 @@ export default function PaymentRequestWithdrawalModal({ open, withdrawal, onClos
               <strong>{formatPaymentRequestAmount(withdrawal.amount)}</strong>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="payment-request-withdrawal-modal__close-btn"
-            onClick={onClose}
-          >
-            Yopish
-          </button>
         </div>
       )}
     </GlobalModal>
