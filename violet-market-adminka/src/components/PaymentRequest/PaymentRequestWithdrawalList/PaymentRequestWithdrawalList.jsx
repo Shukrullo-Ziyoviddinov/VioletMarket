@@ -9,6 +9,7 @@ const TABLE_COLUMNS = [
   'Mahsulot',
   'Yechilgan sana',
   'Summa',
+  'Amallar',
 ];
 
 export default function PaymentRequestWithdrawalList({
@@ -19,6 +20,7 @@ export default function PaymentRequestWithdrawalList({
   limit = 10,
   onPageChange,
   loading,
+  onView,
 }) {
   return (
     <section className="payment-request-withdrawal-list">
@@ -49,6 +51,7 @@ export default function PaymentRequestWithdrawalList({
                 <PaymentRequestWithdrawalTableRow
                   key={withdrawal.id}
                   withdrawal={withdrawal}
+                  onView={onView}
                 />
               ))
             )}

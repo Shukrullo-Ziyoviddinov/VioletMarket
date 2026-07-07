@@ -216,8 +216,11 @@ async function listWithdrawals(query = {}) {
 
   const sellerIds = [...new Set(rows.map((row) => cleanSellerId(row.sellerId)).filter(Boolean))];
   const productIds = [...new Set(rows.map((row) => Number(row.productId)).filter(Number.isFinite))];
+  const paymentRequestIds = [
+    ...new Set(rows.map((row) => Number(row.paymentRequestId)).filter(Number.isFinite)),
+  ];
 
-  const [accounts, products] = await Promise.all([
+  const [accounts, products, paymentRequests] = await Promise.all([
     sellerIds.length
       ? SellerAccount.find({ id: { $in: sellerIds } })
           .select({ id: 1, name: 1, logo: 1 })
@@ -228,14 +231,21 @@ async function listWithdrawals(query = {}) {
           .select({ id: 1, title: 1, image: 1, mainImage: 1, colors: 1 })
           .lean()
       : [],
+    paymentRequestIds.length
+      ? SellerPaymentRequest.find({ id: { $in: paymentRequestIds } })
+          .select({ id: 1, submittedAt: 1 })
+          .lean()
+      : [],
   ]);
 
   const accountById = new Map(accounts.map((row) => [String(row.id), row]));
   const productById = new Map(products.map((product) => [Number(product.id), product]));
+  const requestById = new Map(paymentRequests.map((row) => [Number(row.id), row]));
 
   const withdrawals = rows.map((row) => {
     const account = accountById.get(cleanSellerId(row.sellerId));
     const product = productById.get(Number(row.productId));
+    const paymentRequest = requestById.get(Number(row.paymentRequestId));
 
     return {
       id: Number(row.id),
@@ -250,6 +260,7 @@ async function listWithdrawals(query = {}) {
       title: resolveProductTitle(product),
       imageUrl: resolveProductImage(product),
       amount: toNumber(row.amount, 0),
+      submittedAt: paymentRequest?.submittedAt || null,
       withdrawnAt: row.withdrawnAt,
     };
   });

@@ -83,3 +83,27 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+.payment-request-withdrawal-table-row__actions {
+  width: 56px;
+  text-align: center;
+}
+
+.payment-request-withdrawal-table-row__view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #595959;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.payment-request-withdrawal-table-row__view-btn:hover {
+  border-color: #16a34a;
+  color: #16a34a;
+}

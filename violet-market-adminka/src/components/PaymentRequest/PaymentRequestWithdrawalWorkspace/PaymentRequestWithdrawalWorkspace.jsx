@@ -8,6 +8,7 @@ import PaymentRequestWithdrawalFiltersBar, {
   getDefaultPaymentRequestDateRange,
 } from '../PaymentRequestWithdrawalFiltersBar/PaymentRequestWithdrawalFiltersBar';
 import PaymentRequestWithdrawalList from '../PaymentRequestWithdrawalList/PaymentRequestWithdrawalList';
+import PaymentRequestWithdrawalModal from '../PaymentRequestWithdrawalModal/PaymentRequestWithdrawalModal';
 import './PaymentRequestWithdrawalWorkspace.css';
 
 const PAGE_SIZE = 10;
@@ -22,6 +23,7 @@ export default function PaymentRequestWithdrawalWorkspace() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [activeWithdrawal, setActiveWithdrawal] = useState(null);
 
   const loadSellerOptions = useCallback(async () => {
     try {
@@ -88,6 +90,13 @@ export default function PaymentRequestWithdrawalWorkspace() {
         limit={PAGE_SIZE}
         onPageChange={setPage}
         loading={loading}
+        onView={setActiveWithdrawal}
+      />
+
+      <PaymentRequestWithdrawalModal
+        open={Boolean(activeWithdrawal)}
+        withdrawal={activeWithdrawal}
+        onClose={() => setActiveWithdrawal(null)}
       />
     </div>
   );

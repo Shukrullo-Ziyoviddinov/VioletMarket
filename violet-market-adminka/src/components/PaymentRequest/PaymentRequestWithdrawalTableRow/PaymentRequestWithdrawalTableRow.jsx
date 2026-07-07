@@ -1,4 +1,5 @@
 import React from 'react';
+import { EyeOutlined } from '@ant-design/icons';
 import {
   formatPaymentRequestAmount,
   formatPaymentRequestDateTime,
@@ -12,7 +13,7 @@ function formatRequestCode(code) {
   return value.startsWith('#') ? value : `#${value}`;
 }
 
-export default function PaymentRequestWithdrawalTableRow({ withdrawal }) {
+export default function PaymentRequestWithdrawalTableRow({ withdrawal, onView }) {
   return (
     <tr className="payment-request-withdrawal-table-row">
       <td className="payment-request-withdrawal-table-row__code">
@@ -53,6 +54,16 @@ export default function PaymentRequestWithdrawalTableRow({ withdrawal }) {
       </td>
       <td className="payment-request-withdrawal-table-row__amount">
         {formatPaymentRequestAmount(withdrawal.amount)}
+      </td>
+      <td className="payment-request-withdrawal-table-row__actions">
+        <button
+          type="button"
+          className="payment-request-withdrawal-table-row__view-btn"
+          aria-label="Yechish tafsilotlarini ko'rish"
+          onClick={() => onView?.(withdrawal)}
+        >
+          <EyeOutlined />
+        </button>
       </td>
     </tr>
   );

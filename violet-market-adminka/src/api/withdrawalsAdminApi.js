@@ -26,6 +26,7 @@ function normalizeWithdrawal(row) {
     title: row?.title || { uz: '', ru: '' },
     imageUrl: String(row?.imageUrl || ''),
     amount: Number(row?.amount) || 0,
+    submittedAt: row?.submittedAt || '',
     withdrawnAt: row?.withdrawnAt || '',
   };
 }

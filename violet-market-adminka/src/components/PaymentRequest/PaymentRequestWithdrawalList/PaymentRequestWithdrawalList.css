@@ -29,6 +29,10 @@
   white-space: nowrap;
 }
 
+.payment-request-withdrawal-list__table thead th:last-child {
+  text-align: center;
+}
+
 .payment-request-withdrawal-list__empty {
   padding: 48px 16px !important;
   color: #8c8c8c;
