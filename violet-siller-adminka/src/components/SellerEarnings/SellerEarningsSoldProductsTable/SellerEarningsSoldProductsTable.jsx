@@ -67,8 +67,8 @@ export default function SellerEarningsSoldProductsTable({
               <th>{t('sellerEarnings.soldProducts.columns.product')}</th>
               <th>{t('sellerEarnings.soldProducts.columns.soldAt')}</th>
               <th>{t('sellerEarnings.soldProducts.columns.price')}</th>
-              <th>{t('sellerEarnings.soldProducts.columns.status')}</th>
               <th>{t('sellerEarnings.soldProducts.columns.comment')}</th>
+              <th>{t('sellerEarnings.soldProducts.columns.status')}</th>
             </tr>
           </thead>
           <tbody>
@@ -108,17 +108,17 @@ export default function SellerEarningsSoldProductsTable({
                     {formatSellerEarningsAmount(row.price)}
                   </td>
                   <td>
+                    <SellerEarningsSoldProductsCommentCell
+                      comment={row.rejectionComment}
+                      onView={onViewComment}
+                    />
+                  </td>
+                  <td>
                     <span
                       className={`seller-earnings-sold-products-table__badge seller-earnings-sold-products-table__badge--${row.status}`}
                     >
                       {t(STATUS_LABEL_KEYS[row.status] || STATUS_LABEL_KEYS.available)}
                     </span>
-                  </td>
-                  <td>
-                    <SellerEarningsSoldProductsCommentCell
-                      comment={row.rejectionComment}
-                      onView={onViewComment}
-                    />
                   </td>
                 </tr>
               );

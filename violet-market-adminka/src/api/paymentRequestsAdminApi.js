@@ -20,6 +20,7 @@ function normalizeStats(data) {
     withdrawnCount: Number(data?.withdrawnCount) || 0,
     withdrawnAmount: Number(data?.withdrawnAmount) || 0,
     rejectedCount: Number(data?.rejectedCount) || 0,
+    rejectedUniqueProductCount: Number(data?.rejectedUniqueProductCount) || 0,
     rejectedAmount: Number(data?.rejectedAmount) || 0,
   };
 }
@@ -57,6 +58,38 @@ export async function fetchPaymentRequestStats() {
   const res = await fetch(apiUrl('/api/admin/payment-requests/stats'));
   const payload = await parseJson(res);
   return normalizeStats(payload?.data || {});
+}
+
+function normalizeRejectedProduct(row) {
+  return {
+    soldItemId: Number(row?.soldItemId) || 0,
+    productId: Number(row?.productId) || 0,
+    productCode: String(row?.productCode || ''),
+    title: row?.title || { uz: '', ru: '' },
+    imageUrl: String(row?.imageUrl || ''),
+    sellerId: String(row?.sellerId || ''),
+    sellerName: String(row?.sellerName || ''),
+    sellerLogoUrl: String(row?.sellerLogoUrl || ''),
+    amount: Number(row?.amount) || 0,
+    status: String(row?.status || ''),
+    rejectionCount: Number(row?.rejectionCount) || 0,
+    rejections: Array.isArray(row?.rejections)
+      ? row.rejections.map((entry) => ({
+          paymentRequestId: Number(entry?.paymentRequestId) || null,
+          rejectedAt: entry?.rejectedAt || '',
+          comment: String(entry?.comment || ''),
+        }))
+      : [],
+    isWithdrawn: Boolean(row?.isWithdrawn),
+    withdrawnAt: row?.withdrawnAt || null,
+  };
+}
+
+export async function fetchRejectedProducts() {
+  const res = await fetch(apiUrl('/api/admin/payment-requests/rejected-products'));
+  const payload = await parseJson(res);
+  const products = Array.isArray(payload?.data?.products) ? payload.data.products : [];
+  return products.map(normalizeRejectedProduct);
 }
 
 export async function fetchPaymentRequestSellerOptions() {

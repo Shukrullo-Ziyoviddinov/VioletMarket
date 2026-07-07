@@ -1,0 +1,17 @@
+.payment-request-rejected-products-card {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.payment-request-rejected-products-card:hover {
+  border-color: #fca5a5;
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.12);
+  transform: translateY(-1px);
+}
+
+.payment-request-rejected-products-card:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}

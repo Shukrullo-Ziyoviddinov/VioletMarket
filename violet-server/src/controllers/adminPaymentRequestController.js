@@ -11,6 +11,11 @@ const getPaymentRequestSellerOptions = asyncHandler(async (req, res) => {
   res.json({ ok: true, data: { sellers } });
 });
 
+const listRejectedProducts = asyncHandler(async (req, res) => {
+  const products = await adminPaymentRequestService.listRejectedProducts();
+  res.json({ ok: true, data: { products } });
+});
+
 const listPaymentRequests = asyncHandler(async (req, res) => {
   const data = await adminPaymentRequestService.listPaymentRequests(req.query || {});
   res.json({ ok: true, data });
@@ -36,6 +41,7 @@ const rejectPaymentRequest = asyncHandler(async (req, res) => {
 
 module.exports = {
   getPaymentRequestStats,
+  listRejectedProducts,
   getPaymentRequestSellerOptions,
   listPaymentRequests,
   getPaymentRequestDetail,

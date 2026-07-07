@@ -55,6 +55,7 @@ import ProductSellingSellersModalContent from '../ProductSellingSellersModalCont
 import SalesStatisticsLegendModalContent from '../SalesStatisticsLegendModalContent/SalesStatisticsLegendModalContent';
 import TopSellersStatisticsModalContent from '../TopSellersStatisticsModalContent/TopSellersStatisticsModalContent';
 import TopSellingProductsStatisticsModalContent from '../TopSellingProductsStatisticsModalContent/TopSellingProductsStatisticsModalContent';
+import PaymentRequestRejectedProductsModalContent from '../PaymentRequest/PaymentRequestRejectedProductsModalContent/PaymentRequestRejectedProductsModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3358,6 +3359,8 @@ export default function GlobalSectionModal({ open, section, onClose }) {
         periodLabel={section?.periodLabel}
         sellers={section?.sellers}
       />
+    ) : section?.key === 'payment-request-rejected-products' ? (
+      <PaymentRequestRejectedProductsModalContent visible={open} />
     ) : section?.key === 'top-selling-products-statistics-list' ? (
       <TopSellingProductsStatisticsModalContent
         visible={open}

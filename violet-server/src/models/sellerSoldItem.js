@@ -24,6 +24,17 @@ const sellerSoldItemSchema = new mongoose.Schema(
     monthKey: { type: String, required: true, index: true },
     paymentRequestId: { type: Number, default: null, index: true },
     rejectionComment: { type: String, default: null, trim: true },
+    rejectionHistory: {
+      type: [
+        {
+          paymentRequestId: { type: Number, default: null },
+          rejectedAt: { type: Date, required: true },
+          comment: { type: String, default: "", trim: true },
+        },
+      ],
+      default: [],
+    },
+    withdrawnAt: { type: Date, default: null },
   },
   {
     collection: "seller_sold_items",

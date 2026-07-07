@@ -25,6 +25,7 @@ const EMPTY_STATS = {
   withdrawnCount: 0,
   withdrawnAmount: 0,
   rejectedCount: 0,
+  rejectedUniqueProductCount: 0,
   rejectedAmount: 0,
 };
 

@@ -145,11 +145,11 @@ async function sumAmountByRequestStatus(status) {
 async function buildPaymentRequestStats() {
   await backfillOrphanInProcessItems();
 
-  const [totalCount, inProcess, withdrawn, rejected] = await Promise.all([
+  const [totalCount, inProcess, withdrawn, rejectedProducts] = await Promise.all([
     SellerPaymentRequest.countDocuments({}),
     sumAmountByRequestStatus("in_process"),
     sumAmountByRequestStatus("withdrawn"),
-    sumAmountByRequestStatus("rejected"),
+    buildRejectedProductsStats(),
   ]);
 
   return {
@@ -158,9 +158,88 @@ async function buildPaymentRequestStats() {
     inProcessAmount: inProcess.totalAmount,
     withdrawnCount: withdrawn.count,
     withdrawnAmount: withdrawn.totalAmount,
-    rejectedCount: rejected.count,
-    rejectedAmount: rejected.totalAmount,
+    rejectedCount: rejectedProducts.rejectedEventCount,
+    rejectedUniqueProductCount: rejectedProducts.uniqueProductCount,
+    rejectedAmount: rejectedProducts.rejectedAmount,
   };
+}
+
+async function buildRejectedProductsStats() {
+  const rows = await SellerSoldItem.find({
+    "rejectionHistory.0": { $exists: true },
+  })
+    .select({ rejectionHistory: 1, amount: 1 })
+    .lean();
+
+  const rejectedEventCount = rows.reduce(
+    (sum, row) => sum + (Array.isArray(row.rejectionHistory) ? row.rejectionHistory.length : 0),
+    0,
+  );
+  const uniqueProductCount = rows.length;
+  const rejectedAmount = rows.reduce((sum, row) => sum + toNumber(row.amount, 0), 0);
+
+  return {
+    rejectedEventCount,
+    uniqueProductCount,
+    rejectedAmount,
+  };
+}
+
+async function listRejectedProducts() {
+  const rows = await SellerSoldItem.find({
+    "rejectionHistory.0": { $exists: true },
+  })
+    .sort({ updatedAt: -1, id: -1 })
+    .lean();
+
+  const sellerIds = [...new Set(rows.map((row) => cleanSellerId(row.sellerId)).filter(Boolean))];
+  const productIds = [...new Set(rows.map((row) => Number(row.productId)).filter(Number.isFinite))];
+
+  const [accounts, products] = await Promise.all([
+    sellerIds.length
+      ? SellerAccount.find({ id: { $in: sellerIds } })
+          .select({ id: 1, name: 1, logo: 1 })
+          .lean()
+      : [],
+    productIds.length
+      ? Product.find({ id: { $in: productIds } })
+          .select({ id: 1, title: 1, image: 1, mainImage: 1, colors: 1 })
+          .lean()
+      : [],
+  ]);
+
+  const accountById = new Map(accounts.map((row) => [String(row.id), row]));
+  const productById = new Map(products.map((product) => [Number(product.id), product]));
+
+  return rows.map((row) => {
+    const account = accountById.get(cleanSellerId(row.sellerId));
+    const product = productById.get(Number(row.productId));
+    const rejectionHistory = Array.isArray(row.rejectionHistory) ? row.rejectionHistory : [];
+    const rejections = rejectionHistory
+      .map((entry) => ({
+        paymentRequestId: Number(entry.paymentRequestId) || null,
+        rejectedAt: entry.rejectedAt,
+        comment: String(entry.comment || "").trim(),
+      }))
+      .sort((a, b) => new Date(b.rejectedAt).getTime() - new Date(a.rejectedAt).getTime());
+
+    return {
+      soldItemId: Number(row.id),
+      productId: Number(row.productId),
+      productCode: `#${Number(row.productId)}`,
+      title: resolveProductTitle(product),
+      imageUrl: resolveProductImage(product),
+      sellerId: cleanSellerId(row.sellerId),
+      sellerName: resolveSellerDisplayName(account) || cleanSellerId(row.sellerId),
+      sellerLogoUrl: resolvePublicAssetUrl(account?.logo || ""),
+      amount: toNumber(row.amount, 0),
+      status: String(row.status || "available"),
+      rejectionCount: rejections.length,
+      rejections,
+      isWithdrawn: String(row.status) === "withdrawn",
+      withdrawnAt: row.withdrawnAt || null,
+    };
+  });
 }
 
 async function listPaymentRequestSellerOptions() {
@@ -322,7 +401,7 @@ async function approvePaymentRequest(paymentRequestId) {
   );
   await SellerSoldItem.updateMany(
     { paymentRequestId: row.id },
-    { $set: { status: "withdrawn" } },
+    { $set: { status: "withdrawn", withdrawnAt: reviewedAt } },
   );
 
   return getPaymentRequestDetail(row.id);
@@ -340,14 +419,34 @@ async function rejectPaymentRequest(paymentRequestId, payload = {}) {
   }
 
   const reviewedAt = new Date();
+  const rejectionEntry = {
+    paymentRequestId: row.id,
+    rejectedAt: reviewedAt,
+    comment: rejectionComment,
+  };
+
   await SellerPaymentRequest.updateOne(
     { id: row.id },
     { $set: { status: "rejected", reviewedAt, rejectionComment } },
   );
-  await SellerSoldItem.updateMany(
-    { paymentRequestId: row.id },
-    { $set: { status: "rejected", rejectionComment } },
-  );
+
+  const itemRows = await SellerSoldItem.find({ paymentRequestId: row.id })
+    .select({ id: 1 })
+    .lean();
+
+  if (itemRows.length) {
+    await SellerSoldItem.bulkWrite(
+      itemRows.map((item) => ({
+        updateOne: {
+          filter: { id: item.id },
+          update: {
+            $set: { status: "rejected", rejectionComment },
+            $push: { rejectionHistory: rejectionEntry },
+          },
+        },
+      })),
+    );
+  }
 
   return getPaymentRequestDetail(row.id);
 }
@@ -388,6 +487,8 @@ async function createSellerPaymentRequest(sellerId, itemRows) {
 
 module.exports = {
   buildPaymentRequestStats,
+  buildRejectedProductsStats,
+  listRejectedProducts,
   listPaymentRequestSellerOptions,
   listPaymentRequests,
   getPaymentRequestDetail,
