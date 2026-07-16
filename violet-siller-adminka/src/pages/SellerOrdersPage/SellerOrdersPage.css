@@ -1,0 +1,12 @@
+.seller-orders-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.seller-orders-page__title {
+  margin: 0;
+  color: #2a1842;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}

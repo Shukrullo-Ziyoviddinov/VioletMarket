@@ -4,9 +4,13 @@
   },
   "sidebar": {
     "home": "Home",
+    "orders": "Orders",
     "salesStatistics": "Sales & statistics",
     "salesEarnings": "Sales & earnings",
     "salesWithdrawals": "Withdrawn amounts history"
+  },
+  "orders": {
+    "title": "Orders"
   },
   "marketInfo": {
     "title": "About the market",

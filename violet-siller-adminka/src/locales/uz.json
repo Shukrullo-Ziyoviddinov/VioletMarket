@@ -4,9 +4,13 @@
   },
   "sidebar": {
     "home": "Bosh sahifa",
+    "orders": "Buyurtmalar",
     "salesStatistics": "Sotuv va statistika",
     "salesEarnings": "Sotuv va daromat",
     "salesWithdrawals": "Yechilgan summalar tarixi"
+  },
+  "orders": {
+    "title": "Buyurtmalar"
   },
   "marketInfo": {
     "title": "Market haqida",

@@ -4,9 +4,13 @@
   },
   "sidebar": {
     "home": "首页",
+    "orders": "订单",
     "salesStatistics": "销售与统计",
     "salesEarnings": "销售与收入",
     "salesWithdrawals": "已提现金额历史"
+  },
+  "orders": {
+    "title": "订单"
   },
   "marketInfo": {
     "title": "关于市场",

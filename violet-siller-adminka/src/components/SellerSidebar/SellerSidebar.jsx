@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Menu } from 'antd';
-import { AppstoreOutlined, DashboardOutlined, DollarOutlined, HistoryOutlined, LineChartOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShopOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, DashboardOutlined, DollarOutlined, HistoryOutlined, LineChartOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, ShoppingOutlined, ShopOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../../context/SellerAuthContext';
@@ -19,6 +19,7 @@ const menuItems = [
     route: '/products/discontinued',
   },
   { key: 'add-products', icon: <PlusCircleOutlined />, labelKey: 'myProducts.addProduct', route: '/products/add' },
+  { key: 'orders', icon: <ShoppingOutlined />, labelKey: 'sidebar.orders', route: '/orders' },
   { key: 'sales-statistics', icon: <LineChartOutlined />, labelKey: 'sidebar.salesStatistics', route: '/sales/statistics' },
   { key: 'sales-earnings', icon: <DollarOutlined />, labelKey: 'sidebar.salesEarnings', route: '/sales/earnings' },
   { key: 'sales-withdrawals', icon: <HistoryOutlined />, labelKey: 'sidebar.salesWithdrawals', route: '/sales/withdrawals' },
@@ -48,6 +49,7 @@ function SidebarUnreadBadge({ count, collapsed = false }) {
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products/add') return 'add-products';
   if (pathname === '/products/discontinued') return 'discontinued-products';
+  if (pathname === '/orders') return 'orders';
   if (pathname === '/messages') return 'messages';
   if (pathname === '/sales/statistics') return 'sales-statistics';
   if (pathname === '/sales/earnings') return 'sales-earnings';
