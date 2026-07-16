@@ -10,13 +10,6 @@
   margin: 0 auto;
 }
 
-.order-history-page h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #2d2433;
-  margin: 0 0 24px;
-}
-
 @media (max-width: 450px) {
   .order-history-page {
     padding: 10px;

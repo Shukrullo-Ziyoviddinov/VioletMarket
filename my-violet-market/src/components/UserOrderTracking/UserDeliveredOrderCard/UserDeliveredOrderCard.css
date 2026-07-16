@@ -1,0 +1,108 @@
+.user-delivered-order-card {
+  overflow: hidden;
+  border: 1px solid #e7eee9;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 7px 24px rgba(36, 65, 45, 0.06);
+}
+
+.user-delivered-order-card__product {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+}
+
+.user-delivered-order-card__image {
+  width: 82px;
+  height: 82px;
+  border-radius: 11px;
+  object-fit: cover;
+  background: #f5f5f5;
+}
+
+.user-delivered-order-card__info {
+  min-width: 0;
+}
+
+.user-delivered-order-card__info h2 {
+  margin: 0;
+  overflow: hidden;
+  color: #2d2433;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.user-delivered-order-card__info p {
+  margin: 7px 0;
+  overflow: hidden;
+  color: #77707c;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.user-delivered-order-card__info span {
+  color: #96909b;
+  font-size: 12px;
+}
+
+.user-delivered-order-card__price {
+  color: #27864a;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.user-delivered-order-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 13px 16px;
+  border-top: 1px solid #edf1ee;
+  background: #fbfdfb;
+}
+
+.user-delivered-order-card__meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-delivered-order-card__meta span {
+  color: #908a94;
+  font-size: 11px;
+}
+
+.user-delivered-order-card__meta strong {
+  color: #322a38;
+  font-size: 13px;
+}
+
+@media (max-width: 450px) {
+  .user-delivered-order-card__product {
+    grid-template-columns: 70px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .user-delivered-order-card__image {
+    width: 70px;
+    height: 70px;
+  }
+
+  .user-delivered-order-card__info h2 {
+    font-size: 14px;
+  }
+
+  .user-delivered-order-card__price {
+    font-size: 13px;
+  }
+
+  .user-delivered-order-card__meta {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+}

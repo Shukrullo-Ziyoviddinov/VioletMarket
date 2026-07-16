@@ -6,6 +6,10 @@ const {
   buildUzbOrderTrackingSteps,
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
+const {
+  archiveDeliveredOrderItems,
+  listDeliveredOrderItems,
+} = require("./deliveredOrderArchiveService");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -63,6 +67,13 @@ function mapUzbOrderItem(order, item, itemIndex, seller) {
   };
 }
 
+function isDeliveredOrderItem(order, item) {
+  return (
+    String(order?.status || "") === "delivered" ||
+    String(item?.trackingStatus || "") === "delivered"
+  );
+}
+
 async function listMyUzbOrderTracking(userId) {
   const sellers = await SellerAccount.find({ sellerCountry: UZB_SELLER_COUNTRY })
     .select({ id: 1, name: 1, sellerCountry: 1 })
@@ -70,7 +81,7 @@ async function listMyUzbOrderTracking(userId) {
   const sellerIds = sellers.map((seller) => cleanSellerId(seller.id)).filter(Boolean);
 
   if (!sellerIds.length) {
-    return { items: [] };
+    return { items: [], inProgressItems: [], deliveredItems: [] };
   }
 
   const orders = await Order.find({
@@ -81,18 +92,27 @@ async function listMyUzbOrderTracking(userId) {
     .lean();
   const sellerById = new Map(sellers.map((seller) => [cleanSellerId(seller.id), seller]));
 
-  const items = [];
+  await archiveDeliveredOrderItems(userId, orders, sellerById);
+
+  const inProgressItems = [];
   for (const order of orders) {
     (Array.isArray(order.items) ? order.items : []).forEach((item, itemIndex) => {
       const seller = sellerById.get(cleanSellerId(item.sellerId));
       if (!seller || String(seller.sellerCountry || "").toLowerCase() !== UZB_SELLER_COUNTRY) {
         return;
       }
-      items.push(mapUzbOrderItem(order, item, itemIndex, seller));
+      if (isDeliveredOrderItem(order, item)) return;
+      inProgressItems.push(mapUzbOrderItem(order, item, itemIndex, seller));
     });
   }
 
-  return { items };
+  const deliveredItems = await listDeliveredOrderItems(userId);
+
+  return {
+    items: inProgressItems,
+    inProgressItems,
+    deliveredItems,
+  };
 }
 
 module.exports = {

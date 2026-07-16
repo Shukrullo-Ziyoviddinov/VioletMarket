@@ -47,6 +47,26 @@ function normalizeOrderItem(row) {
   };
 }
 
+function normalizeDeliveredOrderItem(row) {
+  return {
+    id: String(row?.id || ''),
+    orderId: Number(row?.orderId) || 0,
+    orderCode: String(row?.orderCode || ''),
+    trackingCode: String(row?.trackingCode || ''),
+    productId: Number(row?.productId) || 0,
+    title: row?.title || { uz: '', ru: '' },
+    imageUrl: String(row?.imageUrl || ''),
+    price: Number(row?.price) || 0,
+    quantity: Number(row?.quantity) || 1,
+    lineTotal: Number(row?.lineTotal) || 0,
+    color: String(row?.color || ''),
+    size: String(row?.size || ''),
+    storage: String(row?.storage || ''),
+    model: String(row?.model || ''),
+    deliveredAt: row?.deliveredAt || null,
+  };
+}
+
 export async function fetchMyUzbOrderTracking(token) {
   const res = await fetch(apiUrl('/api/orders/my/uzb'), {
     headers: {
@@ -54,6 +74,17 @@ export async function fetchMyUzbOrderTracking(token) {
     },
   });
   const payload = await parseJsonResponse(res);
-  const items = Array.isArray(payload?.data?.items) ? payload.data.items : [];
-  return items.map(normalizeOrderItem);
+  const inProgressItems = Array.isArray(payload?.data?.inProgressItems)
+    ? payload.data.inProgressItems
+    : Array.isArray(payload?.data?.items)
+      ? payload.data.items
+      : [];
+  const deliveredItems = Array.isArray(payload?.data?.deliveredItems)
+    ? payload.data.deliveredItems
+    : [];
+
+  return {
+    inProgressItems: inProgressItems.map(normalizeOrderItem),
+    deliveredItems: deliveredItems.map(normalizeDeliveredOrderItem),
+  };
 }

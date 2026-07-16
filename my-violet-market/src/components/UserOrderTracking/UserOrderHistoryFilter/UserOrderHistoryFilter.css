@@ -1,0 +1,42 @@
+.user-order-history-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding: 5px;
+  border: 1px solid #ebe6f1;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.user-order-history-filter__button {
+  min-width: 112px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #7e7587;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-order-history-filter__button--active {
+  background: #6d32c5;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(109, 50, 197, 0.2);
+}
+
+@media (max-width: 450px) {
+  .user-order-history-filter {
+    display: flex;
+    width: 100%;
+    margin-bottom: 14px;
+  }
+
+  .user-order-history-filter__button {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 10px;
+  }
+}

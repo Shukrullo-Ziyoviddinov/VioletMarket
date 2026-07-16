@@ -458,7 +458,10 @@
     "title": "Mening buyurtmalarim",
     "loading": "Buyurtmalar yuklanmoqda...",
     "empty": "Hozircha O'zbekiston sotuvchilaridan buyurtmalar yo'q.",
+    "deliveredEmpty": "Hozircha yetkazib berilgan buyurtmalar yo'q.",
     "tracking": "Buyurtma holati",
+    "trackingCode": "Trek kodi",
+    "deliveredAt": "Yetkazilgan sana",
     "waiting": "Kutilmoqda",
     "orderNumber": "Buyurtma",
     "productFallback": "Mahsulot",
@@ -467,6 +470,11 @@
     "size": "O'lcham",
     "storage": "Xotira",
     "model": "Model",
+    "filter": {
+      "label": "Buyurtmalar filtri",
+      "in_progress": "Jarayonda",
+      "all": "Barchasi"
+    },
     "steps": {
       "accepted": {
         "title": "Qabul qilindi",

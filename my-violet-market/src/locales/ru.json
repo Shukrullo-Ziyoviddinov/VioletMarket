@@ -458,7 +458,10 @@
     "title": "Мои заказы",
     "loading": "Заказы загружаются...",
     "empty": "Заказов у продавцов из Узбекистана пока нет.",
+    "deliveredEmpty": "Доставленных заказов пока нет.",
     "tracking": "Статус заказа",
+    "trackingCode": "Трек-код",
+    "deliveredAt": "Дата доставки",
     "waiting": "Ожидается",
     "orderNumber": "Заказ",
     "productFallback": "Товар",
@@ -467,6 +470,11 @@
     "size": "Размер",
     "storage": "Память",
     "model": "Модель",
+    "filter": {
+      "label": "Фильтр заказов",
+      "in_progress": "В процессе",
+      "all": "Все"
+    },
     "steps": {
       "accepted": {
         "title": "Принят",

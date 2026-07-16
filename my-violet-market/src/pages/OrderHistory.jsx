@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { fetchMyUzbOrderTracking } from '../api/orderTrackingApi';
+import UserDeliveredOrdersList from '../components/UserOrderTracking/UserDeliveredOrdersList/UserDeliveredOrdersList';
+import UserOrderHistoryFilter from '../components/UserOrderTracking/UserOrderHistoryFilter/UserOrderHistoryFilter';
 import UserOrderTrackingList from '../components/UserOrderTracking/UserOrderTrackingList/UserOrderTrackingList';
 import { useUser } from '../contexts/UserContext';
 import './OrderHistory.css';
 
 const OrderHistory = () => {
-  const { t } = useTranslation();
   const { authToken, authLoading } = useUser();
-  const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState('in_progress');
+  const [inProgressOrders, setInProgressOrders] = useState([]);
+  const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
     if (!authToken) {
-      setOrders([]);
+      setInProgressOrders([]);
+      setDeliveredOrders([]);
       setLoading(false);
       return;
     }
@@ -22,11 +25,16 @@ const OrderHistory = () => {
     let cancelled = false;
     setLoading(true);
     fetchMyUzbOrderTracking(authToken)
-      .then((items) => {
-        if (!cancelled) setOrders(items);
+      .then((data) => {
+        if (cancelled) return;
+        setInProgressOrders(data.inProgressItems);
+        setDeliveredOrders(data.deliveredItems);
       })
       .catch(() => {
-        if (!cancelled) setOrders([]);
+        if (!cancelled) {
+          setInProgressOrders([]);
+          setDeliveredOrders([]);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -40,8 +48,15 @@ const OrderHistory = () => {
   return (
     <div className="order-history-page">
       <div className="order-history-container">
-        <h1>{t('orderHistory.title')}</h1>
-        <UserOrderTrackingList orders={orders} loading={loading || authLoading} />
+        <UserOrderHistoryFilter value={filter} onChange={setFilter} />
+
+        {loading || authLoading ? (
+          <UserOrderTrackingList orders={[]} loading />
+        ) : filter === 'in_progress' ? (
+          <UserOrderTrackingList orders={inProgressOrders} />
+        ) : (
+          <UserDeliveredOrdersList orders={deliveredOrders} />
+        )}
       </div>
     </div>
   );
