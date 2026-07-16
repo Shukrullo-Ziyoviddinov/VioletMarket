@@ -13,9 +13,11 @@
     "title": "订单",
     "empty": "暂无订单",
     "card": {
+      "barcode": "条码",
       "orderId": "订单编号",
       "orderedAt": "日期与时间",
       "buyer": "买家",
+      "payment": "支付",
       "amount": "商品价格"
     },
     "payment": {

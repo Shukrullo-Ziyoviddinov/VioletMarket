@@ -63,11 +63,16 @@ export function clearCartApi(token) {
 }
 
 export function checkoutCartApi(token, { paymentMethod } = {}) {
+  const method = String(paymentMethod || '').trim();
+  if (!method) {
+    return Promise.reject(Object.assign(new Error('To‘lov usulini tanlang'), { status: 400 }));
+  }
+
   return fetch(apiUrl('/api/cart/checkout'), {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({
-      paymentMethod: paymentMethod || 'mock',
+      paymentMethod: method,
     }),
   }).then(parseJsonResponse);
 }

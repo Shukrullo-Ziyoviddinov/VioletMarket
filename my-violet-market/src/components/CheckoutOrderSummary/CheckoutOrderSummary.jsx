@@ -39,15 +39,16 @@ const CheckoutOrderSummary = ({
     setIsPayLoading(true);
     try {
       const cartSnapshot = [...cart];
+      const paymentMethod = String(selectedPayment).trim();
 
       if (isPayOnDelivery) {
         const addressText = address?.addressLine || address?.formatted || '';
-        await checkoutCart(selectedPayment);
+        await checkoutCart(paymentMethod);
         onOrderConfirmed?.({ cartSnapshot, addressText });
         return;
       }
 
-      await checkoutCart(selectedPayment);
+      await checkoutCart(paymentMethod);
       window.dispatchEvent(new Event('appDataRefreshRequested'));
       startPostOrderReviewFlow({
         cartSnapshot,
@@ -95,9 +96,9 @@ const CheckoutOrderSummary = ({
       </div>
       <button
         type="button"
-        className={`checkout-order-summary__pay-btn ${!hasAddress ? 'checkout-order-summary__pay-btn--disabled' : ''} ${isPayLoading ? 'checkout-order-summary__pay-btn--loading' : ''}`}
+        className={`checkout-order-summary__pay-btn ${!hasAddress || !selectedPayment ? 'checkout-order-summary__pay-btn--disabled' : ''} ${isPayLoading ? 'checkout-order-summary__pay-btn--loading' : ''}`}
         onClick={handlePayClick}
-        disabled={!hasAddress || isPayLoading}
+        disabled={!hasAddress || !selectedPayment || isPayLoading}
       >
         <ButtonLoader isLoading={isPayLoading}>
           {t(isPayOnDelivery ? 'checkout.confirmOrderButton' : 'checkout.payButton')}

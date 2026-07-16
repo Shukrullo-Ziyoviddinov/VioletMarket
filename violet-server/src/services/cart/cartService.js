@@ -599,11 +599,11 @@ async function checkoutCartForUser(userId, options = {}) {
 
   const postOrderReview = buildPostOrderReviewPayload(items);
 
-  await recordCartPayment({
+  const order = await recordCartPayment({
     userId,
     cartItems: items,
     productMap,
-    paymentMethod: options.paymentMethod || "mock",
+    paymentMethod: options.paymentMethod,
   });
 
   await markProductsAsSold({
@@ -615,7 +615,11 @@ async function checkoutCartForUser(userId, options = {}) {
   });
 
   await CartItem.deleteMany({ userId });
-  return { items: [], postOrderReview };
+  return {
+    items: [],
+    postOrderReview,
+    paymentMethod: String(order?.paymentMethod || options.paymentMethod || ""),
+  };
 }
 
 async function dismissCartUrgency(userId, itemId) {

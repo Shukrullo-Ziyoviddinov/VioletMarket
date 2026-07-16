@@ -17,13 +17,15 @@ const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProduct
 const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
 const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
 const {
-  VALID_PAYMENT_METHODS,
-  normalizePaymentMethod,
   formatOrderCode,
   formatProductCode,
   buildSellerOrderCard,
   listSellerOrders,
 } = require("./sellerOrders");
+const {
+  VALID_PAYMENT_METHODS,
+  normalizePaymentMethod,
+} = require("./paymentMethods");
 
 module.exports = {
   markProductsAsSold,

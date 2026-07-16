@@ -13,38 +13,53 @@ export default function SellerOrderCard({ order }) {
 
   if (!order) return null;
 
-  const paymentMethod = String(order.paymentMethod || '').toLowerCase();
+  const paymentMethod = String(order.paymentMethod || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, '_');
   const productCode = String(order.productCode || '').trim() || '—';
 
   return (
     <article className="seller-order-card">
-      <div className="seller-order-card__top">
-        <strong className="seller-order-card__code">{productCode}</strong>
-        <span
-          className={`seller-order-card__payment seller-order-card__payment--${paymentMethod || 'unknown'}`}
-        >
-          {getSellerOrderPaymentLabel(order.paymentMethod, t)}
-        </span>
-      </div>
+      <div className="seller-order-card__fields">
+        <div className="seller-order-card__field">
+          <span className="seller-order-card__label">{t('orders.card.barcode')}</span>
+          <strong className="seller-order-card__value">{productCode}</strong>
+        </div>
 
-      <dl className="seller-order-card__meta">
-        <div className="seller-order-card__row">
-          <dt>{t('orders.card.orderId')}</dt>
-          <dd>{order.orderCode || '—'}</dd>
+        <div className="seller-order-card__field">
+          <span className="seller-order-card__label">{t('orders.card.orderId')}</span>
+          <strong className="seller-order-card__value">{order.orderCode || '—'}</strong>
         </div>
-        <div className="seller-order-card__row">
-          <dt>{t('orders.card.orderedAt')}</dt>
-          <dd>{formatSellerOrderDateTime(order.orderedAt, t)}</dd>
+
+        <div className="seller-order-card__field seller-order-card__field--grow">
+          <span className="seller-order-card__label">{t('orders.card.orderedAt')}</span>
+          <strong className="seller-order-card__value">
+            {formatSellerOrderDateTime(order.orderedAt, t)}
+          </strong>
         </div>
-        <div className="seller-order-card__row">
-          <dt>{t('orders.card.buyer')}</dt>
-          <dd>{getSellerOrderBuyerName(order.buyer)}</dd>
+
+        <div className="seller-order-card__field seller-order-card__field--grow">
+          <span className="seller-order-card__label">{t('orders.card.buyer')}</span>
+          <strong className="seller-order-card__value">{getSellerOrderBuyerName(order.buyer)}</strong>
         </div>
-        <div className="seller-order-card__row">
-          <dt>{t('orders.card.amount')}</dt>
-          <dd className="seller-order-card__amount">{formatSellerOrderAmount(order.amount)}</dd>
+
+        <div className="seller-order-card__field">
+          <span className="seller-order-card__label">{t('orders.card.payment')}</span>
+          <span
+            className={`seller-order-card__payment seller-order-card__payment--${paymentMethod || 'unknown'}`}
+          >
+            {getSellerOrderPaymentLabel(order.paymentMethod, t)}
+          </span>
         </div>
-      </dl>
+
+        <div className="seller-order-card__field">
+          <span className="seller-order-card__label">{t('orders.card.amount')}</span>
+          <strong className="seller-order-card__value seller-order-card__value--amount">
+            {formatSellerOrderAmount(order.amount)}
+          </strong>
+        </div>
+      </div>
     </article>
   );
 }

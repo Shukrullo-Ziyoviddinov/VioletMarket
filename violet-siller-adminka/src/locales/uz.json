@@ -13,9 +13,11 @@
     "title": "Buyurtmalar",
     "empty": "Hozircha buyurtmalar yo'q",
     "card": {
+      "barcode": "Shtrix kod",
       "orderId": "Buyurtma ID",
       "orderedAt": "Sana va vaqt",
       "buyer": "Xaridor",
+      "payment": "To'lov",
       "amount": "Mahsulot narxi"
     },
     "payment": {

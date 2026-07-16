@@ -13,9 +13,11 @@
     "title": "Orders",
     "empty": "No orders yet",
     "card": {
+      "barcode": "Barcode",
       "orderId": "Order ID",
       "orderedAt": "Date & time",
       "buyer": "Buyer",
+      "payment": "Payment",
       "amount": "Product price"
     },
     "payment": {

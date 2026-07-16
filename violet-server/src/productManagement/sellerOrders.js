@@ -2,43 +2,16 @@ const { Order } = require("../models/order");
 const { User } = require("../models/user");
 const { HttpError } = require("../utils/httpError");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
+const {
+  VALID_PAYMENT_METHODS,
+  normalizePaymentMethod,
+  resolveStoredPaymentMethod,
+} = require("./paymentMethods");
 
-const VALID_PAYMENT_METHODS = new Set(["payme", "click", "on_delivery", "mock"]);
-const PAYMENT_METHOD_ALIASES = {
-  payme: "payme",
-  click: "click",
-  on_delivery: "on_delivery",
-  cash: "on_delivery",
-  naqt: "on_delivery",
-  naqd: "on_delivery",
-  mock: "mock",
-};
 const DEFAULT_PAGE_SIZE = 20;
 
 function cleanSellerId(value) {
   return String(value || "").trim();
-}
-
-function normalizePaymentMethod(raw) {
-  const method = String(raw || "")
-    .trim()
-    .toLowerCase()
-    .replace(/-/g, "_");
-  if (!method) return "mock";
-
-  const normalized = PAYMENT_METHOD_ALIASES[method] || method;
-  if (!VALID_PAYMENT_METHODS.has(normalized)) {
-    throw new HttpError(400, "To'lov usuli noto'g'ri", "VALIDATION_ERROR");
-  }
-  return normalized;
-}
-
-function resolveStoredPaymentMethod(raw) {
-  try {
-    return normalizePaymentMethod(raw);
-  } catch {
-    return "mock";
-  }
 }
 
 function formatOrderCode(orderId) {
