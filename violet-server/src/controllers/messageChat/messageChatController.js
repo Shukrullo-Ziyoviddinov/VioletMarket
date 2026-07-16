@@ -8,6 +8,9 @@ const {
   emitMessageChatMessageUpdated,
   emitMessageChatThreadDeleted,
 } = require("../../socket/messageChatSocketEmitter");
+const {
+  notifySellerChatMessageReceived,
+} = require("../../services/sellerNotifications/sellerNotificationService");
 
 const listUserThreads = asyncHandler(async (req, res) => {
   const data = await messageChatService.listUserThreads(req.userId);
@@ -23,21 +26,29 @@ const getUserThreadMessages = asyncHandler(async (req, res) => {
 });
 
 const sendUserMessage = asyncHandler(async (req, res) => {
+  const sellerId = String(req.params.sellerId || "").trim();
   const data = await messageChatService.sendUserMessage(
     req.userId,
-    req.params.sellerId,
+    sellerId,
     req.body || {},
   );
 
   emitMessageChatMessage({
     userId: String(req.userId),
-    sellerId: String(req.params.sellerId || "").trim(),
+    sellerId,
     message: data.socketMessage,
   });
   emitMessageChatThreadsUpdated({
     userId: String(req.userId),
-    sellerId: String(req.params.sellerId || "").trim(),
+    sellerId,
   });
+
+  await notifySellerChatMessageReceived({
+    sellerId,
+    userId: req.userId,
+    messageType: data.message?.type || req.body?.type,
+    content: data.message?.content ?? req.body?.content,
+  }).catch(() => null);
 
   res.status(201).json({ ok: true, message: data.message });
 });

@@ -23,8 +23,28 @@ function buildSellerPaymentRequestRejectedMessage(productLabel) {
   return `Sizning ${label} uchun yuborgan so'rovingiz rad etildi`;
 }
 
+function buildChatPreviewText(type, content) {
+  const messageType = String(type || "text").trim();
+  if (messageType === "image") return "Rasm yuborildi";
+  if (messageType === "product") {
+    const title = content?.title;
+    if (title && typeof title === "object") {
+      return String(title.uz || title.ru || "Mahsulot").trim() || "Mahsulot";
+    }
+    return String(title || "Mahsulot").trim() || "Mahsulot";
+  }
+  return String(content || "").trim();
+}
+
+function buildSellerChatMessageReceivedMessage(userName) {
+  const name = String(userName || "Mijoz").trim() || "Mijoz";
+  return `${name} sizga xabar yozdi`;
+}
+
 module.exports = {
   buildProductLabel,
   buildSellerPaymentRequestApprovedMessage,
   buildSellerPaymentRequestRejectedMessage,
+  buildChatPreviewText,
+  buildSellerChatMessageReceivedMessage,
 };

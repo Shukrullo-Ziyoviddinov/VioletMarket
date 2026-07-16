@@ -11,6 +11,10 @@ import {
 } from '../../utils/notificationDisplay';
 import './SellerNotificationsBell.css';
 
+function isChatNotification(notification) {
+  return String(notification?.type || '') === 'chat_message_received';
+}
+
 function NotificationStatusIcon({ status }) {
   if (status === 'approved') {
     return <CheckCircleOutlined className="seller-notifications-bell__icon seller-notifications-bell__icon--approved" />;
@@ -19,6 +23,42 @@ function NotificationStatusIcon({ status }) {
     return <CloseCircleOutlined className="seller-notifications-bell__icon seller-notifications-bell__icon--rejected" />;
   }
   return <BellOutlined className="seller-notifications-bell__icon" />;
+}
+
+function ChatNotificationItem({ notification }) {
+  const userName = notification.userName || 'Mijoz';
+  const preview = notification.previewText || notification.message;
+
+  return (
+    <>
+      <div className="seller-notifications-bell__avatar">
+        {notification.userAvatarUrl ? (
+          <img src={notification.userAvatarUrl} alt={userName} />
+        ) : (
+          <span>{userName.charAt(0).toUpperCase()}</span>
+        )}
+      </div>
+      <div className="seller-notifications-bell__content">
+        <strong>{userName}</strong>
+        <p className="seller-notifications-bell__preview" title={preview}>
+          {preview}
+        </p>
+        <span>{formatNotificationDateTime(notification.createdAt)}</span>
+      </div>
+    </>
+  );
+}
+
+function PaymentNotificationItem({ notification }) {
+  return (
+    <>
+      <NotificationStatusIcon status={notification.status} />
+      <div className="seller-notifications-bell__content">
+        <strong>{notification.message}</strong>
+        <span>{formatNotificationDateTime(notification.createdAt)}</span>
+      </div>
+    </>
+  );
 }
 
 export default function SellerNotificationsBell() {
@@ -45,8 +85,12 @@ export default function SellerNotificationsBell() {
     setOpen(false);
   };
 
-  const handleItemClick = () => {
+  const handleItemClick = (notification) => {
     setOpen(false);
+    if (isChatNotification(notification)) {
+      navigate('/messages');
+      return;
+    }
     navigate('/sales/earnings');
   };
 
@@ -88,13 +132,13 @@ export default function SellerNotificationsBell() {
                 className={`seller-notifications-bell__item${
                   notification.readAt ? '' : ' seller-notifications-bell__item--unread'
                 }`}
-                onClick={handleItemClick}
+                onClick={() => handleItemClick(notification)}
               >
-                <NotificationStatusIcon status={notification.status} />
-                <div className="seller-notifications-bell__content">
-                  <strong>{notification.message}</strong>
-                  <span>{formatNotificationDateTime(notification.createdAt)}</span>
-                </div>
+                {isChatNotification(notification) ? (
+                  <ChatNotificationItem notification={notification} />
+                ) : (
+                  <PaymentNotificationItem notification={notification} />
+                )}
               </button>
             ))}
           </div>

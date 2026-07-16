@@ -1,19 +1,31 @@
 const { SellerNotification } = require("../../models/sellerNotification");
 const { SellerSoldItem } = require("../../models/sellerSoldItem");
 const { Product } = require("../../models/product");
+const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const { nextSequence } = require("../../models/autoIncrement");
+const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const {
   buildProductLabel,
   buildSellerPaymentRequestApprovedMessage,
   buildSellerPaymentRequestRejectedMessage,
+  buildChatPreviewText,
+  buildSellerChatMessageReceivedMessage,
 } = require("./sellerNotificationMessages");
 
 const KEEP_LIMIT = 20;
 
 function cleanSellerId(value) {
   return String(value || "").trim();
+}
+
+function resolveUserDisplayName(user) {
+  const fullName = [user?.firstName, user?.lastName]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+  return fullName || "Mijoz";
 }
 
 async function pruneOldSellerNotifications(sellerId) {
@@ -54,6 +66,10 @@ function mapNotification(row) {
     productLabel: String(row.productLabel || ""),
     itemCount: toNumber(row.itemCount, 0),
     status: String(row.status || ""),
+    userId: String(row.userId || ""),
+    userName: String(row.userName || ""),
+    userAvatarUrl: String(row.userAvatarUrl || ""),
+    previewText: String(row.previewText || ""),
     message: String(row.message || ""),
     readAt: row.readAt || null,
     createdAt: row.createdAt || null,
@@ -110,6 +126,37 @@ async function notifySellerPaymentRequestReviewed(paymentRequest, status) {
   });
 
   await pruneOldSellerNotifications(sellerId).catch(() => null);
+  return notification;
+}
+
+async function notifySellerChatMessageReceived({ sellerId, userId, messageType, content }) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  const normalizedUserId = String(userId || "").trim();
+  if (!normalizedSellerId || !normalizedUserId) return null;
+
+  const user = await User.findById(normalizedUserId)
+    .select({ firstName: 1, lastName: 1, profileImage: 1 })
+    .lean();
+
+  const userName = resolveUserDisplayName(user);
+  const userAvatarUrl = resolvePublicAssetUrl(user?.profileImage || "");
+  const previewText = buildChatPreviewText(messageType, content);
+  if (!previewText) return null;
+
+  const id = await nextSequence("seller_notification_id");
+  const notification = await SellerNotification.create({
+    id,
+    sellerId: normalizedSellerId,
+    type: "chat_message_received",
+    userId: normalizedUserId,
+    userName,
+    userAvatarUrl,
+    previewText,
+    message: buildSellerChatMessageReceivedMessage(userName),
+    readAt: null,
+  });
+
+  await pruneOldSellerNotifications(normalizedSellerId).catch(() => null);
   return notification;
 }
 
@@ -186,6 +233,7 @@ async function markAllNotificationsReadForSeller(sellerId) {
 
 module.exports = {
   notifySellerPaymentRequestReviewed,
+  notifySellerChatMessageReceived,
   getUnreadCountForSeller,
   listNotificationsForSeller,
   markNotificationReadForSeller,
