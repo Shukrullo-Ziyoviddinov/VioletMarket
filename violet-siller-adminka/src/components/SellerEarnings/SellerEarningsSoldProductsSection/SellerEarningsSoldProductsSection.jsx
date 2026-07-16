@@ -26,7 +26,9 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
   const [dateRange, setDateRange] = useState(getDefaultSoldProductsDateRange);
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [selectedById, setSelectedById] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
@@ -37,64 +39,71 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
 
     setLoading(true);
     try {
-      const items = await fetchSellerSoldItems(token, {
+      const data = await fetchSellerSoldItems(token, {
+        page,
+        limit: PAGE_SIZE,
         status: statusFilter,
         dateFrom: formatSoldProductsDateParam(dateRange?.[0]),
         dateTo: formatSoldProductsDateParam(dateRange?.[1]),
       });
-      setRows(items);
-      setPage(1);
-      setSelectedIds((prev) => prev.filter((id) => items.some((item) => item.id === id)));
+      setRows(data.items);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+      setPage(data.page);
     } catch {
       setRows([]);
-      setPage(1);
-      setSelectedIds([]);
+      setTotal(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  }, [dateRange, statusFilter, token]);
+  }, [dateRange, page, statusFilter, token]);
 
   useEffect(() => {
     loadSoldItems();
   }, [loadSoldItems]);
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
+  const selectedIds = useMemo(() => Object.keys(selectedById), [selectedById]);
 
-  const pagedRows = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return rows.slice(start, start + PAGE_SIZE);
-  }, [rows, safePage]);
-
-  useEffect(() => {
-    if (page !== safePage) setPage(safePage);
-  }, [page, safePage]);
-
-  const selectedRows = useMemo(
-    () => rows.filter((row) => selectedIds.includes(row.id)),
-    [rows, selectedIds],
-  );
+  const selectedRows = useMemo(() => Object.values(selectedById), [selectedById]);
 
   const selectedTotal = selectedRows.reduce((sum, row) => sum + (Number(row.price) || 0), 0);
 
+  const handleFilterChange = (updater) => {
+    setPage(1);
+    setSelectedById({});
+    updater();
+  };
+
   const handleToggleRow = (rowId) => {
-    setSelectedIds((prev) =>
-      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId],
-    );
+    setSelectedById((prev) => {
+      if (prev[rowId]) {
+        const next = { ...prev };
+        delete next[rowId];
+        return next;
+      }
+
+      const row = rows.find((item) => String(item.id) === String(rowId));
+      if (!row) return prev;
+      return { ...prev, [rowId]: row };
+    });
   };
 
   const handleToggleAll = (checked, selectableRows) => {
-    if (!checked) {
-      setSelectedIds((prev) =>
-        prev.filter((id) => !selectableRows.some((row) => row.id === id)),
-      );
-      return;
-    }
+    setSelectedById((prev) => {
+      const next = { ...prev };
 
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      selectableRows.forEach((row) => next.add(row.id));
-      return [...next];
+      if (!checked) {
+        selectableRows.forEach((row) => {
+          delete next[row.id];
+        });
+        return next;
+      }
+
+      selectableRows.forEach((row) => {
+        next[row.id] = row;
+      });
+      return next;
     });
   };
 
@@ -104,8 +113,12 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
     setSubmitting(true);
     try {
       const result = await submitSellerWithdrawalRequest(token, selectedIds);
-      setSelectedIds([]);
-      await loadSoldItems();
+      setSelectedById({});
+      if (page !== 1) {
+        setPage(1);
+      } else {
+        await loadSoldItems();
+      }
       if (typeof onSummaryChange === 'function') {
         await onSummaryChange(result.summary);
       }
@@ -139,16 +152,19 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
         <div className="seller-earnings-sold-products-section__filters">
           <SellerEarningsSoldProductsStatusFilter
             value={statusFilter}
-            onChange={setStatusFilter}
+            onChange={(nextStatus) => handleFilterChange(() => setStatusFilter(nextStatus))}
             isOpen={statusFilterOpen}
             onOpenChange={setStatusFilterOpen}
           />
-          <SellerEarningsSoldProductsDateFilter value={dateRange} onChange={setDateRange} />
+          <SellerEarningsSoldProductsDateFilter
+            value={dateRange}
+            onChange={(nextRange) => handleFilterChange(() => setDateRange(nextRange))}
+          />
         </div>
       </div>
 
       <SellerEarningsSoldProductsTable
-        rows={pagedRows}
+        rows={rows}
         selectedIds={selectedIds}
         loading={loading}
         onToggleRow={handleToggleRow}
@@ -157,9 +173,9 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
       />
 
       <SellerEarningsSoldProductsPagination
-        page={safePage}
+        page={page}
         totalPages={totalPages}
-        total={rows.length}
+        total={total}
         limit={PAGE_SIZE}
         onChange={setPage}
       />

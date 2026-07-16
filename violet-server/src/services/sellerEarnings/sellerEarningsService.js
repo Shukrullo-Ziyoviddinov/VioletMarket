@@ -8,6 +8,7 @@ const { createSellerPaymentRequest } = require("../adminPaymentRequests/adminPay
 const { notifyAdminPaymentRequestSubmitted } = require("../adminNotifications/adminNotificationService");
 
 const VALID_STATUSES = new Set(["available", "in_process", "withdrawn", "rejected"]);
+const DEFAULT_PAGE_SIZE = 10;
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -109,13 +110,20 @@ async function listSellerSoldItems(sellerId, query = {}) {
 
   const status = parseStatusFilter(query.status);
   const soldAtRange = buildSoldAtRange(query);
+  const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
+  const limit = Math.min(50, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
   const match = { sellerId: normalizedSellerId };
   if (status) match.status = status;
   if (soldAtRange) match.soldAt = soldAtRange;
 
-  const rows = await SellerSoldItem.find(match)
-    .sort({ soldAt: -1, id: -1 })
-    .lean();
+  const [total, rows] = await Promise.all([
+    SellerSoldItem.countDocuments(match),
+    SellerSoldItem.find(match)
+      .sort({ soldAt: -1, id: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+  ]);
 
   const productIds = [...new Set(rows.map((row) => Number(row.productId)).filter(Number.isFinite))];
   const products = productIds.length
@@ -126,7 +134,7 @@ async function listSellerSoldItems(sellerId, query = {}) {
 
   const productById = new Map(products.map((product) => [Number(product.id), product]));
 
-  return rows.map((row) => {
+  const items = rows.map((row) => {
     const product = productById.get(Number(row.productId));
     const title = resolveProductTitle(product);
 
@@ -144,6 +152,14 @@ async function listSellerSoldItems(sellerId, query = {}) {
       rejectionComment: String(row.rejectionComment || "").trim() || null,
     };
   });
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+    items,
+  };
 }
 
 async function submitSellerWithdrawalRequest(sellerId, payload = {}) {

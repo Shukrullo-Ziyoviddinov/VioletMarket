@@ -58,6 +58,8 @@ export async function fetchSellerSoldItems(token, filters = {}) {
   }
   if (filters?.dateFrom) params.set('dateFrom', String(filters.dateFrom));
   if (filters?.dateTo) params.set('dateTo', String(filters.dateTo));
+  if (filters?.page) params.set('page', String(filters.page));
+  if (filters?.limit) params.set('limit', String(filters.limit));
 
   const query = params.toString();
   const path = query
@@ -68,8 +70,15 @@ export async function fetchSellerSoldItems(token, filters = {}) {
     headers: authHeaders(token),
   });
   const payload = await parseJson(res);
-  const items = Array.isArray(payload?.data?.items) ? payload.data.items : [];
-  return items.map(normalizeSoldItem);
+  const data = payload?.data || {};
+
+  return {
+    page: Number(data?.page) || 1,
+    limit: Number(data?.limit) || 10,
+    total: Number(data?.total) || 0,
+    totalPages: Number(data?.totalPages) || 1,
+    items: Array.isArray(data?.items) ? data.items.map(normalizeSoldItem) : [],
+  };
 }
 
 export async function submitSellerWithdrawalRequest(token, itemIds = []) {

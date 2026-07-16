@@ -7,8 +7,8 @@ const getSellerEarningsSummary = asyncHandler(async (req, res) => {
 });
 
 const getSellerSoldItems = asyncHandler(async (req, res) => {
-  const items = await sellerEarningsService.listSellerSoldItems(req.sellerShopId, req.query || {});
-  res.json({ ok: true, data: { items } });
+  const data = await sellerEarningsService.listSellerSoldItems(req.sellerShopId, req.query || {});
+  res.json({ ok: true, data });
 });
 
 const submitSellerWithdrawalRequest = asyncHandler(async (req, res) => {
