@@ -38,10 +38,10 @@ export default function UserOrderTrackingCard({ order }) {
           <h2>{title}</h2>
           {variantText ? <p>{variantText}</p> : null}
           <span>{t('orderHistory.quantity', { count: order.quantity })}</span>
+          <strong className="user-order-tracking-card__price">
+            {formatPrice(order.lineTotal || order.price)}
+          </strong>
         </div>
-        <strong className="user-order-tracking-card__price">
-          {formatPrice(order.lineTotal || order.price)}
-        </strong>
       </div>
 
       <div className="user-order-tracking-card__tracking">

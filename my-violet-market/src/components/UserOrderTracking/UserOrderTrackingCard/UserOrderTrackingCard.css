@@ -22,7 +22,7 @@
 
 .user-order-tracking-card__product {
   display: grid;
-  grid-template-columns: 86px minmax(0, 1fr) auto;
+  grid-template-columns: 86px minmax(0, 1fr);
   gap: 15px;
   align-items: center;
   padding: 18px;
@@ -61,6 +61,8 @@
 }
 
 .user-order-tracking-card__price {
+  display: block;
+  margin-top: 8px;
   color: #5f259f;
   font-size: 15px;
   white-space: nowrap;
@@ -74,7 +76,7 @@
 
 @media (max-width: 560px) {
   .user-order-tracking-card__product {
-    grid-template-columns: 72px minmax(0, 1fr) auto;
+    grid-template-columns: 72px minmax(0, 1fr);
     padding: 14px;
   }
 
@@ -83,9 +85,6 @@
     height: 72px;
   }
 
-  .user-order-tracking-card__price {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 450px) {
@@ -116,6 +115,8 @@
   }
 
   .user-order-tracking-card__price {
+    grid-column: 1 / -1;
+    margin-top: 2px;
     font-size: 13px;
   }
 }
