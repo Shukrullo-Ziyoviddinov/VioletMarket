@@ -11,10 +11,13 @@ import SellerEarningsSoldProductsDateFilter, {
   getDefaultSoldProductsDateRange,
 } from '../SellerEarningsSoldProductsDateFilter/SellerEarningsSoldProductsDateFilter';
 import SellerEarningsSoldProductsFooter from '../SellerEarningsSoldProductsFooter/SellerEarningsSoldProductsFooter';
+import SellerEarningsSoldProductsPagination from '../SellerEarningsSoldProductsPagination/SellerEarningsSoldProductsPagination';
 import SellerEarningsSoldProductsStatusFilter from '../SellerEarningsSoldProductsStatusFilter/SellerEarningsSoldProductsStatusFilter';
 import SellerEarningsSoldProductsTable from '../SellerEarningsSoldProductsTable/SellerEarningsSoldProductsTable';
 import SellerEarningsRejectionCommentModal from '../SellerEarningsRejectionCommentModal/SellerEarningsRejectionCommentModal';
 import './SellerEarningsSoldProductsSection.css';
+
+const PAGE_SIZE = 10;
 
 export default function SellerEarningsSoldProductsSection({ token, onSummaryChange }) {
   const { t } = useTranslation();
@@ -22,6 +25,7 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
   const [statusFilterOpen, setStatusFilterOpen] = useState(false);
   const [dateRange, setDateRange] = useState(getDefaultSoldProductsDateRange);
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -39,9 +43,11 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
         dateTo: formatSoldProductsDateParam(dateRange?.[1]),
       });
       setRows(items);
+      setPage(1);
       setSelectedIds((prev) => prev.filter((id) => items.some((item) => item.id === id)));
     } catch {
       setRows([]);
+      setPage(1);
       setSelectedIds([]);
     } finally {
       setLoading(false);
@@ -51,6 +57,18 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
   useEffect(() => {
     loadSoldItems();
   }, [loadSoldItems]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  const pagedRows = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, safePage]);
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
 
   const selectedRows = useMemo(
     () => rows.filter((row) => selectedIds.includes(row.id)),
@@ -130,12 +148,20 @@ export default function SellerEarningsSoldProductsSection({ token, onSummaryChan
       </div>
 
       <SellerEarningsSoldProductsTable
-        rows={rows}
+        rows={pagedRows}
         selectedIds={selectedIds}
         loading={loading}
         onToggleRow={handleToggleRow}
         onToggleAll={handleToggleAll}
         onViewComment={handleViewComment}
+      />
+
+      <SellerEarningsSoldProductsPagination
+        page={safePage}
+        totalPages={totalPages}
+        total={rows.length}
+        limit={PAGE_SIZE}
+        onChange={setPage}
       />
 
       <SellerEarningsRejectionCommentModal

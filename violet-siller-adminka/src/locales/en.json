@@ -214,6 +214,11 @@
         "submitting": "Submitting...",
         "submitSuccess": "{{count}} products moved to in process",
         "submitError": "Could not submit the request"
+      },
+      "pagination": {
+        "prev": "Previous page",
+        "next": "Next page",
+        "perPage": "{{limit}} / page"
       }
     }
   }

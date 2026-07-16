@@ -214,6 +214,11 @@
         "submitting": "提交中...",
         "submitSuccess": "{{count}} 件商品已转为处理中",
         "submitError": "无法提交申请"
+      },
+      "pagination": {
+        "prev": "上一页",
+        "next": "下一页",
+        "perPage": "{{limit}} / 页"
       }
     }
   }

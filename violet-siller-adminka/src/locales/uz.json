@@ -214,6 +214,11 @@
         "submitting": "Yuborilmoqda...",
         "submitSuccess": "{{count}} ta mahsulot jarayonga o'tkazildi",
         "submitError": "So'rov yuborib bo'lmadi"
+      },
+      "pagination": {
+        "prev": "Oldingi sahifa",
+        "next": "Keyingi sahifa",
+        "perPage": "{{limit}} / sahifa"
       }
     }
   }

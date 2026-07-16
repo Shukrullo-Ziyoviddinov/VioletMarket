@@ -1,0 +1,78 @@
+.seller-earnings-sold-products-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.seller-earnings-sold-products-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seller-earnings-sold-products-pagination__btn,
+.seller-earnings-sold-products-pagination__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #595959;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.seller-earnings-sold-products-pagination__btn:hover,
+.seller-earnings-sold-products-pagination__arrow:hover:not(:disabled) {
+  border-color: #764ba2;
+  color: #764ba2;
+}
+
+.seller-earnings-sold-products-pagination__btn--active {
+  border-color: #764ba2;
+  background: #764ba2;
+  color: #fff;
+}
+
+.seller-earnings-sold-products-pagination__arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.seller-earnings-sold-products-pagination__ellipsis {
+  min-width: 24px;
+  color: #8c8c8c;
+  text-align: center;
+}
+
+.seller-earnings-sold-products-pagination__size {
+  color: #8c8c8c;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .seller-earnings-sold-products-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seller-earnings-sold-products-pagination__controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .seller-earnings-sold-products-pagination__size {
+    text-align: center;
+  }
+}
