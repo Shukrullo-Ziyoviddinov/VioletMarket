@@ -8,6 +8,7 @@ const {
   normalizePaymentMethod,
   resolveStoredPaymentMethod,
 } = require("./paymentMethods");
+const { normalizeOrderTrackingStatus } = require("./orderTracking");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -57,8 +58,9 @@ function resolveOptionLabel(value) {
 
 function mapSellerOrderItems(items, sellerId) {
   return (Array.isArray(items) ? items : [])
-    .filter((item) => cleanSellerId(item?.sellerId) === sellerId)
-    .map((item, index) => {
+    .map((item, itemIndex) => ({ item, itemIndex }))
+    .filter(({ item }) => cleanSellerId(item?.sellerId) === sellerId)
+    .map(({ item, itemIndex }) => {
       const productId = Math.max(0, Math.floor(toNumber(item?.productId, 0)));
       const quantity = Math.max(1, Math.floor(toNumber(item?.quantity, 1)));
       const price = Math.max(0, toNumber(item?.price, 0));
@@ -66,7 +68,7 @@ function mapSellerOrderItems(items, sellerId) {
       const lineTotal = Math.max(0, toNumber(item?.lineTotal, price * quantity));
 
       return {
-        lineIndex: index,
+        itemIndex,
         productId,
         productCode: formatProductCode(productId),
         title: resolveTitle(item?.title),
@@ -79,6 +81,8 @@ function mapSellerOrderItems(items, sellerId) {
         price,
         originalPrice,
         lineTotal,
+        trackingStatus: normalizeOrderTrackingStatus(item?.trackingStatus),
+        trackingHistory: Array.isArray(item?.trackingHistory) ? item.trackingHistory : [],
       };
     });
 }
@@ -108,8 +112,9 @@ function buildSellerOrderItemCards(order, user, sellerId) {
 
     for (let unitIndex = 0; unitIndex < unitCount; unitIndex += 1) {
       cards.push({
-        id: `${orderId}-${item.productId}-${item.lineIndex}-${unitIndex}`,
+        id: `${orderId}-${item.productId}-${item.itemIndex}-${unitIndex}`,
         orderId,
+        itemIndex: item.itemIndex,
         orderCode,
         productId: item.productId,
         productCode: item.productCode,
@@ -126,6 +131,11 @@ function buildSellerOrderItemCards(order, user, sellerId) {
         amount: unitPrice,
         originalPrice: item.originalPrice,
         quantity: 1,
+        trackingStatus: item.trackingStatus,
+        confirmedAt:
+          item.trackingHistory.find(
+            (entry) => String(entry?.status || "") === "seller_confirmed",
+          )?.at || null,
       });
     }
   });
@@ -192,10 +202,14 @@ async function listSellerOrders(sellerId, query = {}) {
   const allCards = rows.flatMap((row) =>
     buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
   );
+  const requestedTrackingStatus = String(query.trackingStatus || "").trim();
+  const filteredCards = requestedTrackingStatus
+    ? allCards.filter((card) => card.trackingStatus === requestedTrackingStatus)
+    : allCards;
 
-  const total = allCards.length;
+  const total = filteredCards.length;
   const start = (page - 1) * limit;
-  const orders = allCards.slice(start, start + limit);
+  const orders = filteredCards.slice(start, start + limit);
 
   return {
     page,

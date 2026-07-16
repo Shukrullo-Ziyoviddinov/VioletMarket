@@ -1,0 +1,41 @@
+.seller-orders-filter {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.seller-orders-filter__button {
+  min-width: 132px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #81758e;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seller-orders-filter__button--active {
+  background: #6f35bc;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(111, 53, 188, 0.2);
+}
+
+@media (max-width: 560px) {
+  .seller-orders-filter {
+    display: flex;
+    width: 100%;
+  }
+
+  .seller-orders-filter__button {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+}

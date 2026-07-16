@@ -12,6 +12,18 @@
   "orders": {
     "title": "订单",
     "empty": "暂无订单",
+    "filter": {
+      "label": "订单状态",
+      "confirmation": "确认",
+      "collection": "备货"
+    },
+    "collection": {
+      "empty": "暂无待备货商品"
+    },
+    "confirm": {
+      "success": "订单已确认",
+      "error": "订单确认失败"
+    },
     "card": {
       "barcode": "条码",
       "orderId": "订单编号",
@@ -43,7 +55,9 @@
       "color": "颜色",
       "size": "尺码",
       "storage": "内存",
-      "model": "型号"
+      "model": "型号",
+      "confirm": "确认",
+      "confirming": "确认中..."
     }
   },
   "marketInfo": {

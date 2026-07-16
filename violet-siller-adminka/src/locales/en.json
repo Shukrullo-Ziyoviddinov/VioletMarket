@@ -12,6 +12,18 @@
   "orders": {
     "title": "Orders",
     "empty": "No orders yet",
+    "filter": {
+      "label": "Order status",
+      "confirmation": "Confirm",
+      "collection": "Collect product"
+    },
+    "collection": {
+      "empty": "No products to collect"
+    },
+    "confirm": {
+      "success": "Order confirmed",
+      "error": "Could not confirm the order"
+    },
     "card": {
       "barcode": "Barcode",
       "orderId": "Order ID",
@@ -43,7 +55,9 @@
       "color": "Color",
       "size": "Size",
       "storage": "Storage",
-      "model": "Model"
+      "model": "Model",
+      "confirm": "Confirm",
+      "confirming": "Confirming..."
     }
   },
   "marketInfo": {

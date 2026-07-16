@@ -12,6 +12,18 @@
   "orders": {
     "title": "Buyurtmalar",
     "empty": "Hozircha buyurtmalar yo'q",
+    "filter": {
+      "label": "Buyurtma holati",
+      "confirmation": "Tasdiqlash",
+      "collection": "Mahsulotni yig'ish"
+    },
+    "collection": {
+      "empty": "Yig'ish uchun mahsulotlar yo'q"
+    },
+    "confirm": {
+      "success": "Buyurtma tasdiqlandi",
+      "error": "Buyurtmani tasdiqlashda xatolik"
+    },
     "card": {
       "barcode": "Shtrix kod",
       "orderId": "Buyurtma ID",
@@ -43,7 +55,9 @@
       "color": "Rang",
       "size": "O'lcham",
       "storage": "Xotira",
-      "model": "Model"
+      "model": "Model",
+      "confirm": "Tasdiqlash",
+      "confirming": "Tasdiqlanmoqda..."
     }
   },
   "marketInfo": {

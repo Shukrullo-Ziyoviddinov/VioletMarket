@@ -22,6 +22,7 @@ function normalizeOrder(row) {
   return {
     id: String(row?.id || ''),
     orderId: Number(row?.orderId) || 0,
+    itemIndex: Number(row?.itemIndex) || 0,
     orderCode: String(row?.orderCode || ''),
     productId: Number(row?.productId) || 0,
     productCode: String(row?.productCode || ''),
@@ -42,6 +43,8 @@ function normalizeOrder(row) {
     amount: Number(row?.amount) || 0,
     originalPrice: Number(row?.originalPrice) || 0,
     quantity: Number(row?.quantity) || 1,
+    trackingStatus: String(row?.trackingStatus || 'accepted'),
+    confirmedAt: row?.confirmedAt || null,
   };
 }
 
@@ -49,6 +52,9 @@ export async function fetchSellerOrders(token, filters = {}) {
   const params = new URLSearchParams();
   if (filters?.page) params.set('page', String(filters.page));
   if (filters?.limit) params.set('limit', String(filters.limit));
+  if (filters?.trackingStatus) {
+    params.set('trackingStatus', String(filters.trackingStatus));
+  }
 
   const query = params.toString();
   const path = query ? `/api/seller-auth/orders?${query}` : '/api/seller-auth/orders';
@@ -66,4 +72,16 @@ export async function fetchSellerOrders(token, filters = {}) {
     totalPages: Number(data?.totalPages) || 1,
     orders: Array.isArray(data?.orders) ? data.orders.map(normalizeOrder) : [],
   };
+}
+
+export async function confirmSellerOrderItem(token, orderId, itemIndex) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/confirm`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
 }

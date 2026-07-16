@@ -100,6 +100,11 @@ router.get(
   sellerAuthMiddleware,
   sellerOrdersController.listOrders,
 );
+router.patch(
+  "/seller-auth/orders/:orderId/items/:itemIndex/confirm",
+  sellerAuthMiddleware,
+  sellerOrdersController.confirmOrderItem,
+);
 router.get(
   "/seller-auth/notifications/unread-count",
   sellerAuthMiddleware,
