@@ -6,6 +6,7 @@ const { sellerAuthMiddleware } = require("../../middleware/sellerAuthMiddleware"
 const sellerMessageChatController = require("../../controllers/messageChat/sellerMessageChatController");
 const sellerSalesStatisticsController = require("../../controllers/sellerSalesStatisticsController");
 const sellerEarningsController = require("../../controllers/sellerEarningsController");
+const sellerNotificationController = require("../../controllers/sellerNotificationController");
 
 const router = express.Router();
 
@@ -86,6 +87,26 @@ router.post(
   "/seller-auth/earnings/withdrawal-requests",
   sellerAuthMiddleware,
   sellerEarningsController.submitSellerWithdrawalRequest,
+);
+router.get(
+  "/seller-auth/notifications/unread-count",
+  sellerAuthMiddleware,
+  sellerNotificationController.getUnreadCount,
+);
+router.get(
+  "/seller-auth/notifications",
+  sellerAuthMiddleware,
+  sellerNotificationController.listNotifications,
+);
+router.patch(
+  "/seller-auth/notifications/:notificationId/read",
+  sellerAuthMiddleware,
+  sellerNotificationController.markNotificationRead,
+);
+router.post(
+  "/seller-auth/notifications/read-all",
+  sellerAuthMiddleware,
+  sellerNotificationController.markAllNotificationsRead,
 );
 router.get(
   "/seller-auth/product-form/options",

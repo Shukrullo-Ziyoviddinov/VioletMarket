@@ -1,4 +1,5 @@
 .seller-notifications-bell {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -20,10 +21,92 @@
   color: #764ba2;
 }
 
+.seller-notifications-bell__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.seller-notifications-bell__loading,
 .seller-notifications-bell__empty {
   padding: 28px 12px;
   text-align: center;
   font-size: 15px;
   line-height: 1.5;
   color: #64748b;
+}
+
+.seller-notifications-bell__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.seller-notifications-bell__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.seller-notifications-bell__item:hover {
+  border-color: #d8c9ea;
+  background: #faf7ff;
+}
+
+.seller-notifications-bell__item--unread {
+  background: #f8f6fc;
+}
+
+.seller-notifications-bell__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 18px;
+  color: #764ba2;
+}
+
+.seller-notifications-bell__icon--approved {
+  color: #16a34a;
+}
+
+.seller-notifications-bell__icon--rejected {
+  color: #dc2626;
+}
+
+.seller-notifications-bell__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seller-notifications-bell__content strong {
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.seller-notifications-bell__content span {
+  color: #8c8c8c;
+  font-size: 12px;
 }

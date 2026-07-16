@@ -11,6 +11,7 @@ const {
   recordWithdrawalsForPaymentRequest,
   buildWithdrawalStats,
 } = require("../adminWithdrawals/adminWithdrawalService");
+const { notifySellerPaymentRequestReviewed } = require("../sellerNotifications/sellerNotificationService");
 
 const VALID_STATUSES = new Set(["in_process", "withdrawn", "rejected"]);
 const DEFAULT_PAGE_SIZE = 10;
@@ -412,6 +413,7 @@ async function approvePaymentRequest(paymentRequestId) {
   );
 
   await recordWithdrawalsForPaymentRequest(row, itemRows, reviewedAt);
+  await notifySellerPaymentRequestReviewed(row, "approved").catch(() => null);
 
   return getPaymentRequestDetail(row.id);
 }
@@ -456,6 +458,8 @@ async function rejectPaymentRequest(paymentRequestId, payload = {}) {
       })),
     );
   }
+
+  await notifySellerPaymentRequestReviewed(row, "rejected").catch(() => null);
 
   return getPaymentRequestDetail(row.id);
 }

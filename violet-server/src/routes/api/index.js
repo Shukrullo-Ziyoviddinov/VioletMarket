@@ -49,6 +49,7 @@ const adminSellerApplicationsRoutes = require("./adminSellerApplications.routes"
 const adminSellerManagementRoutes = require("./adminSellerManagement.routes");
 const adminPaymentRequestRoutes = require("./adminPaymentRequest.routes");
 const adminWithdrawalRoutes = require("./adminWithdrawal.routes");
+const adminNotificationRoutes = require("./adminNotification.routes");
 const messageChatRoutes = require("./messageChat.routes");
 const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 
@@ -104,6 +105,7 @@ router.use(adminSellerApplicationsRoutes);
 router.use(adminSellerManagementRoutes);
 router.use(adminPaymentRequestRoutes);
 router.use(adminWithdrawalRoutes);
+router.use(adminNotificationRoutes);
 router.use(messageChatRoutes);
 router.use(chatsPageSearchRoutes);
 
