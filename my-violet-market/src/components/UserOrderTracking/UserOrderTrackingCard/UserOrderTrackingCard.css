@@ -99,6 +99,9 @@
   .user-order-tracking-card__info h2 {
     grid-column: 1 / -1;
     font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .user-order-tracking-card__info p {
