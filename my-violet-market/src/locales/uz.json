@@ -454,6 +454,38 @@
       "historyTitle": "Qidiruv tarixi"
     }
   },
+  "orderHistory": {
+    "title": "Mening buyurtmalarim",
+    "loading": "Buyurtmalar yuklanmoqda...",
+    "empty": "Hozircha O'zbekiston sotuvchilaridan buyurtmalar yo'q.",
+    "tracking": "Buyurtma holati",
+    "waiting": "Kutilmoqda",
+    "orderNumber": "Buyurtma",
+    "productFallback": "Mahsulot",
+    "quantity": "{{count}} dona",
+    "color": "Rang",
+    "size": "O'lcham",
+    "storage": "Xotira",
+    "model": "Model",
+    "steps": {
+      "accepted": {
+        "title": "Qabul qilindi",
+        "description": "Buyurtmangiz qabul qilindi"
+      },
+      "seller_confirmed": {
+        "title": "Sotuvchi tasdiqladi",
+        "description": "Sotuvchi buyurtmani tasdiqladi"
+      },
+      "collected": {
+        "title": "Mahsulot yig'ildi",
+        "description": "Mahsulot yetkazishga tayyorlandi"
+      },
+      "delivered": {
+        "title": "Mahsulot yetkazib berildi",
+        "description": "Buyurtma manzilga yetkazildi"
+      }
+    }
+  },
   "uzWarehouse": {
     "bannersSectionAria": "Ombor bannerlari",
     "bannerAria": "Mahalliy ombordan tez yetkazish",

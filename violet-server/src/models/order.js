@@ -1,6 +1,18 @@
 const mongoose = require("mongoose");
 const { assignAutoNumberId } = require("./autoIncrement");
 
+const orderTrackingHistorySchema = new mongoose.Schema(
+  {
+    status: {
+      type: String,
+      enum: ["accepted", "seller_confirmed", "collected", "delivered"],
+      required: true,
+    },
+    at: { type: Date, required: true },
+  },
+  { _id: false },
+);
+
 const orderItemSchema = new mongoose.Schema(
   {
     productId: { type: Number, required: true },
@@ -15,6 +27,15 @@ const orderItemSchema = new mongoose.Schema(
     storage: { type: String, default: "" },
     model: { type: String, default: "" },
     image: { type: String, default: "/img/no-image.png" },
+    trackingStatus: {
+      type: String,
+      enum: ["accepted", "seller_confirmed", "collected", "delivered"],
+      default: "accepted",
+    },
+    trackingHistory: {
+      type: [orderTrackingHistorySchema],
+      default: [],
+    },
   },
   { _id: false },
 );

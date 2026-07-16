@@ -52,6 +52,7 @@ const adminWithdrawalRoutes = require("./adminWithdrawal.routes");
 const adminNotificationRoutes = require("./adminNotification.routes");
 const messageChatRoutes = require("./messageChat.routes");
 const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
+const userOrderTrackingRoutes = require("./userOrderTracking.routes");
 
 const router = express.Router();
 
@@ -108,5 +109,6 @@ router.use(adminWithdrawalRoutes);
 router.use(adminNotificationRoutes);
 router.use(messageChatRoutes);
 router.use(chatsPageSearchRoutes);
+router.use(userOrderTrackingRoutes);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const { Order } = require("../models/order");
 const { recordAllSalesFromOrder } = require("./salesOrderSyncService");
 const { normalizePaymentMethod } = require("./paymentMethods");
+const { createInitialOrderTracking } = require("./orderTracking");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
@@ -48,6 +49,7 @@ function mapCartItemToOrderItem(item, productMap) {
     storage: resolveOptionLabel(row.storage),
     model: resolveOptionLabel(row.model),
     image: String(row.image || "/img/no-image.png"),
+    ...createInitialOrderTracking(),
   };
 }
 

@@ -454,6 +454,38 @@
       "historyTitle": "История поиска"
     }
   },
+  "orderHistory": {
+    "title": "Мои заказы",
+    "loading": "Заказы загружаются...",
+    "empty": "Заказов у продавцов из Узбекистана пока нет.",
+    "tracking": "Статус заказа",
+    "waiting": "Ожидается",
+    "orderNumber": "Заказ",
+    "productFallback": "Товар",
+    "quantity": "{{count}} шт.",
+    "color": "Цвет",
+    "size": "Размер",
+    "storage": "Память",
+    "model": "Модель",
+    "steps": {
+      "accepted": {
+        "title": "Принят",
+        "description": "Ваш заказ принят"
+      },
+      "seller_confirmed": {
+        "title": "Продавец подтвердил",
+        "description": "Продавец подтвердил заказ"
+      },
+      "collected": {
+        "title": "Товар собран",
+        "description": "Товар подготовлен к доставке"
+      },
+      "delivered": {
+        "title": "Товар доставлен",
+        "description": "Заказ доставлен по адресу"
+      }
+    }
+  },
   "uzWarehouse": {
     "bannersSectionAria": "Баннеры складов",
     "bannerAria": "Быстрая доставка со склада в Узбекистане",

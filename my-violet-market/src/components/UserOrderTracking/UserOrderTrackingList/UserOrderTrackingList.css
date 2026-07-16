@@ -1,0 +1,17 @@
+.user-order-tracking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.user-order-tracking-list__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px solid #ece8f1;
+  border-radius: 18px;
+  background: #fff;
+  color: #8c8592;
+  font-size: 14px;
+}

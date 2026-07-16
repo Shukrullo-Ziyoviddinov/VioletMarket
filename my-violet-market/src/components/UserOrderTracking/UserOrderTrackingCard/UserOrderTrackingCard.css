@@ -1,0 +1,89 @@
+.user-order-tracking-card {
+  overflow: hidden;
+  border: 1px solid #ece8f1;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(40, 25, 61, 0.06);
+}
+
+.user-order-tracking-card__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f0edf3;
+  color: #8c8592;
+  font-size: 12px;
+}
+
+.user-order-tracking-card__header strong {
+  color: #3d2a50;
+}
+
+.user-order-tracking-card__product {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+  padding: 18px;
+}
+
+.user-order-tracking-card__image {
+  width: 86px;
+  height: 86px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f5f5f5;
+}
+
+.user-order-tracking-card__info {
+  min-width: 0;
+}
+
+.user-order-tracking-card__info h2 {
+  margin: 0;
+  color: #2d2433;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.user-order-tracking-card__info p {
+  margin: 7px 0;
+  color: #77707c;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.user-order-tracking-card__info span {
+  color: #9a949e;
+  font-size: 12px;
+}
+
+.user-order-tracking-card__price {
+  color: #5f259f;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.user-order-tracking-card__tracking {
+  padding: 20px 14px 18px;
+  border-top: 1px solid #f0edf3;
+  background: #fdfcff;
+}
+
+@media (max-width: 560px) {
+  .user-order-tracking-card__product {
+    grid-template-columns: 72px minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .user-order-tracking-card__image {
+    width: 72px;
+    height: 72px;
+  }
+
+  .user-order-tracking-card__price {
+    grid-column: 2;
+  }
+}
