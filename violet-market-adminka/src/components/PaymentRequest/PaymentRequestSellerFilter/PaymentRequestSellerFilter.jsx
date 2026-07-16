@@ -18,12 +18,15 @@ export default function PaymentRequestSellerFilter({
   );
 
   useEffect(() => {
+    if (!isOpen) return undefined;
+
     function handleOutsideClick(event) {
       if (!rootRef.current?.contains(event.target)) onOpenChange?.(false);
     }
+
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [onOpenChange]);
+  }, [isOpen, onOpenChange]);
 
   const selectedLabel = options.find((item) => item.value === value)?.label || options[0].label;
 
