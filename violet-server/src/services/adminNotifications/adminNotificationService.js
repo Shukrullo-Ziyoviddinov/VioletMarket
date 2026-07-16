@@ -6,10 +6,26 @@ const { nextSequence } = require("../../models/autoIncrement");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { buildAdminPaymentRequestSubmittedMessage } = require("./adminNotificationMessages");
 
-const DEFAULT_LIMIT = 30;
+const KEEP_LIMIT = 20;
 
 function resolveSellerDisplayName(account, sellerId) {
   return String(account?.name?.uz || account?.name?.ru || sellerId || "").trim();
+}
+
+async function pruneOldAdminNotifications() {
+  const keepRows = await AdminNotification.find({})
+    .sort({ createdAt: -1, id: -1 })
+    .skip(KEEP_LIMIT)
+    .select({ id: 1 })
+    .lean();
+
+  if (!keepRows.length) return 0;
+
+  const result = await AdminNotification.deleteMany({
+    id: { $in: keepRows.map((row) => Number(row.id)).filter(Number.isFinite) },
+  });
+
+  return toNumber(result?.deletedCount, 0);
 }
 
 function mapNotification(row) {
@@ -41,7 +57,7 @@ async function notifyAdminPaymentRequestSubmitted(paymentRequest) {
   const sellerLogoUrl = resolvePublicAssetUrl(account?.logo || "");
   const id = await nextSequence("admin_notification_id");
 
-  return AdminNotification.create({
+  const notification = await AdminNotification.create({
     id,
     type: "payment_request_submitted",
     paymentRequestId: Number(request.id),
@@ -54,6 +70,9 @@ async function notifyAdminPaymentRequestSubmitted(paymentRequest) {
     message: buildAdminPaymentRequestSubmittedMessage(sellerName),
     readAt: null,
   });
+
+  await pruneOldAdminNotifications().catch(() => null);
+  return notification;
 }
 
 async function getUnreadCount() {
@@ -61,7 +80,12 @@ async function getUnreadCount() {
 }
 
 async function listNotifications(query = {}) {
-  const limit = Math.min(50, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_LIMIT))));
+  await pruneOldAdminNotifications().catch(() => null);
+
+  const limit = Math.min(
+    KEEP_LIMIT,
+    Math.max(1, Math.floor(toNumber(query.limit, KEEP_LIMIT))),
+  );
   const rows = await AdminNotification.find({})
     .sort({ createdAt: -1, id: -1 })
     .limit(limit)

@@ -10,10 +10,30 @@ const {
   buildSellerPaymentRequestRejectedMessage,
 } = require("./sellerNotificationMessages");
 
-const DEFAULT_LIMIT = 30;
+const KEEP_LIMIT = 20;
 
 function cleanSellerId(value) {
   return String(value || "").trim();
+}
+
+async function pruneOldSellerNotifications(sellerId) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) return 0;
+
+  const keepRows = await SellerNotification.find({ sellerId: normalizedSellerId })
+    .sort({ createdAt: -1, id: -1 })
+    .skip(KEEP_LIMIT)
+    .select({ id: 1 })
+    .lean();
+
+  if (!keepRows.length) return 0;
+
+  const result = await SellerNotification.deleteMany({
+    sellerId: normalizedSellerId,
+    id: { $in: keepRows.map((row) => Number(row.id)).filter(Number.isFinite) },
+  });
+
+  return toNumber(result?.deletedCount, 0);
 }
 
 function resolveProductTitle(product) {
@@ -76,7 +96,7 @@ async function notifySellerPaymentRequestReviewed(paymentRequest, status) {
       : buildSellerPaymentRequestRejectedMessage(productLabel);
   const id = await nextSequence("seller_notification_id");
 
-  return SellerNotification.create({
+  const notification = await SellerNotification.create({
     id,
     sellerId,
     type: `payment_request_${normalizedStatus}`,
@@ -88,6 +108,9 @@ async function notifySellerPaymentRequestReviewed(paymentRequest, status) {
     message,
     readAt: null,
   });
+
+  await pruneOldSellerNotifications(sellerId).catch(() => null);
+  return notification;
 }
 
 async function getUnreadCountForSeller(sellerId) {
@@ -102,7 +125,12 @@ async function listNotificationsForSeller(sellerId, query = {}) {
     throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
   }
 
-  const limit = Math.min(50, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_LIMIT))));
+  await pruneOldSellerNotifications(normalizedSellerId).catch(() => null);
+
+  const limit = Math.min(
+    KEEP_LIMIT,
+    Math.max(1, Math.floor(toNumber(query.limit, KEEP_LIMIT))),
+  );
   const rows = await SellerNotification.find({ sellerId: normalizedSellerId })
     .sort({ createdAt: -1, id: -1 })
     .limit(limit)
