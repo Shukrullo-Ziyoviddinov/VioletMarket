@@ -21,8 +21,7 @@
       "amount": "Mahsulot narxi"
     },
     "payment": {
-      "payme": "Payme",
-      "click": "Click",
+      "paid": "To'langan",
       "cash": "Naqt",
       "unknown": "Noma'lum"
     },

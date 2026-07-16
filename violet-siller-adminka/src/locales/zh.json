@@ -21,8 +21,7 @@
       "amount": "商品价格"
     },
     "payment": {
-      "payme": "Payme",
-      "click": "Click",
+      "paid": "已支付",
       "cash": "现金",
       "unknown": "未知"
     },

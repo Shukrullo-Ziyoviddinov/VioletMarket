@@ -5,6 +5,7 @@ import {
   formatSellerOrderDateTime,
   getSellerOrderBuyerName,
   getSellerOrderPaymentLabel,
+  getSellerOrderPaymentTone,
 } from '../../../utils/sellerOrdersDisplay';
 import './SellerOrderCard.css';
 
@@ -13,10 +14,7 @@ export default function SellerOrderCard({ order }) {
 
   if (!order) return null;
 
-  const paymentMethod = String(order.paymentMethod || '')
-    .trim()
-    .toLowerCase()
-    .replace(/-/g, '_');
+  const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
   const productCode = String(order.productCode || '').trim() || '—';
 
   return (
@@ -46,9 +44,7 @@ export default function SellerOrderCard({ order }) {
 
         <div className="seller-order-card__field">
           <span className="seller-order-card__label">{t('orders.card.payment')}</span>
-          <span
-            className={`seller-order-card__payment seller-order-card__payment--${paymentMethod || 'unknown'}`}
-          >
+          <span className={`seller-order-card__payment seller-order-card__payment--${paymentTone}`}>
             {getSellerOrderPaymentLabel(order.paymentMethod, t)}
           </span>
         </div>

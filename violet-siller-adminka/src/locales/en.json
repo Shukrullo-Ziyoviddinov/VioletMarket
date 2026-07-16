@@ -21,8 +21,7 @@
       "amount": "Product price"
     },
     "payment": {
-      "payme": "Payme",
-      "click": "Click",
+      "paid": "Paid",
       "cash": "Cash",
       "unknown": "Unknown"
     },

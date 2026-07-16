@@ -35,16 +35,22 @@ export function getSellerOrderBuyerName(buyer) {
   return fullName || '—';
 }
 
-export function getSellerOrderPaymentLabel(paymentMethod, t) {
+export function getSellerOrderPaymentTone(paymentMethod) {
   const method = String(paymentMethod || '')
     .trim()
     .toLowerCase()
     .replace(/-/g, '_');
 
-  if (method === 'payme') return t('orders.payment.payme');
-  if (method === 'click') return t('orders.payment.click');
+  if (method === 'payme' || method === 'click') return 'paid';
   if (method === 'on_delivery' || method === 'cash' || method === 'naqt' || method === 'naqd') {
-    return t('orders.payment.cash');
+    return 'cash';
   }
+  return 'unknown';
+}
+
+export function getSellerOrderPaymentLabel(paymentMethod, t) {
+  const tone = getSellerOrderPaymentTone(paymentMethod);
+  if (tone === 'paid') return t('orders.payment.paid');
+  if (tone === 'cash') return t('orders.payment.cash');
   return t('orders.payment.unknown');
 }

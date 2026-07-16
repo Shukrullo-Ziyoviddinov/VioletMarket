@@ -53,28 +53,20 @@
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
-  background: #f5f0ff;
-  color: #6b4f9a;
+  background: #f5f5f5;
+  color: #8c8c8c;
 }
 
-.seller-order-card__payment--payme {
-  background: #e8f7ff;
-  color: #0b7bb8;
-}
-
-.seller-order-card__payment--click {
-  background: #fff1e8;
-  color: #c45a12;
-}
-
-.seller-order-card__payment--on_delivery,
-.seller-order-card__payment--cash,
-.seller-order-card__payment--naqt {
+.seller-order-card__payment--paid {
   background: #edf9f0;
   color: #1d7a3c;
 }
 
-.seller-order-card__payment--mock,
+.seller-order-card__payment--cash {
+  background: #fff3e8;
+  color: #c45a12;
+}
+
 .seller-order-card__payment--unknown {
   background: #f5f5f5;
   color: #8c8c8c;
