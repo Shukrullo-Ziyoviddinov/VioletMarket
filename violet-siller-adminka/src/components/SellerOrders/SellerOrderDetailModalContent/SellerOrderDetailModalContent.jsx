@@ -9,9 +9,13 @@ import {
   getSellerOrderPaymentLabel,
   getSellerOrderPaymentTone,
   getSellerOrderProductTitle,
-  getSellerOrderVariantRows,
 } from '../../../utils/sellerOrdersDisplay';
 import './SellerOrderDetailModalContent.css';
+
+function optionValue(value) {
+  const text = String(value || '').trim();
+  return text || '—';
+}
 
 export default function SellerOrderDetailModalContent({ order }) {
   const { t, i18n } = useTranslation();
@@ -23,7 +27,6 @@ export default function SellerOrderDetailModalContent({ order }) {
   const productTitle = getSellerOrderProductTitle(order, i18n.language);
   const imageUrl = resolveAssetUrl(order.imageUrl);
   const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
-  const variantRows = getSellerOrderVariantRows(order, t);
 
   return (
     <div className="seller-order-detail-modal-content">
@@ -37,23 +40,23 @@ export default function SellerOrderDetailModalContent({ order }) {
         </div>
       </div>
 
-      {variantRows.length > 0 ? (
-        <div className="seller-order-detail-modal-content__variants">
-          <h3 className="seller-order-detail-modal-content__section-title">
-            {t('orders.modal.selectedOptions')}
-          </h3>
-          <div className="seller-order-detail-modal-content__info">
-            {variantRows.map((row) => (
-              <div key={row.key} className="seller-order-detail-modal-content__row">
-                <span>{row.label}</span>
-                <strong>{row.value}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
       <div className="seller-order-detail-modal-content__info">
+        <div className="seller-order-detail-modal-content__row">
+          <span>{t('orders.modal.color')}</span>
+          <strong>{optionValue(order.color)}</strong>
+        </div>
+        <div className="seller-order-detail-modal-content__row">
+          <span>{t('orders.modal.size')}</span>
+          <strong>{optionValue(order.size)}</strong>
+        </div>
+        <div className="seller-order-detail-modal-content__row">
+          <span>{t('orders.modal.storage')}</span>
+          <strong>{optionValue(order.storage)}</strong>
+        </div>
+        <div className="seller-order-detail-modal-content__row">
+          <span>{t('orders.modal.model')}</span>
+          <strong>{optionValue(order.model)}</strong>
+        </div>
         <div className="seller-order-detail-modal-content__row">
           <span>{t('orders.card.orderId')}</span>
           <strong>{order.orderCode || '—'}</strong>

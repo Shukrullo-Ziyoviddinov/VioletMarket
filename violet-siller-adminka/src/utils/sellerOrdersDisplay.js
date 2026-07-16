@@ -51,22 +51,6 @@ export function getSellerOrderProductTitle(order, language = 'uz') {
   return title.uz || title.ru || order?.productCode || '—';
 }
 
-export function getSellerOrderVariantRows(order, t) {
-  const rows = [];
-  const color = String(order?.color || '').trim();
-  const size = String(order?.size || '').trim();
-  const storage = String(order?.storage || '').trim();
-  const model = String(order?.model || '').trim();
-
-  if (color) rows.push({ key: 'color', label: t('orders.modal.color'), value: color });
-  if (size) rows.push({ key: 'size', label: t('orders.modal.size'), value: size });
-  if (storage) rows.push({ key: 'storage', label: t('orders.modal.storage'), value: storage });
-  if (model) rows.push({ key: 'model', label: t('orders.modal.model'), value: model });
-
-  return rows;
-}
-
-
 export function getSellerOrderPaymentTone(paymentMethod) {
   const method = String(paymentMethod || '')
     .trim()

@@ -54,13 +54,6 @@
   font-size: 13px;
 }
 
-.seller-order-detail-modal-content__section-title {
-  margin: 0 0 10px;
-  color: #2a1842;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .seller-order-detail-modal-content__info {
   display: flex;
   flex-direction: column;
