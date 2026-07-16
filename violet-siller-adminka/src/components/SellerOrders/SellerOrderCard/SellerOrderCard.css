@@ -44,7 +44,9 @@
   color: #c45a12;
 }
 
-.seller-order-card__payment--on_delivery {
+.seller-order-card__payment--on_delivery,
+.seller-order-card__payment--cash,
+.seller-order-card__payment--naqt {
   background: #edf9f0;
   color: #1d7a3c;
 }

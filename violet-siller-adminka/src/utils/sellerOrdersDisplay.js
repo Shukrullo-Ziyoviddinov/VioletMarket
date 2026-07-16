@@ -36,17 +36,15 @@ export function getSellerOrderBuyerName(buyer) {
 }
 
 export function getSellerOrderPaymentLabel(paymentMethod, t) {
-  const method = String(paymentMethod || '').trim().toLowerCase();
+  const method = String(paymentMethod || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, '_');
+
   if (method === 'payme') return t('orders.payment.payme');
   if (method === 'click') return t('orders.payment.click');
-  if (method === 'on_delivery') return t('orders.payment.cash');
+  if (method === 'on_delivery' || method === 'cash' || method === 'naqt' || method === 'naqd') {
+    return t('orders.payment.cash');
+  }
   return t('orders.payment.unknown');
-}
-
-export function getSellerOrderProductCodesLabel(order) {
-  const codes = Array.isArray(order?.productCodes)
-    ? order.productCodes.filter(Boolean)
-    : [];
-  if (codes.length > 0) return codes.join(', ');
-  return order?.orderCode || '—';
 }

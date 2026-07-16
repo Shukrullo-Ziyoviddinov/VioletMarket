@@ -18,22 +18,15 @@ function authHeaders(token) {
   };
 }
 
-function normalizeOrderItem(row) {
+function normalizeOrder(row) {
   return {
+    id: String(row?.id || ''),
+    orderId: Number(row?.orderId) || 0,
+    orderCode: String(row?.orderCode || ''),
     productId: Number(row?.productId) || 0,
     productCode: String(row?.productCode || ''),
     title: row?.title || { uz: '', ru: '' },
     image: String(row?.image || ''),
-    quantity: Number(row?.quantity) || 1,
-    price: Number(row?.price) || 0,
-    lineTotal: Number(row?.lineTotal) || 0,
-  };
-}
-
-function normalizeOrder(row) {
-  return {
-    id: Number(row?.id) || 0,
-    orderCode: String(row?.orderCode || ''),
     orderedAt: row?.orderedAt || '',
     buyer: {
       firstName: String(row?.buyer?.firstName || ''),
@@ -42,8 +35,7 @@ function normalizeOrder(row) {
     paymentMethod: String(row?.paymentMethod || 'mock'),
     status: String(row?.status || 'paid'),
     amount: Number(row?.amount) || 0,
-    productCodes: Array.isArray(row?.productCodes) ? row.productCodes.map(String) : [],
-    items: Array.isArray(row?.items) ? row.items.map(normalizeOrderItem) : [],
+    quantity: Number(row?.quantity) || 1,
   };
 }
 

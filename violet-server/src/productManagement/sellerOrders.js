@@ -4,6 +4,15 @@ const { HttpError } = require("../utils/httpError");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 
 const VALID_PAYMENT_METHODS = new Set(["payme", "click", "on_delivery", "mock"]);
+const PAYMENT_METHOD_ALIASES = {
+  payme: "payme",
+  click: "click",
+  on_delivery: "on_delivery",
+  cash: "on_delivery",
+  naqt: "on_delivery",
+  naqd: "on_delivery",
+  mock: "mock",
+};
 const DEFAULT_PAGE_SIZE = 20;
 
 function cleanSellerId(value) {
@@ -11,12 +20,25 @@ function cleanSellerId(value) {
 }
 
 function normalizePaymentMethod(raw) {
-  const method = String(raw || "").trim().toLowerCase();
+  const method = String(raw || "")
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, "_");
   if (!method) return "mock";
-  if (!VALID_PAYMENT_METHODS.has(method)) {
+
+  const normalized = PAYMENT_METHOD_ALIASES[method] || method;
+  if (!VALID_PAYMENT_METHODS.has(normalized)) {
     throw new HttpError(400, "To'lov usuli noto'g'ri", "VALIDATION_ERROR");
   }
-  return method;
+  return normalized;
+}
+
+function resolveStoredPaymentMethod(raw) {
+  try {
+    return normalizePaymentMethod(raw);
+  } catch {
+    return "mock";
+  }
 }
 
 function formatOrderCode(orderId) {
@@ -44,13 +66,14 @@ function resolveTitle(title) {
 function mapSellerOrderItems(items, sellerId) {
   return (Array.isArray(items) ? items : [])
     .filter((item) => cleanSellerId(item?.sellerId) === sellerId)
-    .map((item) => {
+    .map((item, index) => {
       const productId = Math.max(0, Math.floor(toNumber(item?.productId, 0)));
       const quantity = Math.max(1, Math.floor(toNumber(item?.quantity, 1)));
       const price = Math.max(0, toNumber(item?.price, 0));
       const lineTotal = Math.max(0, toNumber(item?.lineTotal, price * quantity));
 
       return {
+        lineIndex: index,
         productId,
         productCode: formatProductCode(productId),
         title: resolveTitle(item?.title),
@@ -62,29 +85,81 @@ function mapSellerOrderItems(items, sellerId) {
     });
 }
 
-function buildSellerOrderCard(order, user, sellerId) {
+/**
+ * Bitta buyurtmadagi har bir seller mahsuloti — alohida kartochka (alohida shtrix).
+ * quantity > 1 bo'lsa ham har bir dona alohida kartochka.
+ */
+function buildSellerOrderItemCards(order, user, sellerId) {
   const sellerItems = mapSellerOrderItems(order?.items, sellerId);
-  const amount = sellerItems.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
   const orderedAt = order?.paidAt || order?.createdAt || null;
+  const buyer = {
+    firstName: String(user?.firstName || "").trim(),
+    lastName: String(user?.lastName || "").trim(),
+  };
+  const paymentMethod = resolveStoredPaymentMethod(order?.paymentMethod);
+  const status = String(order?.status || "paid");
+  const orderId = Number(order?.id) || 0;
+  const orderCode = formatOrderCode(orderId);
+
+  const cards = [];
+
+  sellerItems.forEach((item) => {
+    const unitCount = Math.max(1, item.quantity);
+    const unitPrice = unitCount > 0 ? Math.max(0, Number(item.price) || 0) : 0;
+
+    for (let unitIndex = 0; unitIndex < unitCount; unitIndex += 1) {
+      cards.push({
+        id: `${orderId}-${item.productId}-${item.lineIndex}-${unitIndex}`,
+        orderId,
+        orderCode,
+        productId: item.productId,
+        productCode: item.productCode,
+        title: item.title,
+        image: item.image,
+        orderedAt,
+        buyer,
+        paymentMethod,
+        status,
+        amount: unitPrice,
+        quantity: 1,
+      });
+    }
+  });
+
+  return cards;
+}
+
+/** @deprecated Use buildSellerOrderItemCards — kept for export stability */
+function buildSellerOrderCard(order, user, sellerId) {
+  const cards = buildSellerOrderItemCards(order, user, sellerId);
+  if (!cards.length) {
+    return {
+      id: Number(order?.id) || 0,
+      orderCode: formatOrderCode(order?.id),
+      orderedAt: order?.paidAt || order?.createdAt || null,
+      buyer: {
+        firstName: String(user?.firstName || "").trim(),
+        lastName: String(user?.lastName || "").trim(),
+      },
+      paymentMethod: resolveStoredPaymentMethod(order?.paymentMethod),
+      status: String(order?.status || "paid"),
+      amount: 0,
+      productCode: "",
+      productCodes: [],
+      items: [],
+    };
+  }
 
   return {
-    id: Number(order?.id) || 0,
-    orderCode: formatOrderCode(order?.id),
-    orderedAt,
-    buyer: {
-      firstName: String(user?.firstName || "").trim(),
-      lastName: String(user?.lastName || "").trim(),
-    },
-    paymentMethod: String(order?.paymentMethod || "mock").trim() || "mock",
-    status: String(order?.status || "paid"),
-    amount,
-    productCodes: sellerItems.map((item) => item.productCode).filter(Boolean),
-    items: sellerItems,
+    ...cards[0],
+    productCodes: cards.map((card) => card.productCode).filter(Boolean),
+    items: cards,
+    amount: cards.reduce((sum, card) => sum + (Number(card.amount) || 0), 0),
   };
 }
 
 /**
- * Seller admin "Buyurtmalar" sahifasi uchun — faqat shu sellerga tegishli buyurtmalar.
+ * Seller admin "Buyurtmalar" — har bir mahsulot (dona) alohida kartochka.
  */
 async function listSellerOrders(sellerId, query = {}) {
   const normalizedSellerId = cleanSellerId(sellerId);
@@ -93,18 +168,13 @@ async function listSellerOrders(sellerId, query = {}) {
   }
 
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
-  const limit = Math.min(50, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
+  const limit = Math.min(100, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
 
   const match = { "items.sellerId": normalizedSellerId };
 
-  const [total, rows] = await Promise.all([
-    Order.countDocuments(match),
-    Order.find(match)
-      .sort({ paidAt: -1, createdAt: -1, id: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  const rows = await Order.find(match)
+    .sort({ paidAt: -1, createdAt: -1, id: -1 })
+    .lean();
 
   const userIds = [...new Set(rows.map((row) => String(row.userId || "")).filter(Boolean))];
   const users = userIds.length
@@ -114,15 +184,19 @@ async function listSellerOrders(sellerId, query = {}) {
     : [];
   const userById = new Map(users.map((row) => [String(row._id), row]));
 
-  const orders = rows
-    .map((row) => buildSellerOrderCard(row, userById.get(String(row.userId)), normalizedSellerId))
-    .filter((row) => row.items.length > 0);
+  const allCards = rows.flatMap((row) =>
+    buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
+  );
+
+  const total = allCards.length;
+  const start = (page - 1) * limit;
+  const orders = allCards.slice(start, start + limit);
 
   return {
     page,
     limit,
     total,
-    totalPages: Math.max(1, Math.ceil(total / limit)),
+    totalPages: Math.max(1, Math.ceil(total / limit) || 1),
     orders,
   };
 }
@@ -133,5 +207,6 @@ module.exports = {
   formatOrderCode,
   formatProductCode,
   buildSellerOrderCard,
+  buildSellerOrderItemCards,
   listSellerOrders,
 };

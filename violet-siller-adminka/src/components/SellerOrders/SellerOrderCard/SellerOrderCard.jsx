@@ -5,7 +5,6 @@ import {
   formatSellerOrderDateTime,
   getSellerOrderBuyerName,
   getSellerOrderPaymentLabel,
-  getSellerOrderProductCodesLabel,
 } from '../../../utils/sellerOrdersDisplay';
 import './SellerOrderCard.css';
 
@@ -15,11 +14,12 @@ export default function SellerOrderCard({ order }) {
   if (!order) return null;
 
   const paymentMethod = String(order.paymentMethod || '').toLowerCase();
+  const productCode = String(order.productCode || '').trim() || '—';
 
   return (
     <article className="seller-order-card">
       <div className="seller-order-card__top">
-        <strong className="seller-order-card__code">{getSellerOrderProductCodesLabel(order)}</strong>
+        <strong className="seller-order-card__code">{productCode}</strong>
         <span
           className={`seller-order-card__payment seller-order-card__payment--${paymentMethod || 'unknown'}`}
         >
