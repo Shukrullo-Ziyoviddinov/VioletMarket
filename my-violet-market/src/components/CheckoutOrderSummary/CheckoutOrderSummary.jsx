@@ -23,7 +23,7 @@ const CheckoutOrderSummary = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isPayOnDelivery } = useCheckoutPayment();
+  const { selectedPayment, isPayOnDelivery } = useCheckoutPayment();
   const { cart, checkoutCart, refreshCart } = useCart();
   const { scheduleOpenOnHome } = useTestOrderModal();
   const { showToast } = useToast();
@@ -31,18 +31,23 @@ const CheckoutOrderSummary = ({
 
   const handlePayClick = async () => {
     if (!hasAddress) return;
+    if (!selectedPayment) {
+      showToast(t('checkout.selectPaymentRequired'), 'error');
+      return;
+    }
+
     setIsPayLoading(true);
     try {
       const cartSnapshot = [...cart];
 
       if (isPayOnDelivery) {
         const addressText = address?.addressLine || address?.formatted || '';
-        await checkoutCart();
+        await checkoutCart(selectedPayment);
         onOrderConfirmed?.({ cartSnapshot, addressText });
         return;
       }
 
-      await checkoutCart();
+      await checkoutCart(selectedPayment);
       window.dispatchEvent(new Event('appDataRefreshRequested'));
       startPostOrderReviewFlow({
         cartSnapshot,

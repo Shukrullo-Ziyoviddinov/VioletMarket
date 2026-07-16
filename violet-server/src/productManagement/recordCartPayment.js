@@ -1,5 +1,6 @@
 const { Order } = require("../models/order");
 const { recordAllSalesFromOrder } = require("./salesOrderSyncService");
+const { normalizePaymentMethod } = require("./sellerOrders");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
@@ -61,12 +62,13 @@ async function recordCartPayment({
 
   const totalAmount = calcOrderTotalAmount(items);
   const paidAt = status === "paid" ? new Date() : null;
+  const normalizedPaymentMethod = normalizePaymentMethod(paymentMethod);
 
   const order = await Order.create({
     userId,
     items,
     totalAmount,
-    paymentMethod: String(paymentMethod || "mock").trim() || "mock",
+    paymentMethod: normalizedPaymentMethod,
     status,
     paidAt,
     source,

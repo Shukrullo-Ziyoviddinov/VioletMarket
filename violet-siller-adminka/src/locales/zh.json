@@ -10,7 +10,29 @@
     "salesWithdrawals": "已提现金额历史"
   },
   "orders": {
-    "title": "订单"
+    "title": "订单",
+    "empty": "暂无订单",
+    "card": {
+      "orderId": "订单编号",
+      "orderedAt": "日期与时间",
+      "buyer": "买家",
+      "amount": "商品价格"
+    },
+    "payment": {
+      "payme": "Payme",
+      "click": "Click",
+      "cash": "现金",
+      "unknown": "未知"
+    },
+    "weekdays": {
+      "sunday": "星期日",
+      "monday": "星期一",
+      "tuesday": "星期二",
+      "wednesday": "星期三",
+      "thursday": "星期四",
+      "friday": "星期五",
+      "saturday": "星期六"
+    }
   },
   "marketInfo": {
     "title": "关于市场",

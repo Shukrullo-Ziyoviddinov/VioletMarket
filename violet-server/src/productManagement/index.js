@@ -16,6 +16,14 @@ const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSale
 const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProductSales");
 const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
 const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
+const {
+  VALID_PAYMENT_METHODS,
+  normalizePaymentMethod,
+  formatOrderCode,
+  formatProductCode,
+  buildSellerOrderCard,
+  listSellerOrders,
+} = require("./sellerOrders");
 
 module.exports = {
   markProductsAsSold,
@@ -32,4 +40,10 @@ module.exports = {
   recordCategoryProductSalesFromOrder,
   recordCountryCategoryProductSalesFromOrder,
   recordBrandCategoryProductSalesFromOrder,
+  VALID_PAYMENT_METHODS,
+  normalizePaymentMethod,
+  formatOrderCode,
+  formatProductCode,
+  buildSellerOrderCard,
+  listSellerOrders,
 };

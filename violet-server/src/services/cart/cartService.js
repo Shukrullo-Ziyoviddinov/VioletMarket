@@ -495,7 +495,7 @@ async function clearCartForUser(userId) {
   return getCartForUser(userId);
 }
 
-async function checkoutCartForUser(userId) {
+async function checkoutCartForUser(userId, options = {}) {
   const items = await CartItem.find({ userId }).sort({ createdAt: -1 });
   if (items.length === 0) {
     return { items: [] };
@@ -603,7 +603,7 @@ async function checkoutCartForUser(userId) {
     userId,
     cartItems: items,
     productMap,
-    paymentMethod: "mock",
+    paymentMethod: options.paymentMethod || "mock",
   });
 
   await markProductsAsSold({

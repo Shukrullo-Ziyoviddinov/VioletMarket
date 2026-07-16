@@ -10,7 +10,29 @@
     "salesWithdrawals": "Yechilgan summalar tarixi"
   },
   "orders": {
-    "title": "Buyurtmalar"
+    "title": "Buyurtmalar",
+    "empty": "Hozircha buyurtmalar yo'q",
+    "card": {
+      "orderId": "Buyurtma ID",
+      "orderedAt": "Sana va vaqt",
+      "buyer": "Xaridor",
+      "amount": "Mahsulot narxi"
+    },
+    "payment": {
+      "payme": "Payme",
+      "click": "Click",
+      "cash": "Naqt",
+      "unknown": "Noma'lum"
+    },
+    "weekdays": {
+      "sunday": "Yakshanba",
+      "monday": "Dushanba",
+      "tuesday": "Seshanba",
+      "wednesday": "Chorshanba",
+      "thursday": "Payshanba",
+      "friday": "Juma",
+      "saturday": "Shanba"
+    }
   },
   "marketInfo": {
     "title": "Market haqida",

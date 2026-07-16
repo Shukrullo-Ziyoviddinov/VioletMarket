@@ -320,6 +320,7 @@
     "confirmOrderButton": "Оформить заказ",
     "payComingSoon": "Платёжная система скоро будет доступна",
     "paymentSelectTitle": "Выбор платёжной системы",
+    "selectPaymentRequired": "Выберите способ оплаты",
     "paymentPayme": "Payme",
     "paymentClick": "Click",
     "paymentOnDelivery": "Оплата при получении заказа",

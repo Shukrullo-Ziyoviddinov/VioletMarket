@@ -245,11 +245,11 @@ export const CartProvider = ({ children }) => {
     }
   }, [authToken, showToast, syncFromResponse, t]);
 
-  const checkoutCart = useCallback(async () => {
+  const checkoutCart = useCallback(async (paymentMethod) => {
     if (!authToken) {
       throw new Error('UNAUTHORIZED');
     }
-    const data = await checkoutCartApi(authToken);
+    const data = await checkoutCartApi(authToken, { paymentMethod });
     syncFromResponse(data);
     return data;
   }, [authToken, syncFromResponse]);

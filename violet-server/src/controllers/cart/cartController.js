@@ -32,7 +32,9 @@ const clearCart = asyncHandler(async (req, res) => {
 });
 
 const checkout = asyncHandler(async (req, res) => {
-  const data = await cartService.checkoutCartForUser(req.userId);
+  const data = await cartService.checkoutCartForUser(req.userId, {
+    paymentMethod: req.body?.paymentMethod,
+  });
   res.json({ ok: true, ...data });
 });
 

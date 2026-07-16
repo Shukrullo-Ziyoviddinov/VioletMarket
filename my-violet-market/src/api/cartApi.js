@@ -62,9 +62,12 @@ export function clearCartApi(token) {
   }).then(parseJsonResponse);
 }
 
-export function checkoutCartApi(token) {
+export function checkoutCartApi(token, { paymentMethod } = {}) {
   return fetch(apiUrl('/api/cart/checkout'), {
     method: 'POST',
     headers: authHeaders(token),
+    body: JSON.stringify({
+      paymentMethod: paymentMethod || 'mock',
+    }),
   }).then(parseJsonResponse);
 }

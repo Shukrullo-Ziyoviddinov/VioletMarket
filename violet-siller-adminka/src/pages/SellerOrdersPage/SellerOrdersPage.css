@@ -1,6 +1,7 @@
 .seller-orders-page {
   display: flex;
   flex-direction: column;
+  gap: 18px;
 }
 
 .seller-orders-page__title {

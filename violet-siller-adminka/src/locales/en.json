@@ -10,7 +10,29 @@
     "salesWithdrawals": "Withdrawn amounts history"
   },
   "orders": {
-    "title": "Orders"
+    "title": "Orders",
+    "empty": "No orders yet",
+    "card": {
+      "orderId": "Order ID",
+      "orderedAt": "Date & time",
+      "buyer": "Buyer",
+      "amount": "Product price"
+    },
+    "payment": {
+      "payme": "Payme",
+      "click": "Click",
+      "cash": "Cash",
+      "unknown": "Unknown"
+    },
+    "weekdays": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    }
   },
   "marketInfo": {
     "title": "About the market",
