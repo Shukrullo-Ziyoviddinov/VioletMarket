@@ -26,7 +26,11 @@ function normalizeOrder(row) {
     productId: Number(row?.productId) || 0,
     productCode: String(row?.productCode || ''),
     title: row?.title || { uz: '', ru: '' },
-    image: String(row?.image || ''),
+    imageUrl: String(row?.imageUrl || row?.image || ''),
+    color: String(row?.color || ''),
+    size: String(row?.size || ''),
+    storage: String(row?.storage || ''),
+    model: String(row?.model || ''),
     orderedAt: row?.orderedAt || '',
     buyer: {
       firstName: String(row?.buyer?.firstName || ''),

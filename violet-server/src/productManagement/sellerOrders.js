@@ -37,6 +37,24 @@ function resolveTitle(title) {
   return { uz: text, ru: text };
 }
 
+function resolveOptionLabel(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+  if (typeof value === "object") {
+    const fromName = value.name ?? value.size ?? value.label ?? "";
+    if (typeof fromName === "string" || typeof fromName === "number") {
+      return String(fromName).trim();
+    }
+    if (fromName && typeof fromName === "object") {
+      return String(fromName.uz || fromName.ru || "").trim();
+    }
+    return String(value.uz || value.ru || "").trim();
+  }
+  return "";
+}
+
 function mapSellerOrderItems(items, sellerId) {
   return (Array.isArray(items) ? items : [])
     .filter((item) => cleanSellerId(item?.sellerId) === sellerId)
@@ -53,10 +71,10 @@ function mapSellerOrderItems(items, sellerId) {
         productCode: formatProductCode(productId),
         title: resolveTitle(item?.title),
         imageUrl: resolvePublicAssetUrl(String(item?.image || "").trim() || "/img/no-image.png"),
-        color: String(item?.color || "").trim(),
-        size: String(item?.size || "").trim(),
-        storage: String(item?.storage || "").trim(),
-        model: String(item?.model || "").trim(),
+        color: resolveOptionLabel(item?.color),
+        size: resolveOptionLabel(item?.size),
+        storage: resolveOptionLabel(item?.storage),
+        model: resolveOptionLabel(item?.model),
         quantity,
         price,
         originalPrice,

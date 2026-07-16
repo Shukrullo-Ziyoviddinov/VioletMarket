@@ -7,6 +7,24 @@ const PAYMENT_SOURCES = {
   DELIVERY_ADMIN: "delivery-admin",
 };
 
+function resolveOptionLabel(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+  if (typeof value === "object") {
+    const fromName = value.name ?? value.size ?? value.label ?? "";
+    if (typeof fromName === "string" || typeof fromName === "number") {
+      return String(fromName).trim();
+    }
+    if (fromName && typeof fromName === "object") {
+      return String(fromName.uz || fromName.ru || "").trim();
+    }
+    return String(value.uz || value.ru || "").trim();
+  }
+  return "";
+}
+
 function mapCartItemToOrderItem(item, productMap) {
   const row = item?.toObject ? item.toObject() : item;
   if (!row) return null;
@@ -25,10 +43,10 @@ function mapCartItemToOrderItem(item, productMap) {
     originalPrice: Math.max(0, Number(row.originalPrice) || 0),
     quantity,
     lineTotal: price * quantity,
-    color: String(row.color || ""),
-    size: String(row.size || ""),
-    storage: String(row.storage || ""),
-    model: String(row.model || ""),
+    color: resolveOptionLabel(row.color),
+    size: resolveOptionLabel(row.size),
+    storage: resolveOptionLabel(row.storage),
+    model: resolveOptionLabel(row.model),
     image: String(row.image || "/img/no-image.png"),
   };
 }
