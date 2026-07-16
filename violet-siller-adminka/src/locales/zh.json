@@ -186,6 +186,11 @@
       "description": "累计已提现金额",
       "action": "提现历史"
     },
+    "statusProductsModal": {
+      "availableTitle": "可用商品",
+      "inProcessTitle": "处理中商品",
+      "empty": "未找到商品"
+    },
     "soldProducts": {
       "title": "已售商品",
       "loading": "加载中...",

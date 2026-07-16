@@ -186,6 +186,11 @@
       "description": "Total withdrawn amount",
       "action": "Withdrawal history"
     },
+    "statusProductsModal": {
+      "availableTitle": "Available products",
+      "inProcessTitle": "In-process products",
+      "empty": "No products found"
+    },
     "soldProducts": {
       "title": "Sold products",
       "loading": "Loading...",

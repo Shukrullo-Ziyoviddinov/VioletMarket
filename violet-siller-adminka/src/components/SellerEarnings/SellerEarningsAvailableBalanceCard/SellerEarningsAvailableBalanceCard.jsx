@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatSellerEarningsAmount } from '../../../utils/sellerEarningsDisplay';
 import '../sellerEarningsBalanceCardShared.css';
 
-export default function SellerEarningsAvailableBalanceCard({ amount = 0 }) {
+export default function SellerEarningsAvailableBalanceCard({ amount = 0, onAction }) {
   const { t } = useTranslation();
 
   return (
@@ -30,7 +30,11 @@ export default function SellerEarningsAvailableBalanceCard({ amount = 0 }) {
         </p>
       </div>
 
-      <button type="button" className="seller-earnings-balance-card__action">
+      <button
+        type="button"
+        className="seller-earnings-balance-card__action"
+        onClick={() => onAction?.()}
+      >
         {t('sellerEarnings.availableBalance.action')}
       </button>
     </article>

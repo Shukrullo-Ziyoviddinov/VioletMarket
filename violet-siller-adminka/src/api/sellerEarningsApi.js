@@ -81,6 +81,25 @@ export async function fetchSellerSoldItems(token, filters = {}) {
   };
 }
 
+export async function fetchAllSellerSoldItemsByStatus(token, status) {
+  const items = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const data = await fetchSellerSoldItems(token, {
+      status,
+      page,
+      limit: 50,
+    });
+    items.push(...data.items);
+    totalPages = data.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+
+  return items;
+}
+
 export async function submitSellerWithdrawalRequest(token, itemIds = []) {
   const res = await fetch(apiUrl('/api/seller-auth/earnings/withdrawal-requests'), {
     method: 'POST',

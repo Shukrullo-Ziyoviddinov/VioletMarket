@@ -1,0 +1,79 @@
+.seller-earnings-status-products-modal__loading,
+.seller-earnings-status-products-modal__empty {
+  padding: 28px 12px;
+  text-align: center;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.seller-earnings-status-products-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.seller-earnings-status-products-modal__item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.seller-earnings-status-products-modal__image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #f5f5f5;
+}
+
+.seller-earnings-status-products-modal__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.seller-earnings-status-products-modal__content {
+  min-width: 0;
+}
+
+.seller-earnings-status-products-modal__content strong {
+  display: block;
+  color: #2a1842;
+  font-size: 14px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-earnings-status-products-modal__content p {
+  margin: 4px 0 0;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.seller-earnings-status-products-modal__content span {
+  display: block;
+  margin-top: 4px;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.seller-earnings-status-products-modal__price {
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
