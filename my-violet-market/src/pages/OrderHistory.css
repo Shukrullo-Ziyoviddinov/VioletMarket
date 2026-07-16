@@ -16,3 +16,9 @@
   color: #2d2433;
   margin: 0 0 24px;
 }
+
+@media (max-width: 450px) {
+  .order-history-page {
+    padding: 10px;
+  }
+}
