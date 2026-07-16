@@ -17,6 +17,7 @@
       "orderId": "Order ID",
       "orderedAt": "Date & time",
       "buyer": "Buyer",
+      "phone": "Phone",
       "payment": "Payment",
       "amount": "Product price"
     },
@@ -33,6 +34,16 @@
       "thursday": "Thursday",
       "friday": "Friday",
       "saturday": "Saturday"
+    },
+    "modal": {
+      "title": "Order details",
+      "titleWithCode": "Order {{code}}",
+      "empty": "No data found",
+      "selectedOptions": "Selected options",
+      "color": "Color",
+      "size": "Size",
+      "storage": "Storage",
+      "model": "Model"
     }
   },
   "marketInfo": {

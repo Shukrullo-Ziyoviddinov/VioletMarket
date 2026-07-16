@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import SellerOrderCard from '../SellerOrderCard/SellerOrderCard';
 import './SellerOrdersList.css';
 
-export default function SellerOrdersList({ orders = [], loading = false }) {
+export default function SellerOrdersList({ orders = [], loading = false, onOpenOrder }) {
   const { t } = useTranslation();
 
   if (loading) {
@@ -26,7 +26,7 @@ export default function SellerOrdersList({ orders = [], loading = false }) {
   return (
     <div className="seller-orders-list">
       {orders.map((order) => (
-        <SellerOrderCard key={order.id} order={order} />
+        <SellerOrderCard key={order.id} order={order} onOpen={onOpenOrder} />
       ))}
     </div>
   );

@@ -1,12 +1,25 @@
 .seller-order-card {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 16px 18px;
   border: 1px solid #ece8f4;
   border-radius: 14px;
   background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.seller-order-card:hover {
+  border-color: #d4c6ea;
+  box-shadow: 0 4px 14px rgba(42, 24, 66, 0.06);
 }
 
 .seller-order-card__fields {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -44,6 +57,10 @@
   white-space: nowrap;
 }
 
+.seller-order-card__value--phone {
+  white-space: nowrap;
+}
+
 .seller-order-card__payment {
   display: inline-flex;
   align-items: center;
@@ -70,6 +87,21 @@
 .seller-order-card__payment--unknown {
   background: #f5f5f5;
   color: #8c8c8c;
+}
+
+.seller-order-card__chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.seller-order-card:hover .seller-order-card__chevron {
+  color: #2a1842;
 }
 
 @media (max-width: 768px) {

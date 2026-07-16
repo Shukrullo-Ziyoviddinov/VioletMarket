@@ -1,15 +1,17 @@
 import React from 'react';
+import { RightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
   formatSellerOrderAmount,
   formatSellerOrderDateTime,
   getSellerOrderBuyerName,
+  getSellerOrderBuyerPhone,
   getSellerOrderPaymentLabel,
   getSellerOrderPaymentTone,
 } from '../../../utils/sellerOrdersDisplay';
 import './SellerOrderCard.css';
 
-export default function SellerOrderCard({ order }) {
+export default function SellerOrderCard({ order, onOpen }) {
   const { t } = useTranslation();
 
   if (!order) return null;
@@ -18,7 +20,11 @@ export default function SellerOrderCard({ order }) {
   const productCode = String(order.productCode || '').trim() || '—';
 
   return (
-    <article className="seller-order-card">
+    <button
+      type="button"
+      className="seller-order-card"
+      onClick={() => onOpen?.(order)}
+    >
       <div className="seller-order-card__fields">
         <div className="seller-order-card__field">
           <span className="seller-order-card__label">{t('orders.card.barcode')}</span>
@@ -43,6 +49,13 @@ export default function SellerOrderCard({ order }) {
         </div>
 
         <div className="seller-order-card__field">
+          <span className="seller-order-card__label">{t('orders.card.phone')}</span>
+          <strong className="seller-order-card__value seller-order-card__value--phone">
+            {getSellerOrderBuyerPhone(order.buyer)}
+          </strong>
+        </div>
+
+        <div className="seller-order-card__field">
           <span className="seller-order-card__label">{t('orders.card.payment')}</span>
           <span className={`seller-order-card__payment seller-order-card__payment--${paymentTone}`}>
             {getSellerOrderPaymentLabel(order.paymentMethod, t)}
@@ -56,6 +69,10 @@ export default function SellerOrderCard({ order }) {
           </strong>
         </div>
       </div>
-    </article>
+
+      <span className="seller-order-card__chevron" aria-hidden="true">
+        <RightOutlined />
+      </span>
+    </button>
   );
 }

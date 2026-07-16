@@ -31,10 +31,12 @@ function normalizeOrder(row) {
     buyer: {
       firstName: String(row?.buyer?.firstName || ''),
       lastName: String(row?.buyer?.lastName || ''),
+      phone: String(row?.buyer?.phone || ''),
     },
     paymentMethod: String(row?.paymentMethod || 'mock'),
     status: String(row?.status || 'paid'),
     amount: Number(row?.amount) || 0,
+    originalPrice: Number(row?.originalPrice) || 0,
     quantity: Number(row?.quantity) || 1,
   };
 }

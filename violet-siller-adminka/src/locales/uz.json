@@ -17,6 +17,7 @@
       "orderId": "Buyurtma ID",
       "orderedAt": "Sana va vaqt",
       "buyer": "Xaridor",
+      "phone": "Telefon",
       "payment": "To'lov",
       "amount": "Mahsulot narxi"
     },
@@ -33,6 +34,16 @@
       "thursday": "Payshanba",
       "friday": "Juma",
       "saturday": "Shanba"
+    },
+    "modal": {
+      "title": "Buyurtma tafsilotlari",
+      "titleWithCode": "Buyurtma {{code}}",
+      "empty": "Ma'lumot topilmadi",
+      "selectedOptions": "Tanlangan variantlar",
+      "color": "Rang",
+      "size": "O'lcham",
+      "storage": "Xotira",
+      "model": "Model"
     }
   },
   "marketInfo": {

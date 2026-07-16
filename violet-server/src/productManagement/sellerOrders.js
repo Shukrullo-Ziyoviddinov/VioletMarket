@@ -1,6 +1,7 @@
 const { Order } = require("../models/order");
 const { User } = require("../models/user");
 const { HttpError } = require("../utils/httpError");
+const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const {
   VALID_PAYMENT_METHODS,
@@ -43,6 +44,7 @@ function mapSellerOrderItems(items, sellerId) {
       const productId = Math.max(0, Math.floor(toNumber(item?.productId, 0)));
       const quantity = Math.max(1, Math.floor(toNumber(item?.quantity, 1)));
       const price = Math.max(0, toNumber(item?.price, 0));
+      const originalPrice = Math.max(0, toNumber(item?.originalPrice, 0));
       const lineTotal = Math.max(0, toNumber(item?.lineTotal, price * quantity));
 
       return {
@@ -50,9 +52,14 @@ function mapSellerOrderItems(items, sellerId) {
         productId,
         productCode: formatProductCode(productId),
         title: resolveTitle(item?.title),
-        image: String(item?.image || "/img/no-image.png"),
+        imageUrl: resolvePublicAssetUrl(String(item?.image || "").trim() || "/img/no-image.png"),
+        color: String(item?.color || "").trim(),
+        size: String(item?.size || "").trim(),
+        storage: String(item?.storage || "").trim(),
+        model: String(item?.model || "").trim(),
         quantity,
         price,
+        originalPrice,
         lineTotal,
       };
     });
@@ -68,6 +75,7 @@ function buildSellerOrderItemCards(order, user, sellerId) {
   const buyer = {
     firstName: String(user?.firstName || "").trim(),
     lastName: String(user?.lastName || "").trim(),
+    phone: String(user?.phone || "").trim(),
   };
   const paymentMethod = resolveStoredPaymentMethod(order?.paymentMethod);
   const status = String(order?.status || "paid");
@@ -88,12 +96,17 @@ function buildSellerOrderItemCards(order, user, sellerId) {
         productId: item.productId,
         productCode: item.productCode,
         title: item.title,
-        image: item.image,
+        imageUrl: item.imageUrl,
+        color: item.color,
+        size: item.size,
+        storage: item.storage,
+        model: item.model,
         orderedAt,
         buyer,
         paymentMethod,
         status,
         amount: unitPrice,
+        originalPrice: item.originalPrice,
         quantity: 1,
       });
     }
@@ -113,6 +126,7 @@ function buildSellerOrderCard(order, user, sellerId) {
       buyer: {
         firstName: String(user?.firstName || "").trim(),
         lastName: String(user?.lastName || "").trim(),
+        phone: String(user?.phone || "").trim(),
       },
       paymentMethod: resolveStoredPaymentMethod(order?.paymentMethod),
       status: String(order?.status || "paid"),
@@ -152,7 +166,7 @@ async function listSellerOrders(sellerId, query = {}) {
   const userIds = [...new Set(rows.map((row) => String(row.userId || "")).filter(Boolean))];
   const users = userIds.length
     ? await User.find({ _id: { $in: userIds } })
-        .select({ firstName: 1, lastName: 1 })
+        .select({ firstName: 1, lastName: 1, phone: 1 })
         .lean()
     : [];
   const userById = new Map(users.map((row) => [String(row._id), row]));

@@ -17,6 +17,7 @@
       "orderId": "订单编号",
       "orderedAt": "日期与时间",
       "buyer": "买家",
+      "phone": "电话",
       "payment": "支付",
       "amount": "商品价格"
     },
@@ -33,6 +34,16 @@
       "thursday": "星期四",
       "friday": "星期五",
       "saturday": "星期六"
+    },
+    "modal": {
+      "title": "订单详情",
+      "titleWithCode": "订单 {{code}}",
+      "empty": "未找到数据",
+      "selectedOptions": "已选选项",
+      "color": "颜色",
+      "size": "尺码",
+      "storage": "内存",
+      "model": "型号"
     }
   },
   "marketInfo": {
