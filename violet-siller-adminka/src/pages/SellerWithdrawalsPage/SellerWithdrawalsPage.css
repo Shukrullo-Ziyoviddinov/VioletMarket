@@ -1,0 +1,10 @@
+.seller-withdrawals-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.seller-withdrawals-page__title {
+  margin: 0 !important;
+  color: #2a1842;
+}

@@ -5,7 +5,8 @@
   "sidebar": {
     "home": "首页",
     "salesStatistics": "销售与统计",
-    "salesEarnings": "销售与收入"
+    "salesEarnings": "销售与收入",
+    "salesWithdrawals": "已提现金额历史"
   },
   "marketInfo": {
     "title": "关于市场",
@@ -220,6 +221,32 @@
         "next": "下一页",
         "perPage": "{{limit}} / 页"
       }
+    }
+  },
+  "sellerWithdrawals": {
+    "title": "已提现金额历史",
+    "loading": "加载中...",
+    "empty": "未找到已提现商品",
+    "filters": {
+      "searchPlaceholder": "商品名称或申请编号"
+    },
+    "columns": {
+      "requestCode": "申请编号",
+      "product": "商品",
+      "withdrawnAt": "提现日期",
+      "amount": "金额",
+      "actions": "操作"
+    },
+    "actions": {
+      "view": "查看提现详情"
+    },
+    "modal": {
+      "title": "提现详情",
+      "titleWithCode": "提现 {{code}}",
+      "empty": "未找到数据",
+      "submittedAt": "📅 申请提交时间：",
+      "withdrawnAt": "✅ 提现时间：",
+      "amount": "💰 提现金额："
     }
   }
 }

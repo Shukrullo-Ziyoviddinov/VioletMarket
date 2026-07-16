@@ -1,0 +1,63 @@
+.seller-withdrawals-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.seller-withdrawals-list__table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.seller-withdrawals-list__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.seller-withdrawals-list__col-code {
+  width: 14%;
+}
+
+.seller-withdrawals-list__col-product {
+  width: 46%;
+}
+
+.seller-withdrawals-list__col-date {
+  width: 18%;
+}
+
+.seller-withdrawals-list__col-amount {
+  width: 14%;
+}
+
+.seller-withdrawals-list__col-actions {
+  width: 56px;
+}
+
+.seller-withdrawals-list__table thead th {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ece8f4;
+  background: #fff;
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-withdrawals-list__table thead th:last-child {
+  text-align: center;
+}
+
+.seller-withdrawals-list__empty {
+  padding: 48px 16px !important;
+  color: #8c8c8c;
+  text-align: center;
+}

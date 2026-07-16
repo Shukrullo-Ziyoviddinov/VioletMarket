@@ -5,7 +5,8 @@
   "sidebar": {
     "home": "Home",
     "salesStatistics": "Sales & statistics",
-    "salesEarnings": "Sales & earnings"
+    "salesEarnings": "Sales & earnings",
+    "salesWithdrawals": "Withdrawn amounts history"
   },
   "marketInfo": {
     "title": "About the market",
@@ -220,6 +221,32 @@
         "next": "Next page",
         "perPage": "{{limit}} / page"
       }
+    }
+  },
+  "sellerWithdrawals": {
+    "title": "Withdrawn amounts history",
+    "loading": "Loading...",
+    "empty": "No withdrawn products found",
+    "filters": {
+      "searchPlaceholder": "Product name or request code"
+    },
+    "columns": {
+      "requestCode": "Request code",
+      "product": "Product",
+      "withdrawnAt": "Withdrawn date",
+      "amount": "Amount",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View withdrawal details"
+    },
+    "modal": {
+      "title": "Withdrawal details",
+      "titleWithCode": "Withdrawal {{code}}",
+      "empty": "No data found",
+      "submittedAt": "📅 Request submitted:",
+      "withdrawnAt": "✅ Withdrawn date:",
+      "amount": "💰 Withdrawn amount:"
     }
   }
 }

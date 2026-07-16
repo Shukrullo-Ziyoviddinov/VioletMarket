@@ -5,7 +5,8 @@
   "sidebar": {
     "home": "Bosh sahifa",
     "salesStatistics": "Sotuv va statistika",
-    "salesEarnings": "Sotuv va daromat"
+    "salesEarnings": "Sotuv va daromat",
+    "salesWithdrawals": "Yechilgan summalar tarixi"
   },
   "marketInfo": {
     "title": "Market haqida",
@@ -220,6 +221,32 @@
         "next": "Keyingi sahifa",
         "perPage": "{{limit}} / sahifa"
       }
+    }
+  },
+  "sellerWithdrawals": {
+    "title": "Yechilgan summalar tarixi",
+    "loading": "Yuklanmoqda...",
+    "empty": "Yechilgan mahsulotlar topilmadi",
+    "filters": {
+      "searchPlaceholder": "Mahsulot nomi yoki so'rov raqami"
+    },
+    "columns": {
+      "requestCode": "So'rov raqami",
+      "product": "Mahsulot",
+      "withdrawnAt": "Yechilgan sana",
+      "amount": "Summa",
+      "actions": "Amallar"
+    },
+    "actions": {
+      "view": "Yechish tafsilotlarini ko'rish"
+    },
+    "modal": {
+      "title": "Yechish tafsilotlari",
+      "titleWithCode": "Yechish {{code}}",
+      "empty": "Ma'lumot topilmadi",
+      "submittedAt": "📅 So'rov yuborilgan sana:",
+      "withdrawnAt": "✅ Yechilgan sana:",
+      "amount": "💰 Yechilgan summa:"
     }
   }
 }

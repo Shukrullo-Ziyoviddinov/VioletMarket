@@ -1,11 +1,13 @@
 import React from 'react';
 import { BarChartOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { formatSellerEarningsAmount } from '../../../utils/sellerEarningsDisplay';
 import '../sellerEarningsBalanceCardShared.css';
 
 export default function SellerEarningsWithdrawnBalanceCard({ amount = 0 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <article className="seller-earnings-balance-card seller-earnings-balance-card--withdrawn">
@@ -30,7 +32,11 @@ export default function SellerEarningsWithdrawnBalanceCard({ amount = 0 }) {
         </p>
       </div>
 
-      <button type="button" className="seller-earnings-balance-card__action">
+      <button
+        type="button"
+        className="seller-earnings-balance-card__action"
+        onClick={() => navigate('/sales/withdrawals')}
+      >
         {t('sellerEarnings.withdrawnBalance.action')}
       </button>
     </article>

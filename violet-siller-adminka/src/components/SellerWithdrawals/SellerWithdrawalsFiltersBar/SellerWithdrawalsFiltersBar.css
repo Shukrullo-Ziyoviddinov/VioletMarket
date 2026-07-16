@@ -1,0 +1,41 @@
+.seller-withdrawals-filters-bar {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(240px, 1.1fr);
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.seller-withdrawals-filters-bar__search {
+  border-radius: 10px;
+  background: #f8f6fc;
+  border: 1px solid #e3d9ef;
+}
+
+.seller-withdrawals-filters-bar__search:hover,
+.seller-withdrawals-filters-bar__search.ant-input-affix-wrapper-focused {
+  background: #f3eef9;
+  border-color: #d8c9ea;
+}
+
+.seller-withdrawals-filters-bar__search .ant-input {
+  font-size: 14px;
+  background: #f8f6fc;
+}
+
+.seller-withdrawals-filters-bar__search.ant-input-affix-wrapper > input.ant-input {
+  background: #f8f6fc;
+}
+
+.seller-withdrawals-filters-bar__search:hover .ant-input,
+.seller-withdrawals-filters-bar__search.ant-input-affix-wrapper-focused > input.ant-input {
+  background: #f3eef9;
+}
+
+@media (max-width: 768px) {
+  .seller-withdrawals-filters-bar {
+    grid-template-columns: 1fr;
+  }
+}

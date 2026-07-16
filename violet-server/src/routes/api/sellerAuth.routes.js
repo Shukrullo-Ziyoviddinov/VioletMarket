@@ -7,6 +7,7 @@ const sellerMessageChatController = require("../../controllers/messageChat/selle
 const sellerSalesStatisticsController = require("../../controllers/sellerSalesStatisticsController");
 const sellerEarningsController = require("../../controllers/sellerEarningsController");
 const sellerNotificationController = require("../../controllers/sellerNotificationController");
+const sellerWithdrawalController = require("../../controllers/sellerWithdrawalController");
 
 const router = express.Router();
 
@@ -87,6 +88,11 @@ router.post(
   "/seller-auth/earnings/withdrawal-requests",
   sellerAuthMiddleware,
   sellerEarningsController.submitSellerWithdrawalRequest,
+);
+router.get(
+  "/seller-auth/withdrawals",
+  sellerAuthMiddleware,
+  sellerWithdrawalController.listSellerWithdrawals,
 );
 router.get(
   "/seller-auth/notifications/unread-count",
