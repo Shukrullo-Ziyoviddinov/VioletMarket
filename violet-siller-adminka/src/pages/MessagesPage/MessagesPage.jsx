@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Empty, Spin, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { fetchSellerMessageThreads } from '../../api/messageChatApi';
 import { useUserMessageChat } from '../../hooks/useUserMessageChat';
@@ -18,6 +19,8 @@ const { Title } = Typography;
 export default function MessagesPage() {
   const { t } = useTranslation();
   const { token } = useSellerAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
@@ -44,6 +47,21 @@ export default function MessagesPage() {
   useEffect(() => {
     loadThreads();
   }, [loadThreads]);
+
+  useEffect(() => {
+    const openChat = location.state?.openChat;
+    const userId = String(openChat?.userId || '').trim();
+    if (!userId) return;
+
+    setActiveUser({
+      userId,
+      firstName: openChat.firstName || '',
+      lastName: openChat.lastName || '',
+      profileImage: openChat.profileImage || '',
+    });
+    setChatOpen(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     const onUpdate = () => loadThreads();

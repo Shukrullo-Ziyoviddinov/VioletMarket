@@ -38,7 +38,7 @@ function buildChatPreviewText(type, content) {
 
 function buildSellerChatMessageReceivedMessage(userName) {
   const name = String(userName || "Mijoz").trim() || "Mijoz";
-  return `${name} sizga xabar yozdi`;
+  return `${name} sizga xabar yubordi`;
 }
 
 module.exports = {

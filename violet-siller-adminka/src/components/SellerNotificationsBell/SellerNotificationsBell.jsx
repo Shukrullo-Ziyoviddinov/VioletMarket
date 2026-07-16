@@ -12,7 +12,10 @@ import {
 import './SellerNotificationsBell.css';
 
 function isChatNotification(notification) {
-  return String(notification?.type || '') === 'chat_message_received';
+  return (
+    String(notification?.type || '') === 'chat_message_received'
+    || Boolean(String(notification?.userId || '').trim())
+  );
 }
 
 function NotificationStatusIcon({ status }) {
@@ -27,7 +30,8 @@ function NotificationStatusIcon({ status }) {
 
 function ChatNotificationItem({ notification }) {
   const userName = notification.userName || 'Mijoz';
-  const preview = notification.previewText || notification.message;
+  const title = notification.message || `${userName} sizga xabar yubordi`;
+  const preview = notification.previewText || '';
 
   return (
     <>
@@ -39,10 +43,12 @@ function ChatNotificationItem({ notification }) {
         )}
       </div>
       <div className="seller-notifications-bell__content">
-        <strong>{userName}</strong>
-        <p className="seller-notifications-bell__preview" title={preview}>
-          {preview}
-        </p>
+        <strong>{title}</strong>
+        {preview ? (
+          <p className="seller-notifications-bell__preview" title={preview}>
+            {preview}
+          </p>
+        ) : null}
         <span>{formatNotificationDateTime(notification.createdAt)}</span>
       </div>
     </>
@@ -88,7 +94,20 @@ export default function SellerNotificationsBell() {
   const handleItemClick = (notification) => {
     setOpen(false);
     if (isChatNotification(notification)) {
-      navigate('/messages');
+      const nameParts = String(notification.userName || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      navigate('/messages', {
+        state: {
+          openChat: {
+            userId: notification.userId,
+            firstName: nameParts[0] || notification.userName || 'Mijoz',
+            lastName: nameParts.slice(1).join(' '),
+            profileImage: notification.userAvatarUrl || '',
+          },
+        },
+      });
       return;
     }
     navigate('/sales/earnings');
