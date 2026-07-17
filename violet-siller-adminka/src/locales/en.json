@@ -15,14 +15,22 @@
     "filter": {
       "label": "Order status",
       "confirmation": "Confirm",
-      "collection": "Collect product"
+      "collection": "Collect product",
+      "courier": "Hand over to courier"
     },
     "collection": {
       "empty": "No products to collect"
     },
+    "courier": {
+      "empty": "No products to hand over to the courier"
+    },
     "confirm": {
       "success": "Order confirmed",
       "error": "Could not confirm the order"
+    },
+    "collect": {
+      "success": "Product collection confirmed",
+      "error": "Could not confirm product collection"
     },
     "card": {
       "barcode": "Barcode",
@@ -57,7 +65,9 @@
       "storage": "Storage",
       "model": "Model",
       "confirm": "Confirm",
-      "confirming": "Confirming..."
+      "confirming": "Confirming...",
+      "confirmCollected": "Confirm product collection",
+      "collecting": "Confirming..."
     }
   },
   "marketInfo": {

@@ -105,6 +105,11 @@ router.patch(
   sellerAuthMiddleware,
   sellerOrdersController.confirmOrderItem,
 );
+router.patch(
+  "/seller-auth/orders/:orderId/items/:itemIndex/collect",
+  sellerAuthMiddleware,
+  sellerOrdersController.collectOrderItem,
+);
 router.get(
   "/seller-auth/notifications/unread-count",
   sellerAuthMiddleware,

@@ -16,7 +16,17 @@ const confirmOrderItem = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const collectOrderItem = asyncHandler(async (req, res) => {
+  const data = await sellerOrderTrackingService.collectSellerOrderItem(
+    req.sellerShopId,
+    req.params.orderId,
+    req.params.itemIndex,
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listOrders,
   confirmOrderItem,
+  collectOrderItem,
 };

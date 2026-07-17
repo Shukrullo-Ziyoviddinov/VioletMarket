@@ -5,6 +5,12 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  courierHandoff: {
+    title: 'Tasdiqlash',
+    getMessage: () => "Mahsulotni kuryerga topshirishni tasdiqlaysizmi?",
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
 };
 
 export function resolveMiniGlobalModalPermission(permissionKey, itemName = '') {

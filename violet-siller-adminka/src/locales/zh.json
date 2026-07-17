@@ -15,14 +15,22 @@
     "filter": {
       "label": "订单状态",
       "confirmation": "确认",
-      "collection": "备货"
+      "collection": "备货",
+      "courier": "交给快递员"
     },
     "collection": {
       "empty": "暂无待备货商品"
     },
+    "courier": {
+      "empty": "暂无待交给快递员的商品"
+    },
     "confirm": {
       "success": "订单已确认",
       "error": "订单确认失败"
+    },
+    "collect": {
+      "success": "商品备货已确认",
+      "error": "无法确认商品备货"
     },
     "card": {
       "barcode": "条码",
@@ -57,7 +65,9 @@
       "storage": "内存",
       "model": "型号",
       "confirm": "确认",
-      "confirming": "确认中..."
+      "confirming": "确认中...",
+      "confirmCollected": "确认商品已备好",
+      "collecting": "确认中..."
     }
   },
   "marketInfo": {

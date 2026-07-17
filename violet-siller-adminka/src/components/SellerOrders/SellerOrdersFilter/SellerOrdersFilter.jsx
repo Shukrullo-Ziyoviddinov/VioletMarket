@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './SellerOrdersFilter.css';
 
-const FILTERS = ['confirmation', 'collection'];
+const FILTERS = ['confirmation', 'collection', 'courier'];
 
 export default function SellerOrdersFilter({ value, onChange }) {
   const { t } = useTranslation();

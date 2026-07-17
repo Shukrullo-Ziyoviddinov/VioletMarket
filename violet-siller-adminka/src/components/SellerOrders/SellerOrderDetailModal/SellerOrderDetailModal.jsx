@@ -11,6 +11,9 @@ export default function SellerOrderDetailModal({
   showConfirm = false,
   confirming = false,
   onConfirm,
+  showCollect = false,
+  collecting = false,
+  onCollect,
 }) {
   const { t } = useTranslation();
   const title = order?.orderCode
@@ -29,6 +32,20 @@ export default function SellerOrderDetailModal({
             onClick={onConfirm}
           >
             {confirming ? t('orders.modal.confirming') : t('orders.modal.confirm')}
+          </button>
+        </div>
+      ) : null}
+      {showCollect ? (
+        <div className="seller-order-detail-modal__actions">
+          <button
+            type="button"
+            className="seller-order-detail-modal__confirm"
+            disabled={collecting}
+            onClick={onCollect}
+          >
+            {collecting
+              ? t('orders.modal.collecting')
+              : t('orders.modal.confirmCollected')}
           </button>
         </div>
       ) : null}

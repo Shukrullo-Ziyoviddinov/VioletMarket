@@ -15,14 +15,22 @@
     "filter": {
       "label": "Buyurtma holati",
       "confirmation": "Tasdiqlash",
-      "collection": "Mahsulotni yig'ish"
+      "collection": "Mahsulotni yig'ish",
+      "courier": "Kuryerga topshirish"
     },
     "collection": {
       "empty": "Yig'ish uchun mahsulotlar yo'q"
     },
+    "courier": {
+      "empty": "Kuryerga topshiriladigan mahsulotlar yo'q"
+    },
     "confirm": {
       "success": "Buyurtma tasdiqlandi",
       "error": "Buyurtmani tasdiqlashda xatolik"
+    },
+    "collect": {
+      "success": "Mahsulot yig'ilgani tasdiqlandi",
+      "error": "Mahsulot yig'ilganini tasdiqlashda xatolik"
     },
     "card": {
       "barcode": "Shtrix kod",
@@ -57,7 +65,9 @@
       "storage": "Xotira",
       "model": "Model",
       "confirm": "Tasdiqlash",
-      "confirming": "Tasdiqlanmoqda..."
+      "confirming": "Tasdiqlanmoqda...",
+      "confirmCollected": "Mahsulot yig'ilganligini tasdiqlash",
+      "collecting": "Tasdiqlanmoqda..."
     }
   },
   "marketInfo": {

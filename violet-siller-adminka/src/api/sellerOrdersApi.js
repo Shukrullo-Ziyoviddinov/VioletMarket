@@ -85,3 +85,15 @@ export async function confirmSellerOrderItem(token, orderId, itemIndex) {
   const payload = await parseJson(res);
   return payload?.data || {};
 }
+
+export async function collectSellerOrderItem(token, orderId, itemIndex) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/collect`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
