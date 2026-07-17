@@ -136,10 +136,55 @@ async function getProfile(deliveryId) {
   return account.toPublicJSON();
 }
 
+async function updateProfile(deliveryId, payload) {
+  const account = await DeliveryAccount.findById(deliveryId);
+  if (!account) {
+    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
+  }
+
+  const email = normalizeEmail(payload.email);
+  const firstName = normalizeName(payload.firstName, "Ism");
+  const lastName = normalizeName(payload.lastName, "Familiya");
+  const phone = normalizePhone(payload.phone);
+
+  const emailOwner = await DeliveryAccount.exists({
+    email,
+    _id: { $ne: account._id },
+  });
+  if (emailOwner) {
+    throw new HttpError(
+      409,
+      "Bu Gmail boshqa delivery akkauntida ishlatilgan",
+      "ACCOUNT_EXISTS",
+    );
+  }
+
+  account.email = email;
+  account.firstName = firstName;
+  account.lastName = lastName;
+  account.phone = phone;
+
+  try {
+    await account.save();
+  } catch (error) {
+    if (error?.code === 11000) {
+      throw new HttpError(
+        409,
+        "Bu Gmail boshqa delivery akkauntida ishlatilgan",
+        "ACCOUNT_EXISTS",
+      );
+    }
+    throw error;
+  }
+
+  return account.toPublicJSON();
+}
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
   verifyLogin,
   completeRegistration,
   getProfile,
+  updateProfile,
 };

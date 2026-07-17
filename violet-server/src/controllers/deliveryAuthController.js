@@ -26,10 +26,19 @@ const getProfile = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateProfile = asyncHandler(async (req, res) => {
+  const data = await deliveryAuthService.updateProfile(
+    req.deliveryId,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
   verifyLogin,
   completeRegistration,
   getProfile,
+  updateProfile,
 };

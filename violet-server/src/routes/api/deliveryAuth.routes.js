@@ -18,5 +18,10 @@ router.get(
   deliveryAuthMiddleware,
   controller.getProfile,
 );
+router.patch(
+  "/delivery-auth/me",
+  deliveryAuthMiddleware,
+  controller.updateProfile,
+);
 
 module.exports = router;

@@ -1,17 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FormField } from '@/components/auth/FormField';
+import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
+import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
@@ -21,12 +24,19 @@ type MenuRowProps = {
   label: string;
   detail?: string;
   danger?: boolean;
+  onPress?: () => void;
 };
 
-function MenuRow({ icon, label, detail, danger }: MenuRowProps) {
+function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
   const color = danger ? '#DC2626' : '#4B5563';
   return (
-    <View style={styles.menuRow}>
+    <Pressable
+      disabled={!onPress}
+      style={({ pressed }) => [
+        styles.menuRow,
+        pressed && styles.menuRowPressed,
+      ]}
+      onPress={onPress}>
       <View
         style={[
           styles.menuIcon,
@@ -41,17 +51,64 @@ function MenuRow({ icon, label, detail, danger }: MenuRowProps) {
       {!danger && (
         <Ionicons name="chevron-forward" size={21} color="#C4B5FD" />
       )}
-    </View>
+    </Pressable>
   );
 }
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { delivery, isLoading } = useAuth();
+  const { delivery, isLoading, signOut, updateProfile } = useAuth();
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
   }, [delivery, isLoading, router]);
+
+  function openProfileModal() {
+    if (!delivery) return;
+    setFirstName(delivery.firstName);
+    setLastName(delivery.lastName);
+    setPhone(delivery.phone);
+    setEmail(delivery.email);
+    setSaveError('');
+    setProfileModalOpen(true);
+  }
+
+  async function saveProfile() {
+    if (isSaving) return;
+    setSaveError('');
+    setIsSaving(true);
+    try {
+      await updateProfile({ firstName, lastName, phone, email });
+      setProfileModalOpen(false);
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : 'Ma’lumotlar saqlanmadi',
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function confirmSignOut() {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      setLogoutModalOpen(false);
+      router.replace('/auth');
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
 
   if (isLoading || !delivery) {
     return (
@@ -66,9 +123,7 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Profil</Text>
-        <View style={styles.settingsButton}>
-          <Ionicons name="settings-outline" size={25} color="#FFFFFF" />
-        </View>
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
@@ -97,22 +152,15 @@ export default function ProfileScreen() {
               {delivery.firstName} {delivery.lastName}
             </Text>
             <Text style={styles.phone}>{delivery.phone}</Text>
-            <View style={styles.onlineRow}>
-              <View style={styles.onlineDot} />
-              <Text style={styles.onlineText}>Online</Text>
-            </View>
           </View>
-
-          <Switch
-            disabled
-            value={delivery.isOnline}
-            trackColor={{ false: '#D1D5DB', true: '#86EFAC' }}
-            thumbColor={delivery.isOnline ? '#16A34A' : '#F3F4F6'}
-          />
         </View>
 
         <View style={styles.menuCard}>
-          <MenuRow icon="person-outline" label="Mening ma’lumotlarim" />
+          <MenuRow
+            icon="person-outline"
+            label="Mening ma’lumotlarim"
+            onPress={openProfileModal}
+          />
           <View style={styles.divider} />
           <MenuRow
             icon="car-outline"
@@ -127,13 +175,82 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.logoutCard}>
-          <MenuRow icon="log-out-outline" label="Chiqish" danger />
+          <MenuRow
+            icon="log-out-outline"
+            label="Chiqish"
+            danger
+            onPress={() => setLogoutModalOpen(true)}
+          />
         </View>
 
         <Text style={styles.version}>Violet Delivery · 1.0.0</Text>
       </ScrollView>
 
       <BottomNavbar />
+
+      <GlobalBottomSheet
+        visible={profileModalOpen}
+        title="Mening ma’lumotlarim"
+        onClose={() => setProfileModalOpen(false)}>
+        <View style={styles.modalForm}>
+          <FormField
+            label="Ism"
+            icon="person-outline"
+            value={firstName}
+            onChangeText={setFirstName}
+            autoCapitalize="words"
+          />
+          <FormField
+            label="Familiya"
+            icon="person-outline"
+            value={lastName}
+            onChangeText={setLastName}
+            autoCapitalize="words"
+          />
+          <FormField
+            label="Telefon"
+            icon="call-outline"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          <FormField
+            label="Gmail"
+            icon="mail-outline"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          {saveError ? <Text style={styles.saveError}>{saveError}</Text> : null}
+
+          <Pressable
+            disabled={isSaving}
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && styles.saveButtonPressed,
+              isSaving && styles.saveButtonDisabled,
+            ]}
+            onPress={saveProfile}>
+            {isSaving ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.saveButtonText}>Saqlash</Text>
+            )}
+          </Pressable>
+        </View>
+      </GlobalBottomSheet>
+
+      <MiniGlobalModal
+        visible={logoutModalOpen}
+        title="Hisobdan chiqish"
+        message="Chindan ham hisobdan chiqmoqchimisiz?"
+        loading={isSigningOut}
+        onConfirm={confirmSignOut}
+        onCancel={() => setLogoutModalOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -163,14 +280,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '900',
-  },
-  settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.14)',
   },
   scroll: {
     flex: 1,
@@ -238,23 +347,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 14,
   },
-  onlineRow: {
-    marginTop: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  onlineDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: '#22C55E',
-  },
-  onlineText: {
-    color: '#16A34A',
-    fontSize: 13,
-    fontWeight: '800',
-  },
   menuCard: {
     marginTop: 18,
     paddingHorizontal: 16,
@@ -266,6 +358,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 13,
+  },
+  menuRowPressed: {
+    opacity: 0.65,
   },
   menuIcon: {
     width: 42,
@@ -311,5 +406,36 @@ const styles = StyleSheet.create({
     color: '#A78BFA',
     fontSize: 12,
     fontWeight: '600',
+  },
+  modalForm: {
+    gap: 14,
+    paddingBottom: 4,
+  },
+  saveError: {
+    padding: 12,
+    borderRadius: 12,
+    color: '#B91C1C',
+    backgroundColor: '#FEF2F2',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  saveButton: {
+    minHeight: 56,
+    marginTop: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 17,
+    backgroundColor: '#6D28D9',
+  },
+  saveButtonPressed: {
+    backgroundColor: '#5B21B6',
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
   },
 });

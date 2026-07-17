@@ -8,7 +8,11 @@ import {
   useState,
 } from 'react';
 
-import { getDeliveryProfile } from '@/services/delivery-auth';
+import {
+  getDeliveryProfile,
+  updateDeliveryProfile,
+  type UpdateDeliveryProfilePayload,
+} from '@/services/delivery-auth';
 import {
   getStoredToken,
   removeStoredToken,
@@ -23,6 +27,7 @@ type AuthContextValue = {
   signIn: (result: AuthResult) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfile: (payload: UpdateDeliveryProfilePayload) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -74,6 +79,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setDelivery(profile);
   }, [token]);
 
+  const updateProfile = useCallback(
+    async (payload: UpdateDeliveryProfilePayload) => {
+      if (!token) throw new Error('Avtorizatsiya talab qilinadi');
+      const profile = await updateDeliveryProfile(token, payload);
+      setDelivery(profile);
+    },
+    [token],
+  );
+
   const value = useMemo(
     () => ({
       isLoading,
@@ -82,8 +96,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signIn,
       signOut,
       refreshProfile,
+      updateProfile,
     }),
-    [delivery, isLoading, refreshProfile, signIn, signOut, token],
+    [
+      delivery,
+      isLoading,
+      refreshProfile,
+      signIn,
+      signOut,
+      token,
+      updateProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

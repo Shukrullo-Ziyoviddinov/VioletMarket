@@ -17,6 +17,13 @@ export type RegistrationPayload = {
   phone: string;
 };
 
+export type UpdateDeliveryProfilePayload = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+};
+
 export function startEmailAuth(email: string) {
   return apiRequest<EmailStartResult>('/api/delivery-auth/email/start', {
     method: 'POST',
@@ -49,6 +56,20 @@ export function getDeliveryProfile(token: string) {
   return apiRequest<DeliveryProfile>(
     '/api/delivery-auth/me',
     { method: 'GET' },
+    token,
+  );
+}
+
+export function updateDeliveryProfile(
+  token: string,
+  payload: UpdateDeliveryProfilePayload,
+) {
+  return apiRequest<DeliveryProfile>(
+    '/api/delivery-auth/me',
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
     token,
   );
 }
