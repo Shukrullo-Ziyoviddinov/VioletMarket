@@ -53,6 +53,7 @@ const adminNotificationRoutes = require("./adminNotification.routes");
 const messageChatRoutes = require("./messageChat.routes");
 const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 const userOrderTrackingRoutes = require("./userOrderTracking.routes");
+const deliveryAuthRoutes = require("./deliveryAuth.routes");
 
 const router = express.Router();
 
@@ -110,5 +111,6 @@ router.use(adminNotificationRoutes);
 router.use(messageChatRoutes);
 router.use(chatsPageSearchRoutes);
 router.use(userOrderTrackingRoutes);
+router.use(deliveryAuthRoutes);
 
 module.exports = router;
