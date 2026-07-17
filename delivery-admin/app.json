@@ -33,14 +33,7 @@
           "imageWidth": 190
         }
       ],
-      "expo-secure-store",
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Profil rasmini olish uchun kameraga ruxsat bering.",
-          "recordAudioAndroid": false
-        }
-      ]
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

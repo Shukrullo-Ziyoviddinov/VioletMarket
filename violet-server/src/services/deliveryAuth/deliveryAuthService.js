@@ -1,4 +1,3 @@
-const fs = require("fs/promises");
 const { DeliveryAccount } = require("../../models/deliveryAccount");
 const { HttpError } = require("../../utils/httpError");
 const { signDeliveryToken } = require("../../utils/deliveryJwt");
@@ -6,7 +5,6 @@ const {
   createAndSendDeliveryOtp,
   verifyDeliveryOtp,
 } = require("./deliveryOtpService");
-const { saveDeliveryPhotoBase64 } = require("./deliveryPhotoStorage");
 
 const LOGIN_PURPOSE = "delivery-login";
 const REGISTER_PURPOSE = "delivery-register";
@@ -37,11 +35,6 @@ function normalizePhone(value) {
     throw new HttpError(400, "Telefon raqami noto'g'ri", "VALIDATION_ERROR");
   }
   return phone;
-}
-
-async function removeUploadedFile(file) {
-  if (!file?.path) return;
-  await fs.unlink(file.path).catch(() => {});
 }
 
 async function startEmailAuth(payload) {
@@ -93,16 +86,7 @@ async function verifyLogin(payload) {
 }
 
 async function completeRegistration(payload) {
-  let photo = null;
   try {
-    if (!payload.photoBase64) {
-      throw new HttpError(
-        400,
-        "Kamerada olingan profil rasmi majburiy",
-        "PHOTO_REQUIRED",
-      );
-    }
-
     const email = normalizeEmail(payload.email);
     const firstName = normalizeName(payload.firstName, "Ism");
     const lastName = normalizeName(payload.lastName, "Familiya");
@@ -117,17 +101,12 @@ async function completeRegistration(payload) {
     }
 
     await verifyDeliveryOtp(email, REGISTER_PURPOSE, payload.code);
-    photo = await saveDeliveryPhotoBase64(
-      payload.photoBase64,
-      payload.photoMimeType,
-    );
 
     const account = await DeliveryAccount.create({
       email,
       firstName,
       lastName,
       phone,
-      profileImage: `/uploads/delivery/${photo.filename}`,
     });
 
     return {
@@ -135,7 +114,6 @@ async function completeRegistration(payload) {
       delivery: account.toPublicJSON(),
     };
   } catch (error) {
-    await removeUploadedFile(photo);
     if (error?.code === 11000) {
       throw new HttpError(
         409,

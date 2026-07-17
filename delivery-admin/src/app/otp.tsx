@@ -35,7 +35,6 @@ export default function OtpScreen() {
     firstName?: string;
     lastName?: string;
     phone?: string;
-    photoUri?: string;
   }>();
   const mode = stringParam(params.mode) === 'register' ? 'register' : 'login';
   const email = stringParam(params.email);
@@ -66,7 +65,6 @@ export default function OtpScreen() {
               firstName: stringParam(params.firstName),
               lastName: stringParam(params.lastName),
               phone: stringParam(params.phone),
-              photoUri: stringParam(params.photoUri),
             });
 
       await signIn(result);

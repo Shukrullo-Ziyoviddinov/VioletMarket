@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,7 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CameraPhotoCapture } from '@/components/auth/CameraPhotoCapture';
 import { FormField } from '@/components/auth/FormField';
 import { sendRegistrationCode } from '@/services/delivery-auth';
 
@@ -29,8 +27,6 @@ export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('+998 ');
-  const [photoUri, setPhotoUri] = useState('');
-  const [cameraOpen, setCameraOpen] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,11 +44,6 @@ export default function RegisterScreen() {
       setError('Telefon raqamini to‘liq kiriting');
       return;
     }
-    if (!photoUri) {
-      setError('Kamerada real profil suratini oling');
-      return;
-    }
-
     setError('');
     setIsSubmitting(true);
     try {
@@ -65,7 +56,6 @@ export default function RegisterScreen() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone: phone.trim(),
-          photoUri,
         },
       });
     } catch (requestError) {
@@ -97,31 +87,8 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Delivery profilingiz</Text>
           <Text style={styles.subtitle}>
-            Ma’lumotlarni to‘ldiring va kamerada aniq surat oling.
+            Ro‘yxatdan o‘tish uchun ma’lumotlaringizni to‘ldiring.
           </Text>
-
-          <Pressable
-            style={styles.photoCard}
-            onPress={() => setCameraOpen(true)}>
-            {photoUri ? (
-              <Image source={{ uri: photoUri }} style={styles.photo} />
-            ) : (
-              <View style={styles.photoPlaceholder}>
-                <Ionicons name="camera" size={34} color="#6D28D9" />
-              </View>
-            )}
-            <View style={styles.photoText}>
-              <Text style={styles.photoTitle}>
-                {photoUri ? 'Surat tayyor' : 'Real surat olish'}
-              </Text>
-              <Text style={styles.photoHint}>
-                {photoUri
-                  ? 'Qayta olish uchun bosing'
-                  : 'Kamerani ochish uchun bosing'}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={22} color="#9CA3AF" />
-          </Pressable>
 
           <View style={styles.form}>
             <FormField
@@ -182,16 +149,6 @@ export default function RegisterScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {cameraOpen && (
-        <CameraPhotoCapture
-          onClose={() => setCameraOpen(false)}
-          onCapture={(uri) => {
-            setPhotoUri(uri);
-            setCameraOpen(false);
-            setError('');
-          }}
-        />
-      )}
     </SafeAreaView>
   );
 }
@@ -242,42 +199,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 15,
     lineHeight: 22,
-  },
-  photoCard: {
-    padding: 13,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 13,
-    borderWidth: 1,
-    borderColor: '#DDD6FE',
-    borderRadius: 20,
-    backgroundColor: '#F5F3FF',
-  },
-  photo: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-  },
-  photoPlaceholder: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EDE9FE',
-  },
-  photoText: {
-    flex: 1,
-    gap: 4,
-  },
-  photoTitle: {
-    color: '#4C1D95',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  photoHint: {
-    color: '#7C3AED',
-    fontSize: 13,
   },
   form: {
     gap: 15,

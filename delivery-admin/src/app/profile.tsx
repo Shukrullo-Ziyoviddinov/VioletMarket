@@ -77,10 +77,16 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatarWrap}>
-            <Image
-              source={{ uri: resolveMediaUrl(delivery.profileImage) }}
-              style={styles.avatar}
-            />
+            {delivery.profileImage ? (
+              <Image
+                source={{ uri: resolveMediaUrl(delivery.profileImage) }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Ionicons name="person" size={44} color="#8B5CF6" />
+              </View>
+            )}
             <View style={styles.cameraBadge}>
               <Ionicons name="camera" size={14} color="#FFFFFF" />
             </View>
@@ -200,6 +206,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#EDE9FE',
     backgroundColor: '#E5E7EB',
+  },
+  avatarPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EDE9FE',
   },
   cameraBadge: {
     position: 'absolute',

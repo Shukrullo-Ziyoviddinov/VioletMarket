@@ -1,8 +1,3 @@
-import {
-  ImageManipulator,
-  SaveFormat,
-} from 'expo-image-manipulator';
-
 import { apiRequest } from '@/services/api';
 import type {
   AuthResult,
@@ -20,7 +15,6 @@ export type RegistrationPayload = {
   firstName: string;
   lastName: string;
   phone: string;
-  photoUri: string;
 };
 
 export function startEmailAuth(email: string) {
@@ -44,30 +38,10 @@ export function verifyLogin(email: string, code: string) {
   });
 }
 
-export async function completeRegistration(payload: RegistrationPayload) {
-  const imageRef = await ImageManipulator.manipulate(payload.photoUri)
-    .resize({ width: 720 })
-    .renderAsync();
-  const photo = await imageRef.saveAsync({
-    base64: true,
-    compress: 0.6,
-    format: SaveFormat.JPEG,
-  });
-  if (!photo.base64) {
-    throw new Error('Profil rasmini tayyorlab bo‘lmadi. Qayta surat oling.');
-  }
-
+export function completeRegistration(payload: RegistrationPayload) {
   return apiRequest<AuthResult>('/api/delivery-auth/register/verify', {
     method: 'POST',
-    body: JSON.stringify({
-      email: payload.email,
-      code: payload.code,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      phone: payload.phone,
-      photoBase64: photo.base64,
-      photoMimeType: 'image/jpeg',
-    }),
+    body: JSON.stringify(payload),
   });
 }
 

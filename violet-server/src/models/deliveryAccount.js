@@ -13,7 +13,7 @@ const deliveryAccountSchema = new mongoose.Schema(
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
-    profileImage: { type: String, required: true, trim: true },
+    profileImage: { type: String, default: "", trim: true },
     isOnline: { type: Boolean, default: true },
     status: {
       type: String,
