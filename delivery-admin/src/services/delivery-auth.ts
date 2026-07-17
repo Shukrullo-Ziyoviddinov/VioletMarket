@@ -1,3 +1,8 @@
+import {
+  ImageManipulator,
+  SaveFormat,
+} from 'expo-image-manipulator';
+
 import { apiRequest } from '@/services/api';
 import type {
   AuthResult,
@@ -39,34 +44,30 @@ export function verifyLogin(email: string, code: string) {
   });
 }
 
-export function completeRegistration(payload: RegistrationPayload) {
-  const form = new FormData();
-  form.append('email', payload.email);
-  form.append('code', payload.code);
-  form.append('firstName', payload.firstName);
-  form.append('lastName', payload.lastName);
-  form.append('phone', payload.phone);
-
-  const extension = payload.photoUri.split('.').pop()?.toLowerCase();
-  const type =
-    extension === 'png'
-      ? 'image/png'
-      : extension === 'webp'
-        ? 'image/webp'
-        : 'image/jpeg';
-
-  form.append(
-    'photo',
-    {
-      uri: payload.photoUri,
-      name: `delivery-profile.${extension || 'jpg'}`,
-      type,
-    } as unknown as Blob,
-  );
+export async function completeRegistration(payload: RegistrationPayload) {
+  const imageRef = await ImageManipulator.manipulate(payload.photoUri)
+    .resize({ width: 720 })
+    .renderAsync();
+  const photo = await imageRef.saveAsync({
+    base64: true,
+    compress: 0.6,
+    format: SaveFormat.JPEG,
+  });
+  if (!photo.base64) {
+    throw new Error('Profil rasmini tayyorlab bo‘lmadi. Qayta surat oling.');
+  }
 
   return apiRequest<AuthResult>('/api/delivery-auth/register/verify', {
     method: 'POST',
-    body: form,
+    body: JSON.stringify({
+      email: payload.email,
+      code: payload.code,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      phone: payload.phone,
+      photoBase64: photo.base64,
+      photoMimeType: 'image/jpeg',
+    }),
   });
 }
 

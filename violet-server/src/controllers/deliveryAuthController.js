@@ -17,10 +17,7 @@ const verifyLogin = asyncHandler(async (req, res) => {
 });
 
 const completeRegistration = asyncHandler(async (req, res) => {
-  const data = await deliveryAuthService.completeRegistration(
-    req.body || {},
-    req.file,
-  );
+  const data = await deliveryAuthService.completeRegistration(req.body || {});
   res.status(201).json({ ok: true, data });
 });
 

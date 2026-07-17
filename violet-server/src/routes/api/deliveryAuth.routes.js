@@ -3,9 +3,6 @@ const controller = require("../../controllers/deliveryAuthController");
 const {
   deliveryAuthMiddleware,
 } = require("../../middleware/deliveryAuthMiddleware");
-const {
-  deliveryPhotoUploadMiddleware,
-} = require("../../middleware/deliveryPhotoUpload");
 
 const router = express.Router();
 
@@ -15,11 +12,7 @@ router.post(
   controller.sendRegistrationCode,
 );
 router.post("/delivery-auth/login/verify", controller.verifyLogin);
-router.post(
-  "/delivery-auth/register/verify",
-  deliveryPhotoUploadMiddleware,
-  controller.completeRegistration,
-);
+router.post("/delivery-auth/register/verify", controller.completeRegistration);
 router.get(
   "/delivery-auth/me",
   deliveryAuthMiddleware,

@@ -6,6 +6,7 @@ const {
   createAndSendDeliveryOtp,
   verifyDeliveryOtp,
 } = require("./deliveryOtpService");
+const { saveDeliveryPhotoBase64 } = require("./deliveryPhotoStorage");
 
 const LOGIN_PURPOSE = "delivery-login";
 const REGISTER_PURPOSE = "delivery-register";
@@ -91,9 +92,10 @@ async function verifyLogin(payload) {
   };
 }
 
-async function completeRegistration(payload, photo) {
+async function completeRegistration(payload) {
+  let photo = null;
   try {
-    if (!photo) {
+    if (!payload.photoBase64) {
       throw new HttpError(
         400,
         "Kamerada olingan profil rasmi majburiy",
@@ -115,6 +117,10 @@ async function completeRegistration(payload, photo) {
     }
 
     await verifyDeliveryOtp(email, REGISTER_PURPOSE, payload.code);
+    photo = await saveDeliveryPhotoBase64(
+      payload.photoBase64,
+      payload.photoMimeType,
+    );
 
     const account = await DeliveryAccount.create({
       email,
