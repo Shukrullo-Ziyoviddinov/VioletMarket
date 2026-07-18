@@ -34,6 +34,14 @@ const updateProfile = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateProfilePhoto = asyncHandler(async (req, res) => {
+  const data = await deliveryAuthService.updateProfilePhoto(
+    req.deliveryId,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
@@ -41,4 +49,5 @@ module.exports = {
   completeRegistration,
   getProfile,
   updateProfile,
+  updateProfilePhoto,
 };

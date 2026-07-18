@@ -60,7 +60,11 @@ function resolvePublicAssetUrl(pathValue) {
     return `${getApiPublicBaseUrl()}${normalizedUploadPath}`;
   }
 
-  if (/^(admin-|seller-|upload-|image-).+\.[a-z0-9]+$/i.test(normalizedSlashes)) {
+  if (
+    /^(admin-|seller-|delivery-|upload-|image-).+\.[a-z0-9]+$/i.test(
+      normalizedSlashes,
+    )
+  ) {
     return `${getApiPublicBaseUrl()}/uploads/${normalizedSlashes}`;
   }
 

@@ -73,3 +73,17 @@ export function updateDeliveryProfile(
     token,
   );
 }
+
+export function uploadDeliveryProfileImage(
+  token: string,
+  imageBase64: string,
+) {
+  return apiRequest<DeliveryProfile>(
+    '/api/delivery-auth/me/photo',
+    {
+      method: 'POST',
+      body: JSON.stringify({ imageBase64 }),
+    },
+    token,
+  );
+}

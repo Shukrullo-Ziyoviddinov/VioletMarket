@@ -5,6 +5,10 @@ const {
   createAndSendDeliveryOtp,
   verifyDeliveryOtp,
 } = require("./deliveryOtpService");
+const {
+  deleteManagedDeliveryPhoto,
+  saveDeliveryProfilePhoto,
+} = require("./deliveryPhotoStorage");
 
 const LOGIN_PURPOSE = "delivery-login";
 const REGISTER_PURPOSE = "delivery-register";
@@ -180,6 +184,33 @@ async function updateProfile(deliveryId, payload) {
   return account.toPublicJSON();
 }
 
+async function updateProfilePhoto(deliveryId, payload) {
+  const account = await DeliveryAccount.findById(deliveryId);
+  if (!account) {
+    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
+  }
+  if (account.status !== "active") {
+    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
+  }
+
+  const previousImage = account.profileImage;
+  const savedPhoto = saveDeliveryProfilePhoto(payload.imageBase64);
+
+  account.profileImage = savedPhoto.publicPath;
+  try {
+    await account.save();
+  } catch (error) {
+    deleteManagedDeliveryPhoto(savedPhoto.publicPath);
+    throw error;
+  }
+
+  if (previousImage && previousImage !== savedPhoto.publicPath) {
+    deleteManagedDeliveryPhoto(previousImage);
+  }
+
+  return account.toPublicJSON();
+}
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
@@ -187,4 +218,5 @@ module.exports = {
   completeRegistration,
   getProfile,
   updateProfile,
+  updateProfilePhoto,
 };

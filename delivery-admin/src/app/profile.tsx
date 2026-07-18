@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -57,10 +60,12 @@ function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { delivery, isLoading, signOut, updateProfile } = useAuth();
+  const { delivery, isLoading, signOut, updateProfile, updateProfileImage } =
+    useAuth();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -110,6 +115,54 @@ export default function ProfileScreen() {
     }
   }
 
+  async function captureAndUploadPhoto() {
+    if (isUploadingPhoto) return;
+
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Kamera ruxsati',
+        'Profil rasmini olish uchun kamera ruxsatini yoqing.',
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+      cameraType: ImagePicker.CameraType.front,
+    });
+
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const context = ImageManipulator.manipulate(result.assets[0].uri);
+      context.resize({ width: 512, height: 512 });
+      const imageRef = await context.renderAsync();
+      const saved = await imageRef.saveAsync({
+        compress: 0.7,
+        format: SaveFormat.JPEG,
+        base64: true,
+      });
+
+      if (!saved.base64) {
+        throw new Error('Suratni o‘qib bo‘lmadi');
+      }
+
+      await updateProfileImage(`data:image/jpeg;base64,${saved.base64}`);
+    } catch (error) {
+      Alert.alert(
+        'Xato',
+        error instanceof Error ? error.message : 'Profil rasmi yuklanmadi',
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }
+
   if (isLoading || !delivery) {
     return (
       <View style={styles.loadingScreen}>
@@ -131,7 +184,13 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
-          <View style={styles.avatarWrap}>
+          <Pressable
+            disabled={isUploadingPhoto}
+            style={({ pressed }) => [
+              styles.avatarWrap,
+              pressed && styles.avatarPressed,
+            ]}
+            onPress={captureAndUploadPhoto}>
             {delivery.profileImage ? (
               <Image
                 source={{ uri: resolveMediaUrl(delivery.profileImage) }}
@@ -143,9 +202,13 @@ export default function ProfileScreen() {
               </View>
             )}
             <View style={styles.cameraBadge}>
-              <Ionicons name="camera" size={14} color="#FFFFFF" />
+              {isUploadingPhoto ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="camera" size={14} color="#FFFFFF" />
+              )}
             </View>
-          </View>
+          </Pressable>
 
           <View style={styles.identity}>
             <Text style={styles.name}>
@@ -307,6 +370,9 @@ const styles = StyleSheet.create({
   },
   avatarWrap: {
     position: 'relative',
+  },
+  avatarPressed: {
+    opacity: 0.75,
   },
   avatar: {
     width: 88,
