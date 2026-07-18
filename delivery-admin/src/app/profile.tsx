@@ -269,6 +269,7 @@ export default function ProfileScreen() {
           <MenuRow
             icon="help-circle-outline"
             label="Yordam va qo‘llab-quvvatlash"
+            onPress={() => router.push('/support')}
           />
         </View>
 

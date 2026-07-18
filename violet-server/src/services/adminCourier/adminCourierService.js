@@ -4,6 +4,9 @@ const { HttpError } = require("../../utils/httpError");
 const {
   deleteManagedDeliveryPhoto,
 } = require("../deliveryAuth/deliveryPhotoStorage");
+const {
+  deleteMessagesForCourier,
+} = require("../supportChat/supportChatService");
 
 function toAdminCourierJSON(account) {
   if (!account) return null;
@@ -29,6 +32,7 @@ async function deleteCourierRelatedData(account) {
     deleteManagedDeliveryPhoto(account.profileImage);
   }
 
+  await deleteMessagesForCourier(account._id.toString());
   await DeliveryAuthCode.deleteMany({ email: account.email });
   await DeliveryAccount.deleteOne({ _id: account._id });
 }

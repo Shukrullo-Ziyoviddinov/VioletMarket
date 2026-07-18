@@ -6,6 +6,7 @@ import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellersPage from './pages/SellersPage/SellersPage';
 import CouriersPage from './pages/CouriersPage/CouriersPage';
+import CourierChatsPage from './pages/CourierChatsPage/CourierChatsPage';
 import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
 import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
 import WithdrawalPage from './pages/WithdrawalPage/WithdrawalPage';
@@ -31,6 +32,7 @@ function App() {
           <Route path="flash-products" element={<FlashPage />} />
           <Route path="sellers" element={<SellersPage />} />
           <Route path="couriers" element={<CouriersPage />} />
+          <Route path="courier-chats" element={<CourierChatsPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="withdrawals" element={<WithdrawalPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

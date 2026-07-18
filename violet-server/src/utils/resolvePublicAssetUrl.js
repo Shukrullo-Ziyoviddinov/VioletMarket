@@ -61,7 +61,7 @@ function resolvePublicAssetUrl(pathValue) {
   }
 
   if (
-    /^(admin-|seller-|delivery-|upload-|image-).+\.[a-z0-9]+$/i.test(
+    /^(admin-|seller-|delivery-|support-chat-|upload-|image-).+\.[a-z0-9]+$/i.test(
       normalizedSlashes,
     )
   ) {

@@ -94,8 +94,9 @@ export default function RegisterScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled">
+          <View style={styles.content}>
           <Text style={styles.title}>Yetkazib berish profilingiz</Text>
           <Text style={styles.subtitle}>
             Ro‘yxatdan o‘tish uchun ma’lumotlaringizni to‘ldiring.
@@ -157,6 +158,7 @@ export default function RegisterScreen() {
               </>
             )}
           </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -191,6 +193,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   headerSpacer: { width: 42 },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+    paddingVertical: 24,
+  },
   content: {
     gap: 18,
     padding: 22,

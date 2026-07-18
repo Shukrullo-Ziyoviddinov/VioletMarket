@@ -6,6 +6,10 @@ function setMessageChatSocketIo(io) {
   ioInstance = io;
 }
 
+function getMessageChatSocketIo() {
+  return ioInstance;
+}
+
 function getUserRoom(userId) {
   return `message-chat:user:${String(userId)}`;
 }
@@ -100,6 +104,7 @@ function emitMessageChatThreadDeleted({ userId, sellerId }) {
 
 module.exports = {
   setMessageChatSocketIo,
+  getMessageChatSocketIo,
   emitMessageChatMessage,
   emitMessageChatThreadsUpdated,
   emitMessageChatRead,

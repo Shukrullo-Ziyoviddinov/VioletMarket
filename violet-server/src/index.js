@@ -19,7 +19,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "4mb" }));
 app.use(activityTrackerMiddleware);
 app.use("/uploads", express.static(uploadDir));
 // Legacy support: old buildlarda fayllar src/public/uploads ga tushib qolgan bo'lishi mumkin.

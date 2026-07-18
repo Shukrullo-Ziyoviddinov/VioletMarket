@@ -55,6 +55,7 @@ const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 const userOrderTrackingRoutes = require("./userOrderTracking.routes");
 const deliveryAuthRoutes = require("./deliveryAuth.routes");
 const adminCourierRoutes = require("./adminCourier.routes");
+const supportChatRoutes = require("./supportChat.routes");
 
 const router = express.Router();
 
@@ -114,5 +115,6 @@ router.use(chatsPageSearchRoutes);
 router.use(userOrderTrackingRoutes);
 router.use(deliveryAuthRoutes);
 router.use(adminCourierRoutes);
+router.use(supportChatRoutes);
 
 module.exports = router;

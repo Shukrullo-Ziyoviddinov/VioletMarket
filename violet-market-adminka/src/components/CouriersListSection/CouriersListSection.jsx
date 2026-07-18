@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Avatar, Empty, Input, Table, Typography } from 'antd';
-import { DeleteOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { deleteCourier } from '../../api/couriersAdminApi';
-import { getApiBaseUrl } from '../../config/api';
 import { useAdminToast } from '../../context/AdminToastContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
+import { resolveCourierImage } from '../../utils/courierImage';
+import CourierActionsMenu from '../CourierActionsMenu/CourierActionsMenu';
+import CourierChatModal from '../CourierChatModal/CourierChatModal';
 import './CouriersListSection.css';
 
 const { Title, Text } = Typography;
@@ -20,14 +22,6 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString('uz-UZ');
-}
-
-function resolveCourierImage(path) {
-  if (!path) return null;
-  const raw = String(path).trim();
-  if (!raw) return null;
-  if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
-  return `${getApiBaseUrl()}${raw.startsWith('/') ? raw : `/${raw}`}`;
 }
 
 function filterCouriers(couriers, query) {
@@ -53,6 +47,8 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
   const { showToast } = useAdminToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState('');
+  const [openMenuId, setOpenMenuId] = useState('');
+  const [chatCourier, setChatCourier] = useState(null);
 
   const filteredCouriers = useMemo(
     () => filterCouriers(couriers, searchQuery),
@@ -60,7 +56,8 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
   );
 
   const handleDelete = (courier) => {
-    const fullName = `${courier.firstName || ''} ${courier.lastName || ''}`.trim() || courier.email;
+    const fullName =
+      `${courier.firstName || ''} ${courier.lastName || ''}`.trim() || courier.email;
 
     openMiniGlobalModal({
       permissionKey: 'deleteCourier',
@@ -102,7 +99,8 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
       title: 'Ism familiya',
       key: 'fullName',
       width: 180,
-      render: (_, record) => `${record.firstName || ''} ${record.lastName || ''}`.trim() || '—',
+      render: (_, record) =>
+        `${record.firstName || ''} ${record.lastName || ''}`.trim() || '—',
     },
     {
       title: 'Telefon',
@@ -132,19 +130,20 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
     },
     {
       title: '',
-      key: 'delete',
+      key: 'actions',
       width: 70,
       fixed: 'right',
       render: (_, record) => (
-        <button
-          type="button"
-          className="couriers-list-section__delete-btn"
-          disabled={deletingId === record.id}
-          onClick={() => handleDelete(record)}
-          aria-label="Kuryerni o‘chirish"
-        >
-          <DeleteOutlined />
-        </button>
+        <CourierActionsMenu
+          isOpen={openMenuId === record.id}
+          deleting={deletingId === record.id}
+          onToggle={() =>
+            setOpenMenuId((prev) => (prev === record.id ? '' : record.id))
+          }
+          onClose={() => setOpenMenuId('')}
+          onChat={() => setChatCourier(record)}
+          onDelete={() => handleDelete(record)}
+        />
       ),
     },
   ];
@@ -184,6 +183,12 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
         scroll={filteredCouriers.length ? { x: 1010 } : undefined}
+      />
+
+      <CourierChatModal
+        open={Boolean(chatCourier)}
+        courier={chatCourier}
+        onClose={() => setChatCourier(null)}
       />
     </section>
   );

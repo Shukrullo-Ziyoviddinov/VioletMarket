@@ -4,6 +4,10 @@ const { setMessageChatSocketIo } = require("./messageChatSocketEmitter");
 const { registerMessageChatTypingOnSocket } = require("./messageChatTypingHandler");
 const { registerMessageChatSendingOnSocket } = require("./messageChatSendingHandler");
 const { registerMessageChatPresenceOnSocket } = require("./messageChatPresenceHandler");
+const {
+  getCourierRoom,
+  getAdminRoom,
+} = require("./supportChatSocketEmitter");
 
 function initMessageChatSocket(httpServer) {
   const io = new Server(httpServer, {
@@ -32,13 +36,19 @@ function initMessageChatSocket(httpServer) {
 
     if (identity.kind === "user") {
       socket.join(`message-chat:user:${String(identity.userId).trim()}`);
+      registerMessageChatTypingOnSocket(socket, io);
+      registerMessageChatSendingOnSocket(socket, io);
+      registerMessageChatPresenceOnSocket(socket, io);
     } else if (identity.kind === "seller") {
       socket.join(`message-chat:seller:${String(identity.sellerId).trim()}`);
+      registerMessageChatTypingOnSocket(socket, io);
+      registerMessageChatSendingOnSocket(socket, io);
+      registerMessageChatPresenceOnSocket(socket, io);
+    } else if (identity.kind === "courier") {
+      socket.join(getCourierRoom(identity.deliveryId));
+    } else if (identity.kind === "admin") {
+      socket.join(getAdminRoom());
     }
-
-    registerMessageChatTypingOnSocket(socket, io);
-    registerMessageChatSendingOnSocket(socket, io);
-    registerMessageChatPresenceOnSocket(socket, io);
   });
 
   setMessageChatSocketIo(io);
