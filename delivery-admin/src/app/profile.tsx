@@ -25,6 +25,7 @@ import { fetchSupportUnreadCount } from '@/services/support-chat';
 import {
   connectSupportChatSocket,
   onSupportChatMessage,
+  onSupportChatThreadsUpdated,
 } from '@/services/support-chat-socket';
 import type { DeliveryTransport } from '@/types/delivery';
 
@@ -143,14 +144,36 @@ export default function ProfileScreen() {
     if (!token) return;
 
     connectSupportChatSocket(token);
-    const unsubscribe = onSupportChatMessage((payload) => {
-      if (payload?.message?.sender === 'admin') {
-        setSupportUnread((prev) => prev + 1);
-      }
+
+    const refreshUnread = () => {
+      fetchSupportUnreadCount(token)
+        .then((data) => setSupportUnread(data.unread || 0))
+        .catch(() => null);
+    };
+
+    const unsubscribeMessage = onSupportChatMessage((payload) => {
+      if (payload?.message?.sender !== 'admin') return;
+      if (delivery?.id && payload.deliveryId !== delivery.id) return;
+      setSupportUnread((prev) => prev + 1);
+      refreshUnread();
     });
 
-    return unsubscribe;
-  }, [token]);
+    const unsubscribeThreads = onSupportChatThreadsUpdated((payload) => {
+      if (
+        delivery?.id &&
+        payload?.deliveryId &&
+        payload.deliveryId !== delivery.id
+      ) {
+        return;
+      }
+      refreshUnread();
+    });
+
+    return () => {
+      unsubscribeMessage();
+      unsubscribeThreads();
+    };
+  }, [token, delivery?.id]);
 
   function openProfileModal() {
     if (!delivery) return;

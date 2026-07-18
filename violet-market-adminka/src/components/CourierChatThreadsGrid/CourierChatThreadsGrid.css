@@ -22,23 +22,24 @@
   gap: 12px;
   width: 100%;
   text-align: left;
-  border: none;
+  border: 1px solid #ece7f3;
   border-radius: 16px;
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 55%, #c084fc 100%);
+  background: #ffffff;
   padding: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 14px rgba(42, 24, 66, 0.06);
 }
 
 .courier-chat-threads__card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.32);
+  border-color: #c4b5fd;
+  box-shadow: 0 10px 26px rgba(124, 58, 237, 0.14);
 }
 
 .courier-chat-threads__card .ant-avatar {
   flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid #ede9fe;
 }
 
 .courier-chat-threads__meta {
@@ -57,7 +58,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: #2a1842;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -68,8 +69,8 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #6d28d9;
+  background: #6d28d9;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   display: inline-flex;
@@ -80,7 +81,7 @@
 .courier-chat-threads__preview {
   margin: 6px 0 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  color: #7c6b95;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -89,7 +90,7 @@
 .courier-chat-threads__time {
   margin: 4px 0 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.65);
+  color: #a89bb8;
 }
 
 @media (max-width: 1400px) {

@@ -9,24 +9,89 @@ const SUPPORT_CHAT_EVENTS = {
   READ: 'supportChat:read',
 } as const;
 
-type MessageHandler = (payload: {
+type MessagePayload = {
   deliveryId: string;
   message: SupportChatMessage;
-}) => void;
+};
 
-type ReadHandler = (payload: {
+type ReadPayload = {
   deliveryId: string;
   readBy: 'courier' | 'admin';
-}) => void;
+};
+
+type ThreadsPayload = {
+  deliveryId: string | null;
+};
+
+type MessageHandler = (payload: MessagePayload) => void;
+type ReadHandler = (payload: ReadPayload) => void;
+type ThreadsHandler = (payload: ThreadsPayload) => void;
 
 let socket: Socket | null = null;
 let currentToken: string | null = null;
+
+const messageHandlers = new Set<MessageHandler>();
+const readHandlers = new Set<ReadHandler>();
+const threadsHandlers = new Set<ThreadsHandler>();
+
+function dispatchMessage(payload: MessagePayload) {
+  messageHandlers.forEach((handler) => {
+    try {
+      handler(payload);
+    } catch {
+      // ignore listener errors
+    }
+  });
+}
+
+function dispatchRead(payload: ReadPayload) {
+  readHandlers.forEach((handler) => {
+    try {
+      handler(payload);
+    } catch {
+      // ignore listener errors
+    }
+  });
+}
+
+function dispatchThreads(payload: ThreadsPayload) {
+  threadsHandlers.forEach((handler) => {
+    try {
+      handler(payload);
+    } catch {
+      // ignore listener errors
+    }
+  });
+}
+
+function bindSocketEvents(nextSocket: Socket) {
+  nextSocket.off(SUPPORT_CHAT_EVENTS.MESSAGE);
+  nextSocket.off(SUPPORT_CHAT_EVENTS.READ);
+  nextSocket.off(SUPPORT_CHAT_EVENTS.THREADS_UPDATED);
+
+  nextSocket.on(SUPPORT_CHAT_EVENTS.MESSAGE, (payload: MessagePayload) => {
+    dispatchMessage(payload);
+  });
+  nextSocket.on(SUPPORT_CHAT_EVENTS.READ, (payload: ReadPayload) => {
+    dispatchRead(payload);
+  });
+  nextSocket.on(
+    SUPPORT_CHAT_EVENTS.THREADS_UPDATED,
+    (payload: ThreadsPayload) => {
+      dispatchThreads(payload);
+    },
+  );
+}
 
 export function connectSupportChatSocket(token: string) {
   const nextToken = String(token || '').trim();
   if (!nextToken) return null;
 
-  if (socket && currentToken === nextToken && socket.connected) {
+  if (socket && currentToken === nextToken) {
+    if (!socket.connected) {
+      socket.connect();
+    }
+    bindSocketEvents(socket);
     return socket;
   }
 
@@ -42,6 +107,13 @@ export function connectSupportChatSocket(token: string) {
     transports: ['websocket', 'polling'],
     auth: { token: nextToken },
     autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 20,
+  });
+
+  bindSocketEvents(socket);
+  socket.on('reconnect', () => {
+    if (socket) bindSocketEvents(socket);
   });
 
   return socket;
@@ -56,17 +128,25 @@ export function disconnectSupportChatSocket() {
 }
 
 export function onSupportChatMessage(handler: MessageHandler) {
-  if (!socket) return () => {};
-  socket.on(SUPPORT_CHAT_EVENTS.MESSAGE, handler);
+  messageHandlers.add(handler);
+  if (socket) bindSocketEvents(socket);
   return () => {
-    socket?.off(SUPPORT_CHAT_EVENTS.MESSAGE, handler);
+    messageHandlers.delete(handler);
   };
 }
 
 export function onSupportChatRead(handler: ReadHandler) {
-  if (!socket) return () => {};
-  socket.on(SUPPORT_CHAT_EVENTS.READ, handler);
+  readHandlers.add(handler);
+  if (socket) bindSocketEvents(socket);
   return () => {
-    socket?.off(SUPPORT_CHAT_EVENTS.READ, handler);
+    readHandlers.delete(handler);
+  };
+}
+
+export function onSupportChatThreadsUpdated(handler: ThreadsHandler) {
+  threadsHandlers.add(handler);
+  if (socket) bindSocketEvents(socket);
+  return () => {
+    threadsHandlers.delete(handler);
   };
 }
