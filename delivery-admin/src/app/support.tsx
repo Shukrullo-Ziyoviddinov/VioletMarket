@@ -27,8 +27,8 @@ import {
 } from '@/services/support-chat';
 import {
   connectSupportChatSocket,
-  disconnectSupportChatSocket,
   onSupportChatMessage,
+  onSupportChatRead,
 } from '@/services/support-chat-socket';
 import type { SupportChatMessage } from '@/types/support-chat';
 
@@ -90,11 +90,22 @@ export default function SupportChatScreen() {
         markSupportChatRead(token).catch(() => null);
       }
     });
+    const unsubscribeRead = onSupportChatRead((payload) => {
+      if (payload.readBy !== 'admin') return;
+      if (delivery?.id && payload.deliveryId !== delivery.id) return;
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.sender === 'courier'
+            ? { ...message, readByAdmin: true }
+            : message,
+        ),
+      );
+    });
 
     return () => {
       cancelled = true;
       unsubscribe();
-      disconnectSupportChatSocket();
+      unsubscribeRead();
     };
   }, [token, delivery?.id]);
 

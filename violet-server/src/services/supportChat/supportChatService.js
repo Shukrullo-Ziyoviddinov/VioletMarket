@@ -201,6 +201,16 @@ async function sendAdminMessage(deliveryId, body) {
   return { message, socketMessage: message };
 }
 
+async function getUnreadCountForCourier(deliveryId) {
+  const id = assertObjectId(deliveryId, "Kuryer");
+  const unread = await SupportChatMessage.countDocuments({
+    deliveryId: id,
+    sender: "admin",
+    readByCourier: false,
+  });
+  return { unread };
+}
+
 async function markReadByCourier(deliveryId) {
   const id = assertObjectId(deliveryId, "Kuryer");
   await assertActiveCourier(id);
@@ -256,6 +266,7 @@ module.exports = {
   listMessagesForCourier,
   listMessagesForAdmin,
   listAdminThreads,
+  getUnreadCountForCourier,
   sendCourierMessage,
   sendAdminMessage,
   markReadByCourier,

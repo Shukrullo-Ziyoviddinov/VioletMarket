@@ -4,7 +4,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { resolveCourierImage } from '../../utils/courierImage';
 import './CourierChatThreadsGrid.css';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 function formatPreview(message) {
   if (!message) return 'Yozishma boshlangan';
@@ -30,9 +30,6 @@ export default function CourierChatThreadsGrid({
         <Title level={3} className="courier-chat-threads__title">
           Kuryer bilan chat
         </Title>
-        <Text type="secondary">
-          Faqat yozishma bo‘lgan kuryerlar ko‘rsatiladi
-        </Text>
       </div>
 
       {!loading && !threads.length ? (

@@ -34,6 +34,14 @@ export async function sendSupportImageMessage(
   );
 }
 
+export async function fetchSupportUnreadCount(token: string) {
+  return apiRequest<{ unread: number }>(
+    '/api/delivery/support-chat/unread',
+    { method: 'GET' },
+    token,
+  );
+}
+
 export async function markSupportChatRead(token: string) {
   return apiRequest<{ updated: number }>(
     '/api/delivery/support-chat/read',

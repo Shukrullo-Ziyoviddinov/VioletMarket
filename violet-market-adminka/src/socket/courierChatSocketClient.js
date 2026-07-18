@@ -54,3 +54,11 @@ export function onCourierChatThreadsUpdated(handler) {
     socket?.off(SUPPORT_CHAT_EVENTS.THREADS_UPDATED, handler);
   };
 }
+
+export function onCourierChatRead(handler) {
+  if (!socket) connectCourierChatSocket();
+  socket.on(SUPPORT_CHAT_EVENTS.READ, handler);
+  return () => {
+    socket?.off(SUPPORT_CHAT_EVENTS.READ, handler);
+  };
+}

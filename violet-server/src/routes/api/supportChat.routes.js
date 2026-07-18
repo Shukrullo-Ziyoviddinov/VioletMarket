@@ -10,6 +10,11 @@ router.get(
   deliveryAuthMiddleware,
   supportChatCourierController.listMessages,
 );
+router.get(
+  "/delivery/support-chat/unread",
+  deliveryAuthMiddleware,
+  supportChatCourierController.getUnreadCount,
+);
 router.post(
   "/delivery/support-chat/messages",
   deliveryAuthMiddleware,

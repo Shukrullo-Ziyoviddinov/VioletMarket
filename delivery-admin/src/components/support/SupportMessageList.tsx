@@ -62,10 +62,21 @@ export function SupportMessageList({
                   {message.content}
                 </Text>
               )}
-              <Text
-                style={[styles.time, mine ? styles.mineTime : styles.adminTime]}>
-                {formatTime(message.createdAt)}
-              </Text>
+              <View style={[styles.meta, mine && styles.mineMeta]}>
+                <Text
+                  style={[styles.time, mine ? styles.mineTime : styles.adminTime]}>
+                  {formatTime(message.createdAt)}
+                </Text>
+                {mine ? (
+                  <Text
+                    style={[
+                      styles.readMark,
+                      message.readByAdmin && styles.readMarkDone,
+                    ]}>
+                    {message.readByAdmin ? '✓✓' : '✓'}
+                  </Text>
+                ) : null}
+              </View>
             </View>
           </View>
         );
@@ -143,8 +154,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   time: {
-    marginTop: 6,
     fontSize: 11,
+  },
+  meta: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  mineMeta: {
+    justifyContent: 'flex-end',
   },
   mineTime: {
     color: 'rgba(255,255,255,0.75)',
@@ -152,5 +171,14 @@ const styles = StyleSheet.create({
   },
   adminTime: {
     color: '#9CA3AF',
+  },
+  readMark: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 10,
+    lineHeight: 12,
+    letterSpacing: -2,
+  },
+  readMarkDone: {
+    color: '#BFDBFE',
   },
 });

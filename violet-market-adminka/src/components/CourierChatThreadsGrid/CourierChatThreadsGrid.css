@@ -7,32 +7,38 @@
 }
 
 .courier-chat-threads__title {
-  margin: 0 0 4px !important;
+  margin: 0 !important;
 }
 
 .courier-chat-threads__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
 .courier-chat-threads__card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
   text-align: left;
-  border: 1px solid #ece7f3;
-  border-radius: 14px;
-  background: #fff;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 55%, #c084fc 100%);
   padding: 16px;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.22);
 }
 
 .courier-chat-threads__card:hover {
-  border-color: #c4b5fd;
-  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.32);
+}
+
+.courier-chat-threads__card .ant-avatar {
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.6);
 }
 
 .courier-chat-threads__meta {
@@ -51,7 +57,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #2a1842;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,10 +68,10 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  background: #6d28d9;
-  color: #fff;
+  background: #ffffff;
+  color: #6d28d9;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +80,7 @@
 .courier-chat-threads__preview {
   margin: 6px 0 0;
   font-size: 13px;
-  color: #7c6b95;
+  color: rgba(255, 255, 255, 0.85);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -83,10 +89,22 @@
 .courier-chat-threads__time {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #a89bb8;
+  color: rgba(255, 255, 255, 0.65);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1400px) {
+  .courier-chat-threads__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .courier-chat-threads__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
   .courier-chat-threads__grid {
     grid-template-columns: 1fr;
   }

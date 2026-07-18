@@ -14,6 +14,11 @@ type MessageHandler = (payload: {
   message: SupportChatMessage;
 }) => void;
 
+type ReadHandler = (payload: {
+  deliveryId: string;
+  readBy: 'courier' | 'admin';
+}) => void;
+
 let socket: Socket | null = null;
 let currentToken: string | null = null;
 
@@ -55,5 +60,13 @@ export function onSupportChatMessage(handler: MessageHandler) {
   socket.on(SUPPORT_CHAT_EVENTS.MESSAGE, handler);
   return () => {
     socket?.off(SUPPORT_CHAT_EVENTS.MESSAGE, handler);
+  };
+}
+
+export function onSupportChatRead(handler: ReadHandler) {
+  if (!socket) return () => {};
+  socket.on(SUPPORT_CHAT_EVENTS.READ, handler);
+  return () => {
+    socket?.off(SUPPORT_CHAT_EVENTS.READ, handler);
   };
 }

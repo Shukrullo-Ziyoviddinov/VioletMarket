@@ -16,6 +16,7 @@ import { useAdminToast } from '../../context/AdminToastContext';
 import {
   connectCourierChatSocket,
   onCourierChatMessage,
+  onCourierChatRead,
 } from '../../socket/courierChatSocketClient';
 import { fileToJpegBase64, resolveCourierImage } from '../../utils/courierImage';
 import './CourierChatModal.css';
@@ -104,10 +105,23 @@ export default function CourierChatModal({
         onThreadsChanged?.();
       }
     });
+    const unsubscribeRead = onCourierChatRead((payload) => {
+      if (payload?.deliveryId !== deliveryId || payload.readBy !== 'courier') {
+        return;
+      }
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.sender === 'admin'
+            ? { ...message, readByCourier: true }
+            : message,
+        ),
+      );
+    });
 
     return () => {
       cancelled = true;
       unsubscribe();
+      unsubscribeRead();
     };
   }, [open, deliveryId, onThreadsChanged, showToast]);
 
@@ -245,8 +259,24 @@ export default function CourierChatModal({
                           {message.content}
                         </p>
                       )}
-                      <span className="courier-chat-modal__bubble-time">
-                        {formatTime(message.createdAt)}
+                      <span className="courier-chat-modal__bubble-meta">
+                        <span className="courier-chat-modal__bubble-time">
+                          {formatTime(message.createdAt)}
+                        </span>
+                        {mine ? (
+                          <span
+                            className={`courier-chat-modal__read-mark${
+                              message.readByCourier
+                                ? ' courier-chat-modal__read-mark--done'
+                                : ''
+                            }`}
+                            aria-label={
+                              message.readByCourier ? 'O‘qildi' : 'O‘qilmadi'
+                            }
+                          >
+                            {message.readByCourier ? '✓✓' : '✓'}
+                          </span>
+                        ) : null}
                       </span>
                     </div>
                   </div>

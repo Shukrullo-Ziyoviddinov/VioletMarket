@@ -157,11 +157,29 @@
   object-fit: cover;
 }
 
-.courier-chat-modal__bubble-time {
-  display: block;
+.courier-chat-modal__bubble-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
   margin-top: 6px;
+}
+
+.courier-chat-modal__bubble-time {
   font-size: 11px;
   opacity: 0.75;
+}
+
+.courier-chat-modal__read-mark {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: -2px;
+  opacity: 0.75;
+}
+
+.courier-chat-modal__read-mark--done {
+  color: #bfdbfe;
+  opacity: 1;
 }
 
 .courier-chat-modal__composer {

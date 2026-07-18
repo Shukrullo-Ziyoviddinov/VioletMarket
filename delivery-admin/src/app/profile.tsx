@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,6 +21,11 @@ import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
+import { fetchSupportUnreadCount } from '@/services/support-chat';
+import {
+  connectSupportChatSocket,
+  onSupportChatMessage,
+} from '@/services/support-chat-socket';
 import type { DeliveryTransport } from '@/types/delivery';
 
 const TRANSPORT_OPTIONS: Array<{
@@ -44,11 +49,12 @@ type MenuRowProps = {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   detail?: string;
+  badgeCount?: number;
   danger?: boolean;
   onPress?: () => void;
 };
 
-function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
+function MenuRow({ icon, label, detail, badgeCount, danger, onPress }: MenuRowProps) {
   const color = danger ? '#DC2626' : '#4B5563';
   return (
     <Pressable
@@ -69,6 +75,13 @@ function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
         {label}
       </Text>
       {detail ? <Text style={styles.menuDetail}>{detail}</Text> : null}
+      {badgeCount && badgeCount > 0 ? (
+        <View style={styles.menuBadge}>
+          <Text style={styles.menuBadgeText}>
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </Text>
+        </View>
+      ) : null}
       {!danger && (
         <Ionicons name="chevron-forward" size={21} color="#C4B5FD" />
       )}
@@ -79,6 +92,7 @@ function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
 export default function ProfileScreen() {
   const router = useRouter();
   const {
+    token,
     delivery,
     isLoading,
     signOut,
@@ -86,6 +100,7 @@ export default function ProfileScreen() {
     updateProfileImage,
     updateTransport,
   } = useAuth();
+  const [supportUnread, setSupportUnread] = useState(0);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [transportModalOpen, setTransportModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -106,6 +121,36 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
   }, [delivery, isLoading, router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) return;
+      let cancelled = false;
+
+      fetchSupportUnreadCount(token)
+        .then((data) => {
+          if (!cancelled) setSupportUnread(data.unread || 0);
+        })
+        .catch(() => null);
+
+      return () => {
+        cancelled = true;
+      };
+    }, [token]),
+  );
+
+  useEffect(() => {
+    if (!token) return;
+
+    connectSupportChatSocket(token);
+    const unsubscribe = onSupportChatMessage((payload) => {
+      if (payload?.message?.sender === 'admin') {
+        setSupportUnread((prev) => prev + 1);
+      }
+    });
+
+    return unsubscribe;
+  }, [token]);
 
   function openProfileModal() {
     if (!delivery) return;
@@ -268,8 +313,12 @@ export default function ProfileScreen() {
           <View style={styles.divider} />
           <MenuRow
             icon="help-circle-outline"
-            label="Yordam va qo‘llab-quvvatlash"
-            onPress={() => router.push('/support')}
+            label="Yordam"
+            badgeCount={supportUnread}
+            onPress={() => {
+              setSupportUnread(0);
+              router.push('/support');
+            }}
           />
         </View>
 
@@ -559,6 +608,20 @@ const styles = StyleSheet.create({
     maxWidth: 110,
     color: '#9CA3AF',
     fontSize: 12,
+  },
+  menuBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: '#6D28D9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   dangerText: {
     color: '#DC2626',

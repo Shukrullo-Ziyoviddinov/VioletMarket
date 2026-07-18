@@ -11,6 +11,11 @@ const listMessages = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getUnreadCount = asyncHandler(async (req, res) => {
+  const data = await supportChatService.getUnreadCountForCourier(req.deliveryId);
+  res.json({ ok: true, data });
+});
+
 const sendMessage = asyncHandler(async (req, res) => {
   const deliveryId = String(req.deliveryId);
   const data = await supportChatService.sendCourierMessage(
@@ -39,6 +44,7 @@ const markRead = asyncHandler(async (req, res) => {
 
 module.exports = {
   listMessages,
+  getUnreadCount,
   sendMessage,
   markRead,
 };
