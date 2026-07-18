@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField } from '@/components/auth/FormField';
+import { ApiError } from '@/services/api';
 import { sendRegistrationCode } from '@/services/delivery-auth';
 
 function stringParam(value: string | string[] | undefined) {
@@ -59,6 +60,16 @@ export default function RegisterScreen() {
         },
       });
     } catch (requestError) {
+      if (
+        requestError instanceof ApiError &&
+        requestError.code === 'ACCOUNT_PENDING'
+      ) {
+        router.replace({
+          pathname: '/pending-approval',
+          params: { email: email.trim().toLowerCase() },
+        });
+        return;
+      }
       setError(
         requestError instanceof Error
           ? requestError.message

@@ -5,6 +5,7 @@ import CustomerStatisticPage from './pages/CustomerStatisticPage/CustomerStatist
 import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellersPage from './pages/SellersPage/SellersPage';
+import CouriersPage from './pages/CouriersPage/CouriersPage';
 import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
 import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
 import WithdrawalPage from './pages/WithdrawalPage/WithdrawalPage';
@@ -29,6 +30,7 @@ function App() {
           <Route path="products" element={<AllProductsPage />} />
           <Route path="flash-products" element={<FlashPage />} />
           <Route path="sellers" element={<SellersPage />} />
+          <Route path="couriers" element={<CouriersPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="withdrawals" element={<WithdrawalPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

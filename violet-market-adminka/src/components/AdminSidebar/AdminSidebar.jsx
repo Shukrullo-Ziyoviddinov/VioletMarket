@@ -3,6 +3,7 @@ import { Menu } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   BarChartOutlined,
+  CarOutlined,
   ControlOutlined,
   DashboardOutlined,
   DollarOutlined,
@@ -64,6 +65,7 @@ const menuItems = [
   { key: 'navbar-category', icon: <MenuOutlined />, label: 'Navbar category' },
   { key: 'product-policy', icon: <FileProtectOutlined />, label: 'Mahsulot siyosati' },
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar', route: '/sellers' },
+  { key: 'couriers', icon: <CarOutlined />, label: "Kuryer ma'lumotlari", route: '/couriers' },
   { key: 'payment-requests', icon: <DollarOutlined />, label: "To'lov so'rovlari", route: '/payment-requests' },
   { key: 'withdrawals', icon: <HistoryOutlined />, label: 'Yechilgan summalar tarixi', route: '/withdrawals' },
   { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },
@@ -80,6 +82,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';
   if (pathname === '/sellers') return 'sellers';
+  if (pathname === '/couriers') return 'couriers';
   if (pathname === '/payment-requests') return 'payment-requests';
   if (pathname === '/withdrawals') return 'withdrawals';
   return 'dashboard';

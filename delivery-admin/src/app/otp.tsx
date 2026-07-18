@@ -56,19 +56,24 @@ export default function OtpScreen() {
     setError('');
     setIsSubmitting(true);
     try {
-      const result =
-        mode === 'login'
-          ? await verifyLogin(email, verificationCode)
-          : await completeRegistration({
-              email,
-              code: verificationCode,
-              firstName: stringParam(params.firstName),
-              lastName: stringParam(params.lastName),
-              phone: stringParam(params.phone),
-            });
+      if (mode === 'login') {
+        const result = await verifyLogin(email, verificationCode);
+        await signIn(result);
+        router.replace('/profile');
+        return;
+      }
 
-      await signIn(result);
-      router.replace('/profile');
+      await completeRegistration({
+        email,
+        code: verificationCode,
+        firstName: stringParam(params.firstName),
+        lastName: stringParam(params.lastName),
+        phone: stringParam(params.phone),
+      });
+      router.replace({
+        pathname: '/pending-approval',
+        params: { email },
+      });
     } catch (requestError) {
       setCode('');
       setError(

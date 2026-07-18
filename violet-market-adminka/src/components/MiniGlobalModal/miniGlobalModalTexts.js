@@ -12,6 +12,13 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  deleteCourier: {
+    title: "Kuryerni o'chirishni tasdiqlash",
+    getMessage: (itemName) =>
+      `Chindan ham "${itemName}" kuryer akkauntini o'chirmoqchimisiz?`,
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
   removeFlashProduct: {
     title: "Katta chegirma mahsulotlari bo'limidan olib tashlashga aminmisiz?",
     getMessage: () => '',

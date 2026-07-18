@@ -1,13 +1,16 @@
 import { apiRequest } from '@/services/api';
 import type {
+  ApprovalStatusResult,
   AuthResult,
   DeliveryProfile,
   DeliveryTransport,
   OtpMeta,
+  RegistrationResult,
 } from '@/types/delivery';
 
 export type EmailStartResult =
   | { mode: 'register'; email: string }
+  | { mode: 'pending'; email: string }
   | ({ mode: 'login' } & OtpMeta);
 
 export type RegistrationPayload = {
@@ -47,10 +50,20 @@ export function verifyLogin(email: string, code: string) {
 }
 
 export function completeRegistration(payload: RegistrationPayload) {
-  return apiRequest<AuthResult>('/api/delivery-auth/register/verify', {
+  return apiRequest<RegistrationResult>('/api/delivery-auth/register/verify', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+}
+
+export function getApprovalStatus(email: string) {
+  return apiRequest<ApprovalStatusResult>(
+    '/api/delivery-auth/approval-status',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    },
+  );
 }
 
 export function getDeliveryProfile(token: string) {

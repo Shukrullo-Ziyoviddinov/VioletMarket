@@ -21,6 +21,11 @@ const completeRegistration = asyncHandler(async (req, res) => {
   res.status(201).json({ ok: true, data });
 });
 
+const getApprovalStatus = asyncHandler(async (req, res) => {
+  const data = await deliveryAuthService.getApprovalStatus(req.body || {});
+  res.json({ ok: true, data });
+});
+
 const getProfile = asyncHandler(async (req, res) => {
   const data = await deliveryAuthService.getProfile(req.deliveryId);
   res.json({ ok: true, data });
@@ -55,6 +60,7 @@ module.exports = {
   sendRegistrationCode,
   verifyLogin,
   completeRegistration,
+  getApprovalStatus,
   getProfile,
   updateProfile,
   updateProfilePhoto,

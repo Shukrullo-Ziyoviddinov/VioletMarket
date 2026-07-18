@@ -13,6 +13,10 @@ router.post(
 );
 router.post("/delivery-auth/login/verify", controller.verifyLogin);
 router.post("/delivery-auth/register/verify", controller.completeRegistration);
+router.post(
+  "/delivery-auth/approval-status",
+  controller.getApprovalStatus,
+);
 router.get(
   "/delivery-auth/me",
   deliveryAuthMiddleware,

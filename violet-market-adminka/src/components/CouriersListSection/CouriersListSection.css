@@ -1,0 +1,53 @@
+.couriers-list-section {
+  margin-bottom: 12px;
+}
+
+.couriers-list-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.couriers-list-section__title {
+  margin: 0 0 4px !important;
+  color: #2a1842 !important;
+}
+
+.couriers-list-section__search {
+  width: min(320px, 100%);
+}
+
+.couriers-list-section__delete-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  background: #fef2f2;
+  cursor: pointer;
+}
+
+.couriers-list-section__delete-btn:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.couriers-list-section__delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .couriers-list-section__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .couriers-list-section__search {
+    width: 100%;
+  }
+}

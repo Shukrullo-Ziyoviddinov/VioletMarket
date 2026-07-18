@@ -41,12 +41,31 @@ function normalizePhone(value) {
   return phone;
 }
 
+function assertActiveAccount(account) {
+  if (!account) {
+    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
+  }
+  if (account.status === "pending") {
+    throw new HttpError(
+      403,
+      "Admin tasdiqlashini kuting",
+      "ACCOUNT_PENDING",
+    );
+  }
+  if (account.status !== "active") {
+    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
+  }
+}
+
 async function startEmailAuth(payload) {
   const email = normalizeEmail(payload.email);
   const account = await DeliveryAccount.findOne({ email });
 
   if (!account) {
     return { mode: "register", email };
+  }
+  if (account.status === "pending") {
+    return { mode: "pending", email };
   }
   if (account.status !== "active") {
     throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
@@ -58,8 +77,15 @@ async function startEmailAuth(payload) {
 
 async function sendRegistrationCode(payload) {
   const email = normalizeEmail(payload.email);
-  const existing = await DeliveryAccount.exists({ email });
+  const existing = await DeliveryAccount.findOne({ email });
   if (existing) {
+    if (existing.status === "pending") {
+      throw new HttpError(
+        403,
+        "Bu Gmail uchun so‘rov allaqachon yuborilgan. Admin tasdiqlashini kuting",
+        "ACCOUNT_PENDING",
+      );
+    }
     throw new HttpError(
       409,
       "Bu email bilan delivery akkaunt mavjud",
@@ -74,12 +100,7 @@ async function sendRegistrationCode(payload) {
 async function verifyLogin(payload) {
   const email = normalizeEmail(payload.email);
   const account = await DeliveryAccount.findOne({ email });
-  if (!account) {
-    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
-  }
-  if (account.status !== "active") {
-    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
-  }
+  assertActiveAccount(account);
 
   await verifyDeliveryOtp(email, LOGIN_PURPOSE, payload.code);
 
@@ -111,10 +132,11 @@ async function completeRegistration(payload) {
       firstName,
       lastName,
       phone,
+      status: "pending",
     });
 
     return {
-      token: signDeliveryToken(account._id),
+      requiresApproval: true,
       delivery: account.toPublicJSON(),
     };
   } catch (error) {
@@ -129,22 +151,29 @@ async function completeRegistration(payload) {
   }
 }
 
+async function getApprovalStatus(payload) {
+  const email = normalizeEmail(payload.email);
+  const account = await DeliveryAccount.findOne({ email }).select("status");
+
+  if (!account) {
+    return { email, status: "not_found" };
+  }
+
+  return {
+    email,
+    status: account.status,
+  };
+}
+
 async function getProfile(deliveryId) {
   const account = await DeliveryAccount.findById(deliveryId);
-  if (!account) {
-    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
-  }
-  if (account.status !== "active") {
-    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
-  }
+  assertActiveAccount(account);
   return account.toPublicJSON();
 }
 
 async function updateProfile(deliveryId, payload) {
   const account = await DeliveryAccount.findById(deliveryId);
-  if (!account) {
-    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
-  }
+  assertActiveAccount(account);
 
   const email = normalizeEmail(payload.email);
   const firstName = normalizeName(payload.firstName, "Ism");
@@ -186,12 +215,7 @@ async function updateProfile(deliveryId, payload) {
 
 async function updateProfilePhoto(deliveryId, payload) {
   const account = await DeliveryAccount.findById(deliveryId);
-  if (!account) {
-    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
-  }
-  if (account.status !== "active") {
-    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
-  }
+  assertActiveAccount(account);
 
   const previousImage = account.profileImage;
   const savedPhoto = saveDeliveryProfilePhoto(payload.imageBase64);
@@ -213,12 +237,7 @@ async function updateProfilePhoto(deliveryId, payload) {
 
 async function updateTransport(deliveryId, payload) {
   const account = await DeliveryAccount.findById(deliveryId);
-  if (!account) {
-    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
-  }
-  if (account.status !== "active") {
-    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
-  }
+  assertActiveAccount(account);
 
   const transport = String(payload.transport || "").trim().toLowerCase();
   if (!["car", "scooter", "bicycle"].includes(transport)) {
@@ -239,6 +258,7 @@ module.exports = {
   sendRegistrationCode,
   verifyLogin,
   completeRegistration,
+  getApprovalStatus,
   getProfile,
   updateProfile,
   updateProfilePhoto,

@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField } from '@/components/auth/FormField';
 import { useAuth } from '@/providers/AuthProvider';
+import { ApiError } from '@/services/api';
 import { startEmailAuth } from '@/services/delivery-auth';
 
 export default function AuthScreen() {
@@ -40,12 +41,29 @@ export default function AuthScreen() {
           pathname: '/otp',
           params: { mode: 'login', email: result.email },
         });
-      } else {
-        setError(
-          'Bu Gmail bilan akkaunt topilmadi. “Ro‘yxatdan o‘tish” tugmasini bosing.',
-        );
+        return;
       }
+      if (result.mode === 'pending') {
+        router.replace({
+          pathname: '/pending-approval',
+          params: { email: result.email },
+        });
+        return;
+      }
+      setError(
+        'Bu Gmail bilan akkaunt topilmadi. “Ro‘yxatdan o‘tish” tugmasini bosing.',
+      );
     } catch (requestError) {
+      if (
+        requestError instanceof ApiError &&
+        requestError.code === 'ACCOUNT_PENDING'
+      ) {
+        router.replace({
+          pathname: '/pending-approval',
+          params: { email: email.trim().toLowerCase() },
+        });
+        return;
+      }
       setError(
         requestError instanceof Error
           ? requestError.message

@@ -22,10 +22,11 @@ const deliveryAccountSchema = new mongoose.Schema(
     isOnline: { type: Boolean, default: true },
     status: {
       type: String,
-      enum: ["active", "blocked"],
-      default: "active",
+      enum: ["pending", "active", "blocked"],
+      default: "pending",
       index: true,
     },
+    reviewedAt: { type: Date, default: null },
   },
   {
     collection: "delivery_accounts",
@@ -45,6 +46,8 @@ deliveryAccountSchema.methods.toPublicJSON = function toPublicJSON() {
     transport: this.transport || null,
     isOnline: this.isOnline,
     status: this.status,
+    reviewedAt: this.reviewedAt || null,
+    createdAt: this.createdAt || null,
   };
 };
 
