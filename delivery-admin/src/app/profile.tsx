@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -16,11 +15,30 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField } from '@/components/auth/FormField';
+import { ProfileCameraCapture } from '@/components/auth/ProfileCameraCapture';
 import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
+import type { DeliveryTransport } from '@/types/delivery';
+
+const TRANSPORT_OPTIONS: Array<{
+  value: DeliveryTransport;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}> = [
+  { value: 'car', label: 'Mashina', icon: 'car-sport-outline' },
+  { value: 'scooter', label: 'Skuterda', icon: 'speedometer-outline' },
+  { value: 'bicycle', label: 'Velosipedda', icon: 'bicycle-outline' },
+];
+
+function getTransportLabel(transport?: DeliveryTransport | null) {
+  return (
+    TRANSPORT_OPTIONS.find((option) => option.value === transport)?.label ||
+    'Hali kiritilmagan'
+  );
+}
 
 type MenuRowProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -60,12 +78,24 @@ function MenuRow({ icon, label, detail, danger, onPress }: MenuRowProps) {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { delivery, isLoading, signOut, updateProfile, updateProfileImage } =
-    useAuth();
+  const {
+    delivery,
+    isLoading,
+    signOut,
+    updateProfile,
+    updateProfileImage,
+    updateTransport,
+  } = useAuth();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [transportModalOpen, setTransportModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [selectedTransport, setSelectedTransport] =
+    useState<DeliveryTransport | null>(null);
+  const [isSavingTransport, setIsSavingTransport] = useState(false);
+  const [transportError, setTransportError] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -85,6 +115,29 @@ export default function ProfileScreen() {
     setEmail(delivery.email);
     setSaveError('');
     setProfileModalOpen(true);
+  }
+
+  function openTransportModal() {
+    if (!delivery) return;
+    setSelectedTransport(delivery.transport || null);
+    setTransportError('');
+    setTransportModalOpen(true);
+  }
+
+  async function saveTransport() {
+    if (!selectedTransport || isSavingTransport) return;
+    setTransportError('');
+    setIsSavingTransport(true);
+    try {
+      await updateTransport(selectedTransport);
+      setTransportModalOpen(false);
+    } catch (error) {
+      setTransportError(
+        error instanceof Error ? error.message : 'Transport saqlanmadi',
+      );
+    } finally {
+      setIsSavingTransport(false);
+    }
   }
 
   async function saveProfile() {
@@ -115,31 +168,11 @@ export default function ProfileScreen() {
     }
   }
 
-  async function captureAndUploadPhoto() {
+  async function uploadCapturedPhoto(photoUri: string) {
     if (isUploadingPhoto) return;
-
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(
-        'Kamera ruxsati',
-        'Profil rasmini olish uchun kamera ruxsatini yoqing.',
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-      cameraType: ImagePicker.CameraType.front,
-    });
-
-    if (result.canceled || !result.assets?.[0]?.uri) return;
-
     setIsUploadingPhoto(true);
     try {
-      const context = ImageManipulator.manipulate(result.assets[0].uri);
+      const context = ImageManipulator.manipulate(photoUri);
       context.resize({ width: 512, height: 512 });
       const imageRef = await context.renderAsync();
       const saved = await imageRef.saveAsync({
@@ -153,6 +186,7 @@ export default function ProfileScreen() {
       }
 
       await updateProfileImage(`data:image/jpeg;base64,${saved.base64}`);
+      setCameraOpen(false);
     } catch (error) {
       Alert.alert(
         'Xato',
@@ -190,7 +224,7 @@ export default function ProfileScreen() {
               styles.avatarWrap,
               pressed && styles.avatarPressed,
             ]}
-            onPress={captureAndUploadPhoto}>
+            onPress={() => setCameraOpen(true)}>
             {delivery.profileImage ? (
               <Image
                 source={{ uri: resolveMediaUrl(delivery.profileImage) }}
@@ -228,7 +262,8 @@ export default function ProfileScreen() {
           <MenuRow
             icon="car-outline"
             label="Transport"
-            detail="Hali kiritilmagan"
+            detail={getTransportLabel(delivery.transport)}
+            onPress={openTransportModal}
           />
           <View style={styles.divider} />
           <MenuRow
@@ -306,6 +341,71 @@ export default function ProfileScreen() {
         </View>
       </GlobalBottomSheet>
 
+      <GlobalBottomSheet
+        visible={transportModalOpen}
+        title="Transport turini tanlang"
+        onClose={() => setTransportModalOpen(false)}>
+        <View style={styles.transportForm}>
+          {TRANSPORT_OPTIONS.map((option) => {
+            const selected = selectedTransport === option.value;
+            return (
+              <Pressable
+                key={option.value}
+                style={({ pressed }) => [
+                  styles.transportOption,
+                  selected && styles.transportOptionSelected,
+                  pressed && styles.transportOptionPressed,
+                ]}
+                onPress={() => setSelectedTransport(option.value)}>
+                <View
+                  style={[
+                    styles.transportIcon,
+                    selected && styles.transportIconSelected,
+                  ]}>
+                  <Ionicons
+                    name={option.icon}
+                    size={25}
+                    color={selected ? '#FFFFFF' : '#6D28D9'}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.transportLabel,
+                    selected && styles.transportLabelSelected,
+                  ]}>
+                  {option.label}
+                </Text>
+                <Ionicons
+                  name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={25}
+                  color={selected ? '#6D28D9' : '#D1D5DB'}
+                />
+              </Pressable>
+            );
+          })}
+
+          {transportError ? (
+            <Text style={styles.saveError}>{transportError}</Text>
+          ) : null}
+
+          <Pressable
+            disabled={!selectedTransport || isSavingTransport}
+            style={({ pressed }) => [
+              styles.saveButton,
+              pressed && styles.saveButtonPressed,
+              (!selectedTransport || isSavingTransport) &&
+                styles.saveButtonDisabled,
+            ]}
+            onPress={saveTransport}>
+            {isSavingTransport ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.saveButtonText}>Saqlash</Text>
+            )}
+          </Pressable>
+        </View>
+      </GlobalBottomSheet>
+
       <MiniGlobalModal
         visible={logoutModalOpen}
         title="Hisobdan chiqish"
@@ -313,6 +413,13 @@ export default function ProfileScreen() {
         loading={isSigningOut}
         onConfirm={confirmSignOut}
         onCancel={() => setLogoutModalOpen(false)}
+      />
+
+      <ProfileCameraCapture
+        visible={cameraOpen}
+        uploading={isUploadingPhoto}
+        onClose={() => setCameraOpen(false)}
+        onUpload={uploadCapturedPhoto}
       />
     </SafeAreaView>
   );
@@ -476,6 +583,48 @@ const styles = StyleSheet.create({
   modalForm: {
     gap: 14,
     paddingBottom: 4,
+  },
+  transportForm: {
+    gap: 12,
+    paddingBottom: 4,
+  },
+  transportOption: {
+    minHeight: 70,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+    backgroundColor: '#FFFFFF',
+  },
+  transportOptionSelected: {
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F5F3FF',
+  },
+  transportOptionPressed: {
+    opacity: 0.75,
+  },
+  transportIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EDE9FE',
+  },
+  transportIconSelected: {
+    backgroundColor: '#6D28D9',
+  },
+  transportLabel: {
+    flex: 1,
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  transportLabelSelected: {
+    color: '#5B21B6',
   },
   saveError: {
     padding: 12,

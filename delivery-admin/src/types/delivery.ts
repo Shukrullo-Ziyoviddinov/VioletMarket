@@ -1,3 +1,5 @@
+export type DeliveryTransport = 'car' | 'scooter' | 'bicycle';
+
 export type DeliveryProfile = {
   id: string;
   email: string;
@@ -5,6 +7,7 @@ export type DeliveryProfile = {
   lastName: string;
   phone: string;
   profileImage: string;
+  transport: DeliveryTransport | null;
   isOnline: boolean;
   status: 'active' | 'blocked';
 };

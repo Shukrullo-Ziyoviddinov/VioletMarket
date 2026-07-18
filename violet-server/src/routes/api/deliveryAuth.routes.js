@@ -28,5 +28,10 @@ router.post(
   deliveryAuthMiddleware,
   controller.updateProfilePhoto,
 );
+router.patch(
+  "/delivery-auth/me/transport",
+  deliveryAuthMiddleware,
+  controller.updateTransport,
+);
 
 module.exports = router;

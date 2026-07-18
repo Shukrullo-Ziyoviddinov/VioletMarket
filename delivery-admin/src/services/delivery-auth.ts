@@ -2,6 +2,7 @@ import { apiRequest } from '@/services/api';
 import type {
   AuthResult,
   DeliveryProfile,
+  DeliveryTransport,
   OtpMeta,
 } from '@/types/delivery';
 
@@ -83,6 +84,20 @@ export function uploadDeliveryProfileImage(
     {
       method: 'POST',
       body: JSON.stringify({ imageBase64 }),
+    },
+    token,
+  );
+}
+
+export function updateDeliveryTransport(
+  token: string,
+  transport: DeliveryTransport,
+) {
+  return apiRequest<DeliveryProfile>(
+    '/api/delivery-auth/me/transport',
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ transport }),
     },
     token,
   );

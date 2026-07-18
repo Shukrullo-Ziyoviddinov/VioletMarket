@@ -14,6 +14,11 @@ const deliveryAccountSchema = new mongoose.Schema(
     lastName: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     profileImage: { type: String, default: "", trim: true },
+    transport: {
+      type: String,
+      enum: ["car", "scooter", "bicycle"],
+      default: null,
+    },
     isOnline: { type: Boolean, default: true },
     status: {
       type: String,
@@ -37,6 +42,7 @@ deliveryAccountSchema.methods.toPublicJSON = function toPublicJSON() {
     lastName: this.lastName,
     phone: this.phone,
     profileImage: this.profileImage,
+    transport: this.transport || null,
     isOnline: this.isOnline,
     status: this.status,
   };

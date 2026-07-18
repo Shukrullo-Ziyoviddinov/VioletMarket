@@ -11,6 +11,7 @@ import {
 import {
   getDeliveryProfile,
   updateDeliveryProfile,
+  updateDeliveryTransport,
   uploadDeliveryProfileImage,
   type UpdateDeliveryProfilePayload,
 } from '@/services/delivery-auth';
@@ -19,7 +20,11 @@ import {
   removeStoredToken,
   storeToken,
 } from '@/services/auth-storage';
-import type { AuthResult, DeliveryProfile } from '@/types/delivery';
+import type {
+  AuthResult,
+  DeliveryProfile,
+  DeliveryTransport,
+} from '@/types/delivery';
 
 type AuthContextValue = {
   isLoading: boolean;
@@ -30,6 +35,7 @@ type AuthContextValue = {
   refreshProfile: () => Promise<void>;
   updateProfile: (payload: UpdateDeliveryProfilePayload) => Promise<void>;
   updateProfileImage: (imageBase64: string) => Promise<void>;
+  updateTransport: (transport: DeliveryTransport) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,6 +105,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [token],
   );
 
+  const updateTransport = useCallback(
+    async (transport: DeliveryTransport) => {
+      if (!token) throw new Error('Avtorizatsiya talab qilinadi');
+      const profile = await updateDeliveryTransport(token, transport);
+      setDelivery(profile);
+    },
+    [token],
+  );
+
   const value = useMemo(
     () => ({
       isLoading,
@@ -109,6 +124,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       refreshProfile,
       updateProfile,
       updateProfileImage,
+      updateTransport,
     }),
     [
       delivery,
@@ -119,6 +135,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       token,
       updateProfile,
       updateProfileImage,
+      updateTransport,
     ],
   );
 

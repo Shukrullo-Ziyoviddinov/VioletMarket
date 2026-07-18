@@ -211,6 +211,29 @@ async function updateProfilePhoto(deliveryId, payload) {
   return account.toPublicJSON();
 }
 
+async function updateTransport(deliveryId, payload) {
+  const account = await DeliveryAccount.findById(deliveryId);
+  if (!account) {
+    throw new HttpError(404, "Delivery akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
+  }
+  if (account.status !== "active") {
+    throw new HttpError(403, "Delivery akkaunt bloklangan", "ACCOUNT_BLOCKED");
+  }
+
+  const transport = String(payload.transport || "").trim().toLowerCase();
+  if (!["car", "scooter", "bicycle"].includes(transport)) {
+    throw new HttpError(
+      400,
+      "Transport turi noto‘g‘ri",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  account.transport = transport;
+  await account.save();
+  return account.toPublicJSON();
+}
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
@@ -219,4 +242,5 @@ module.exports = {
   getProfile,
   updateProfile,
   updateProfilePhoto,
+  updateTransport,
 };
