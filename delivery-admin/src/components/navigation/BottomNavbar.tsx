@@ -16,7 +16,7 @@ function resolveActiveLabel(pathname: string) {
   if (pathname.includes('/history')) {
     return 'Tarix';
   }
-  if (pathname.includes('/home') || pathname.includes('/order/')) {
+  if (pathname.includes('/home') || pathname.includes('/order-details')) {
     return 'Bosh sahifa';
   }
   if (pathname.includes('/orders')) {

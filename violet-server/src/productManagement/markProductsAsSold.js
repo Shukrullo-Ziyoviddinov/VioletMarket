@@ -36,9 +36,8 @@ async function incrementSellerOrderCounts(requestedByProductId, productMap) {
 }
 
 /**
- * Buyurtma tasdiqlanganda mahsulotlarni sotildi deb belgilash (ombor/qoldiq).
- * Hozir checkout dan chaqiriladi (stock rezerv).
- * Mijozga topshirish (tracking delivered) endi kuryer "Topshirdim" / keyin asosiy admindan.
+ * Buyurtma yaratilganda ombor qoldig'ini kamaytirish (rezerv).
+ * Daromad/sotuv statistikasi esa "Topshirdim" da recordSalesOnDelivery orqali yoziladi.
  */
 async function markProductsAsSold({
   requestedByProductId,

@@ -42,6 +42,7 @@ module.exports = {
   recordCategoryProductSalesFromOrder,
   recordCountryCategoryProductSalesFromOrder,
   recordBrandCategoryProductSalesFromOrder,
+  recordSalesOnDelivery: require("./recordSalesOnDelivery").recordSalesOnDelivery,
   VALID_PAYMENT_METHODS,
   normalizePaymentMethod,
   formatOrderCode,

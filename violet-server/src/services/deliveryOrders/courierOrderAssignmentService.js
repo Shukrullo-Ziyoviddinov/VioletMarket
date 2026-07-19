@@ -9,6 +9,9 @@ const {
 const {
   normalizeDeliveryAddress,
 } = require("../../utils/normalizeDeliveryAddress");
+const {
+  recordSalesOnDelivery,
+} = require("../../productManagement/recordSalesOnDelivery");
 
 function formatProductCode(productId) {
   const id = Math.max(0, Math.floor(Number(productId) || 0));
@@ -326,6 +329,9 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
       }
 
       await order.save();
+
+      // Sotuv/daromad — faqat topshirilganda (siller + asosiy admin)
+      await recordSalesOnDelivery(order, deliveredAt);
     }
   }
 

@@ -1,9 +1,9 @@
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
-  Linking,
   StyleSheet,
   Text,
   View,
@@ -14,32 +14,20 @@ import { AcceptedOrderCard } from '@/components/home/AcceptedOrderCard';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchAcceptedDeliveryOrders } from '@/services/delivery-orders';
+import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
-function openOrderDetails(assignmentId: string): Href {
-  return `/order/${assignmentId}` as unknown as Href;
-}
-
-function openRoute(order: DeliveryAcceptedOrder) {
-  const address = order.deliveryAddress;
-  const coords = address?.coords;
-  if (Array.isArray(coords) && coords.length >= 2) {
-    const [lng, lat] = coords;
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      Linking.openURL(
-        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-      );
-      return;
-    }
+async function handleBuildRoute(order: DeliveryAcceptedOrder) {
+  const address = order.deliveryAddress || {};
+  const opened = await openYandexRoute({
+    coords: address.coords,
+    addressLine: address.addressLine,
+    city: address.city,
+    district: address.district,
+  });
+  if (!opened) {
+    Alert.alert('Mashrut', 'Manzil topilmadi yoki xarita ochilmadi');
   }
-  const text =
-    address?.addressLine ||
-    [address?.city, address?.district].filter(Boolean).join(', ') ||
-    '';
-  if (!text) return;
-  Linking.openURL(
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(text)}`,
-  );
 }
 
 export default function HomeScreen() {
@@ -108,8 +96,15 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <AcceptedOrderCard
                 order={item}
-                onBuildRoute={() => openRoute(item)}
-                onOpenDetails={() => router.push(openOrderDetails(item.id))}
+                onBuildRoute={() => {
+                  void handleBuildRoute(item);
+                }}
+                onOpenDetails={() =>
+                  router.push({
+                    pathname: '/order-details',
+                    params: { id: item.id },
+                  })
+                }
               />
             )}
           />

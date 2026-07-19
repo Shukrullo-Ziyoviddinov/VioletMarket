@@ -3,7 +3,7 @@ const { nextSequence } = require("../models/autoIncrement");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
 
-const PAID_STATUSES = ["paid", "delivered"];
+const PAID_STATUSES = ["delivered"];
 
 async function upsertSellerSoldItemUnit(filter, fields) {
   const existing = await SellerSoldItem.findOne(filter).select({ id: 1 }).lean();

@@ -1,4 +1,4 @@
-const PAID_STATUSES = ["paid", "delivered"];
+const PAID_STATUSES = ["delivered"];
 
 function toNumber(value, fallback = 0) {
   const num = Number(value);

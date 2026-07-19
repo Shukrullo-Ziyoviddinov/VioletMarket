@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,10 +18,6 @@ import type {
   DeliveryAcceptedOrder,
   DeliveryHistoryStats,
 } from '@/types/delivery-order';
-
-function openOrderDetails(assignmentId: string): Href {
-  return `/order/${assignmentId}` as unknown as Href;
-}
 
 const EMPTY_STATS: DeliveryHistoryStats = {
   totalDelivered: 0,
@@ -249,7 +245,12 @@ export default function HistoryScreen() {
             renderItem={({ item }) => (
               <HistoryCard
                 order={item}
-                onPress={() => router.push(openOrderDetails(item.id))}
+                onPress={() =>
+                  router.push({
+                    pathname: '/order-details',
+                    params: { id: item.id },
+                  })
+                }
               />
             )}
           />

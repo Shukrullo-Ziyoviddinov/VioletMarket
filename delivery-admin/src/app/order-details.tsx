@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,11 +19,8 @@ import {
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
 } from '@/services/delivery-orders';
+import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
-
-function formatAmount(value: number) {
-  return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
-}
 
 function productTitle(order: DeliveryAcceptedOrder) {
   return (
@@ -33,6 +30,11 @@ function productTitle(order: DeliveryAcceptedOrder) {
     order.productCode ||
     'Mahsulot'
   );
+}
+
+function orderBarcode(order: DeliveryAcceptedOrder | null) {
+  if (!order) return '—';
+  return String(order.barcode || order.productCode || '').trim() || '—';
 }
 
 function customerName(order: DeliveryAcceptedOrder) {
@@ -52,19 +54,17 @@ function addressText(order: DeliveryAcceptedOrder) {
   );
 }
 
-function openRoute(order: DeliveryAcceptedOrder) {
-  const coords = order.deliveryAddress?.coords;
-  if (Array.isArray(coords) && coords.length >= 2) {
-    const [lng, lat] = coords;
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      Linking.openURL(
-        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-      );
-      return;
-    }
+async function openRoute(order: DeliveryAcceptedOrder) {
+  const address = order.deliveryAddress || {};
+  const opened = await openYandexRoute({
+    coords: address.coords,
+    addressLine: address.addressLine,
+    city: address.city,
+    district: address.district,
+  });
+  if (!opened) {
+    Alert.alert('Mashrut', 'Manzil topilmadi yoki xarita ochilmadi');
   }
-  const query = encodeURIComponent(addressText(order));
-  Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${query}`);
 }
 
 function callCustomer(phone: string) {
@@ -76,10 +76,29 @@ function callCustomer(phone: string) {
   Linking.openURL(`tel:${cleaned}`);
 }
 
+function DetailCell({ label, value }: { label: string; value?: string }) {
+  const text = String(value || '').trim() || '—';
+  return (
+    <View style={styles.detailCell}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue} numberOfLines={2}>
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function displayOrDash(value?: string) {
+  return String(value || '').trim() || '—';
+}
+
 export default function OrderDetailsScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const assignmentId = String(id || '').trim();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const rawId = params.id;
+  const assignmentId = String(
+    Array.isArray(rawId) ? rawId[0] : rawId || '',
+  ).trim();
   const { token, delivery, isLoading } = useAuth();
 
   const [order, setOrder] = useState<DeliveryAcceptedOrder | null>(null);
@@ -109,16 +128,6 @@ export default function OrderDetailsScreen() {
   useEffect(() => {
     load();
   }, [load]);
-
-  const totals = useMemo(() => {
-    const amount = Math.max(0, Number(order?.amount) || 0);
-    const deliveryFee = Math.max(0, Number(order?.deliveryFee) || 0);
-    return {
-      amount,
-      deliveryFee,
-      total: amount + deliveryFee,
-    };
-  }, [order]);
 
   const handleDeliver = async () => {
     if (!token || !order || delivering) return;
@@ -156,7 +165,7 @@ export default function OrderDetailsScreen() {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </Pressable>
         <Text style={styles.headerTitle}>
-          Buyurtma #{order?.orderId || '—'}
+          Buyurtma {orderBarcode(order)}
         </Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -175,16 +184,6 @@ export default function OrderDetailsScreen() {
             <ScrollView
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}>
-              <View style={styles.statusWrap}>
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusText}>
-                    {order.status === 'delivered'
-                      ? 'Topshirildi'
-                      : 'Qabul qilindi'}
-                  </Text>
-                </View>
-              </View>
-
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mijoz ma'lumotlari</Text>
                 <View style={styles.customerRow}>
@@ -210,9 +209,9 @@ export default function OrderDetailsScreen() {
                 <View style={styles.addressRow}>
                   <View style={styles.addressInfo}>
                     <Text style={styles.addressText}>{addressText(order)}</Text>
-                    {order.deliveryAddress?.courierNote ? (
-                      <Text style={styles.landmark}>
-                        Mo'ljal: {order.deliveryAddress.courierNote}
+                    {order.deliveryAddress?.district ? (
+                      <Text style={styles.districtText}>
+                        {order.deliveryAddress.district}
                       </Text>
                     ) : null}
                   </View>
@@ -221,45 +220,84 @@ export default function OrderDetailsScreen() {
                       styles.iconButton,
                       pressed && styles.pressed,
                     ]}
-                    onPress={() => openRoute(order)}>
+                    onPress={() => {
+                      void openRoute(order);
+                    }}>
                     <Ionicons name="location" size={20} color="#FFFFFF" />
                   </Pressable>
                 </View>
+
+                <View style={styles.detailsRow}>
+                  <DetailCell
+                    label="Uy"
+                    value={order.deliveryAddress?.placeType}
+                  />
+                  <DetailCell
+                    label="Yo‘lak"
+                    value={order.deliveryAddress?.entrance}
+                  />
+                  <DetailCell
+                    label="Qavat"
+                    value={order.deliveryAddress?.floor}
+                  />
+                  <DetailCell
+                    label="Domofon"
+                    value={order.deliveryAddress?.domofon}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.card}>
+                <View style={styles.noteHead}>
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={18}
+                    color="#6D28D9"
+                  />
+                  <Text style={styles.cardTitle}>Kuryer uchun izoh</Text>
+                </View>
+                <Text style={styles.noteText}>
+                  {displayOrDash(order.deliveryAddress?.courierNote)}
+                </Text>
               </View>
 
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mahsulotlar</Text>
                 <View style={styles.productRow}>
-                  <Text style={styles.productName} numberOfLines={2}>
+                  <Text style={styles.productName}>
                     1. {productTitle(order)}
                   </Text>
-                  <View style={styles.productMeta}>
-                    <Text style={styles.productQty}>
-                      {order.productCount} dona
-                    </Text>
-                    <Text style={styles.productPrice}>
-                      {formatAmount(totals.amount)}
-                    </Text>
-                  </View>
+                  <Text style={styles.productQty}>
+                    {order.productCount} dona
+                  </Text>
                 </View>
-
-                <View style={styles.totals}>
-                  <View style={styles.totalRow}>
-                    <Text style={styles.totalLabel}>Buyurtma summasi</Text>
-                    <Text style={styles.totalValue}>
-                      {formatAmount(totals.amount)}
+                <View style={styles.metaList}>
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Kod</Text>
+                    <Text style={styles.metaValue}>{orderBarcode(order)}</Text>
+                  </View>
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Rang</Text>
+                    <Text style={styles.metaValue}>
+                      {displayOrDash(order.color)}
                     </Text>
                   </View>
-                  <View style={styles.totalRow}>
-                    <Text style={styles.totalLabel}>Yetkazish narxi</Text>
-                    <Text style={styles.totalValue}>
-                      {formatAmount(totals.deliveryFee)}
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>O‘lcham</Text>
+                    <Text style={styles.metaValue}>
+                      {displayOrDash(order.size)}
                     </Text>
                   </View>
-                  <View style={styles.totalRow}>
-                    <Text style={styles.totalLabelBold}>Jami</Text>
-                    <Text style={styles.totalValueGreen}>
-                      {formatAmount(totals.total)}
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Xotira</Text>
+                    <Text style={styles.metaValue}>
+                      {displayOrDash(order.storage)}
+                    </Text>
+                  </View>
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Model</Text>
+                    <Text style={styles.metaValue}>
+                      {displayOrDash(order.model)}
                     </Text>
                   </View>
                 </View>
@@ -274,7 +312,9 @@ export default function OrderDetailsScreen() {
                     styles.routeFooter,
                     pressed && styles.pressed,
                   ]}
-                  onPress={() => openRoute(order)}>
+                  onPress={() => {
+                    void openRoute(order);
+                  }}>
                   <Text style={styles.routeFooterText}>Mashrut</Text>
                 </Pressable>
                 <Pressable
@@ -309,7 +349,7 @@ export default function OrderDetailsScreen() {
 
       <DeliveredSuccessModal
         visible={successOpen}
-        orderId={deliveredSnapshot?.orderId || order?.orderId || 0}
+        barcode={orderBarcode(deliveredSnapshot || order)}
         totalAmount={
           Math.max(0, Number(deliveredSnapshot?.amount) || 0) +
           Math.max(0, Number(deliveredSnapshot?.deliveryFee) || 0)
@@ -379,20 +419,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  statusWrap: {
-    alignItems: 'center',
-  },
-  statusBadge: {
-    backgroundColor: '#DBEAFE',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  statusText: {
-    color: '#1D4ED8',
-    fontSize: 13,
-    fontWeight: '800',
-  },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
@@ -446,11 +472,44 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 20,
   },
-  landmark: {
-    color: '#6B7280',
+  districtText: {
+    color: '#6D28D9',
     fontSize: 13,
+    fontWeight: '700',
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#F8F5FF',
+    borderRadius: 14,
+    padding: 12,
+  },
+  detailCell: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+  },
+  detailLabel: {
+    color: '#6B7280',
+    fontSize: 12,
     fontWeight: '600',
-    lineHeight: 18,
+  },
+  detailValue: {
+    color: '#111827',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  noteHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  noteText: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   productRow: {
     flexDirection: 'row',
@@ -464,52 +523,38 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 20,
   },
-  productMeta: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
   productQty: {
     color: '#6B7280',
     fontSize: 13,
     fontWeight: '600',
   },
-  productPrice: {
-    color: '#111827',
-    fontSize: 14,
-    fontWeight: '800',
+  metaList: {
+    gap: 0,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    overflow: 'hidden',
   },
-  totals: {
-    marginTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    paddingTop: 12,
-    gap: 10,
-  },
-  totalRow: {
+  metaItem: {
+    minHeight: 44,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF2F7',
   },
-  totalLabel: {
+  metaLabel: {
     color: '#6B7280',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
-  totalValue: {
+  metaValue: {
+    flex: 1,
+    textAlign: 'right',
     color: '#111827',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-  },
-  totalLabelBold: {
-    color: '#111827',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  totalValueGreen: {
-    color: '#16A34A',
-    fontSize: 16,
-    fontWeight: '900',
   },
   footer: {
     flexDirection: 'row',

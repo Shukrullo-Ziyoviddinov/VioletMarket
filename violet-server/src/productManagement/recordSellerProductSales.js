@@ -2,7 +2,7 @@ const { SellerProductSale } = require("../models/sellerProductSale");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
 
-const PAID_STATUSES = ["paid", "delivered"];
+const PAID_STATUSES = ["delivered"];
 
 function aggregateSellerProductLines(items) {
   const linesByKey = new Map();

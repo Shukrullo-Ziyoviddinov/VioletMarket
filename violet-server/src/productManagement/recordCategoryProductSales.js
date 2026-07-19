@@ -3,7 +3,7 @@ const { Product } = require("../models/product");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
 const { aggregateOrderProductLines } = require("./recordSellerProductSales");
 
-const PAID_STATUSES = ["paid", "delivered"];
+const PAID_STATUSES = ["delivered"];
 const UNKNOWN_CATEGORY_LABEL = "Boshqa";
 
 function normalizeCategoryLabel(value) {

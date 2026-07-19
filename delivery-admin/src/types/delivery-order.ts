@@ -48,6 +48,11 @@ export type DeliveryAcceptedOrder = {
   amount: number;
   deliveryFee: number;
   productCount: number;
+  imageUrl?: string;
+  color?: string;
+  size?: string;
+  storage?: string;
+  model?: string;
   customer: DeliveryCustomer;
   deliveryAddress: DeliveryAddressDetails;
   status: string;

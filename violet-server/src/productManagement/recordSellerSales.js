@@ -6,7 +6,7 @@ const {
   getIsoWeekFromYmd,
 } = require("../utils/customerStatisticsDate");
 
-const PAID_STATUSES = ["paid", "delivered"];
+const PAID_STATUSES = ["delivered"];
 
 function getPeriodKeysFromPaidAt(paidAt) {
   const date = paidAt instanceof Date ? paidAt : new Date(paidAt);

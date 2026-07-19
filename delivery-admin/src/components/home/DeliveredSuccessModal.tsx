@@ -3,7 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type DeliveredSuccessModalProps = {
   visible: boolean;
-  orderId: number;
+  barcode: string;
   totalAmount: number;
   deliveredAt: string | null;
   onContinue: () => void;
@@ -25,7 +25,7 @@ function formatTime(value: string | null) {
 
 export function DeliveredSuccessModal({
   visible,
-  orderId,
+  barcode,
   totalAmount,
   deliveredAt,
   onContinue,
@@ -44,7 +44,7 @@ export function DeliveredSuccessModal({
           </View>
 
           <Text style={styles.title}>Buyurtma muvaffaqiyatli yetkazildi!</Text>
-          <Text style={styles.orderId}>Buyurtma #{orderId || '—'}</Text>
+          <Text style={styles.orderId}>Buyurtma {barcode || '—'}</Text>
 
           <View style={styles.summary}>
             <View style={styles.summaryRow}>

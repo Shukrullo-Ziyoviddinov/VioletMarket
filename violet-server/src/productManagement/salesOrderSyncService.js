@@ -6,7 +6,6 @@ const { CountryCategoryProductSale } = require("../models/countryCategoryProduct
 const { BrandCategoryProductSale } = require("../models/brandCategoryProductSale");
 const { SellerSoldItem } = require("../models/sellerSoldItem");
 const { Product } = require("../models/product");
-const { PAID_STATUSES } = require("../services/adminSales/salesStatisticsHelpers");
 const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
 const { recordSellerSoldItemsFromOrder } = require("./recordSellerSoldItems");
@@ -72,7 +71,7 @@ async function findOrderIdsNeedingSync() {
     brandSaleOrderIds,
   ] = await Promise.all([
     Order.distinct("id", {
-      status: { $in: PAID_STATUSES },
+      status: "delivered",
       paidAt: { $ne: null },
     }),
     SellerSale.distinct("orderId"),
@@ -104,7 +103,7 @@ async function runSalesStatisticsSync() {
 
   const orders = await Order.find({
     id: { $in: orderIds },
-    status: { $in: PAID_STATUSES },
+    status: "delivered",
     paidAt: { $ne: null },
   })
     .select("id items status paidAt createdAt")

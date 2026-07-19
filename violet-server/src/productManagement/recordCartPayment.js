@@ -1,10 +1,9 @@
 const { Order } = require("../models/order");
-const { recordAllSalesFromOrder } = require("./salesOrderSyncService");
-const { normalizePaymentMethod } = require("./paymentMethods");
 const { createInitialOrderTracking } = require("./orderTracking");
 const {
   normalizeDeliveryAddress,
 } = require("../utils/normalizeDeliveryAddress");
+const { normalizePaymentMethod } = require("./paymentMethods");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
@@ -67,8 +66,10 @@ function calcOrderTotalAmount(items) {
 }
 
 /**
- * Savatdan to'lov yozuvini yaratish.
+ * Savatdan buyurtma yozuvini yaratish.
  * Hozir mock to'lov (darhol paid); keyin Payme/Click callback shu funksiyani chaqiradi.
+ * Sotuv/daromad (siller + asosiy admin) bu yerda yozilmaydi —
+ * faqat kuryer/asosiy admin "Topshirdim" da recordSalesOnDelivery orqali.
  */
 async function recordCartPayment({
   userId,
@@ -108,8 +109,6 @@ async function recordCartPayment({
     );
     order.deliveryAddress = normalizedAddress;
   }
-
-  await recordAllSalesFromOrder(order);
 
   return order;
 }
