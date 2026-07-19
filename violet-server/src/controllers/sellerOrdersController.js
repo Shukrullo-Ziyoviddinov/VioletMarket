@@ -25,8 +25,18 @@ const collectOrderItem = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const handoffOrderItem = asyncHandler(async (req, res) => {
+  const data = await sellerOrderTrackingService.handoffSellerOrderItem(
+    req.sellerShopId,
+    req.params.orderId,
+    req.params.itemIndex,
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listOrders,
   confirmOrderItem,
   collectOrderItem,
+  handoffOrderItem,
 };

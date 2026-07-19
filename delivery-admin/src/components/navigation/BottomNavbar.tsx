@@ -1,20 +1,50 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { usePathname, useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 const items = [
-  { label: 'Bosh sahifa', icon: 'home-outline' },
-  { label: 'Buyurtmalar', icon: 'receipt-outline' },
-  { label: 'Tarix', icon: 'clipboard-outline' },
-  { label: 'Profil', icon: 'person' },
+  { label: 'Bosh sahifa', icon: 'home-outline', href: '/orders' },
+  { label: 'Buyurtmalar', icon: 'receipt-outline', href: '/orders' },
+  { label: 'Tarix', icon: 'clipboard-outline', href: '/orders' },
+  { label: 'Profil', icon: 'person', href: '/profile' },
 ] as const;
 
+function resolveActiveLabel(pathname: string) {
+  if (pathname.includes('/profile') || pathname.includes('/support')) {
+    return 'Profil';
+  }
+  if (pathname.includes('/orders')) {
+    return 'Buyurtmalar';
+  }
+  return 'Buyurtmalar';
+}
+
 export function BottomNavbar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const activeLabel = resolveActiveLabel(pathname || '');
+
   return (
     <View style={styles.container}>
       {items.map((item) => {
-        const active = item.label === 'Profil';
+        const active = item.label === activeLabel;
+        const isPlaceholder =
+          item.label === 'Bosh sahifa' || item.label === 'Tarix';
+
         return (
-          <View key={item.label} style={styles.item}>
+          <Pressable
+            key={item.label}
+            style={styles.item}
+            disabled={isPlaceholder}
+            onPress={() => {
+              if (item.label === 'Profil') {
+                router.push('/profile');
+                return;
+              }
+              if (item.label === 'Buyurtmalar') {
+                router.push('/orders');
+              }
+            }}>
             <Ionicons
               name={item.icon}
               size={25}
@@ -23,7 +53,7 @@ export function BottomNavbar() {
             <Text style={[styles.label, active && styles.activeLabel]}>
               {item.label}
             </Text>
-          </View>
+          </Pressable>
         );
       })}
     </View>

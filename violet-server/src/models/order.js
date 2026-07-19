@@ -1,11 +1,19 @@
 const mongoose = require("mongoose");
 const { assignAutoNumberId } = require("./autoIncrement");
 
+const TRACKING_STATUSES = [
+  "accepted",
+  "seller_confirmed",
+  "collected",
+  "handed_to_courier",
+  "delivered",
+];
+
 const orderTrackingHistorySchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["accepted", "seller_confirmed", "collected", "delivered"],
+      enum: TRACKING_STATUSES,
       required: true,
     },
     at: { type: Date, required: true },
@@ -29,12 +37,25 @@ const orderItemSchema = new mongoose.Schema(
     image: { type: String, default: "/img/no-image.png" },
     trackingStatus: {
       type: String,
-      enum: ["accepted", "seller_confirmed", "collected", "delivered"],
+      enum: TRACKING_STATUSES,
       default: "accepted",
     },
     trackingHistory: {
       type: [orderTrackingHistorySchema],
       default: [],
+    },
+  },
+  { _id: false },
+);
+
+const deliveryAddressSchema = new mongoose.Schema(
+  {
+    city: { type: String, default: "" },
+    district: { type: String, default: "" },
+    addressLine: { type: String, default: "" },
+    coords: {
+      type: [Number],
+      default: undefined,
     },
   },
   { _id: false },
@@ -72,6 +93,10 @@ const orderSchema = new mongoose.Schema(
       enum: ["checkout", "delivery-admin"],
       default: "checkout",
     },
+    deliveryAddress: {
+      type: deliveryAddressSchema,
+      default: null,
+    },
   },
   {
     collection: "orders",
@@ -83,6 +108,8 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ status: 1, paidAt: -1 });
 orderSchema.index({ "items.sellerId": 1, paidAt: -1 });
+orderSchema.index({ "items.trackingStatus": 1, paidAt: -1 });
+orderSchema.index({ "deliveryAddress.city": 1, "deliveryAddress.district": 1 });
 
 orderSchema.pre("validate", async function autoAssignId() {
   await assignAutoNumberId(this, "order_id");
@@ -90,4 +117,4 @@ orderSchema.pre("validate", async function autoAssignId() {
 
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 
-module.exports = { Order };
+module.exports = { Order, TRACKING_STATUSES };

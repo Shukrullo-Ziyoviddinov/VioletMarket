@@ -5,6 +5,7 @@ import {
   collectSellerOrderItem,
   confirmSellerOrderItem,
   fetchSellerOrders,
+  handoffSellerOrderItem,
 } from '../../../api/sellerOrdersApi';
 import { useSellerAuth } from '../../../context/SellerAuthContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
@@ -23,6 +24,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [courierOrder, setCourierOrder] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [collecting, setCollecting] = useState(false);
+  const [handingOff, setHandingOff] = useState(false);
 
   const loadOrders = useCallback(async () => {
     if (!token) {
@@ -102,6 +104,26 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     }
   };
 
+  const handleCourierHandoff = async () => {
+    if (!token || !courierOrder || handingOff) return;
+
+    setHandingOff(true);
+    try {
+      await handoffSellerOrderItem(token, courierOrder.orderId, courierOrder.itemIndex);
+      message.success(t('orders.courier.success', { defaultValue: 'Mahsulot kuryerga topshirildi' }));
+      setCourierOrder(null);
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.courier.error', { defaultValue: 'Kuryerga topshirib bo‘lmadi' }),
+      );
+      throw error;
+    } finally {
+      setHandingOff(false);
+    }
+  };
+
   return (
     <div className="seller-orders-workspace">
       {filter === 'confirmation' ? (
@@ -143,8 +165,11 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
       <MiniGlobalModal
         open={Boolean(courierOrder)}
         permissionKey="courierHandoff"
-        onClose={() => setCourierOrder(null)}
-        onConfirm={() => undefined}
+        loading={handingOff}
+        onClose={() => {
+          if (!handingOff) setCourierOrder(null);
+        }}
+        onConfirm={handleCourierHandoff}
       />
     </div>
   );

@@ -56,6 +56,7 @@ const userOrderTrackingRoutes = require("./userOrderTracking.routes");
 const deliveryAuthRoutes = require("./deliveryAuth.routes");
 const adminCourierRoutes = require("./adminCourier.routes");
 const supportChatRoutes = require("./supportChat.routes");
+const deliveryOrdersRoutes = require("./deliveryOrders.routes");
 
 const router = express.Router();
 
@@ -116,5 +117,6 @@ router.use(userOrderTrackingRoutes);
 router.use(deliveryAuthRoutes);
 router.use(adminCourierRoutes);
 router.use(supportChatRoutes);
+router.use(deliveryOrdersRoutes);
 
 module.exports = router;

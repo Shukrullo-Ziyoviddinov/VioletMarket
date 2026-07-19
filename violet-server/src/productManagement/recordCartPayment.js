@@ -2,6 +2,9 @@ const { Order } = require("../models/order");
 const { recordAllSalesFromOrder } = require("./salesOrderSyncService");
 const { normalizePaymentMethod } = require("./paymentMethods");
 const { createInitialOrderTracking } = require("./orderTracking");
+const {
+  normalizeDeliveryAddress,
+} = require("../utils/normalizeDeliveryAddress");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
@@ -74,6 +77,7 @@ async function recordCartPayment({
   paymentMethod,
   source = PAYMENT_SOURCES.CHECKOUT,
   status = "paid",
+  deliveryAddress = null,
 }) {
   const items = buildOrderItemsFromCart(cartItems, productMap);
   if (items.length === 0) {
@@ -85,6 +89,7 @@ async function recordCartPayment({
   const normalizedPaymentMethod = normalizePaymentMethod(paymentMethod, {
     allowMock: source !== PAYMENT_SOURCES.CHECKOUT,
   });
+  const normalizedAddress = normalizeDeliveryAddress(deliveryAddress);
 
   const order = await Order.create({
     userId,
@@ -94,6 +99,7 @@ async function recordCartPayment({
     status,
     paidAt,
     source,
+    deliveryAddress: normalizedAddress,
   });
 
   await recordAllSalesFromOrder(order);

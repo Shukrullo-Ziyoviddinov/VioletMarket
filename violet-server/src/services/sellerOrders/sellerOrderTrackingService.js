@@ -108,7 +108,55 @@ async function collectSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   };
 }
 
+async function handoffSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const orderId = parsePositiveInteger(orderIdRaw, "orderId");
+  const itemIndex = parsePositiveInteger(itemIndexRaw, "itemIndex");
+  const order = await Order.findOne({ id: orderId });
+
+  if (!order) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
+  }
+
+  const item = order.items?.[itemIndex];
+  if (!item || cleanSellerId(item.sellerId) !== normalizedSellerId) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+
+  const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+  if (currentStatus !== "collected" && currentStatus !== "handed_to_courier") {
+    throw new HttpError(
+      409,
+      "Avval buyurtmani yig‘ish kerak",
+      "ORDER_TRACKING_STATUS_CONFLICT",
+    );
+  }
+
+  if (currentStatus === "collected") {
+    const handedAt = new Date();
+    item.trackingStatus = "handed_to_courier";
+    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+    item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
+    await order.save();
+  }
+
+  const handedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : [])
+    .find((entry) => String(entry?.status || "") === "handed_to_courier");
+
+  return {
+    orderId,
+    itemIndex,
+    trackingStatus: "handed_to_courier",
+    handedToCourierAt: handedEntry?.at || null,
+  };
+}
+
 module.exports = {
   confirmSellerOrderItem,
   collectSellerOrderItem,
+  handoffSellerOrderItem,
 };

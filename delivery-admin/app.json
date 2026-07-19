@@ -48,6 +48,12 @@
           "cameraPermission": "Profil rasmini olish uchun kamera ruxsati kerak",
           "photosPermission": "Profil rasmini tanlash uchun galereya ruxsati kerak"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Yaqin buyurtmalarni ko‘rsatish uchun joylashuv ruxsati kerak"
+        }
       ]
     ],
     "experiments": {

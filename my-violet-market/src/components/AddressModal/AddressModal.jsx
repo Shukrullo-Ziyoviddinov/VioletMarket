@@ -11,6 +11,8 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     addressLine: initialAddress?.addressLine ?? '',
+    city: initialAddress?.city ?? '',
+    district: initialAddress?.district ?? '',
     placeType: initialAddress?.placeType ?? '',
     entrance: initialAddress?.entrance ?? '',
     floor: initialAddress?.floor ?? '',
@@ -253,6 +255,8 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     if (result._fromGeolocation && userSearchedRef.current) return;
 
     const a = result.address;
+    const city = a.city || a.locality || a.province || a.area || '';
+    const district = a.tuman || a.district || a.area || '';
     const rawParts = [
       a.province, a.locality, a.area, a.district,
       a.mahalla, a.street, a.house,
@@ -269,7 +273,12 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
         : parts.length > 0
           ? parts.join(', ')
           : '';
-    setForm((prev) => ({ ...prev, addressLine: line }));
+    setForm((prev) => ({
+      ...prev,
+      addressLine: line,
+      city: city || prev.city || '',
+      district: district || prev.district || '',
+    }));
     setFieldErrors((prev) => ({ ...prev, addressLine: false }));
     if (result.coords && result.coords.length >= 2) {
       setMapCenter([Number(result.coords[0]), Number(result.coords[1])]);

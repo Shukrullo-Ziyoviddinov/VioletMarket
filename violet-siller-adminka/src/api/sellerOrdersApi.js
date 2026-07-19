@@ -97,3 +97,15 @@ export async function collectSellerOrderItem(token, orderId, itemIndex) {
   const payload = await parseJson(res);
   return payload?.data || {};
 }
+
+export async function handoffSellerOrderItem(token, orderId, itemIndex) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/handoff`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}

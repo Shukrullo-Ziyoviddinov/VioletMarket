@@ -62,7 +62,7 @@ export function clearCartApi(token) {
   }).then(parseJsonResponse);
 }
 
-export function checkoutCartApi(token, { paymentMethod } = {}) {
+export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) {
   const method = String(paymentMethod || '').trim();
   if (!method) {
     return Promise.reject(Object.assign(new Error('To‘lov usulini tanlang'), { status: 400 }));
@@ -73,6 +73,7 @@ export function checkoutCartApi(token, { paymentMethod } = {}) {
     headers: authHeaders(token),
     body: JSON.stringify({
       paymentMethod: method,
+      deliveryAddress: deliveryAddress || null,
     }),
   }).then(parseJsonResponse);
 }

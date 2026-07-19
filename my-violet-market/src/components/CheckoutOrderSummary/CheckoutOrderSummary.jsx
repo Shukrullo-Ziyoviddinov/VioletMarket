@@ -43,12 +43,12 @@ const CheckoutOrderSummary = ({
 
       if (isPayOnDelivery) {
         const addressText = address?.addressLine || address?.formatted || '';
-        await checkoutCart(paymentMethod);
+        await checkoutCart(paymentMethod, address || null);
         onOrderConfirmed?.({ cartSnapshot, addressText });
         return;
       }
 
-      await checkoutCart(paymentMethod);
+      await checkoutCart(paymentMethod, address || null);
       window.dispatchEvent(new Event('appDataRefreshRequested'));
       startPostOrderReviewFlow({
         cartSnapshot,

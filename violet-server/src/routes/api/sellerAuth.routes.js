@@ -110,6 +110,11 @@ router.patch(
   sellerAuthMiddleware,
   sellerOrdersController.collectOrderItem,
 );
+router.patch(
+  "/seller-auth/orders/:orderId/items/:itemIndex/handoff",
+  sellerAuthMiddleware,
+  sellerOrdersController.handoffOrderItem,
+);
 router.get(
   "/seller-auth/notifications/unread-count",
   sellerAuthMiddleware,

@@ -604,6 +604,7 @@ async function checkoutCartForUser(userId, options = {}) {
     cartItems: items,
     productMap,
     paymentMethod: options.paymentMethod,
+    deliveryAddress: options.deliveryAddress,
   });
 
   await markProductsAsSold({
