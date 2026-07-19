@@ -1,5 +1,8 @@
 import { apiRequest } from '@/services/api';
-import type { DeliveryAvailableOrder } from '@/types/delivery-order';
+import type {
+  DeliveryAcceptedOrder,
+  DeliveryAvailableOrder,
+} from '@/types/delivery-order';
 
 export type AvailableOrdersFilters = {
   city?: string;
@@ -39,4 +42,30 @@ export async function fetchAvailableDeliveryOrders(
     orders: DeliveryAvailableOrder[];
     locationUsed?: boolean;
   }>(path, { method: 'GET' }, token);
+}
+
+export async function acceptDeliveryOrder(
+  token: string,
+  payload: { orderId: number; itemIndex: number; unitIndex: number },
+) {
+  return apiRequest<{
+    id: string;
+    orderId: number;
+    itemIndex: number;
+    unitIndex: number;
+  }>(
+    '/api/delivery/orders/accept',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
+export async function fetchAcceptedDeliveryOrders(token: string) {
+  return apiRequest<{
+    total: number;
+    orders: DeliveryAcceptedOrder[];
+  }>('/api/delivery/orders/accepted', { method: 'GET' }, token);
 }

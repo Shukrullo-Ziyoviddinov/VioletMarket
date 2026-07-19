@@ -10,6 +10,12 @@ router.get(
   deliveryOrdersController.listAvailableOrders,
 );
 
+router.get(
+  "/delivery/orders/accepted",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.listAcceptedOrders,
+);
+
 router.post(
   "/delivery/orders/accept",
   deliveryAuthMiddleware,

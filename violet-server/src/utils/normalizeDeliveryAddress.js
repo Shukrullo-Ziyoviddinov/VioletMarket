@@ -95,10 +95,21 @@ function normalizeDeliveryAddress(raw) {
 
   if (!city && !district && !addressLine && !coords) return null;
 
+  const placeType = cleanText(data.placeType || data.homeType);
+  const entrance = cleanText(data.entrance || data.podъезд || data.yolak);
+  const floor = cleanText(data.floor || data.qavat);
+  const domofon = cleanText(data.domofon || data.intercom);
+  const courierNote = cleanText(data.courierNote || data.note);
+
   return {
     city,
     district,
     addressLine,
+    placeType,
+    entrance,
+    floor,
+    domofon,
+    courierNote,
     ...(coords ? { coords } : {}),
   };
 }

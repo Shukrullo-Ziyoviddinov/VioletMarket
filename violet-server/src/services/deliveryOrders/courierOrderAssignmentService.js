@@ -5,6 +5,9 @@ const { HttpError } = require("../../utils/httpError");
 const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
+const {
+  normalizeDeliveryAddress,
+} = require("../../utils/normalizeDeliveryAddress");
 
 function formatProductCode(productId) {
   const id = Math.max(0, Math.floor(Number(productId) || 0));
@@ -23,9 +26,37 @@ function resolveTitle(title) {
   return { uz: text, ru: text };
 }
 
+function snapshotDeliveryAddress(raw) {
+  const normalized = normalizeDeliveryAddress(raw);
+  if (!normalized) {
+    return {
+      city: "",
+      district: "",
+      addressLine: "",
+      placeType: "",
+      entrance: "",
+      floor: "",
+      domofon: "",
+      courierNote: "",
+    };
+  }
+  return {
+    city: normalized.city || "",
+    district: normalized.district || "",
+    addressLine: normalized.addressLine || "",
+    placeType: normalized.placeType || "",
+    entrance: normalized.entrance || "",
+    floor: normalized.floor || "",
+    domofon: normalized.domofon || "",
+    courierNote: normalized.courierNote || "",
+    ...(normalized.coords ? { coords: normalized.coords } : {}),
+  };
+}
+
 function toPublicAssignment(doc) {
   if (!doc) return null;
   const row = doc.toObject ? doc.toObject() : doc;
+  const address = row.deliveryAddress || {};
   return {
     id: String(row._id),
     orderId: Number(row.orderId) || 0,
@@ -33,9 +64,11 @@ function toPublicAssignment(doc) {
     unitIndex: Number(row.unitIndex) || 0,
     productId: Number(row.productId) || 0,
     productCode: String(row.productCode || ""),
+    barcode: String(row.productCode || ""),
     sellerId: String(row.sellerId || ""),
     title: resolveTitle(row.title),
     amount: Math.max(0, Number(row.amount) || 0),
+    productCount: 1,
     imageUrl: String(row.imageUrl || ""),
     color: String(row.color || ""),
     size: String(row.size || ""),
@@ -48,6 +81,17 @@ function toPublicAssignment(doc) {
       phone: String(row.courier?.phone || ""),
       email: String(row.courier?.email || ""),
     },
+    deliveryAddress: {
+      city: String(address.city || ""),
+      district: String(address.district || ""),
+      addressLine: String(address.addressLine || ""),
+      placeType: String(address.placeType || ""),
+      entrance: String(address.entrance || ""),
+      floor: String(address.floor || ""),
+      domofon: String(address.domofon || ""),
+      courierNote: String(address.courierNote || ""),
+      coords: Array.isArray(address.coords) ? address.coords : null,
+    },
     status: String(row.status || "accepted"),
     handedToCourierAt: row.handedToCourierAt || null,
     acceptedAt: row.acceptedAt || null,
@@ -57,7 +101,6 @@ function toPublicAssignment(doc) {
 
 /**
  * Kuryer "Qabul qilish" bosganda — alohida collectionga yoziladi.
- * (UI tugmasi keyingi qadamda ulanadi; API hozir tayyor.)
  */
 async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const orderId = Number(payload.orderId);
@@ -123,6 +166,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const productId = Number(item.productId) || 0;
   const amount = Math.max(0, Number(item.price) || 0);
   const acceptedAt = new Date();
+  const deliveryAddress = snapshotDeliveryAddress(order.deliveryAddress);
 
   const created = await CourierOrderAssignment.create({
     orderId,
@@ -145,6 +189,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       phone: String(delivery.phone || "").trim(),
       email: String(delivery.email || "").trim(),
     },
+    deliveryAddress,
     status: "accepted",
     handedToCourierAt: handedEntry?.at || null,
     acceptedAt,
@@ -181,4 +226,5 @@ module.exports = {
   listAssignmentsByKeys,
   assignmentLookupKey,
   toPublicAssignment,
+  snapshotDeliveryAddress,
 };

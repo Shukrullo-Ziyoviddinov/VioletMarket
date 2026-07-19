@@ -20,7 +20,10 @@ import {
   requestCourierLocation,
   type CourierCoords,
 } from '@/services/courier-location';
-import { fetchAvailableDeliveryOrders } from '@/services/delivery-orders';
+import {
+  acceptDeliveryOrder,
+  fetchAvailableDeliveryOrders,
+} from '@/services/delivery-orders';
 import {
   DISTANCE_FILTERS,
   TASHKENT_CITY,
@@ -34,6 +37,7 @@ export default function OrdersScreen() {
   const { token, delivery, isLoading } = useAuth();
   const [allOrders, setAllOrders] = useState<DeliveryAvailableOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [city, setCity] = useState(TASHKENT_CITY);
   const [district, setDistrict] = useState<string>('Barchasi');
   const [maxDistanceKm, setMaxDistanceKm] = useState(0);
@@ -57,7 +61,10 @@ export default function OrdersScreen() {
       }
       set.add(name);
     }
-    return ['Barchasi', ...Array.from(set).sort((a, b) => a.localeCompare(b, 'uz'))];
+    return [
+      'Barchasi',
+      ...Array.from(set).sort((a, b) => a.localeCompare(b, 'uz')),
+    ];
   }, [allOrders]);
 
   const availableDistanceFilters = useMemo(() => {
@@ -68,7 +75,9 @@ export default function OrdersScreen() {
 
     const distances = source
       .map((order) => order.distanceKm)
-      .filter((value): value is number => value != null && Number.isFinite(value));
+      .filter(
+        (value): value is number => value != null && Number.isFinite(value),
+      );
 
     if (!distances.length) return [];
 
@@ -147,7 +156,6 @@ export default function OrdersScreen() {
       setLoading(true);
       try {
         const activeCoords = coords === undefined ? courierCoords : coords;
-        // Tuman/masofa clientda filtrlanadi — serverdan shahar bo'yicha barchasi
         const data = await fetchAvailableDeliveryOrders(token, {
           city,
           courierLat: activeCoords?.latitude,
@@ -200,7 +208,6 @@ export default function OrdersScreen() {
   }
 
   function handleSelectDistance(value: number) {
-    // Darhol tanlash — GPS kutmaymiz (km allaqachon kartochkalarda bor)
     setMaxDistanceKm(value);
     setFilterSheet(null);
 
@@ -231,6 +238,32 @@ export default function OrdersScreen() {
       return;
     }
     setFilterSheet('distance');
+  }
+
+  async function handleAccept(order: DeliveryAvailableOrder) {
+    if (!token || acceptingId) return;
+    setAcceptingId(order.id);
+    try {
+      await acceptDeliveryOrder(token, {
+        orderId: order.orderId,
+        itemIndex: order.itemIndex,
+        unitIndex: order.unitIndex,
+      });
+      setAllOrders((prev) => prev.filter((item) => item.id !== order.id));
+      Alert.alert('Qabul qilindi', 'Buyurtma bosh sahifaga o‘tdi.', [
+        {
+          text: 'Bosh sahifa',
+          onPress: () => router.push('/home'),
+        },
+        { text: 'OK' },
+      ]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Qabul qilib bo‘lmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setAcceptingId(null);
+    }
   }
 
   if (isLoading || !delivery) {
@@ -289,7 +322,13 @@ export default function OrdersScreen() {
                 </Text>
               </View>
             }
-            renderItem={({ item }) => <OrderCard order={item} />}
+            renderItem={({ item }) => (
+              <OrderCard
+                order={item}
+                accepting={acceptingId === item.id}
+                onAccept={handleAccept}
+              />
+            )}
           />
         )}
       </View>

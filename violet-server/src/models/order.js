@@ -53,6 +53,11 @@ const deliveryAddressSchema = new mongoose.Schema(
     city: { type: String, default: "" },
     district: { type: String, default: "" },
     addressLine: { type: String, default: "" },
+    placeType: { type: String, default: "" },
+    entrance: { type: String, default: "" },
+    floor: { type: String, default: "" },
+    domofon: { type: String, default: "" },
+    courierNote: { type: String, default: "" },
     coords: {
       type: [Number],
       default: undefined,

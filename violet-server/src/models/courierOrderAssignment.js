@@ -36,6 +36,18 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
       email: { type: String, default: "" },
     },
 
+    deliveryAddress: {
+      city: { type: String, default: "" },
+      district: { type: String, default: "" },
+      addressLine: { type: String, default: "" },
+      placeType: { type: String, default: "" },
+      entrance: { type: String, default: "" },
+      floor: { type: String, default: "" },
+      domofon: { type: String, default: "" },
+      courierNote: { type: String, default: "" },
+      coords: { type: [Number], default: undefined },
+    },
+
     status: {
       type: String,
       enum: ["accepted", "delivered", "cancelled"],

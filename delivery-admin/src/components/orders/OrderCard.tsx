@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { DeliveryAvailableOrder } from '@/types/delivery-order';
 
 type OrderCardProps = {
   order: DeliveryAvailableOrder;
+  accepting?: boolean;
+  onAccept?: (order: DeliveryAvailableOrder) => void;
 };
 
 function formatAmount(value: number) {
@@ -26,7 +28,7 @@ function formatDistance(value: number | null) {
   return `${value} km`;
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
@@ -56,9 +58,17 @@ export function OrderCard({ order }: OrderCardProps) {
           Buyurtma vaqti: {formatTime(order.orderedAt)}
         </Text>
         <Pressable
-          style={({ pressed }) => [styles.acceptButton, pressed && styles.pressed]}
-          onPress={() => undefined}>
-          <Text style={styles.acceptText}>Qabul qilish</Text>
+          style={({ pressed }) => [
+            styles.acceptButton,
+            (pressed || accepting) && styles.pressed,
+          ]}
+          disabled={accepting}
+          onPress={() => onAccept?.(order)}>
+          {accepting ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.acceptText}>Qabul qilish</Text>
+          )}
         </Pressable>
       </View>
     </View>
@@ -143,10 +153,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   acceptButton: {
+    minWidth: 110,
+    minHeight: 40,
     backgroundColor: '#6D28D9',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   acceptText: {
     color: '#FFFFFF',

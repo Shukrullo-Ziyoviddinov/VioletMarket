@@ -1,4 +1,5 @@
 const { Order } = require("../../models/order");
+const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const {
   formatOrderCode,
   formatProductCode,
@@ -137,7 +138,25 @@ async function listAvailableDeliveryOrders(query = {}) {
     });
   }
 
-  let filtered = cards;
+  // Allaqachon qabul qilingan donalarni olib tashlash
+  const accepted = await CourierOrderAssignment.find({
+    status: { $in: ["accepted", "delivered"] },
+  })
+    .select({ orderId: 1, itemIndex: 1, unitIndex: 1 })
+    .lean();
+  const acceptedKeys = new Set(
+    accepted.map(
+      (row) =>
+        `${Number(row.orderId)}:${Number(row.itemIndex)}:${Number(row.unitIndex) || 0}`,
+    ),
+  );
+
+  let filtered = cards.filter(
+    (card) =>
+      !acceptedKeys.has(
+        `${Number(card.orderId)}:${Number(card.itemIndex)}:${Number(card.unitIndex) || 0}`,
+      ),
+  );
 
   if (cityFilter) {
     filtered = filtered.filter(
