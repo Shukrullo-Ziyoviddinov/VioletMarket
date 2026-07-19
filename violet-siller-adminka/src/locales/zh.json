@@ -16,13 +16,22 @@
       "label": "订单状态",
       "confirmation": "确认",
       "collection": "备货",
-      "courier": "交给快递员"
+      "courier": "交给快递员",
+      "handed": "已交给快递员"
     },
     "collection": {
       "empty": "暂无待备货商品"
     },
     "courier": {
       "empty": "暂无待交给快递员的商品"
+    },
+    "handed": {
+      "empty": "暂无已交给快递员的商品",
+      "waitingCourier": "快递员尚未接单 — 接单后将显示姓名、电话和时间",
+      "courier": "快递员",
+      "courierPhone": "快递员电话",
+      "handedAt": "交接时间",
+      "acceptedAt": "快递员接单时间"
     },
     "confirm": {
       "success": "订单已确认",

@@ -10,4 +10,10 @@ router.get(
   deliveryOrdersController.listAvailableOrders,
 );
 
+router.post(
+  "/delivery/orders/accept",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.acceptOrder,
+);
+
 module.exports = router;

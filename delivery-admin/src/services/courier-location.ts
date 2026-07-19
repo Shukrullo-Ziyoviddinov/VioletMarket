@@ -28,6 +28,24 @@ export async function requestCourierLocation(): Promise<{
       };
     }
 
+    // Avval oxirgi ma'lum joy — tez; bo'lmasa yangi GPS
+    const last = await Location.getLastKnownPositionAsync();
+    if (last?.coords) {
+      const latitude = Number(last.coords.latitude);
+      const longitude = Number(last.coords.longitude);
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        // Fondda aniqroq yangilab qo'yamiz (kutmaymiz)
+        void Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        }).catch(() => null);
+
+        return {
+          coords: { latitude, longitude },
+          denied: false,
+        };
+      }
+    }
+
     const position = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.Balanced,
     });

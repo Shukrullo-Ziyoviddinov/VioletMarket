@@ -16,13 +16,22 @@
       "label": "Buyurtma holati",
       "confirmation": "Tasdiqlash",
       "collection": "Mahsulotni yig'ish",
-      "courier": "Kuryerga topshirish"
+      "courier": "Kuryerga topshirish",
+      "handed": "Kuryerga topshirilgan"
     },
     "collection": {
       "empty": "Yig'ish uchun mahsulotlar yo'q"
     },
     "courier": {
       "empty": "Kuryerga topshiriladigan mahsulotlar yo'q"
+    },
+    "handed": {
+      "empty": "Kuryerga topshirilgan mahsulotlar yo'q",
+      "waitingCourier": "Kuryer hali qabul qilmagan — Qabul qilish bosilganda ism, telefon va vaqt chiqadi",
+      "courier": "Kuryer",
+      "courierPhone": "Kuryer telefoni",
+      "handedAt": "Topshirilgan vaqt",
+      "acceptedAt": "Kuryer qabul qilgan vaqt"
     },
     "confirm": {
       "success": "Buyurtma tasdiqlandi",

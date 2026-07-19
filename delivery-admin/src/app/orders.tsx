@@ -24,7 +24,6 @@ import { fetchAvailableDeliveryOrders } from '@/services/delivery-orders';
 import {
   DISTANCE_FILTERS,
   TASHKENT_CITY,
-  TASHKENT_DISTRICTS,
   type DeliveryAvailableOrder,
 } from '@/types/delivery-order';
 
@@ -49,8 +48,25 @@ export default function OrdersScreen() {
     if (!isLoading && !delivery) router.replace('/auth');
   }, [delivery, isLoading, router]);
 
+  const availableDistricts = useMemo(() => {
+    const set = new Set<string>();
+    for (const order of allOrders) {
+      const name = String(order.district || '').trim();
+      if (!name || name === "Noma’lum tuman" || name === "Noma'lum tuman") {
+        continue;
+      }
+      set.add(name);
+    }
+    return ['Barchasi', ...Array.from(set).sort((a, b) => a.localeCompare(b, 'uz'))];
+  }, [allOrders]);
+
   const availableDistanceFilters = useMemo(() => {
-    const distances = allOrders
+    const source =
+      district === 'Barchasi'
+        ? allOrders
+        : allOrders.filter((order) => order.district === district);
+
+    const distances = source
       .map((order) => order.distanceKm)
       .filter((value): value is number => value != null && Number.isFinite(value));
 
@@ -60,16 +76,25 @@ export default function OrdersScreen() {
       if (item.value === 0) return true;
       return distances.some((distance) => distance <= item.value);
     });
-  }, [allOrders]);
+  }, [allOrders, district]);
 
   const orders = useMemo(() => {
-    if (maxDistanceKm <= 0) return allOrders;
-    return allOrders.filter(
-      (order) =>
-        order.distanceKm != null &&
-        Number(order.distanceKm) <= maxDistanceKm,
-    );
-  }, [allOrders, maxDistanceKm]);
+    let list = allOrders;
+
+    if (district !== 'Barchasi') {
+      list = list.filter((order) => order.district === district);
+    }
+
+    if (maxDistanceKm > 0) {
+      list = list.filter(
+        (order) =>
+          order.distanceKm != null &&
+          Number(order.distanceKm) <= maxDistanceKm,
+      );
+    }
+
+    return list;
+  }, [allOrders, district, maxDistanceKm]);
 
   const total = orders.length;
 
@@ -82,6 +107,13 @@ export default function OrdersScreen() {
   }, [availableDistanceFilters, maxDistanceKm]);
 
   useEffect(() => {
+    if (district === 'Barchasi') return;
+    if (!availableDistricts.includes(district)) {
+      setDistrict('Barchasi');
+    }
+  }, [availableDistricts, district]);
+
+  useEffect(() => {
     if (maxDistanceKm <= 0) return;
     const stillValid = availableDistanceFilters.some(
       (item) => item.value === maxDistanceKm,
@@ -89,22 +121,25 @@ export default function OrdersScreen() {
     if (!stillValid) setMaxDistanceKm(0);
   }, [availableDistanceFilters, maxDistanceKm]);
 
-  const ensureCourierLocation = useCallback(async (forceAsk = false) => {
-    if (courierCoords && !forceAsk) return courierCoords;
+  const ensureCourierLocation = useCallback(
+    async (forceAsk = false) => {
+      if (courierCoords && !forceAsk) return courierCoords;
 
-    const result = await requestCourierLocation();
-    if (result.coords) {
-      setCourierCoords(result.coords);
-      setLocationDenied(false);
-      return result.coords;
-    }
+      const result = await requestCourierLocation();
+      if (result.coords) {
+        setCourierCoords(result.coords);
+        setLocationDenied(false);
+        return result.coords;
+      }
 
-    setLocationDenied(Boolean(result.denied));
-    if (result.errorMessage) {
-      Alert.alert('Joylashuv', result.errorMessage);
-    }
-    return null;
-  }, [courierCoords]);
+      setLocationDenied(Boolean(result.denied));
+      if (result.errorMessage) {
+        Alert.alert('Joylashuv', result.errorMessage);
+      }
+      return null;
+    },
+    [courierCoords],
+  );
 
   const loadOrders = useCallback(
     async (coords?: CourierCoords | null) => {
@@ -112,9 +147,9 @@ export default function OrdersScreen() {
       setLoading(true);
       try {
         const activeCoords = coords === undefined ? courierCoords : coords;
+        // Tuman/masofa clientda filtrlanadi — serverdan shahar bo'yicha barchasi
         const data = await fetchAvailableDeliveryOrders(token, {
           city,
-          district,
           courierLat: activeCoords?.latitude,
           courierLng: activeCoords?.longitude,
         });
@@ -125,7 +160,7 @@ export default function OrdersScreen() {
         setLoading(false);
       }
     },
-    [token, city, district, courierCoords],
+    [token, city, courierCoords],
   );
 
   useFocusEffect(
@@ -153,30 +188,45 @@ export default function OrdersScreen() {
 
   useEffect(() => {
     if (!token || !askedLocationRef.current) return;
+    setDistrict('Barchasi');
+    setMaxDistanceKm(0);
     loadOrders();
-  }, [city, district, token, loadOrders]);
+  }, [city, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleSelectDistance(value: number) {
+  function handleSelectDistrict(value: string) {
+    setDistrict(value);
+    setMaxDistanceKm(0);
+    setFilterSheet(null);
+  }
+
+  function handleSelectDistance(value: number) {
+    // Darhol tanlash — GPS kutmaymiz (km allaqachon kartochkalarda bor)
+    setMaxDistanceKm(value);
     setFilterSheet(null);
 
-    if (value <= 0) {
-      setMaxDistanceKm(0);
-      return;
+    if (value > 0 && !courierCoords) {
+      void ensureCourierLocation(true).then((coords) => {
+        if (coords) void loadOrders(coords);
+      });
     }
+  }
 
-    const coords = await ensureCourierLocation(true);
-    if (!coords) {
-      setMaxDistanceKm(0);
+  function openDistrictFilter() {
+    if (availableDistricts.length <= 1) {
+      Alert.alert(
+        'Tuman',
+        'Hozircha tumanli buyurtma yo‘q. Buyurtma chiqqanda tumanlar shu yerda paydo bo‘ladi.',
+      );
       return;
     }
-    setMaxDistanceKm(value);
+    setFilterSheet('district');
   }
 
   function openDistanceFilter() {
     if (!availableDistanceFilters.length) {
       Alert.alert(
         'Masofa',
-        'Hozircha buyurtma yo‘q. Buyurtma chiqqanda real km filtrlari paydo bo‘ladi.',
+        'Hozircha buyurtma yo‘q yoki joylashuv olinmagan. Buyurtma chiqqanda real km filtrlari paydo bo‘ladi.',
       );
       return;
     }
@@ -203,7 +253,7 @@ export default function OrdersScreen() {
           districtLabel={district === 'Barchasi' ? 'Tuman' : district}
           distanceLabel={maxDistanceKm > 0 ? distanceLabel : 'Masofa'}
           onCityPress={() => setFilterSheet('city')}
-          onDistrictPress={() => setFilterSheet('district')}
+          onDistrictPress={openDistrictFilter}
           onDistancePress={openDistanceFilter}
           total={total}
         />
@@ -264,14 +314,11 @@ export default function OrdersScreen() {
         visible={filterSheet === 'district'}
         title="Tuman"
         onClose={() => setFilterSheet(null)}>
-        {TASHKENT_DISTRICTS.map((item) => (
+        {availableDistricts.map((item) => (
           <Pressable
             key={item}
             style={styles.option}
-            onPress={() => {
-              setDistrict(item);
-              setFilterSheet(null);
-            }}>
+            onPress={() => handleSelectDistrict(item)}>
             <Text
               style={[
                 styles.optionText,

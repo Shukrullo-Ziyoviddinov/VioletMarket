@@ -9,6 +9,10 @@ const {
   resolveStoredPaymentMethod,
 } = require("./paymentMethods");
 const { normalizeOrderTrackingStatus } = require("./orderTracking");
+const {
+  listAssignmentsByKeys,
+  assignmentLookupKey,
+} = require("../services/deliveryOrders/courierOrderAssignmentService");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -136,6 +140,11 @@ function buildSellerOrderItemCards(order, user, sellerId) {
           item.trackingHistory.find(
             (entry) => String(entry?.status || "") === "seller_confirmed",
           )?.at || null,
+        handedToCourierAt:
+          item.trackingHistory.find(
+            (entry) => String(entry?.status || "") === "handed_to_courier",
+          )?.at || null,
+        unitIndex,
       });
     }
   });
@@ -209,7 +218,45 @@ async function listSellerOrders(sellerId, query = {}) {
 
   const total = filteredCards.length;
   const start = (page - 1) * limit;
-  const orders = filteredCards.slice(start, start + limit);
+  let orders = filteredCards.slice(start, start + limit);
+
+  // Kuryerga topshirilgan kartochkalarga qabul qilgan kuryer malumotini ulash
+  if (requestedTrackingStatus === "handed_to_courier" && orders.length) {
+    const assignments = await listAssignmentsByKeys(
+      orders.map((card) => ({
+        orderId: card.orderId,
+        itemIndex: card.itemIndex,
+        unitIndex: card.unitIndex,
+      })),
+    );
+    const byKey = new Map(
+      assignments.map((row) => [
+        assignmentLookupKey(row.orderId, row.itemIndex, row.unitIndex),
+        row,
+      ]),
+    );
+
+    orders = orders.map((card) => {
+      const assignment = byKey.get(
+        assignmentLookupKey(card.orderId, card.itemIndex, card.unitIndex),
+      );
+      if (!assignment) {
+        return {
+          ...card,
+          courierAccepted: false,
+          courier: null,
+          acceptedAt: null,
+        };
+      }
+      return {
+        ...card,
+        courierAccepted: true,
+        courier: assignment.courier,
+        acceptedAt: assignment.acceptedAt,
+        assignmentId: assignment.id,
+      };
+    });
+  }
 
   return {
     page,

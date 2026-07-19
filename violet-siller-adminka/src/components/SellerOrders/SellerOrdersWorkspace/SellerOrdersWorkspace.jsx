@@ -11,9 +11,17 @@ import { useSellerAuth } from '../../../context/SellerAuthContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import SellerOrderCollectionList from '../SellerOrderCollectionList/SellerOrderCollectionList';
 import SellerOrderCourierList from '../SellerOrderCourierList/SellerOrderCourierList';
+import SellerOrderHandedList from '../SellerOrderHandedList/SellerOrderHandedList';
 import SellerOrdersList from '../SellerOrdersList/SellerOrdersList';
 import SellerOrderDetailModal from '../SellerOrderDetailModal/SellerOrderDetailModal';
 import './SellerOrdersWorkspace.css';
+
+const FILTER_STATUS = {
+  confirmation: 'accepted',
+  collection: 'seller_confirmed',
+  courier: 'collected',
+  handed: 'handed_to_courier',
+};
 
 export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const { t } = useTranslation();
@@ -35,11 +43,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
 
     setLoading(true);
     try {
-      const trackingStatus = {
-        confirmation: 'accepted',
-        collection: 'seller_confirmed',
-        courier: 'collected',
-      }[filter] || 'accepted';
+      const trackingStatus = FILTER_STATUS[filter] || 'accepted';
       const data = await fetchSellerOrders(token, {
         page: 1,
         limit: 100,
@@ -70,6 +74,9 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   );
   const courierOrders = orders.filter(
     (order) => order.trackingStatus === 'collected',
+  );
+  const handedOrders = orders.filter(
+    (order) => order.trackingStatus === 'handed_to_courier',
   );
 
   const handleConfirm = async () => {
@@ -124,27 +131,40 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     }
   };
 
+  let listNode = null;
+  if (filter === 'confirmation') {
+    listNode = (
+      <SellerOrdersList
+        orders={confirmationOrders}
+        loading={loading}
+        onOpenOrder={setActiveOrder}
+      />
+    );
+  } else if (filter === 'collection') {
+    listNode = (
+      <SellerOrderCollectionList
+        orders={collectionOrders}
+        loading={loading}
+        onOpenOrder={setActiveOrder}
+      />
+    );
+  } else if (filter === 'courier') {
+    listNode = (
+      <SellerOrderCourierList
+        orders={courierOrders}
+        loading={loading}
+        onOpenOrder={setCourierOrder}
+      />
+    );
+  } else if (filter === 'handed') {
+    listNode = (
+      <SellerOrderHandedList orders={handedOrders} loading={loading} />
+    );
+  }
+
   return (
     <div className="seller-orders-workspace">
-      {filter === 'confirmation' ? (
-        <SellerOrdersList
-          orders={confirmationOrders}
-          loading={loading}
-          onOpenOrder={setActiveOrder}
-        />
-      ) : filter === 'collection' ? (
-        <SellerOrderCollectionList
-          orders={collectionOrders}
-          loading={loading}
-          onOpenOrder={setActiveOrder}
-        />
-      ) : (
-        <SellerOrderCourierList
-          orders={courierOrders}
-          loading={loading}
-          onOpenOrder={setCourierOrder}
-        />
-      )}
+      {listNode}
 
       <SellerOrderDetailModal
         open={Boolean(activeOrder)}

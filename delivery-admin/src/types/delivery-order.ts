@@ -20,21 +20,6 @@ export type DeliveryAvailableOrder = {
 
 export const TASHKENT_CITY = 'Toshkent';
 
-export const TASHKENT_DISTRICTS = [
-  'Barchasi',
-  'Bektemir tumani',
-  'Chilonzor tumani',
-  'Yashnobod tumani',
-  'Mirobod tumani',
-  'Mirzo Ulug‘bek tumani',
-  'Sergeli tumani',
-  'Shayxontohur tumani',
-  'Olmazor tumani',
-  'Uchtepa tumani',
-  'Yakkasaroy tumani',
-  'Yunusobod tumani',
-] as const;
-
 export const DISTANCE_FILTERS = [
   { label: 'Barchasi', value: 0 },
   { label: '2 km gacha', value: 2 },

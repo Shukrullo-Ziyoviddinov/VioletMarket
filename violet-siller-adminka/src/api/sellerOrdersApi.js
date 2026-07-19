@@ -45,6 +45,19 @@ function normalizeOrder(row) {
     quantity: Number(row?.quantity) || 1,
     trackingStatus: String(row?.trackingStatus || 'accepted'),
     confirmedAt: row?.confirmedAt || null,
+    handedToCourierAt: row?.handedToCourierAt || null,
+    unitIndex: Number(row?.unitIndex) || 0,
+    courierAccepted: Boolean(row?.courierAccepted),
+    courier: row?.courier
+      ? {
+          firstName: String(row.courier.firstName || ''),
+          lastName: String(row.courier.lastName || ''),
+          phone: String(row.courier.phone || ''),
+          email: String(row.courier.email || ''),
+        }
+      : null,
+    acceptedAt: row?.acceptedAt || null,
+    assignmentId: row?.assignmentId ? String(row.assignmentId) : null,
   };
 }
 

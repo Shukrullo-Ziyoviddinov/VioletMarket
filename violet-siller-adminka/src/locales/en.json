@@ -16,13 +16,22 @@
       "label": "Order status",
       "confirmation": "Confirm",
       "collection": "Collect product",
-      "courier": "Hand over to courier"
+      "courier": "Hand over to courier",
+      "handed": "Handed to courier"
     },
     "collection": {
       "empty": "No products to collect"
     },
     "courier": {
       "empty": "No products to hand over to the courier"
+    },
+    "handed": {
+      "empty": "No products handed to courier yet",
+      "waitingCourier": "Courier has not accepted yet — name, phone and time will appear after Accept",
+      "courier": "Courier",
+      "courierPhone": "Courier phone",
+      "handedAt": "Handed over at",
+      "acceptedAt": "Courier accepted at"
     },
     "confirm": {
       "success": "Order confirmed",
