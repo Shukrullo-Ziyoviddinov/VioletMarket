@@ -65,12 +65,21 @@ const Checkout = () => {
     }
 
     // Manzilni darhol serverga yozamiz — checkout body kelmasa ham orderga tushadi
-    if (authToken && address) {
-      saveDeliveryAddressApi(authToken, address).catch((err) => {
+    const token = authToken || localStorage.getItem('authToken');
+    if (token && address) {
+      saveDeliveryAddressApi(token, address).catch((err) => {
         console.error('Manzil serverga saqlanmadi:', err);
       });
     }
   };
+
+  // Sahifa ochilganda localStorage dagi manzilni serverga sync qilamiz
+  useEffect(() => {
+    const token = authToken || localStorage.getItem('authToken');
+    if (!token || !savedAddress) return;
+    if (!(savedAddress.addressLine || savedAddress.formatted)) return;
+    saveDeliveryAddressApi(token, savedAddress).catch(() => {});
+  }, [authToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!cartReady) return;

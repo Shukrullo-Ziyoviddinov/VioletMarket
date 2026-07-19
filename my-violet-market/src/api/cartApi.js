@@ -78,18 +78,64 @@ export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) 
     }
   }
 
+  if (!addressPayload) {
+    return Promise.reject(
+      Object.assign(
+        new Error('Yetkazib berish manzilini saqlang, keyin to‘lov qiling'),
+        { status: 400, code: 'DELIVERY_ADDRESS_REQUIRED' },
+      ),
+    );
+  }
+
+  const city = String(addressPayload.city || '').trim();
+  const district = String(addressPayload.district || '').trim();
+  const addressLine = String(
+    addressPayload.addressLine || addressPayload.formatted || '',
+  ).trim();
+  const coords = Array.isArray(addressPayload.coords)
+    ? addressPayload.coords
+    : null;
+
+  if (!addressLine && !coords) {
+    return Promise.reject(
+      Object.assign(
+        new Error('Manzil to‘liq emas. Manzilni qayta saqlang'),
+        { status: 400, code: 'DELIVERY_ADDRESS_REQUIRED' },
+      ),
+    );
+  }
+
   return fetch(apiUrl('/api/cart/checkout'), {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({
       paymentMethod: method,
-      deliveryAddress: addressPayload,
-      address: addressPayload,
+      deliveryAddress: {
+        ...addressPayload,
+        city,
+        district,
+        addressLine,
+        coords,
+      },
+      address: {
+        ...addressPayload,
+        city,
+        district,
+        addressLine,
+        coords,
+      },
+      // Flat fallback — ba'zi proxy/body parser holatlari uchun
+      city,
+      district,
+      addressLine,
+      coords,
+      formatted: addressPayload.formatted || addressLine,
     }),
   }).then(parseJsonResponse);
 }
 
 export function saveDeliveryAddressApi(token, deliveryAddress) {
+  const authToken = token || localStorage.getItem('authToken');
   let addressPayload = deliveryAddress || null;
   if (!addressPayload) {
     try {
@@ -100,9 +146,15 @@ export function saveDeliveryAddressApi(token, deliveryAddress) {
     }
   }
 
+  if (!authToken || !addressPayload) {
+    return Promise.reject(
+      Object.assign(new Error('Manzil saqlanmadi'), { status: 400 }),
+    );
+  }
+
   return fetch(apiUrl('/api/cart/delivery-address'), {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(authToken),
     body: JSON.stringify({ deliveryAddress: addressPayload }),
   }).then(parseJsonResponse);
 }

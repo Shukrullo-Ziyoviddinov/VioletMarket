@@ -99,13 +99,14 @@ async function recordCartPayment({
     status,
     paidAt,
     source,
-    ...(normalizedAddress ? { deliveryAddress: normalizedAddress } : {}),
   });
 
-  // Ba'zi hollarda create nested null qilib yuborishi mumkin — qayta yozib qo'yamiz
-  if (normalizedAddress && order && !order.deliveryAddress) {
+  if (normalizedAddress) {
+    await Order.updateOne(
+      { _id: order._id },
+      { $set: { deliveryAddress: normalizedAddress } },
+    );
     order.deliveryAddress = normalizedAddress;
-    await order.save();
   }
 
   await recordAllSalesFromOrder(order);

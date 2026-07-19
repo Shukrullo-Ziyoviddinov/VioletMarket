@@ -34,12 +34,23 @@ const clearCart = asyncHandler(async (req, res) => {
 const checkout = asyncHandler(async (req, res) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};
   const paymentMethod = body.paymentMethod ?? body.payment_method;
+
+  // Manzilni bir necha formatdan yig'amiz (nested yoki flat)
   const deliveryAddress =
     body.deliveryAddress ??
     body.address ??
     body.delivery_address ??
     body.checkoutAddress ??
-    null;
+    (body.addressLine || body.city || body.district || body.coords
+      ? {
+          city: body.city,
+          district: body.district,
+          addressLine: body.addressLine || body.formatted,
+          coords: body.coords,
+          formatted: body.formatted,
+        }
+      : null);
+
   const data = await cartService.checkoutCartForUser(req.userId, {
     paymentMethod,
     deliveryAddress,

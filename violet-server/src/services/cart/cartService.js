@@ -553,6 +553,14 @@ async function checkoutCartForUser(userId, options = {}) {
     options.deliveryAddress,
   );
 
+  if (!deliveryAddress) {
+    throw new HttpError(
+      400,
+      "Yetkazib berish manzili yuborilmadi. Checkout’da manzilni qayta saqlang, keyin to‘lov qiling.",
+      "DELIVERY_ADDRESS_REQUIRED",
+    );
+  }
+
   const requestedByProductId = new Map();
   const variantRequestsByProductId = new Map();
   for (const item of items) {
