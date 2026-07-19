@@ -88,3 +88,21 @@ export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) 
     }),
   }).then(parseJsonResponse);
 }
+
+export function saveDeliveryAddressApi(token, deliveryAddress) {
+  let addressPayload = deliveryAddress || null;
+  if (!addressPayload) {
+    try {
+      const raw = localStorage.getItem('checkoutAddress');
+      addressPayload = raw ? JSON.parse(raw) : null;
+    } catch {
+      addressPayload = null;
+    }
+  }
+
+  return fetch(apiUrl('/api/cart/delivery-address'), {
+    method: 'PUT',
+    headers: authHeaders(token),
+    body: JSON.stringify({ deliveryAddress: addressPayload }),
+  }).then(parseJsonResponse);
+}

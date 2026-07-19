@@ -52,6 +52,17 @@ const checkout = asyncHandler(async (req, res) => {
   });
 });
 
+const saveDeliveryAddress = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const deliveryAddress =
+    body.deliveryAddress ?? body.address ?? body.checkoutAddress ?? body;
+  const data = await cartService.saveDeliveryAddressForUser(
+    req.userId,
+    deliveryAddress,
+  );
+  res.json({ ok: true, ...data });
+});
+
 const dismissUrgency = asyncHandler(async (req, res) => {
   const data = await cartService.dismissCartUrgency(req.userId, req.params.itemId);
   res.json({ ok: true, ...data });
@@ -64,5 +75,6 @@ module.exports = {
   removeItem,
   clearCart,
   checkout,
+  saveDeliveryAddress,
   dismissUrgency,
 };

@@ -15,6 +15,7 @@ import CheckoutOrderSummary from '../components/CheckoutOrderSummary';
 import { CheckoutPaymentProvider } from '../contexts/CheckoutPaymentContext';
 import AddressModal from '../components/AddressModal';
 import OrderConfirmedModal from '../components/OrderConfirmedModal';
+import { saveDeliveryAddressApi } from '../api/cartApi';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -33,7 +34,7 @@ const Checkout = () => {
   const [isOrderConfirmedOpen, setIsOrderConfirmedOpen] = useState(false);
   const [orderConfirmedPayload, setOrderConfirmedPayload] = useState(null);
 
-  const { userData } = useUser();
+  const { userData, authToken } = useUser();
   const {
     cart,
     cartReady,
@@ -61,6 +62,13 @@ const Checkout = () => {
       localStorage.setItem('checkoutAddress', JSON.stringify(address));
     } catch (e) {
       console.error(e);
+    }
+
+    // Manzilni darhol serverga yozamiz — checkout body kelmasa ham orderga tushadi
+    if (authToken && address) {
+      saveDeliveryAddressApi(authToken, address).catch((err) => {
+        console.error('Manzil serverga saqlanmadi:', err);
+      });
     }
   };
 

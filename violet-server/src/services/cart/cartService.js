@@ -1,11 +1,15 @@
 const { CartItem } = require("../../models/cart");
 const { Product } = require("../../models/product");
+const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
   markProductsAsSold,
   buildPostOrderReviewPayload,
   recordCartPayment,
 } = require("../../productManagement");
+const {
+  normalizeDeliveryAddress,
+} = require("../../utils/normalizeDeliveryAddress");
 const {
   generateInitialUrgencyStock,
   buildNextShowAt,
@@ -495,11 +499,59 @@ async function clearCartForUser(userId) {
   return getCartForUser(userId);
 }
 
+async function saveDeliveryAddressForUser(userId, rawAddress) {
+  const normalized = normalizeDeliveryAddress(rawAddress);
+  if (!normalized) {
+    throw new HttpError(400, "Manzil bo‘sh", "INVALID_DELIVERY_ADDRESS");
+  }
+
+  const extra =
+    rawAddress && typeof rawAddress === "object" && !Array.isArray(rawAddress)
+      ? rawAddress
+      : {};
+
+  const payload = {
+    ...normalized,
+    placeType: String(extra.placeType || "").trim(),
+    entrance: String(extra.entrance || "").trim(),
+    floor: String(extra.floor || "").trim(),
+    domofon: String(extra.domofon || "").trim(),
+    courierNote: String(extra.courierNote || "").trim(),
+    formatted: String(extra.formatted || normalized.addressLine || "").trim(),
+  };
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { $set: { savedDeliveryAddress: payload } },
+    { new: true },
+  );
+  if (!user) {
+    throw new HttpError(404, "Foydalanuvchi topilmadi", "USER_NOT_FOUND");
+  }
+
+  return {
+    deliveryAddress: user.savedDeliveryAddress || payload,
+  };
+}
+
+async function resolveCheckoutDeliveryAddress(userId, rawAddress) {
+  const fromBody = normalizeDeliveryAddress(rawAddress);
+  if (fromBody) return fromBody;
+
+  const user = await User.findById(userId).select("savedDeliveryAddress").lean();
+  return normalizeDeliveryAddress(user?.savedDeliveryAddress) || null;
+}
+
 async function checkoutCartForUser(userId, options = {}) {
   const items = await CartItem.find({ userId }).sort({ createdAt: -1 });
   if (items.length === 0) {
     return { items: [] };
   }
+
+  const deliveryAddress = await resolveCheckoutDeliveryAddress(
+    userId,
+    options.deliveryAddress,
+  );
 
   const requestedByProductId = new Map();
   const variantRequestsByProductId = new Map();
@@ -604,8 +656,14 @@ async function checkoutCartForUser(userId, options = {}) {
     cartItems: items,
     productMap,
     paymentMethod: options.paymentMethod,
-    deliveryAddress: options.deliveryAddress,
+    deliveryAddress,
   });
+
+  if (deliveryAddress) {
+    await User.findByIdAndUpdate(userId, {
+      $set: { savedDeliveryAddress: deliveryAddress },
+    }).catch(() => null);
+  }
 
   await markProductsAsSold({
     requestedByProductId,
@@ -654,5 +712,6 @@ module.exports = {
   removeCartItem,
   clearCartForUser,
   checkoutCartForUser,
+  saveDeliveryAddressForUser,
   dismissCartUrgency,
 };

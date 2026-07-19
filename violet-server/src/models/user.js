@@ -1,5 +1,21 @@
 const mongoose = require("mongoose");
 
+const savedDeliveryAddressSchema = new mongoose.Schema(
+  {
+    city: { type: String, default: "" },
+    district: { type: String, default: "" },
+    addressLine: { type: String, default: "" },
+    coords: { type: [Number], default: undefined },
+    placeType: { type: String, default: "" },
+    entrance: { type: String, default: "" },
+    floor: { type: String, default: "" },
+    domofon: { type: String, default: "" },
+    courierNote: { type: String, default: "" },
+    formatted: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -19,6 +35,10 @@ const userSchema = new mongoose.Schema(
     hasUploadedImage: { type: Boolean, default: false },
     language: { type: String, default: "uz" },
     sellerAccountId: { type: String, default: null },
+    savedDeliveryAddress: {
+      type: savedDeliveryAddressSchema,
+      default: null,
+    },
   },
   { timestamps: true },
 );
@@ -36,6 +56,7 @@ userSchema.methods.toPublicJSON = function toPublicJSON() {
     hasUploadedImage: this.hasUploadedImage,
     language: this.language,
     sellerAccountId: this.sellerAccountId,
+    savedDeliveryAddress: this.savedDeliveryAddress || null,
   };
 };
 
