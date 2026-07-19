@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 const items = [
   { label: 'Bosh sahifa', icon: 'home-outline', href: '/home' },
   { label: 'Buyurtmalar', icon: 'receipt-outline', href: '/orders' },
-  { label: 'Tarix', icon: 'clipboard-outline', href: null },
+  { label: 'Tarix', icon: 'clipboard-outline', href: '/history' },
   { label: 'Profil', icon: 'person', href: '/profile' },
 ] as const;
 
@@ -13,7 +13,10 @@ function resolveActiveLabel(pathname: string) {
   if (pathname.includes('/profile') || pathname.includes('/support')) {
     return 'Profil';
   }
-  if (pathname.includes('/home')) {
+  if (pathname.includes('/history')) {
+    return 'Tarix';
+  }
+  if (pathname.includes('/home') || pathname.includes('/order/')) {
     return 'Bosh sahifa';
   }
   if (pathname.includes('/orders')) {
@@ -31,15 +34,12 @@ export function BottomNavbar() {
     <View style={styles.container}>
       {items.map((item) => {
         const active = item.label === activeLabel;
-        const isPlaceholder = item.href == null;
 
         return (
           <Pressable
             key={item.label}
             style={styles.item}
-            disabled={isPlaceholder}
             onPress={() => {
-              if (!item.href) return;
               router.push(item.href);
             }}>
             <Ionicons

@@ -1,8 +1,9 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Linking,
   StyleSheet,
   Text,
   View,
@@ -14,6 +15,32 @@ import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchAcceptedDeliveryOrders } from '@/services/delivery-orders';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
+
+function openOrderDetails(assignmentId: string): Href {
+  return `/order/${assignmentId}` as unknown as Href;
+}
+
+function openRoute(order: DeliveryAcceptedOrder) {
+  const address = order.deliveryAddress;
+  const coords = address?.coords;
+  if (Array.isArray(coords) && coords.length >= 2) {
+    const [lng, lat] = coords;
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      Linking.openURL(
+        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+      );
+      return;
+    }
+  }
+  const text =
+    address?.addressLine ||
+    [address?.city, address?.district].filter(Boolean).join(', ') ||
+    '';
+  if (!text) return;
+  Linking.openURL(
+    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(text)}`,
+  );
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -81,9 +108,8 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <AcceptedOrderCard
                 order={item}
-                onBuildRoute={() => {
-                  // Keyingi qadam: navigatsiya / xarita
-                }}
+                onBuildRoute={() => openRoute(item)}
+                onOpenDetails={() => router.push(openOrderDetails(item.id))}
               />
             )}
           />

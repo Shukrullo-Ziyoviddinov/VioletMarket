@@ -16,10 +16,28 @@ router.get(
   deliveryOrdersController.listAcceptedOrders,
 );
 
+router.get(
+  "/delivery/orders/accepted/:id",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.getAcceptedOrder,
+);
+
+router.get(
+  "/delivery/orders/history",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.listDeliveredHistory,
+);
+
 router.post(
   "/delivery/orders/accept",
   deliveryAuthMiddleware,
   deliveryOrdersController.acceptOrder,
+);
+
+router.post(
+  "/delivery/orders/deliver",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.deliverOrder,
 );
 
 module.exports = router;

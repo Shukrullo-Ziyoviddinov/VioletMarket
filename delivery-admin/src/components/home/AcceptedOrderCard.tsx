@@ -8,6 +8,7 @@ import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 type AcceptedOrderCardProps = {
   order: DeliveryAcceptedOrder;
   onBuildRoute?: (order: DeliveryAcceptedOrder) => void;
+  onOpenDetails?: (order: DeliveryAcceptedOrder) => void;
 };
 
 function formatAmount(value: number) {
@@ -29,6 +30,7 @@ function DetailCell({ label, value }: { label: string; value?: string }) {
 export function AcceptedOrderCard({
   order,
   onBuildRoute,
+  onOpenDetails,
 }: AcceptedOrderCardProps) {
   const [noteOpen, setNoteOpen] = useState(false);
   const address = order.deliveryAddress || {
@@ -98,12 +100,26 @@ export function AcceptedOrderCard({
         ) : null}
       </View>
 
-      <Pressable
-        style={({ pressed }) => [styles.routeButton, pressed && styles.pressed]}
-        onPress={() => onBuildRoute?.(order)}>
-        <Ionicons name="navigate-outline" size={18} color="#FFFFFF" />
-        <Text style={styles.routeText}>Mashrut tuzish</Text>
-      </Pressable>
+      <View style={styles.actionsRow}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.routeButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => onBuildRoute?.(order)}>
+          <Ionicons name="navigate-outline" size={18} color="#FFFFFF" />
+          <Text style={styles.routeText}>Mashrut tuzish</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            styles.infoButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => onOpenDetails?.(order)}>
+          <Ionicons name="information-circle-outline" size={18} color="#6D28D9" />
+          <Text style={styles.infoText}>Ma'lumot</Text>
+        </Pressable>
+      </View>
 
       <CourierNoteModal
         visible={noteOpen}
@@ -221,8 +237,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   routeButton: {
-    marginTop: 2,
+    flex: 1.2,
     minHeight: 48,
     borderRadius: 14,
     backgroundColor: '#6D28D9',
@@ -230,10 +250,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: 10,
   },
   routeText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  infoButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#6D28D9',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+  },
+  infoText: {
+    color: '#6D28D9',
+    fontSize: 14,
     fontWeight: '800',
   },
   pressed: {

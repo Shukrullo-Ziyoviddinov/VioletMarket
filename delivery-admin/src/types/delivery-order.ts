@@ -30,6 +30,12 @@ export type DeliveryAddressDetails = {
   coords: number[] | null;
 };
 
+export type DeliveryCustomer = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+};
+
 export type DeliveryAcceptedOrder = {
   id: string;
   orderId: number;
@@ -40,11 +46,21 @@ export type DeliveryAcceptedOrder = {
   barcode: string;
   title: { uz: string; ru: string };
   amount: number;
+  deliveryFee: number;
   productCount: number;
+  customer: DeliveryCustomer;
   deliveryAddress: DeliveryAddressDetails;
   status: string;
   acceptedAt: string | null;
   handedToCourierAt: string | null;
+  deliveredAt: string | null;
+};
+
+export type DeliveryHistoryStats = {
+  totalDelivered: number;
+  todayCount: number;
+  weekCount: number;
+  totalIncome: number;
 };
 
 export const TASHKENT_CITY = 'Toshkent';

@@ -36,6 +36,12 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
       email: { type: String, default: "" },
     },
 
+    customer: {
+      firstName: { type: String, default: "" },
+      lastName: { type: String, default: "" },
+      phone: { type: String, default: "" },
+    },
+
     deliveryAddress: {
       city: { type: String, default: "" },
       district: { type: String, default: "" },
@@ -56,6 +62,7 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
     },
     handedToCourierAt: { type: Date, default: null },
     acceptedAt: { type: Date, required: true, index: true },
+    deliveredAt: { type: Date, default: null, index: true },
   },
   {
     collection: "courier_order_assignments",
@@ -70,6 +77,7 @@ courierOrderAssignmentSchema.index(
 );
 courierOrderAssignmentSchema.index({ sellerId: 1, acceptedAt: -1 });
 courierOrderAssignmentSchema.index({ deliveryId: 1, acceptedAt: -1 });
+courierOrderAssignmentSchema.index({ deliveryId: 1, status: 1, deliveredAt: -1 });
 
 const CourierOrderAssignment =
   mongoose.models.CourierOrderAssignment ||

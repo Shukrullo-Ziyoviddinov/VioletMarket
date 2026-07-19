@@ -4,10 +4,15 @@ const {
 } = require("../services/deliveryOrders/deliveryAvailableOrdersService");
 const {
   acceptOrderUnitByCourier,
+  deliverOrderUnitByCourier,
+  getAssignmentForCourier,
 } = require("../services/deliveryOrders/courierOrderAssignmentService");
 const {
   listAcceptedOrdersForCourier,
 } = require("../services/deliveryOrders/courierAcceptedOrdersService");
+const {
+  listDeliveredHistoryForCourier,
+} = require("../services/deliveryOrders/courierDeliveredHistoryService");
 
 const listAvailableOrders = asyncHandler(async (req, res) => {
   const data = await listAvailableDeliveryOrders(req.query || {});
@@ -20,13 +25,32 @@ const acceptOrder = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const deliverOrder = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await deliverOrderUnitByCourier(req.deliveryId, body);
+  res.json({ ok: true, data });
+});
+
 const listAcceptedOrders = asyncHandler(async (req, res) => {
   const data = await listAcceptedOrdersForCourier(req.deliveryId, req.query || {});
+  res.json({ ok: true, data });
+});
+
+const getAcceptedOrder = asyncHandler(async (req, res) => {
+  const data = await getAssignmentForCourier(req.deliveryId, req.params.id);
+  res.json({ ok: true, data });
+});
+
+const listDeliveredHistory = asyncHandler(async (req, res) => {
+  const data = await listDeliveredHistoryForCourier(req.deliveryId);
   res.json({ ok: true, data });
 });
 
 module.exports = {
   listAvailableOrders,
   acceptOrder,
+  deliverOrder,
   listAcceptedOrders,
+  getAcceptedOrder,
+  listDeliveredHistory,
 };

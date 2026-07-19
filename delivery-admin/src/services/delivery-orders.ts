@@ -2,6 +2,7 @@ import { apiRequest } from '@/services/api';
 import type {
   DeliveryAcceptedOrder,
   DeliveryAvailableOrder,
+  DeliveryHistoryStats,
 } from '@/types/delivery-order';
 
 export type AvailableOrdersFilters = {
@@ -63,9 +64,42 @@ export async function acceptDeliveryOrder(
   );
 }
 
+export async function deliverDeliveryOrder(
+  token: string,
+  payload: { assignmentId: string },
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    '/api/delivery/orders/deliver',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
 export async function fetchAcceptedDeliveryOrders(token: string) {
   return apiRequest<{
     total: number;
     orders: DeliveryAcceptedOrder[];
   }>('/api/delivery/orders/accepted', { method: 'GET' }, token);
+}
+
+export async function fetchAcceptedDeliveryOrder(
+  token: string,
+  assignmentId: string,
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    `/api/delivery/orders/accepted/${encodeURIComponent(assignmentId)}`,
+    { method: 'GET' },
+    token,
+  );
+}
+
+export async function fetchDeliveredHistory(token: string) {
+  return apiRequest<{
+    total: number;
+    stats: DeliveryHistoryStats;
+    orders: DeliveryAcceptedOrder[];
+  }>('/api/delivery/orders/history', { method: 'GET' }, token);
 }

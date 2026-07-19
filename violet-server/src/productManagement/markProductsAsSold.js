@@ -36,8 +36,9 @@ async function incrementSellerOrderCounts(requestedByProductId, productMap) {
 }
 
 /**
- * Buyurtma tasdiqlanganda mahsulotlarni sotildi deb belgilash.
- * Hozir checkout dan chaqiriladi; keyin real to'lov / yetkazib berish adminkasidan ham shu funksiya ishlatiladi.
+ * Buyurtma tasdiqlanganda mahsulotlarni sotildi deb belgilash (ombor/qoldiq).
+ * Hozir checkout dan chaqiriladi (stock rezerv).
+ * Mijozga topshirish (tracking delivered) endi kuryer "Topshirdim" / keyin asosiy admindan.
  */
 async function markProductsAsSold({
   requestedByProductId,

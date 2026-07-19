@@ -1,4 +1,5 @@
 const { Order } = require("../../models/order");
+const { User } = require("../../models/user");
 const { DeliveryAccount } = require("../../models/deliveryAccount");
 const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { HttpError } = require("../../utils/httpError");
@@ -24,6 +25,17 @@ function resolveTitle(title) {
   }
   const text = String(title || "").trim();
   return { uz: text, ru: text };
+}
+
+function snapshotCustomer(user) {
+  if (!user) {
+    return { firstName: "", lastName: "", phone: "" };
+  }
+  return {
+    firstName: String(user.firstName || "").trim(),
+    lastName: String(user.lastName || "").trim(),
+    phone: String(user.phone || "").trim(),
+  };
 }
 
 function snapshotDeliveryAddress(raw) {
@@ -57,6 +69,7 @@ function toPublicAssignment(doc) {
   if (!doc) return null;
   const row = doc.toObject ? doc.toObject() : doc;
   const address = row.deliveryAddress || {};
+  const customer = row.customer || {};
   return {
     id: String(row._id),
     orderId: Number(row.orderId) || 0,
@@ -68,6 +81,7 @@ function toPublicAssignment(doc) {
     sellerId: String(row.sellerId || ""),
     title: resolveTitle(row.title),
     amount: Math.max(0, Number(row.amount) || 0),
+    deliveryFee: 0,
     productCount: 1,
     imageUrl: String(row.imageUrl || ""),
     color: String(row.color || ""),
@@ -80,6 +94,11 @@ function toPublicAssignment(doc) {
       lastName: String(row.courier?.lastName || ""),
       phone: String(row.courier?.phone || ""),
       email: String(row.courier?.email || ""),
+    },
+    customer: {
+      firstName: String(customer.firstName || ""),
+      lastName: String(customer.lastName || ""),
+      phone: String(customer.phone || ""),
     },
     deliveryAddress: {
       city: String(address.city || ""),
@@ -95,6 +114,7 @@ function toPublicAssignment(doc) {
     status: String(row.status || "accepted"),
     handedToCourierAt: row.handedToCourierAt || null,
     acceptedAt: row.acceptedAt || null,
+    deliveredAt: row.deliveredAt || null,
     createdAt: row.createdAt || null,
   };
 }
@@ -167,6 +187,9 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const amount = Math.max(0, Number(item.price) || 0);
   const acceptedAt = new Date();
   const deliveryAddress = snapshotDeliveryAddress(order.deliveryAddress);
+  const user = order.userId
+    ? await User.findById(order.userId).select("firstName lastName phone").lean()
+    : null;
 
   const created = await CourierOrderAssignment.create({
     orderId,
@@ -189,6 +212,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       phone: String(delivery.phone || "").trim(),
       email: String(delivery.email || "").trim(),
     },
+    customer: snapshotCustomer(user),
     deliveryAddress,
     status: "accepted",
     handedToCourierAt: handedEntry?.at || null,
@@ -196,6 +220,148 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   });
 
   return toPublicAssignment(created);
+}
+
+/**
+ * Kuryer "Topshirdim" — mijoz mahsulotni oldi.
+ * Keyinchalik asosiy admindan ham shu holat tasdiqlanishi mumkin.
+ */
+async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
+  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
+  const orderId = Number(payload.orderId);
+  const itemIndex = Number(payload.itemIndex);
+  const unitIndex = Math.max(0, Number(payload.unitIndex) || 0);
+
+  let assignment = null;
+  if (assignmentId) {
+    assignment = await CourierOrderAssignment.findById(assignmentId);
+  } else if (Number.isFinite(orderId) && Number.isFinite(itemIndex)) {
+    assignment = await CourierOrderAssignment.findOne({
+      orderId,
+      itemIndex,
+      unitIndex,
+    });
+  }
+
+  if (!assignment) {
+    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+
+  if (String(assignment.deliveryId) !== String(deliveryId)) {
+    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
+  }
+
+  if (String(assignment.status) === "delivered") {
+    return toPublicAssignment(assignment);
+  }
+
+  if (String(assignment.status) !== "accepted") {
+    throw new HttpError(
+      409,
+      "Bu buyurtmani topshirish mumkin emas",
+      "ASSIGNMENT_STATUS_CONFLICT",
+    );
+  }
+
+  const deliveredAt = new Date();
+  assignment.status = "delivered";
+  assignment.deliveredAt = deliveredAt;
+
+  if (
+    !assignment.customer?.phone &&
+    !assignment.customer?.firstName &&
+    !assignment.customer?.lastName
+  ) {
+    const orderForCustomer = await Order.findOne({ id: assignment.orderId })
+      .select("userId")
+      .lean();
+    if (orderForCustomer?.userId) {
+      const user = await User.findById(orderForCustomer.userId)
+        .select("firstName lastName phone")
+        .lean();
+      assignment.customer = snapshotCustomer(user);
+    }
+  }
+
+  await assignment.save();
+
+  const order = await Order.findOne({ id: assignment.orderId });
+  if (order) {
+    const item = Array.isArray(order.items) ? order.items[assignment.itemIndex] : null;
+    if (item) {
+      const unitCount = Math.max(1, Number(item.quantity) || 1);
+      const unitAssignments = await CourierOrderAssignment.find({
+        orderId: assignment.orderId,
+        itemIndex: assignment.itemIndex,
+      })
+        .select("unitIndex status")
+        .lean();
+
+      const deliveredUnits = new Set(
+        unitAssignments
+          .filter((row) => String(row.status) === "delivered")
+          .map((row) => Number(row.unitIndex) || 0),
+      );
+
+      let allUnitsDelivered = true;
+      for (let i = 0; i < unitCount; i += 1) {
+        if (!deliveredUnits.has(i)) {
+          allUnitsDelivered = false;
+          break;
+        }
+      }
+
+      const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+      if (allUnitsDelivered && currentStatus !== "delivered") {
+        item.trackingStatus = "delivered";
+        if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+        item.trackingHistory.push({ status: "delivered", at: deliveredAt });
+      }
+
+      const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
+        (row) => normalizeOrderTrackingStatus(row.trackingStatus) === "delivered",
+      );
+      if (allItemsDelivered && String(order.status) !== "delivered") {
+        order.status = "delivered";
+      }
+
+      await order.save();
+    }
+  }
+
+  return toPublicAssignment(assignment);
+}
+
+async function getAssignmentForCourier(deliveryId, assignmentId) {
+  const id = String(assignmentId || "").trim();
+  if (!id) {
+    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
+  }
+
+  const assignment = await CourierOrderAssignment.findById(id);
+  if (!assignment) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+  if (String(assignment.deliveryId) !== String(deliveryId)) {
+    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
+  }
+
+  if (
+    !assignment.customer?.phone &&
+    !assignment.customer?.firstName &&
+    !assignment.customer?.lastName
+  ) {
+    const order = await Order.findOne({ id: assignment.orderId }).select("userId").lean();
+    if (order?.userId) {
+      const user = await User.findById(order.userId)
+        .select("firstName lastName phone")
+        .lean();
+      assignment.customer = snapshotCustomer(user);
+      await assignment.save();
+    }
+  }
+
+  return toPublicAssignment(assignment);
 }
 
 async function listAssignmentsByKeys(keys = []) {
@@ -223,6 +389,8 @@ function assignmentLookupKey(orderId, itemIndex, unitIndex) {
 
 module.exports = {
   acceptOrderUnitByCourier,
+  deliverOrderUnitByCourier,
+  getAssignmentForCourier,
   listAssignmentsByKeys,
   assignmentLookupKey,
   toPublicAssignment,
