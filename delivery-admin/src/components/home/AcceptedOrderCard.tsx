@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { CourierNoteModal } from '@/components/home/CourierNoteModal';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
 type AcceptedOrderCardProps = {
@@ -12,13 +14,12 @@ function formatAmount(value: number) {
   return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
 }
 
-function DetailRow({ label, value }: { label: string; value?: string }) {
-  const text = String(value || '').trim();
-  if (!text) return null;
+function DetailCell({ label, value }: { label: string; value?: string }) {
+  const text = String(value || '').trim() || '—';
   return (
-    <View style={styles.detailRow}>
+    <View style={styles.detailCell}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue} numberOfLines={2}>
+      <Text style={styles.detailValue} numberOfLines={1}>
         {text}
       </Text>
     </View>
@@ -29,6 +30,7 @@ export function AcceptedOrderCard({
   order,
   onBuildRoute,
 }: AcceptedOrderCardProps) {
+  const [noteOpen, setNoteOpen] = useState(false);
   const address = order.deliveryAddress || {
     city: '',
     district: '',
@@ -40,6 +42,7 @@ export function AcceptedOrderCard({
     courierNote: '',
     coords: null,
   };
+  const courierNote = String(address.courierNote || '').trim();
 
   return (
     <View style={styles.card}>
@@ -58,17 +61,30 @@ export function AcceptedOrderCard({
           </Text>
         </View>
 
-        <View style={styles.detailsGrid}>
-          <DetailRow label="Uy" value={address.placeType} />
-          <DetailRow label="Yo‘lak" value={address.entrance} />
-          <DetailRow label="Qavat" value={address.floor} />
-          <DetailRow label="Domofon" value={address.domofon} />
+        <View style={styles.detailsRow}>
+          <DetailCell label="Uy" value={address.placeType} />
+          <DetailCell label="Yo‘lak" value={address.entrance} />
+          <DetailCell label="Qavat" value={address.floor} />
+          <DetailCell label="Domofon" value={address.domofon} />
         </View>
-
-        {address.courierNote ? (
-          <DetailRow label="Izoh" value={address.courierNote} />
-        ) : null}
       </View>
+
+      {courierNote ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.noteTrigger,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => setNoteOpen(true)}>
+          <Ionicons
+            name="chatbubble-ellipses-outline"
+            size={18}
+            color="#6D28D9"
+          />
+          <Text style={styles.noteTriggerText}>Kuryer uchun izoh</Text>
+          <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+        </Pressable>
+      ) : null}
 
       <View style={styles.metaRow}>
         <View style={styles.countWrap}>
@@ -88,6 +104,12 @@ export function AcceptedOrderCard({
         <Ionicons name="navigate-outline" size={18} color="#FFFFFF" />
         <Text style={styles.routeText}>Mashrut tuzish</Text>
       </Pressable>
+
+      <CourierNoteModal
+        visible={noteOpen}
+        note={courierNote}
+        onClose={() => setNoteOpen(false)}
+      />
     </View>
   );
 }
@@ -139,24 +161,41 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 20,
   },
-  detailsGrid: {
-    gap: 8,
-  },
-  detailRow: {
+  detailsRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 6,
+  },
+  detailCell: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
   },
   detailLabel: {
-    width: 72,
     color: '#6B7280',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
   detailValue: {
-    flex: 1,
     color: '#111827',
     fontSize: 13,
+    fontWeight: '700',
+  },
+  noteTrigger: {
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+    backgroundColor: '#FAF5FF',
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  noteTriggerText: {
+    flex: 1,
+    color: '#6D28D9',
+    fontSize: 14,
     fontWeight: '700',
   },
   metaRow: {

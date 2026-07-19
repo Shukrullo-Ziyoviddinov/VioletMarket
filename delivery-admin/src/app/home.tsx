@@ -55,12 +55,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bosh sahifa</Text>
+        <Text style={styles.headerTitle}>Qabul qilingan buyurtmalar</Text>
       </View>
 
       <View style={styles.body}>
-        <Text style={styles.sectionTitle}>Qabul qilingan buyurtmalar</Text>
-
         {loading ? (
           <View style={styles.centered}>
             <ActivityIndicator color="#6D28D9" />
@@ -115,8 +113,10 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '900',
+    textAlign: 'center',
+    paddingHorizontal: 12,
   },
   body: {
     flex: 1,
@@ -124,13 +124,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingHorizontal: 16,
-    paddingTop: 18,
-  },
-  sectionTitle: {
-    marginBottom: 14,
-    color: '#312E81',
-    fontSize: 17,
-    fontWeight: '800',
+    paddingTop: 16,
   },
   listContent: {
     gap: 12,

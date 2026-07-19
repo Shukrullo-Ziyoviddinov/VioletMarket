@@ -6,6 +6,7 @@ const STEP_ICONS = {
   accepted: 'bx bx-clipboard',
   seller_confirmed: 'bx bx-check-shield',
   collected: 'bx bx-package',
+  handed_to_courier: 'bx bx-cycling',
   delivered: 'bx bx-check-circle',
 };
 

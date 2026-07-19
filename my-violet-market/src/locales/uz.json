@@ -488,6 +488,10 @@
         "title": "Mahsulot yig'ildi",
         "description": "Mahsulot yetkazishga tayyorlandi"
       },
+      "handed_to_courier": {
+        "title": "Mahsulot kuryerda",
+        "description": "Mahsulot kuryerga topshirildi"
+      },
       "delivered": {
         "title": "Mahsulot yetkazib berildi",
         "description": "Buyurtma manzilga yetkazildi"

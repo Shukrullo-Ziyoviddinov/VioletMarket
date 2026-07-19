@@ -10,6 +10,7 @@ const UZB_CUSTOMER_TRACKING_STEPS = [
   "accepted",
   "seller_confirmed",
   "collected",
+  "handed_to_courier",
   "delivered",
 ];
 
@@ -21,9 +22,7 @@ function normalizeOrderTrackingStatus(raw) {
 }
 
 function normalizeCustomerTrackingStatus(raw) {
-  const status = normalizeOrderTrackingStatus(raw);
-  if (status === "handed_to_courier") return "collected";
-  return status;
+  return normalizeOrderTrackingStatus(raw);
 }
 
 function createInitialOrderTracking(at = new Date()) {
@@ -50,10 +49,7 @@ function buildUzbOrderTrackingSteps(item, orderedAt) {
     state: index < currentIndex ? "completed" : index === currentIndex ? "current" : "upcoming",
     occurredAt:
       resolveTrackingDate(history, status) ||
-      (status === "accepted" ? orderedAt || null : null) ||
-      (status === "collected"
-        ? resolveTrackingDate(history, "handed_to_courier")
-        : null),
+      (status === "accepted" ? orderedAt || null : null),
   }));
 }
 
