@@ -41,14 +41,25 @@ const CheckoutOrderSummary = ({
       const cartSnapshot = [...cart];
       const paymentMethod = String(selectedPayment).trim();
 
+      let addressPayload = address || null;
+      if (!addressPayload) {
+        try {
+          const raw = localStorage.getItem('checkoutAddress');
+          addressPayload = raw ? JSON.parse(raw) : null;
+        } catch {
+          addressPayload = null;
+        }
+      }
+
       if (isPayOnDelivery) {
-        const addressText = address?.addressLine || address?.formatted || '';
-        await checkoutCart(paymentMethod, address || null);
+        const addressText =
+          addressPayload?.addressLine || addressPayload?.formatted || '';
+        await checkoutCart(paymentMethod, addressPayload);
         onOrderConfirmed?.({ cartSnapshot, addressText });
         return;
       }
 
-      await checkoutCart(paymentMethod, address || null);
+      await checkoutCart(paymentMethod, addressPayload);
       window.dispatchEvent(new Event('appDataRefreshRequested'));
       startPostOrderReviewFlow({
         cartSnapshot,

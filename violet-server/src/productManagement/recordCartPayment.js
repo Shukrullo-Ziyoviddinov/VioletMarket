@@ -99,8 +99,14 @@ async function recordCartPayment({
     status,
     paidAt,
     source,
-    deliveryAddress: normalizedAddress,
+    ...(normalizedAddress ? { deliveryAddress: normalizedAddress } : {}),
   });
+
+  // Ba'zi hollarda create nested null qilib yuborishi mumkin — qayta yozib qo'yamiz
+  if (normalizedAddress && order && !order.deliveryAddress) {
+    order.deliveryAddress = normalizedAddress;
+    await order.save();
+  }
 
   await recordAllSalesFromOrder(order);
 

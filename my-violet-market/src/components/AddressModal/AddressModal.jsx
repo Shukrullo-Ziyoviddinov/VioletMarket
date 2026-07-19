@@ -285,7 +285,7 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = {};
     REQUIRED_FIELDS.forEach((key) => {
@@ -296,7 +296,73 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
       return;
     }
     setFieldErrors({});
-    onSave({ ...form, coords: mapCenter });
+
+    let city = String(form.city || '').trim();
+    let district = String(form.district || '').trim();
+    let coords =
+      Array.isArray(mapCenter) && mapCenter.length >= 2
+        ? [Number(mapCenter[0]), Number(mapCenter[1])]
+        : DEFAULT_CENTER;
+
+    // Agar shahar/tuman bo'sh bo'lsa — saqlashdan oldin geocode qilib to'ldiramiz
+    if ((!city || !district) && window.ymaps?.geocode) {
+      try {
+        const res = await window.ymaps.geocode(coords, { results: 1 });
+        const first = res.geoObjects.get(0);
+        if (first) {
+          const addr =
+            first.properties.get('metaDataProperty.GeocoderMetaData.Address') ||
+            {};
+          const components = addr.Components || addr.components || [];
+          const getComp = (kind) => {
+            const c = components.find(
+              (x) => String(x.kind || '').toLowerCase() === kind,
+            );
+            return c ? String(c.name || '').trim() : '';
+          };
+          const locality = getComp('locality');
+          const province = getComp('province');
+          const area = getComp('area');
+          const districtComp = getComp('district');
+          if (!city) city = locality || province || area || city;
+          if (!district) district = districtComp || area || district;
+        }
+      } catch {
+        // geocode bo'lmasa ham manzilni saqlaymiz
+      }
+    }
+
+    // Matndan ham urinib ko'ramiz (masalan "Chilonzor tumani")
+    if (!city || !district) {
+      const line = String(form.addressLine || '').trim();
+      if (!city) {
+        const cityMatch = line.match(
+          /\b(Toshkent|Tashkent|Тошкент|Samarqand|Buxoro|Andijon|Namangan|Fargona|Farg'ona|Nukus)\b/i,
+        );
+        if (cityMatch) {
+          city = /toshkent|tashkent|тошкент/i.test(cityMatch[1])
+            ? 'Toshkent'
+            : cityMatch[1];
+        }
+      }
+      if (!district) {
+        const districtMatch =
+          line.match(
+            /([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳʻ''`-]{3,}?)\s*(tumani|тумани|district)/i,
+          ) ||
+          line.match(
+            /\b(Chilonzor|Yunusobod|Mirzo\s*Ulug'bek|Yakkasaroy|Yashnobod|Sergeli|Uchtepa|Olmazor|Bektemir|Mirobod|Shayxontohur)\b/i,
+          );
+        if (districtMatch) district = String(districtMatch[1]).trim();
+      }
+    }
+
+    onSave({
+      ...form,
+      city,
+      district,
+      coords,
+    });
     onClose();
   };
 

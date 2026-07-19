@@ -68,12 +68,23 @@ export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) 
     return Promise.reject(Object.assign(new Error('To‘lov usulini tanlang'), { status: 400 }));
   }
 
+  let addressPayload = deliveryAddress || null;
+  if (!addressPayload) {
+    try {
+      const raw = localStorage.getItem('checkoutAddress');
+      addressPayload = raw ? JSON.parse(raw) : null;
+    } catch {
+      addressPayload = null;
+    }
+  }
+
   return fetch(apiUrl('/api/cart/checkout'), {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({
       paymentMethod: method,
-      deliveryAddress: deliveryAddress || null,
+      deliveryAddress: addressPayload,
+      address: addressPayload,
     }),
   }).then(parseJsonResponse);
 }

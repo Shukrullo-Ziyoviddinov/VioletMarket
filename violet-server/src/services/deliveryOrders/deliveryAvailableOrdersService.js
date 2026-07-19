@@ -6,6 +6,9 @@ const {
 const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
+const {
+  parseCityDistrictFromLine,
+} = require("../../utils/normalizeDeliveryAddress");
 
 function toRad(value) {
   return (Number(value) * Math.PI) / 180;
@@ -42,10 +45,28 @@ function resolveTitle(title) {
   return { uz: text, ru: text };
 }
 
+function resolveAddressFields(order) {
+  const address = order?.deliveryAddress || {};
+  const addressLine = String(address.addressLine || "").trim();
+  const parsed = parseCityDistrictFromLine(addressLine);
+  const city =
+    String(address.city || "").trim() || parsed.city || "Toshkent";
+  const district =
+    String(address.district || "").trim() ||
+    parsed.district ||
+    "Noma’lum tuman";
+  return {
+    city,
+    district,
+    addressLine,
+    coords: Array.isArray(address.coords) ? address.coords : null,
+  };
+}
+
 function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoords) {
   const orderId = Number(order?.id) || 0;
   const productId = Number(item?.productId) || 0;
-  const address = order?.deliveryAddress || {};
+  const address = resolveAddressFields(order);
   const fromCoords =
     Array.isArray(courierCoords) && courierCoords.length >= 2
       ? courierCoords
@@ -68,8 +89,8 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     productCode: formatProductCode(productId),
     barcode: formatProductCode(productId),
     title: resolveTitle(item?.title),
-    city: String(address.city || "").trim() || "Toshkent",
-    district: String(address.district || "").trim() || "Noma’lum tuman",
+    city: address.city,
+    district: address.district,
     distanceKm,
     productCount: 1,
     amount: unitPrice,

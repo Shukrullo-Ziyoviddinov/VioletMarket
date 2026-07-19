@@ -620,6 +620,7 @@ async function checkoutCartForUser(userId, options = {}) {
     items: [],
     postOrderReview,
     paymentMethod: String(order?.paymentMethod || options.paymentMethod || ""),
+    deliveryAddress: order?.deliveryAddress || null,
   };
 }
 
