@@ -1,4 +1,5 @@
 import React from 'react';
+import CourierAcceptedOrderPaymentEditor from '../CourierAcceptedOrderPaymentEditor/CourierAcceptedOrderPaymentEditor';
 import './CourierAcceptedOrderCard.css';
 
 function formatDateTime(value) {
@@ -23,7 +24,7 @@ function resolveTitle(order) {
   );
 }
 
-export default function CourierAcceptedOrderCard({ order }) {
+export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
   const customerName =
     `${order?.customer?.firstName || ''} ${order?.customer?.lastName || ''}`.trim() ||
     'Mijoz nomi yo‘q';
@@ -81,6 +82,17 @@ export default function CourierAcceptedOrderCard({ order }) {
           {order?.customer?.phone || 'Telefon yo‘q'}
         </p>
       </div>
+
+      <CourierAcceptedOrderPaymentEditor
+        order={order}
+        editable={order?.status === 'delivered'}
+        onUpdated={(updated) =>
+          onPaymentUpdated?.({
+            ...order,
+            courierPayment: updated?.courierPayment ?? order.courierPayment,
+          })
+        }
+      />
     </article>
   );
 }

@@ -38,8 +38,8 @@ async function listDeliveredHistoryForCourier(deliveryId) {
   let totalIncome = 0;
 
   for (const row of rows) {
-    const amount = Math.max(0, Number(row.amount) || 0);
-    totalIncome += amount;
+    const income = Math.max(0, Number(row.courierPayment) || 0);
+    totalIncome += income;
     const at = row.deliveredAt ? new Date(row.deliveredAt) : null;
     if (!at || Number.isNaN(at.getTime())) continue;
     if (at >= todayStart) todayCount += 1;

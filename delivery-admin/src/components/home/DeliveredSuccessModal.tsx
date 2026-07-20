@@ -48,7 +48,7 @@ export function DeliveredSuccessModal({
 
           <View style={styles.summary}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Jami to'lov</Text>
+              <Text style={styles.summaryLabel}>Kuryer daromadi</Text>
               <Text style={styles.summaryValue}>{formatAmount(totalAmount)}</Text>
             </View>
             <View style={styles.divider} />

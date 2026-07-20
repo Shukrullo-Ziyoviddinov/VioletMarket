@@ -66,7 +66,11 @@ export async function acceptDeliveryOrder(
 
 export async function deliverDeliveryOrder(
   token: string,
-  payload: { assignmentId: string },
+  payload: {
+    assignmentId: string;
+    courierLat?: number;
+    courierLng?: number;
+  },
 ) {
   return apiRequest<DeliveryAcceptedOrder>(
     '/api/delivery/orders/deliver',

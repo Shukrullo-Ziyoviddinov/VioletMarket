@@ -63,6 +63,9 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
     handedToCourierAt: { type: Date, default: null },
     acceptedAt: { type: Date, required: true, index: true },
     deliveredAt: { type: Date, default: null, index: true },
+    distanceKm: { type: Number, default: null },
+    courierPayment: { type: Number, default: 0 },
+    courierPaymentUpdatedAt: { type: Date, default: null },
   },
   {
     collection: "courier_order_assignments",

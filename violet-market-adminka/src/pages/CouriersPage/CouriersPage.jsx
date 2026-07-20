@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Spin } from 'antd';
 import { fetchCouriers } from '../../api/couriersAdminApi';
 import CourierRequestsSection from '../../components/CourierRequestsSection/CourierRequestsSection';
+import CourierPaymentTariffsSection from '../../components/CourierPaymentTariffsSection/CourierPaymentTariffsSection';
 import CouriersListSection from '../../components/CouriersListSection/CouriersListSection';
 import { useGlobalLoader } from '../../context/GlobalLoaderContext';
 import './CouriersPage.css';
@@ -62,6 +63,8 @@ export default function CouriersPage() {
         loading={loading}
         onChanged={() => loadCouriers()}
       />
+
+      <CourierPaymentTariffsSection />
 
       <CouriersListSection
         couriers={approved}

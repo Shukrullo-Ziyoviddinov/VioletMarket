@@ -12,6 +12,28 @@ const {
 const {
   recordSalesOnDelivery,
 } = require("../../productManagement/recordSalesOnDelivery");
+const { haversineKm } = require("../../utils/geoDistance");
+const {
+  getCourierPaymentSettings,
+  resolveCourierPaymentForDistance,
+} = require("../courierPayment/courierPaymentService");
+
+function parseCourierCoords(payload = {}) {
+  const lat = Number(payload.courierLat ?? payload.lat);
+  const lng = Number(payload.courierLng ?? payload.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return [lat, lng];
+}
+
+function resolveAssignmentDistanceKm(assignment, courierCoords) {
+  const addressCoords = assignment?.deliveryAddress?.coords;
+  if (courierCoords && Array.isArray(addressCoords) && addressCoords.length >= 2) {
+    return haversineKm(courierCoords, addressCoords);
+  }
+  const stored = Number(assignment?.distanceKm);
+  return Number.isFinite(stored) && stored >= 0 ? stored : null;
+}
 
 function formatProductCode(productId) {
   const id = Math.max(0, Math.floor(Number(productId) || 0));
@@ -118,6 +140,11 @@ function toPublicAssignment(doc) {
     handedToCourierAt: row.handedToCourierAt || null,
     acceptedAt: row.acceptedAt || null,
     deliveredAt: row.deliveredAt || null,
+    distanceKm:
+      row.distanceKm == null || row.distanceKm === ""
+        ? null
+        : Math.max(0, Number(row.distanceKm) || 0),
+    courierPayment: Math.max(0, Number(row.courierPayment) || 0),
     createdAt: row.createdAt || null,
   };
 }
@@ -190,6 +217,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const amount = Math.max(0, Number(item.price) || 0);
   const acceptedAt = new Date();
   const deliveryAddress = snapshotDeliveryAddress(order.deliveryAddress);
+  const courierCoords = parseCourierCoords(payload);
+  const distanceKm = resolveAssignmentDistanceKm({ deliveryAddress }, courierCoords);
   const user = order.userId
     ? await User.findById(order.userId).select("firstName lastName phone").lean()
     : null;
@@ -220,6 +249,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     status: "accepted",
     handedToCourierAt: handedEntry?.at || null,
     acceptedAt,
+    ...(distanceKm != null ? { distanceKm } : {}),
   });
 
   return toPublicAssignment(created);
@@ -269,6 +299,20 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
   const deliveredAt = new Date();
   assignment.status = "delivered";
   assignment.deliveredAt = deliveredAt;
+
+  const courierCoords = parseCourierCoords(payload);
+  const distanceKm = resolveAssignmentDistanceKm(assignment, courierCoords);
+  if (distanceKm != null) {
+    assignment.distanceKm = distanceKm;
+  }
+
+  const paymentSettings = await getCourierPaymentSettings();
+  const resolvedDistance = assignment.distanceKm;
+  assignment.courierPayment = resolveCourierPaymentForDistance(
+    resolvedDistance,
+    paymentSettings.tiers,
+  );
+  assignment.courierPaymentUpdatedAt = deliveredAt;
 
   if (
     !assignment.customer?.phone &&
@@ -400,5 +444,6 @@ module.exports = {
   listAssignmentsByKeys,
   assignmentLookupKey,
   toPublicAssignment,
-  snapshotDeliveryAddress,
+  resolveAssignmentDistanceKm,
+  parseCourierCoords,
 };

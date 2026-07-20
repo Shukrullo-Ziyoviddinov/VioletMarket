@@ -5,6 +5,10 @@ import { fetchCourierAcceptedOrders } from '../../api/couriersAdminApi';
 import CourierAcceptedOrderCard from '../CourierAcceptedOrderCard/CourierAcceptedOrderCard';
 import './CourierAcceptedOrdersModalContent.css';
 
+function formatAmount(value) {
+  return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
+}
+
 function formatCourierName(courier) {
   const fullName = `${courier?.firstName || ''} ${courier?.lastName || ''}`.trim();
   return fullName || courier?.email || 'Kuryer';
@@ -45,6 +49,7 @@ export default function CourierAcceptedOrdersModalContent({
     totalAccepted: 0,
     deliveredCount: 0,
     activeCount: 0,
+    totalCourierIncome: 0,
   });
 
   useEffect(() => {
@@ -63,6 +68,7 @@ export default function CourierAcceptedOrdersModalContent({
             totalAccepted: 0,
             deliveredCount: 0,
             activeCount: 0,
+            totalCourierIncome: 0,
           },
         );
       })
@@ -79,6 +85,22 @@ export default function CourierAcceptedOrdersModalContent({
   }, [courierId, statusFilter, visible]);
 
   const courierName = useMemo(() => formatCourierName(courier), [courier]);
+
+  const handlePaymentUpdated = (updatedOrder) => {
+    setOrders((prev) =>
+      prev.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)),
+    );
+    if (updatedOrder.status === 'delivered') {
+      setStats((prev) => {
+        const prevPayment = orders.find((item) => item.id === updatedOrder.id)?.courierPayment || 0;
+        const nextIncome =
+          Math.max(0, Number(prev.totalCourierIncome) || 0) -
+          Math.max(0, Number(prevPayment) || 0) +
+          Math.max(0, Number(updatedOrder.courierPayment) || 0);
+        return { ...prev, totalCourierIncome: nextIncome };
+      });
+    }
+  };
 
   const filteredOrders = useMemo(
     () => filterOrdersByCustomer(orders, searchQuery),
@@ -116,9 +138,9 @@ export default function CourierAcceptedOrdersModalContent({
           </strong>
         </div>
         <div className="courier-accepted-orders-modal__stat-card">
-          <span className="courier-accepted-orders-modal__stat-label">Jarayonda</span>
+          <span className="courier-accepted-orders-modal__stat-label">Daromat</span>
           <strong className="courier-accepted-orders-modal__stat-value">
-            {stats.activeCount || 0}
+            {formatAmount(stats.totalCourierIncome || 0)}
           </strong>
         </div>
       </div>
@@ -174,7 +196,11 @@ export default function CourierAcceptedOrdersModalContent({
       {!loading && !error && filteredOrders.length > 0 ? (
         <div className="courier-accepted-orders-modal__list">
           {filteredOrders.map((order) => (
-            <CourierAcceptedOrderCard key={order.id} order={order} />
+            <CourierAcceptedOrderCard
+              key={order.id}
+              order={order}
+              onPaymentUpdated={handlePaymentUpdated}
+            />
           ))}
         </div>
       ) : null}

@@ -141,7 +141,9 @@ function HistoryCard({
         </View>
         <View style={styles.historyRow}>
           <Ionicons name="cash-outline" size={15} color="#6B7280" />
-          <Text style={styles.metaText}>{formatAmount(order.amount)}</Text>
+          <Text style={styles.metaText}>
+            {formatAmount(order.courierPayment ?? 0)}
+          </Text>
         </View>
       </View>
       <View style={styles.historyRow}>

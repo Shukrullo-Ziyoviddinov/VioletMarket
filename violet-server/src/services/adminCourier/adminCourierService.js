@@ -114,16 +114,19 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
   }
 
   const status = String(options.status || "").trim().toLowerCase();
-  const filter = { deliveryId: account._id };
+  const listFilter = { deliveryId: account._id };
   if (status === "accepted" || status === "delivered") {
-    filter.status = status;
+    listFilter.status = status;
   }
 
-  const rows = await CourierOrderAssignment.find(filter)
-    .sort({ acceptedAt: -1, createdAt: -1 })
-    .lean();
+  const [allRows, rows] = await Promise.all([
+    CourierOrderAssignment.find({ deliveryId: account._id }).lean(),
+    CourierOrderAssignment.find(listFilter)
+      .sort({ acceptedAt: -1, createdAt: -1 })
+      .lean(),
+  ]);
 
-  const orders = rows.map((row) => {
+  function mapOrder(row) {
     const address = row.deliveryAddress || {};
     const customer = row.customer || {};
     return {
@@ -142,6 +145,11 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
       status: String(row.status || "accepted"),
       acceptedAt: row.acceptedAt || null,
       deliveredAt: row.deliveredAt || null,
+      distanceKm:
+        row.distanceKm == null || row.distanceKm === ""
+          ? null
+          : Math.max(0, Number(row.distanceKm) || 0),
+      courierPayment: Math.max(0, Number(row.courierPayment) || 0),
       customer: {
         firstName: String(customer.firstName || ""),
         lastName: String(customer.lastName || ""),
@@ -153,20 +161,68 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
         addressLine: String(address.addressLine || ""),
       },
     };
-  });
+  }
 
-  const deliveredCount = orders.filter(
-    (row) => String(row.status) === "delivered",
-  ).length;
+  const orders = rows.map(mapOrder);
+  const deliveredRows = allRows.filter((row) => String(row.status) === "delivered");
+  const acceptedRows = allRows.filter((row) => String(row.status) === "accepted");
+  const totalCourierIncome = deliveredRows.reduce(
+    (sum, row) => sum + Math.max(0, Number(row.courierPayment) || 0),
+    0,
+  );
 
   return {
     courier: toAdminCourierJSON(account),
     stats: {
-      totalAccepted: orders.length,
-      deliveredCount,
-      activeCount: Math.max(0, orders.length - deliveredCount),
+      totalAccepted: allRows.length,
+      deliveredCount: deliveredRows.length,
+      activeCount: acceptedRows.length,
+      totalCourierIncome,
     },
     orders,
+  };
+}
+
+async function updateCourierAssignmentPayment(assignmentId, payload = {}) {
+  const payment = Math.max(0, Math.round(Number(payload.courierPayment) || 0));
+  const assignment = await CourierOrderAssignment.findById(assignmentId);
+  if (!assignment) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+  if (String(assignment.status) !== "delivered") {
+    throw new HttpError(
+      400,
+      "Faqat topshirilgan buyurtma to‘lovini tahrirlash mumkin",
+      "INVALID_ASSIGNMENT_STATUS",
+    );
+  }
+
+  assignment.courierPayment = payment;
+  assignment.courierPaymentUpdatedAt = new Date();
+  await assignment.save();
+
+  const address = assignment.deliveryAddress || {};
+  const customer = assignment.customer || {};
+  return {
+    id: String(assignment._id),
+    orderId: Number(assignment.orderId) || 0,
+    status: String(assignment.status || "delivered"),
+    courierPayment: payment,
+    distanceKm:
+      assignment.distanceKm == null
+        ? null
+        : Math.max(0, Number(assignment.distanceKm) || 0),
+    deliveredAt: assignment.deliveredAt || null,
+    customer: {
+      firstName: String(customer.firstName || ""),
+      lastName: String(customer.lastName || ""),
+      phone: String(customer.phone || ""),
+    },
+    deliveryAddress: {
+      city: String(address.city || ""),
+      district: String(address.district || ""),
+      addressLine: String(address.addressLine || ""),
+    },
   };
 }
 
@@ -176,4 +232,5 @@ module.exports = {
   rejectCourier,
   deleteCourier,
   listCourierAcceptedOrders,
+  updateCourierAssignmentPayment,
 };

@@ -19,6 +19,7 @@ import {
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
 } from '@/services/delivery-orders';
+import { requestCourierLocation } from '@/services/courier-location';
 import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
@@ -133,8 +134,11 @@ export default function OrderDetailsScreen() {
     if (!token || !order || delivering) return;
     setDelivering(true);
     try {
+      const location = await requestCourierLocation();
       const data = await deliverDeliveryOrder(token, {
         assignmentId: order.id,
+        courierLat: location.coords?.latitude,
+        courierLng: location.coords?.longitude,
       });
       setDeliveredSnapshot(data);
       setSuccessOpen(true);
@@ -350,10 +354,7 @@ export default function OrderDetailsScreen() {
       <DeliveredSuccessModal
         visible={successOpen}
         barcode={orderBarcode(deliveredSnapshot || order)}
-        totalAmount={
-          Math.max(0, Number(deliveredSnapshot?.amount) || 0) +
-          Math.max(0, Number(deliveredSnapshot?.deliveryFee) || 0)
-        }
+        totalAmount={Math.max(0, Number(deliveredSnapshot?.courierPayment) || 0)}
         deliveredAt={deliveredSnapshot?.deliveredAt || null}
         onContinue={() => {
           setSuccessOpen(false);

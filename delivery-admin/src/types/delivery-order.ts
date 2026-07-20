@@ -59,6 +59,8 @@ export type DeliveryAcceptedOrder = {
   acceptedAt: string | null;
   handedToCourierAt: string | null;
   deliveredAt: string | null;
+  distanceKm?: number | null;
+  courierPayment?: number;
 };
 
 export type DeliveryHistoryStats = {

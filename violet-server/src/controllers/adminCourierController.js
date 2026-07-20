@@ -28,10 +28,33 @@ const listCourierAcceptedOrders = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateCourierAssignmentPayment = asyncHandler(async (req, res) => {
+  const data = await adminCourierService.updateCourierAssignmentPayment(
+    req.params.assignmentId,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
+const getCourierPaymentSettings = asyncHandler(async (_req, res) => {
+  const courierPaymentService = require("../services/courierPayment/courierPaymentService");
+  const data = await courierPaymentService.getCourierPaymentSettings();
+  res.json({ ok: true, data });
+});
+
+const updateCourierPaymentSettings = asyncHandler(async (req, res) => {
+  const courierPaymentService = require("../services/courierPayment/courierPaymentService");
+  const data = await courierPaymentService.updateCourierPaymentSettings(req.body || {});
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listCouriers,
   approveCourier,
   rejectCourier,
   deleteCourier,
   listCourierAcceptedOrders,
+  updateCourierAssignmentPayment,
+  getCourierPaymentSettings,
+  updateCourierPaymentSettings,
 };

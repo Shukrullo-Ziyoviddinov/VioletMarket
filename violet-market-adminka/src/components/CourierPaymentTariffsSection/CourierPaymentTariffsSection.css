@@ -1,0 +1,26 @@
+.courier-payment-tariffs-section {
+  margin-bottom: 28px;
+  padding: 18px;
+  border: 1px solid #ece7f8;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.courier-payment-tariffs-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.courier-payment-tariffs-section__title {
+  margin: 0 0 4px !important;
+  color: #2a1842 !important;
+}
+
+@media (max-width: 768px) {
+  .courier-payment-tariffs-section__head {
+    flex-direction: column;
+  }
+}
