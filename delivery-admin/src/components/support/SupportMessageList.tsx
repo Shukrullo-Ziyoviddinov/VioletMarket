@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   mineBubble: {
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     borderBottomRightRadius: 6,
   },
   adminBubble: {

@@ -1,9 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -12,6 +10,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
+import {
+  BrandLoader,
+  PullRefreshFlatList,
+  usePageRefresh,
+  useRefreshState,
+} from '@/components/loading/PageRefresh';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { OrdersFilterBar } from '@/components/orders/OrdersFilterBar';
@@ -153,39 +157,50 @@ export default function OrdersScreen() {
   const loadOrders = useCallback(
     async (coords?: CourierCoords | null) => {
       if (!token) return;
-      setLoading(true);
-      try {
-        const activeCoords = coords === undefined ? courierCoords : coords;
-        const data = await fetchAvailableDeliveryOrders(token, {
-          city,
-          courierLat: activeCoords?.latitude,
-          courierLng: activeCoords?.longitude,
-        });
-        setAllOrders(data.orders || []);
-      } catch {
-        setAllOrders([]);
-      } finally {
-        setLoading(false);
-      }
+      const activeCoords = coords === undefined ? courierCoords : coords;
+      const data = await fetchAvailableDeliveryOrders(token, {
+        city,
+        courierLat: activeCoords?.latitude,
+        courierLng: activeCoords?.longitude,
+      });
+      setAllOrders(data.orders || []);
     },
     [token, city, courierCoords],
   );
+
+  const { refreshing, onRefresh } = useRefreshState(async () => {
+    try {
+      const coords = await ensureCourierLocation(false);
+      await loadOrders(coords);
+    } catch {
+      setAllOrders([]);
+    }
+  });
+
+  usePageRefresh(onRefresh);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
 
       async function boot() {
-        let coords = courierCoords;
-        if (!askedLocationRef.current) {
-          askedLocationRef.current = true;
-          coords = await ensureCourierLocation(true);
+        setLoading(true);
+        try {
+          let coords = courierCoords;
+          if (!askedLocationRef.current) {
+            askedLocationRef.current = true;
+            coords = await ensureCourierLocation(true);
+          }
+          if (cancelled) return;
+          await loadOrders(coords);
+        } catch {
+          if (!cancelled) setAllOrders([]);
+        } finally {
+          if (!cancelled) setLoading(false);
         }
-        if (cancelled) return;
-        await loadOrders(coords);
       }
 
-      boot();
+      void boot();
 
       return () => {
         cancelled = true;
@@ -269,7 +284,7 @@ export default function OrdersScreen() {
   if (isLoading || !delivery) {
     return (
       <SafeAreaView style={styles.safeLoading}>
-        <ActivityIndicator color="#6D28D9" />
+        <BrandLoader />
       </SafeAreaView>
     );
   }
@@ -304,33 +319,30 @@ export default function OrdersScreen() {
           </Pressable>
         ) : null}
 
-        {loading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator color="#6D28D9" />
-          </View>
-        ) : (
-          <FlatList
-            data={orders}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>Buyurtma yo‘q</Text>
-                <Text style={styles.emptyText}>
-                  Seller kuryerga topshirgan mahsulotlar shu yerda chiqadi.
-                </Text>
-              </View>
-            }
-            renderItem={({ item }) => (
-              <OrderCard
-                order={item}
-                accepting={acceptingId === item.id}
-                onAccept={handleAccept}
-              />
-            )}
-          />
-        )}
+        <PullRefreshFlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          loading={loading}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyTitle}>Buyurtma yo‘q</Text>
+              <Text style={styles.emptyText}>
+                Seller kuryerga topshirgan mahsulotlar shu yerda chiqadi.
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <OrderCard
+              order={item}
+              accepting={acceptingId === item.id}
+              onAccept={handleAccept}
+            />
+          )}
+        />
       </View>
 
       <BottomNavbar />
@@ -401,7 +413,7 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   safeLoading: {
     flex: 1,
@@ -477,7 +489,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   optionTextActive: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontWeight: '800',
   },
   emptyFilterText: {

@@ -26,7 +26,7 @@ export function CourierNoteModal({
             <Ionicons
               name="chatbubble-ellipses-outline"
               size={22}
-              color="#6D28D9"
+              color="#6d32c5"
             />
             <Text style={styles.title}>Kuryer uchun izoh</Text>
           </View>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     minHeight: 44,
     borderRadius: 12,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     alignItems: 'center',
     justifyContent: 'center',
   },

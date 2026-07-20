@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { usePageRefreshTrigger } from '@/components/loading/PageRefresh';
+
 const items = [
   { label: 'Bosh sahifa', icon: 'home-outline', href: '/home' },
   { label: 'Buyurtmalar', icon: 'receipt-outline', href: '/orders' },
@@ -25,9 +27,17 @@ function resolveActiveLabel(pathname: string) {
   return 'Bosh sahifa';
 }
 
+function isExactTabPath(pathname: string, href: string) {
+  if (href === '/home') {
+    return pathname === '/home' || pathname.endsWith('/home');
+  }
+  return pathname === href || pathname.endsWith(href);
+}
+
 export function BottomNavbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const triggerRefresh = usePageRefreshTrigger();
   const activeLabel = resolveActiveLabel(pathname || '');
 
   return (
@@ -40,12 +50,17 @@ export function BottomNavbar() {
             key={item.label}
             style={styles.item}
             onPress={() => {
+              // Shu tabning o‘z sahifasida bo‘lsa — yangilash
+              if (isExactTabPath(pathname || '', item.href)) {
+                void triggerRefresh();
+                return;
+              }
               router.push(item.href);
             }}>
             <Ionicons
               name={item.icon}
               size={25}
-              color={active ? '#6D28D9' : '#9CA3AF'}
+              color={active ? '#6d32c5' : '#9CA3AF'}
             />
             <Text style={[styles.label, active && styles.activeLabel]}>
               {item.label}
@@ -80,7 +95,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   activeLabel: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontWeight: '800',
   },
 });

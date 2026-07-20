@@ -130,7 +130,7 @@ export default function OtpScreen() {
 
         <View style={styles.card}>
           <View style={styles.iconCircle}>
-            <Ionicons name="shield-checkmark" size={35} color="#6D28D9" />
+            <Ionicons name="shield-checkmark" size={35} color="#6d32c5" />
           </View>
           <Text style={styles.title}>Tasdiqlash kodi</Text>
           <Text style={styles.description}>
@@ -168,7 +168,7 @@ export default function OtpScreen() {
 
           {isSubmitting ? (
             <View style={styles.loadingRow}>
-              <ActivityIndicator color="#6D28D9" />
+              <ActivityIndicator color="#6d32c5" />
               <Text style={styles.loadingText}>Tekshirilmoqda...</Text>
             </View>
           ) : null}
@@ -199,7 +199,7 @@ export default function OtpScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   container: {
     flex: 1,
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   loadingText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontWeight: '700',
   },
   error: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   resendText: {
     marginTop: 22,
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 15,
     fontWeight: '800',
   },

@@ -34,20 +34,20 @@ export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps
       <View style={styles.topRow}>
         <Text style={styles.barcode}>{order.barcode || order.productCode}</Text>
         <View style={styles.districtWrap}>
-          <Ionicons name="location" size={14} color="#6D28D9" />
+          <Ionicons name="location" size={14} color="#6d32c5" />
           <Text style={styles.district} numberOfLines={1}>
             {order.district}
           </Text>
         </View>
         <View style={styles.distanceWrap}>
-          <Ionicons name="navigate" size={13} color="#6D28D9" />
+          <Ionicons name="navigate" size={13} color="#6d32c5" />
           <Text style={styles.distance}>{formatDistance(order.distanceKm)}</Text>
         </View>
       </View>
 
       <View style={styles.middleRow}>
         <View style={styles.countWrap}>
-          <Ionicons name="cube-outline" size={16} color="#6D28D9" />
+          <Ionicons name="cube-outline" size={16} color="#6d32c5" />
           <Text style={styles.count}>{order.productCount} mahsulot</Text>
         </View>
         <Text style={styles.amount}>{formatAmount(order.amount)}</Text>
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   distance: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   acceptButton: {
     minWidth: 110,
     minHeight: 40,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,

@@ -1,16 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  BrandLoader,
+  PullRefreshFlatList,
+  usePageRefresh,
+  useRefreshState,
+} from '@/components/loading/PageRefresh';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchDeliveredHistory } from '@/services/delivery-orders';
@@ -75,13 +74,19 @@ function StatCard({
 }) {
   return (
     <View style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: `${color}18` }]}>
-        <Ionicons name={icon} size={18} color={color} />
+      <View style={styles.statHead}>
+        <View style={[styles.statIcon, { backgroundColor: `${color}18` }]}>
+          <Ionicons name={icon} size={20} color={color} />
+        </View>
+        <View style={styles.statTextCol}>
+          <Text style={styles.statLabel} numberOfLines={2}>
+            {label}
+          </Text>
+          <Text style={styles.statValue} numberOfLines={1}>
+            {value}
+          </Text>
+        </View>
       </View>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue} numberOfLines={1}>
-        {value}
-      </Text>
     </View>
   );
 }
@@ -118,13 +123,13 @@ function HistoryCard({
       </View>
 
       <View style={styles.historyRow}>
-        <Ionicons name="location-outline" size={15} color="#6D28D9" />
+        <Ionicons name="location-outline" size={15} color="#6d32c5" />
         <Text style={styles.historyText} numberOfLines={2}>
           {addressLabel(order)}
         </Text>
       </View>
       <View style={styles.historyRow}>
-        <Ionicons name="person-outline" size={15} color="#6D28D9" />
+        <Ionicons name="person-outline" size={15} color="#6d32c5" />
         <Text style={styles.historyText} numberOfLines={1}>
           {customerLabel(order)}
         </Text>
@@ -160,31 +165,55 @@ export default function HistoryScreen() {
     if (!isLoading && !delivery) router.replace('/auth');
   }, [delivery, isLoading, router]);
 
-  const loadHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async () => {
     if (!token) return;
-    setLoading(true);
+    const data = await fetchDeliveredHistory(token);
+    setOrders(data.orders || []);
+    setStats(data.stats || EMPTY_STATS);
+  }, [token]);
+
+  const { refreshing, onRefresh } = useRefreshState(async () => {
     try {
-      const data = await fetchDeliveredHistory(token);
-      setOrders(data.orders || []);
-      setStats(data.stats || EMPTY_STATS);
+      await fetchHistory();
     } catch {
       setOrders([]);
       setStats(EMPTY_STATS);
-    } finally {
-      setLoading(false);
     }
-  }, [token]);
+  });
+
+  usePageRefresh(onRefresh);
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
-    }, [loadHistory]),
+      let cancelled = false;
+      (async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+          const data = await fetchDeliveredHistory(token);
+          if (!cancelled) {
+            setOrders(data.orders || []);
+            setStats(data.stats || EMPTY_STATS);
+          }
+        } catch {
+          if (!cancelled) {
+            setOrders([]);
+            setStats(EMPTY_STATS);
+          }
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [token]),
   );
 
   if (isLoading || !delivery) {
     return (
       <SafeAreaView style={styles.safeLoading}>
-        <ActivityIndicator color="#6D28D9" />
+        <BrandLoader />
       </SafeAreaView>
     );
   }
@@ -196,65 +225,62 @@ export default function HistoryScreen() {
       </View>
 
       <View style={styles.body}>
-        {loading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator color="#6D28D9" />
-          </View>
-        ) : (
-          <FlatList
-            data={orders}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            ListHeaderComponent={
-              <View style={styles.statsGrid}>
-                <StatCard
-                  label="Jami topshirilgan"
-                  value={`${stats.totalDelivered} ta`}
-                  icon="cube-outline"
-                  color="#6D28D9"
-                />
-                <StatCard
-                  label="Bugun"
-                  value={`${stats.todayCount} ta`}
-                  icon="calendar-outline"
-                  color="#16A34A"
-                />
-                <StatCard
-                  label="Bu hafta"
-                  value={`${stats.weekCount} ta`}
-                  icon="calendar-outline"
-                  color="#2563EB"
-                />
-                <StatCard
-                  label="Jami daromad"
-                  value={formatAmount(stats.totalIncome)}
-                  icon="wallet-outline"
-                  color="#EA580C"
-                />
-              </View>
-            }
-            ListEmptyComponent={
-              <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>Hali topshirilgan yo‘q</Text>
-                <Text style={styles.emptyText}>
-                  “Topshirdim” bosilgan buyurtmalar shu yerda chiqadi.
-                </Text>
-              </View>
-            }
-            renderItem={({ item }) => (
-              <HistoryCard
-                order={item}
-                onPress={() =>
-                  router.push({
-                    pathname: '/order-details',
-                    params: { id: item.id },
-                  })
-                }
+        <PullRefreshFlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          loading={loading}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListHeaderComponent={
+            <View style={styles.statsGrid}>
+              <StatCard
+                label="Jami topshirilgan"
+                value={`${stats.totalDelivered} ta`}
+                icon="cube-outline"
+                color="#6d32c5"
               />
-            )}
-          />
-        )}
+              <StatCard
+                label="Bugun"
+                value={`${stats.todayCount} ta`}
+                icon="calendar-outline"
+                color="#16A34A"
+              />
+              <StatCard
+                label="Bu hafta"
+                value={`${stats.weekCount} ta`}
+                icon="calendar-outline"
+                color="#2563EB"
+              />
+              <StatCard
+                label="Jami daromad"
+                value={formatAmount(stats.totalIncome)}
+                icon="wallet-outline"
+                color="#EA580C"
+              />
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyTitle}>Hali topshirilgan yo‘q</Text>
+              <Text style={styles.emptyText}>
+                “Topshirdim” bosilgan buyurtmalar shu yerda chiqadi.
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <HistoryCard
+              order={item}
+              onPress={() =>
+                router.push({
+                  pathname: '/order-details',
+                  params: { id: item.id },
+                })
+              }
+            />
+          )}
+        />
       </View>
 
       <BottomNavbar />
@@ -265,7 +291,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   safeLoading: {
     flex: 1,
@@ -312,24 +338,34 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 14,
-    gap: 8,
+    padding: 10,
+  },
+  statHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   statIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  statTextCol: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
   statLabel: {
     color: '#6B7280',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    lineHeight: 16,
   },
   statValue: {
     color: '#111827',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '900',
   },
   historyCard: {
@@ -359,7 +395,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   historyId: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 16,
     fontWeight: '900',
   },

@@ -55,7 +55,7 @@ export function AcceptedOrderCard({
 
       <View style={styles.addressBlock}>
         <View style={styles.addressHead}>
-          <Ionicons name="location" size={16} color="#6D28D9" />
+          <Ionicons name="location" size={16} color="#6d32c5" />
           <Text style={styles.addressTitle} numberOfLines={2}>
             {address.addressLine ||
               [address.city, address.district].filter(Boolean).join(', ') ||
@@ -81,7 +81,7 @@ export function AcceptedOrderCard({
           <Ionicons
             name="chatbubble-ellipses-outline"
             size={18}
-            color="#6D28D9"
+            color="#6d32c5"
           />
           <Text style={styles.noteTriggerText}>Kuryer uchun izoh</Text>
           <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
@@ -90,7 +90,7 @@ export function AcceptedOrderCard({
 
       <View style={styles.metaRow}>
         <View style={styles.countWrap}>
-          <Ionicons name="cube-outline" size={16} color="#6D28D9" />
+          <Ionicons name="cube-outline" size={16} color="#6d32c5" />
           <Text style={styles.count}>{order.productCount} mahsulot</Text>
         </View>
         {address.district ? (
@@ -116,7 +116,7 @@ export function AcceptedOrderCard({
             pressed && styles.pressed,
           ]}
           onPress={() => onOpenDetails?.(order)}>
-          <Ionicons name="information-circle-outline" size={18} color="#6D28D9" />
+          <Ionicons name="information-circle-outline" size={18} color="#6d32c5" />
           <Text style={styles.infoText}>Ma'lumot</Text>
         </Pressable>
       </View>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   noteTriggerText: {
     flex: 1,
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   district: {
     flex: 1,
     textAlign: 'right',
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     flex: 1.2,
     minHeight: 48,
     borderRadius: 14,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#6D28D9',
+    borderColor: '#6d32c5',
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   infoText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 14,
     fontWeight: '800',
   },

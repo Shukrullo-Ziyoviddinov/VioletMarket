@@ -150,7 +150,7 @@ export default function OrderDetailsScreen() {
   if (isLoading || !delivery) {
     return (
       <SafeAreaView style={styles.safeLoading}>
-        <ActivityIndicator color="#6D28D9" />
+        <ActivityIndicator color="#6d32c5" />
       </SafeAreaView>
     );
   }
@@ -173,7 +173,7 @@ export default function OrderDetailsScreen() {
       <View style={styles.body}>
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator color="#6D28D9" />
+            <ActivityIndicator color="#6d32c5" />
           </View>
         ) : !order ? (
           <View style={styles.centered}>
@@ -252,7 +252,7 @@ export default function OrderDetailsScreen() {
                   <Ionicons
                     name="chatbubble-ellipses-outline"
                     size={18}
-                    color="#6D28D9"
+                    color="#6d32c5"
                   />
                   <Text style={styles.cardTitle}>Kuryer uchun izoh</Text>
                 </View>
@@ -367,7 +367,7 @@ export default function OrderDetailsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   safeLoading: {
     flex: 1,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   districtText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -576,16 +576,16 @@ const styles = StyleSheet.create({
   },
   routeFooter: {
     borderWidth: 1.5,
-    borderColor: '#6D28D9',
+    borderColor: '#6d32c5',
     backgroundColor: '#FFFFFF',
   },
   routeFooterText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 13,
     fontWeight: '800',
   },
   ajdaniyaFooter: {
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   ajdaniyaText: {
     color: '#FFFFFF',

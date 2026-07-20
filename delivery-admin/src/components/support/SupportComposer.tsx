@@ -36,7 +36,7 @@ export function SupportComposer({
           (sending || disabled) && styles.disabled,
         ]}
         onPress={onPickImage}>
-        <Ionicons name="image-outline" size={22} color="#6D28D9" />
+        <Ionicons name="image-outline" size={22} color="#6d32c5" />
       </Pressable>
 
       <TextInput
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   pressed: {
     opacity: 0.85,

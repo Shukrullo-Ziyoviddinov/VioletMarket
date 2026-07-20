@@ -21,9 +21,17 @@ const deleteCourier = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const listCourierAcceptedOrders = asyncHandler(async (req, res) => {
+  const data = await adminCourierService.listCourierAcceptedOrders(req.params.id, {
+    status: req.query.status,
+  });
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listCouriers,
   approveCourier,
   rejectCourier,
   deleteCourier,
+  listCourierAcceptedOrders,
 };

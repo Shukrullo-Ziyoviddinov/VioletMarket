@@ -1,10 +1,10 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DeleteOutlined, MessageOutlined, MoreOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MessageOutlined, MoreOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import '../ProductCardMenu/ProductCardMenu.css';
 
-function CourierActionsDropdown({ style, deleting, onChat, onDelete }) {
+function CourierActionsDropdown({ style, deleting, onChat, onOrders, onDelete }) {
   return (
     <div className="product-card-menu__dropdown" role="menu" style={style}>
       <button
@@ -16,6 +16,16 @@ function CourierActionsDropdown({ style, deleting, onChat, onDelete }) {
       >
         <MessageOutlined aria-hidden="true" />
         <span>Chat</span>
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        className="product-card-menu__item"
+        onClick={onOrders}
+        disabled={deleting}
+      >
+        <ShoppingCartOutlined aria-hidden="true" />
+        <span>Buyurtmalar</span>
       </button>
       <button
         type="button"
@@ -37,6 +47,7 @@ export default function CourierActionsMenu({
   onToggle,
   onClose,
   onChat,
+  onOrders,
   onDelete,
 }) {
   const rootRef = useRef(null);
@@ -120,6 +131,10 @@ export default function CourierActionsMenu({
               onChat={() => {
                 onClose?.();
                 onChat?.();
+              }}
+              onOrders={() => {
+                onClose?.();
+                onOrders?.();
               }}
               onDelete={() => {
                 onClose?.();

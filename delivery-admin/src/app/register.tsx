@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   safeArea: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   header: {
     height: 62,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderRadius: 17,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   buttonPressed: {
     backgroundColor: '#5B21B6',

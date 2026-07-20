@@ -1,0 +1,96 @@
+.courier-accepted-orders-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.courier-accepted-orders-modal__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.courier-accepted-orders-modal__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.courier-accepted-orders-modal__subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.courier-accepted-orders-modal__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.courier-accepted-orders-modal__stat-card {
+  border: 1px solid #ede9fe;
+  background: #faf7ff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.courier-accepted-orders-modal__stat-label {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.courier-accepted-orders-modal__stat-value {
+  font-size: 22px;
+  line-height: 1;
+  color: #6d32c5;
+}
+
+.courier-accepted-orders-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.courier-accepted-orders-modal__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.courier-accepted-orders-modal__filter-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.courier-accepted-orders-modal__filter-btn--active {
+  border-color: #6d32c5;
+  background: #f3ecff;
+  color: #6d32c5;
+}
+
+.courier-accepted-orders-modal__state {
+  margin: 12px 0;
+  color: #6b7280;
+}
+
+.courier-accepted-orders-modal__error {
+  margin: 0;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .courier-accepted-orders-modal__stats {
+    grid-template-columns: 1fr;
+  }
+}

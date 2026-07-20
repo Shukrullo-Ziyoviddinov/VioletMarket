@@ -19,6 +19,7 @@ import { ProfileCameraCapture } from '@/components/auth/ProfileCameraCapture';
 import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
+import { usePageRefresh, useRefreshState } from '@/components/loading/PageRefresh';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchSupportUnreadCount } from '@/services/support-chat';
@@ -139,6 +140,19 @@ export default function ProfileScreen() {
       };
     }, [token]),
   );
+
+  const refreshProfile = useCallback(async () => {
+    if (!token) return;
+    try {
+      const data = await fetchSupportUnreadCount(token);
+      setSupportUnread(data.unread || 0);
+    } catch {
+      // ignore
+    }
+  }, [token]);
+
+  const { onRefresh: onProfileRefresh } = useRefreshState(refreshProfile);
+  usePageRefresh(onProfileRefresh);
 
   useEffect(() => {
     if (!token) return;
@@ -268,7 +282,7 @@ export default function ProfileScreen() {
   if (isLoading || !delivery) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color="#6D28D9" />
+        <ActivityIndicator size="large" color="#6d32c5" />
       </View>
     );
   }
@@ -438,7 +452,7 @@ export default function ProfileScreen() {
                   <Ionicons
                     name={option.icon}
                     size={25}
-                    color={selected ? '#FFFFFF' : '#6D28D9'}
+                    color={selected ? '#FFFFFF' : '#6d32c5'}
                   />
                 </View>
                 <Text
@@ -451,7 +465,7 @@ export default function ProfileScreen() {
                 <Ionicons
                   name={selected ? 'checkmark-circle' : 'ellipse-outline'}
                   size={25}
-                  color={selected ? '#6D28D9' : '#D1D5DB'}
+                  color={selected ? '#6d32c5' : '#D1D5DB'}
                 />
               </Pressable>
             );
@@ -501,7 +515,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   loadingScreen: {
     flex: 1,
@@ -578,7 +592,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   identity: {
     flex: 1,
@@ -637,7 +651,7 @@ const styles = StyleSheet.create({
     height: 22,
     paddingHorizontal: 6,
     borderRadius: 11,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -702,7 +716,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE9FE',
   },
   transportIconSelected: {
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   transportLabel: {
     flex: 1,
@@ -727,7 +741,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 17,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   saveButtonPressed: {
     backgroundColor: '#5B21B6',

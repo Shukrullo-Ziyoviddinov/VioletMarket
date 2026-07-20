@@ -56,7 +56,7 @@ export default function PendingApprovalScreen() {
       <View style={styles.container}>
         <View style={styles.card}>
           <View style={styles.iconCircle}>
-            <Ionicons name="time-outline" size={36} color="#6D28D9" />
+            <Ionicons name="time-outline" size={36} color="#6d32c5" />
           </View>
           <Text style={styles.title}>Admin tasdiqlashini kuting</Text>
           <Text style={styles.description}>
@@ -108,7 +108,7 @@ export default function PendingApprovalScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   container: {
     flex: 1,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   primaryButtonText: {
     color: '#FFFFFF',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F3FF',
   },
   secondaryButtonText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 15,
     fontWeight: '800',
   },

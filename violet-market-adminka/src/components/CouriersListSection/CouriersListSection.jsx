@@ -3,6 +3,7 @@ import { Avatar, Empty, Input, Table, Typography } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { deleteCourier } from '../../api/couriersAdminApi';
 import { useAdminToast } from '../../context/AdminToastContext';
+import { useAdminModal } from '../../context/AdminModalContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import { resolveCourierImage } from '../../utils/courierImage';
 import CourierActionsMenu from '../CourierActionsMenu/CourierActionsMenu';
@@ -45,6 +46,7 @@ function filterCouriers(couriers, query) {
 export default function CouriersListSection({ couriers, loading, onChanged }) {
   const { openMiniGlobalModal } = useMiniGlobalModal();
   const { showToast } = useAdminToast();
+  const { openAdminModal } = useAdminModal();
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState('');
   const [openMenuId, setOpenMenuId] = useState('');
@@ -142,6 +144,17 @@ export default function CouriersListSection({ couriers, loading, onChanged }) {
           }
           onClose={() => setOpenMenuId('')}
           onChat={() => setChatCourier(record)}
+          onOrders={() => {
+            const fullName =
+              `${record.firstName || ''} ${record.lastName || ''}`.trim() ||
+              record.email ||
+              'Kuryer';
+            openAdminModal({
+              key: 'courier-accepted-orders',
+              label: `${fullName} — Buyurtmalar`,
+              courierId: record.id,
+            });
+          }}
           onDelete={() => handleDelete(record)}
         />
       ),

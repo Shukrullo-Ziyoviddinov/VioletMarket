@@ -189,7 +189,7 @@ export default function SupportChatScreen() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.centered}>
-          <ActivityIndicator color="#6D28D9" />
+          <ActivityIndicator color="#6d32c5" />
         </View>
       </SafeAreaView>
     );
@@ -217,7 +217,7 @@ export default function SupportChatScreen() {
 
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator color="#6D28D9" />
+            <ActivityIndicator color="#6d32c5" />
           </View>
         ) : (
           <SupportMessageList messages={messages} listRef={listRef} />

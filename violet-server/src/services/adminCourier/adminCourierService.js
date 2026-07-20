@@ -1,5 +1,6 @@
 const { DeliveryAccount } = require("../../models/deliveryAccount");
 const { DeliveryAuthCode } = require("../../models/deliveryAuthCode");
+const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { HttpError } = require("../../utils/httpError");
 const {
   deleteManagedDeliveryPhoto,
@@ -106,9 +107,73 @@ async function deleteCourier(courierId) {
   return { deleted: true, id: courierId };
 }
 
+async function listCourierAcceptedOrders(courierId, options = {}) {
+  const account = await DeliveryAccount.findById(courierId);
+  if (!account) {
+    throw new HttpError(404, "Kuryer topilmadi", "COURIER_NOT_FOUND");
+  }
+
+  const status = String(options.status || "").trim().toLowerCase();
+  const filter = { deliveryId: account._id };
+  if (status === "accepted" || status === "delivered") {
+    filter.status = status;
+  }
+
+  const rows = await CourierOrderAssignment.find(filter)
+    .sort({ acceptedAt: -1, createdAt: -1 })
+    .lean();
+
+  const orders = rows.map((row) => {
+    const address = row.deliveryAddress || {};
+    const customer = row.customer || {};
+    return {
+      id: String(row._id),
+      orderId: Number(row.orderId) || 0,
+      itemIndex: Number(row.itemIndex) || 0,
+      unitIndex: Number(row.unitIndex) || 0,
+      productId: Number(row.productId) || 0,
+      productCode: String(row.productCode || ""),
+      barcode: String(row.productCode || ""),
+      title: {
+        uz: String(row.title?.uz || ""),
+        ru: String(row.title?.ru || ""),
+      },
+      amount: Math.max(0, Number(row.amount) || 0),
+      status: String(row.status || "accepted"),
+      acceptedAt: row.acceptedAt || null,
+      deliveredAt: row.deliveredAt || null,
+      customer: {
+        firstName: String(customer.firstName || ""),
+        lastName: String(customer.lastName || ""),
+        phone: String(customer.phone || ""),
+      },
+      deliveryAddress: {
+        city: String(address.city || ""),
+        district: String(address.district || ""),
+        addressLine: String(address.addressLine || ""),
+      },
+    };
+  });
+
+  const deliveredCount = orders.filter(
+    (row) => String(row.status) === "delivered",
+  ).length;
+
+  return {
+    courier: toAdminCourierJSON(account),
+    stats: {
+      totalAccepted: orders.length,
+      deliveredCount,
+      activeCount: Math.max(0, orders.length - deliveredCount),
+    },
+    orders,
+  };
+}
+
 module.exports = {
   listCouriers,
   approveCourier,
   rejectCourier,
   deleteCourier,
+  listCourierAcceptedOrders,
 };

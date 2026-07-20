@@ -96,7 +96,7 @@ export default function AuthScreen() {
 
           <View style={styles.card}>
             <View style={styles.cardIcon}>
-              <Ionicons name="mail-outline" size={26} color="#6D28D9" />
+              <Ionicons name="mail-outline" size={26} color="#6d32c5" />
             </View>
             <Text style={styles.title}>Akkauntga kirish</Text>
             <Text style={styles.description}>
@@ -148,7 +148,7 @@ export default function AuthScreen() {
                 pressed && styles.registerButtonPressed,
               ]}
               onPress={() => router.push('/register')}>
-              <Ionicons name="person-add-outline" color="#6D28D9" size={21} />
+              <Ionicons name="person-add-outline" color="#6d32c5" size={21} />
               <Text style={styles.registerButtonText}>Ro‘yxatdan o‘tish</Text>
             </Pressable>
           </View>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   safeArea: {
     flex: 1,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   scrollContent: {
     flexGrow: 1,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderRadius: 16,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   buttonPressed: {
     transform: [{ scale: 0.99 }],
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDE9FE',
   },
   registerButtonText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 16,
     fontWeight: '800',
   },

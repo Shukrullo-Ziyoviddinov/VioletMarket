@@ -56,6 +56,7 @@ import SalesStatisticsLegendModalContent from '../SalesStatisticsLegendModalCont
 import TopSellersStatisticsModalContent from '../TopSellersStatisticsModalContent/TopSellersStatisticsModalContent';
 import TopSellingProductsStatisticsModalContent from '../TopSellingProductsStatisticsModalContent/TopSellingProductsStatisticsModalContent';
 import PaymentRequestRejectedProductsModalContent from '../PaymentRequest/PaymentRequestRejectedProductsModalContent/PaymentRequestRejectedProductsModalContent';
+import CourierAcceptedOrdersModalContent from '../CourierAcceptedOrdersModalContent/CourierAcceptedOrdersModalContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3366,6 +3367,11 @@ export default function GlobalSectionModal({ open, section, onClose }) {
         visible={open}
         periodLabel={section?.periodLabel}
         products={section?.products}
+      />
+    ) : section?.key === 'courier-accepted-orders' ? (
+      <CourierAcceptedOrdersModalContent
+        visible={open}
+        courierId={section?.courierId}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

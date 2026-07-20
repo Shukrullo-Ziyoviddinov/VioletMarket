@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   cancelText: {
-    color: '#6D28D9',
+    color: '#6d32c5',
     fontSize: 15,
     fontWeight: '800',
   },

@@ -48,3 +48,20 @@ export async function deleteCourier(courierId) {
   const payload = await parseJson(res);
   return payload?.data;
 }
+
+export async function fetchCourierAcceptedOrders(courierId, status = 'all') {
+  const normalizedStatus =
+    status === 'accepted' || status === 'delivered' ? status : 'all';
+  const search = new URLSearchParams();
+  if (normalizedStatus !== 'all') {
+    search.set('status', normalizedStatus);
+  }
+  const suffix = search.toString() ? `?${search.toString()}` : '';
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/couriers/${encodeURIComponent(courierId)}/accepted-orders${suffix}`,
+    ),
+  );
+  const payload = await parseJson(res);
+  return payload?.data || { courier: null, stats: null, orders: [] };
+}

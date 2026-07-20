@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   primaryButtonText: {
     color: '#FFFFFF',
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6D28D9',
+    backgroundColor: '#6d32c5',
   },
   uploadButtonText: {
     color: '#FFFFFF',
