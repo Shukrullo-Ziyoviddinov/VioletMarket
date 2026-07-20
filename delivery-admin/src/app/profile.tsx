@@ -20,8 +20,14 @@ import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { usePageRefresh, useRefreshState } from '@/components/loading/PageRefresh';
+import {
+  formatIncomeAmount,
+  incomeForSelection,
+  toDayKey,
+} from '@/components/income/income-period';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
+import { fetchDeliveredHistory } from '@/services/delivery-orders';
 import { fetchSupportUnreadCount } from '@/services/support-chat';
 import {
   connectSupportChatSocket,
@@ -51,12 +57,21 @@ type MenuRowProps = {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   detail?: string;
+  detailColor?: string;
   badgeCount?: number;
   danger?: boolean;
   onPress?: () => void;
 };
 
-function MenuRow({ icon, label, detail, badgeCount, danger, onPress }: MenuRowProps) {
+function MenuRow({
+  icon,
+  label,
+  detail,
+  detailColor,
+  badgeCount,
+  danger,
+  onPress,
+}: MenuRowProps) {
   const color = danger ? '#DC2626' : '#4B5563';
   return (
     <Pressable
@@ -76,7 +91,11 @@ function MenuRow({ icon, label, detail, badgeCount, danger, onPress }: MenuRowPr
       <Text style={[styles.menuLabel, danger && styles.dangerText]}>
         {label}
       </Text>
-      {detail ? <Text style={styles.menuDetail}>{detail}</Text> : null}
+      {detail ? (
+        <Text style={[styles.menuDetail, detailColor ? { color: detailColor } : null]}>
+          {detail}
+        </Text>
+      ) : null}
       {badgeCount && badgeCount > 0 ? (
         <View style={styles.menuBadge}>
           <Text style={styles.menuBadgeText}>
@@ -103,6 +122,7 @@ export default function ProfileScreen() {
     updateTransport,
   } = useAuth();
   const [supportUnread, setSupportUnread] = useState(0);
+  const [todayIncome, setTodayIncome] = useState(0);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [transportModalOpen, setTransportModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -129,9 +149,20 @@ export default function ProfileScreen() {
       if (!token) return;
       let cancelled = false;
 
-      fetchSupportUnreadCount(token)
-        .then((data) => {
-          if (!cancelled) setSupportUnread(data.unread || 0);
+      Promise.all([
+        fetchSupportUnreadCount(token),
+        fetchDeliveredHistory(token),
+      ])
+        .then(([unreadData, historyData]) => {
+          if (cancelled) return;
+          setSupportUnread(unreadData.unread || 0);
+          setTodayIncome(
+            incomeForSelection(
+              historyData.orders || [],
+              'day',
+              toDayKey(new Date()),
+            ),
+          );
         })
         .catch(() => null);
 
@@ -144,8 +175,18 @@ export default function ProfileScreen() {
   const refreshProfile = useCallback(async () => {
     if (!token) return;
     try {
-      const data = await fetchSupportUnreadCount(token);
-      setSupportUnread(data.unread || 0);
+      const [unreadData, historyData] = await Promise.all([
+        fetchSupportUnreadCount(token),
+        fetchDeliveredHistory(token),
+      ]);
+      setSupportUnread(unreadData.unread || 0);
+      setTodayIncome(
+        incomeForSelection(
+          historyData.orders || [],
+          'day',
+          toDayKey(new Date()),
+        ),
+      );
     } catch {
       // ignore
     }
@@ -356,6 +397,14 @@ export default function ProfileScreen() {
               setSupportUnread(0);
               router.push('/support');
             }}
+          />
+          <View style={styles.divider} />
+          <MenuRow
+            icon="wallet-outline"
+            label="Daromat"
+            detail={formatIncomeAmount(todayIncome)}
+            detailColor="#16A34A"
+            onPress={() => router.push('/income')}
           />
         </View>
 
@@ -642,9 +691,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   menuDetail: {
-    maxWidth: 110,
+    maxWidth: 150,
     color: '#9CA3AF',
     fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'right',
   },
   menuBadge: {
     minWidth: 22,

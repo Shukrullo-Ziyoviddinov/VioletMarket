@@ -15,7 +15,7 @@ function resolveActiveLabel(pathname: string) {
   if (pathname.includes('/profile') || pathname.includes('/support')) {
     return 'Profil';
   }
-  if (pathname.includes('/history')) {
+  if (pathname.includes('/history') || pathname.includes('/income')) {
     return 'Tarix';
   }
   if (pathname.includes('/home') || pathname.includes('/order-details')) {

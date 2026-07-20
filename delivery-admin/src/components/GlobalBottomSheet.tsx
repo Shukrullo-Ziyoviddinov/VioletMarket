@@ -63,6 +63,7 @@ export function GlobalBottomSheet({
     );
   }
 
+  // Faqat header/handle orqali yopish — ScrollView bilan urushmaydi
   const dragGesture = Gesture.Pan()
     .activeOffsetY(8)
     .failOffsetX([-30, 30])
@@ -108,23 +109,23 @@ export function GlobalBottomSheet({
             pointerEvents="box-none"
             style={styles.keyboardArea}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <GestureDetector gesture={dragGesture}>
-              <Animated.View
-                onLayout={(event) => {
-                  sheetHeight.value = event.nativeEvent.layout.height;
-                }}
-                style={[
-                  styles.sheet,
-                  { paddingBottom: Math.max(insets.bottom, 20) },
-                  animatedSheetStyle,
-                ]}>
+            <Animated.View
+              onLayout={(event) => {
+                sheetHeight.value = event.nativeEvent.layout.height;
+              }}
+              style={[
+                styles.sheet,
+                { paddingBottom: Math.max(insets.bottom, 20) },
+                animatedSheetStyle,
+              ]}>
+              <GestureDetector gesture={dragGesture}>
                 <View style={styles.dragArea}>
                   <View style={styles.dragHandle} />
                   <Text style={styles.title}>{title}</Text>
                 </View>
-                <View style={styles.contentContainer}>{children}</View>
-              </Animated.View>
-            </GestureDetector>
+              </GestureDetector>
+              <View style={styles.contentContainer}>{children}</View>
+            </Animated.View>
           </KeyboardAvoidingView>
         </View>
       </GestureHandlerRootView>
@@ -164,6 +165,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 2,
     flexShrink: 1,
+    minHeight: 0,
   },
   dragArea: {
     alignItems: 'center',

@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeliveredSuccessModal } from '@/components/home/DeliveredSuccessModal';
+import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
   deliverDeliveryOrder,
@@ -106,6 +107,7 @@ export default function OrderDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [deliveredSnapshot, setDeliveredSnapshot] =
     useState<DeliveryAcceptedOrder | null>(null);
 
@@ -327,9 +329,7 @@ export default function OrderDetailsScreen() {
                     styles.ajdaniyaFooter,
                     pressed && styles.pressed,
                   ]}
-                  onPress={() => {
-                    // Keyingi qadam: Ajdaniya
-                  }}>
+                  onPress={() => setReturnModalOpen(true)}>
                   <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
                 </Pressable>
                 <Pressable
@@ -360,6 +360,11 @@ export default function OrderDetailsScreen() {
           setSuccessOpen(false);
           router.replace('/home');
         }}
+      />
+
+      <OrderReturnReasonModal
+        visible={returnModalOpen}
+        onClose={() => setReturnModalOpen(false)}
       />
     </SafeAreaView>
   );

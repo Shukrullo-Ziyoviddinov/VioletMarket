@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -94,13 +95,19 @@ export default function HomeScreen() {
         <PullRefreshFlatList
           data={orders}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            orders.length === 0 && styles.listContentEmpty,
+          ]}
           showsVerticalScrollIndicator={false}
           loading={loading}
           refreshing={refreshing}
           onRefresh={onRefresh}
           ListEmptyComponent={
             <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <Ionicons name="file-tray-outline" size={42} color="#6d32c5" />
+              </View>
               <Text style={styles.emptyTitle}>Hali qabul qilinmagan</Text>
               <Text style={styles.emptyText}>
                 Buyurtmalar sahifasidan “Qabul qilish” bosilgan mahsulotlar shu
@@ -166,16 +173,31 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     flexGrow: 1,
   },
+  listContentEmpty: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   empty: {
-    paddingTop: 64,
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 24,
+  },
+  emptyIcon: {
+    width: 84,
+    height: 84,
+    borderRadius: 28,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 17,
     fontWeight: '800',
     color: '#312E81',
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptyText: {
     textAlign: 'center',

@@ -1,25 +1,30 @@
+import type { PropsWithChildren, ReactNode } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-type Props = {
+type Props = PropsWithChildren<{
   visible: boolean;
   title: string;
-  message: string;
+  message?: string;
   confirmText?: string;
   cancelText?: string;
   loading?: boolean;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   onCancel: () => void;
-};
+  /** Agar berilsa, default Ha/Yo‘q tugmalari o‘rniga shu chiqadi */
+  footer?: ReactNode;
+}>;
 
 export function MiniGlobalModal({
   visible,
   title,
   message,
+  children,
   confirmText = 'Ha',
   cancelText = 'Yo‘q',
   loading = false,
   onConfirm,
   onCancel,
+  footer,
 }: Props) {
   return (
     <Modal
@@ -32,33 +37,38 @@ export function MiniGlobalModal({
         <Pressable style={styles.backdrop} onPress={onCancel} />
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
+          {message ? <Text style={styles.message}>{message}</Text> : null}
+          {children ? <View style={styles.body}>{children}</View> : null}
 
-          <View style={styles.actions}>
-            <Pressable
-              disabled={loading}
-              style={({ pressed }) => [
-                styles.button,
-                styles.cancelButton,
-                pressed && styles.cancelButtonPressed,
-              ]}
-              onPress={onCancel}>
-              <Text style={styles.cancelText}>{cancelText}</Text>
-            </Pressable>
-            <Pressable
-              disabled={loading}
-              style={({ pressed }) => [
-                styles.button,
-                styles.confirmButton,
-                pressed && styles.confirmButtonPressed,
-                loading && styles.disabledButton,
-              ]}
-              onPress={onConfirm}>
-              <Text style={styles.confirmText}>
-                {loading ? 'Chiqilmoqda...' : confirmText}
-              </Text>
-            </Pressable>
-          </View>
+          {footer ? (
+            <View style={styles.actions}>{footer}</View>
+          ) : (
+            <View style={styles.actions}>
+              <Pressable
+                disabled={loading}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.cancelButton,
+                  pressed && styles.cancelButtonPressed,
+                ]}
+                onPress={onCancel}>
+                <Text style={styles.cancelText}>{cancelText}</Text>
+              </Pressable>
+              <Pressable
+                disabled={loading}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.confirmButton,
+                  pressed && styles.confirmButtonPressed,
+                  loading && styles.disabledButton,
+                ]}
+                onPress={onConfirm}>
+                <Text style={styles.confirmText}>
+                  {loading ? 'Chiqilmoqda...' : confirmText}
+                </Text>
+              </Pressable>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -100,6 +110,9 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 15,
     lineHeight: 22,
+  },
+  body: {
+    marginTop: 16,
   },
   actions: {
     marginTop: 24,

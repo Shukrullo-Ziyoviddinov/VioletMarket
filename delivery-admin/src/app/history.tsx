@@ -66,29 +66,44 @@ function StatCard({
   value,
   icon,
   color,
+  onPress,
 }: {
   label: string;
   value: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
+  onPress?: () => void;
 }) {
-  return (
-    <View style={styles.statCard}>
-      <View style={styles.statHead}>
-        <View style={[styles.statIcon, { backgroundColor: `${color}18` }]}>
-          <Ionicons name={icon} size={20} color={color} />
-        </View>
-        <View style={styles.statTextCol}>
-          <Text style={styles.statLabel} numberOfLines={2}>
-            {label}
-          </Text>
-          <Text style={styles.statValue} numberOfLines={1}>
-            {value}
-          </Text>
-        </View>
+  const content = (
+    <View style={styles.statHead}>
+      <View style={[styles.statIcon, { backgroundColor: `${color}18` }]}>
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+      <View style={styles.statTextCol}>
+        <Text style={styles.statLabel} numberOfLines={2}>
+          {label}
+        </Text>
+        <Text style={styles.statValue} numberOfLines={1}>
+          {value}
+        </Text>
       </View>
     </View>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.statCard,
+          pressed && styles.pressed,
+        ]}
+        onPress={onPress}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return <View style={styles.statCard}>{content}</View>;
 }
 
 function HistoryCard({
@@ -260,6 +275,7 @@ export default function HistoryScreen() {
                 value={formatAmount(stats.totalIncome)}
                 icon="wallet-outline"
                 color="#EA580C"
+                onPress={() => router.push('/income')}
               />
             </View>
           }
