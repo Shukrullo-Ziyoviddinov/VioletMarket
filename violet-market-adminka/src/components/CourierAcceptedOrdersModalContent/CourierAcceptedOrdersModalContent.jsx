@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Spin } from 'antd';
+import { Input, Spin } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { fetchCourierAcceptedOrders } from '../../api/couriersAdminApi';
 import CourierAcceptedOrderCard from '../CourierAcceptedOrderCard/CourierAcceptedOrderCard';
 import './CourierAcceptedOrdersModalContent.css';
@@ -9,11 +10,33 @@ function formatCourierName(courier) {
   return fullName || courier?.email || 'Kuryer';
 }
 
+function filterOrdersByCustomer(orders, query) {
+  const normalized = String(query || '').trim().toLowerCase();
+  if (!normalized) return orders;
+
+  const queryDigits = normalized.replace(/\D/g, '');
+
+  return orders.filter((order) => {
+    const firstName = String(order?.customer?.firstName || '').toLowerCase();
+    const lastName = String(order?.customer?.lastName || '').toLowerCase();
+    const phone = String(order?.customer?.phone || '');
+    const phoneDigits = phone.replace(/\D/g, '');
+
+    if (queryDigits && phoneDigits.includes(queryDigits)) {
+      return true;
+    }
+
+    const haystack = [firstName, lastName, phone.toLowerCase()].join(' ');
+    return haystack.includes(normalized);
+  });
+}
+
 export default function CourierAcceptedOrdersModalContent({
   visible = false,
   courierId = '',
 }) {
   const [statusFilter, setStatusFilter] = useState('accepted');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [courier, setCourier] = useState(null);
@@ -57,7 +80,18 @@ export default function CourierAcceptedOrdersModalContent({
 
   const courierName = useMemo(() => formatCourierName(courier), [courier]);
 
+  const filteredOrders = useMemo(
+    () => filterOrdersByCustomer(orders, searchQuery),
+    [orders, searchQuery],
+  );
+
   if (!visible) return null;
+
+  const emptyMessage = searchQuery.trim()
+    ? 'Qidiruv bo‘yicha mijoz topilmadi'
+    : statusFilter === 'delivered'
+      ? 'Hozircha topshirilgan buyurtma topilmadi'
+      : 'Hozircha qabul qilingan buyurtma topilmadi';
 
   return (
     <div className="courier-accepted-orders-modal">
@@ -114,6 +148,15 @@ export default function CourierAcceptedOrdersModalContent({
         </button>
       </div>
 
+      <Input
+        allowClear
+        className="courier-accepted-orders-modal__search"
+        placeholder="Mijoz ismi, familiyasi yoki telefon raqami"
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={(event) => setSearchQuery(event.target.value)}
+      />
+
       {loading ? (
         <div className="courier-accepted-orders-modal__state">
           <Spin />
@@ -124,17 +167,13 @@ export default function CourierAcceptedOrdersModalContent({
         <p className="courier-accepted-orders-modal__error">{error}</p>
       ) : null}
 
-      {!loading && !error && orders.length === 0 ? (
-        <p className="courier-accepted-orders-modal__state">
-          {statusFilter === 'delivered'
-            ? 'Hozircha topshirilgan buyurtma topilmadi'
-            : 'Hozircha qabul qilingan buyurtma topilmadi'}
-        </p>
+      {!loading && !error && filteredOrders.length === 0 ? (
+        <p className="courier-accepted-orders-modal__state">{emptyMessage}</p>
       ) : null}
 
-      {!loading && !error && orders.length > 0 ? (
+      {!loading && !error && filteredOrders.length > 0 ? (
         <div className="courier-accepted-orders-modal__list">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <CourierAcceptedOrderCard key={order.id} order={order} />
           ))}
         </div>

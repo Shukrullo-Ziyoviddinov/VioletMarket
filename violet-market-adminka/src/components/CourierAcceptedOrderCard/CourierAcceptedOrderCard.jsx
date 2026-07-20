@@ -47,7 +47,13 @@ export default function CourierAcceptedOrderCard({ order }) {
 
       <h4 className="courier-accepted-order-card__title">{resolveTitle(order)}</h4>
 
-      <div className="courier-accepted-order-card__meta-grid">
+      <div
+        className={`courier-accepted-order-card__meta-grid${
+          order?.status === 'delivered'
+            ? ' courier-accepted-order-card__meta-grid--delivered'
+            : ''
+        }`}
+      >
         <div>
           <span className="courier-accepted-order-card__label">Buyurtma</span>
           <p className="courier-accepted-order-card__value">#{order?.orderId || 0}</p>
@@ -58,6 +64,14 @@ export default function CourierAcceptedOrderCard({ order }) {
             {formatDateTime(order?.acceptedAt)}
           </p>
         </div>
+        {order?.status === 'delivered' ? (
+          <div>
+            <span className="courier-accepted-order-card__label">Topshirilgan vaqt</span>
+            <p className="courier-accepted-order-card__value courier-accepted-order-card__value--delivered">
+              {formatDateTime(order?.deliveredAt)}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="courier-accepted-order-card__customer">

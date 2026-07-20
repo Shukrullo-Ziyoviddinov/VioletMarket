@@ -78,6 +78,10 @@
   color: #6d32c5;
 }
 
+.courier-accepted-orders-modal__search {
+  max-width: 100%;
+}
+
 .courier-accepted-orders-modal__state {
   margin: 12px 0;
   color: #6b7280;

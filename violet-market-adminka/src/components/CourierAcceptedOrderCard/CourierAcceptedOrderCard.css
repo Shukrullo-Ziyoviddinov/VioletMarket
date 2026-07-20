@@ -50,6 +50,14 @@
   gap: 10px;
 }
 
+.courier-accepted-order-card__meta-grid--delivered {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.courier-accepted-order-card__value--delivered {
+  color: #166534;
+}
+
 .courier-accepted-order-card__label {
   display: block;
   font-size: 12px;
@@ -75,7 +83,8 @@
 }
 
 @media (max-width: 640px) {
-  .courier-accepted-order-card__meta-grid {
+  .courier-accepted-order-card__meta-grid,
+  .courier-accepted-order-card__meta-grid--delivered {
     grid-template-columns: 1fr;
   }
 }
