@@ -12,6 +12,13 @@
   grid-column: 1 / -1;
 }
 
+.seller-order-no-answer-list__loading-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+
 @media (max-width: 900px) {
   .seller-order-no-answer-list {
     grid-template-columns: minmax(0, 1fr);

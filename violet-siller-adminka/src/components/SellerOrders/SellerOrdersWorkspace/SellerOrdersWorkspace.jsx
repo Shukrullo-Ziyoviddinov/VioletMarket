@@ -51,7 +51,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         limit: 100,
         trackingStatus,
       });
-      setOrders(data.orders);
+      setOrders(Array.isArray(data?.orders) ? data.orders : []);
     } catch {
       setOrders([]);
     } finally {
@@ -64,6 +64,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   }, [loadOrders]);
 
   useEffect(() => {
+    setOrders([]);
     setActiveOrder(null);
     setCourierOrder(null);
   }, [filter]);

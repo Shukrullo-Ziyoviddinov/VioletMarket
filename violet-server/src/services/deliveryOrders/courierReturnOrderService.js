@@ -126,7 +126,7 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
   }
 
   const order = await Order.findOne({ id: assignment.orderId })
-    .select("status paidAt createdAt")
+    .select("status paidAt createdAt items")
     .lean();
   const paid = isOrderPaid(order);
 
@@ -138,6 +138,17 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     );
   }
 
+  const orderItem = Array.isArray(order?.items)
+    ? order.items[Number(assignment.itemIndex)]
+    : null;
+  const sellerId =
+    String(assignment.sellerId || "").trim() ||
+    String(orderItem?.sellerId || "").trim();
+
+  if (!sellerId) {
+    throw new HttpError(409, "Siller ID topilmadi", "SELLER_ID_MISSING");
+  }
+
   const returnedAt = new Date();
   const periodKeys = resolvePeriodKeys(returnedAt);
   const returnPayload = {
@@ -147,7 +158,7 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     unitIndex: assignment.unitIndex,
     productId: assignment.productId,
     productCode: String(assignment.productCode || ""),
-    sellerId: String(assignment.sellerId || "").trim(),
+    sellerId,
     title: {
       uz: String(assignment.title?.uz || ""),
       ru: String(assignment.title?.ru || ""),

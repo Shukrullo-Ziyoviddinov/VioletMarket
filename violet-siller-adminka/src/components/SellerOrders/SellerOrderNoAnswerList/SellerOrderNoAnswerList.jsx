@@ -10,7 +10,7 @@ export default function SellerOrderNoAnswerList({
 }) {
   const { t } = useTranslation();
 
-  if (loading) {
+  if (loading && !orders.length) {
     return (
       <div className="seller-order-no-answer-list__state">
         <Spin />
@@ -18,7 +18,7 @@ export default function SellerOrderNoAnswerList({
     );
   }
 
-  if (!orders.length) {
+  if (!loading && !orders.length) {
     return (
       <div className="seller-order-no-answer-list__state">
         <Empty description={t('orders.noAnswer.empty')} />
@@ -28,6 +28,11 @@ export default function SellerOrderNoAnswerList({
 
   return (
     <div className="seller-order-no-answer-list">
+      {loading ? (
+        <div className="seller-order-no-answer-list__loading-bar">
+          <Spin size="small" />
+        </div>
+      ) : null}
       {orders.map((order) => (
         <SellerOrderNoAnswerCard key={order.id} order={order} />
       ))}

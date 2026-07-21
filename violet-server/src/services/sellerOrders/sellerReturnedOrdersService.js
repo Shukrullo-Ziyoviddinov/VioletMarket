@@ -1,5 +1,4 @@
 const { CourierReturnedOrder } = require("../../models/courierReturnedOrder");
-const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const {
   formatDayLabel,
   formatMonthLabel,
@@ -216,7 +215,8 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
 
 /**
  * Siller "Buyurtmalar" → Javob bermadi filteri.
- * Faqat hali qayta qabul qilinmagan (assignment cancelled) yozuvlar.
+ * reasonType = no_answer bo‘lgan barcha yozuvlar (qayta qabul qilingan bo‘lsa ham
+ * siller tugmalarni bosmaguncha ro‘yxatda qoladi).
  */
 async function listSellerNoAnswerOrders(sellerId, query = {}) {
   const shopId = String(sellerId || "").trim();
@@ -224,60 +224,26 @@ async function listSellerNoAnswerOrders(sellerId, query = {}) {
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
   const skip = (page - 1) * limit;
 
-  const rows = await CourierReturnedOrder.find({
-    sellerId: shopId,
+  const findFilter = {
     reasonType: "no_answer",
-  })
-    .sort({ returnedAt: -1, createdAt: -1 })
-    .lean();
+    sellerId: shopId,
+  };
 
-  if (!rows.length) {
-    return {
-      page,
-      limit,
-      total: 0,
-      totalPages: 1,
-      orders: [],
-    };
-  }
-
-  const assignmentIds = rows
-    .map((row) => row.assignmentId)
-    .filter(Boolean);
-
-  const assignments = assignmentIds.length
-    ? await CourierOrderAssignment.find({ _id: { $in: assignmentIds } })
-        .select("_id status")
-        .lean()
-    : [];
-
-  const cancelledIds = new Set(
-    assignments
-      .filter((row) => String(row.status) === "cancelled")
-      .map((row) => String(row._id)),
-  );
-
-  // Assignment topilmasa ham (edge) — ko‘rsatamiz
-  const assignmentMap = new Map(
-    assignments.map((row) => [String(row._id), row]),
-  );
-
-  const activeRows = rows.filter((row) => {
-    const id = String(row.assignmentId || "");
-    if (!id) return true;
-    if (!assignmentMap.has(id)) return true;
-    return cancelledIds.has(id);
-  });
-
-  const total = activeRows.length;
-  const pageRows = activeRows.slice(skip, skip + limit);
+  const [rows, total] = await Promise.all([
+    CourierReturnedOrder.find(findFilter)
+      .sort({ returnedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    CourierReturnedOrder.countDocuments(findFilter),
+  ]);
 
   return {
     page,
     limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    orders: pageRows.map((row) => {
+    orders: rows.map((row) => {
       const publicRow = toPublicReturnedOrder(row);
       return {
         ...publicRow,
