@@ -3,6 +3,8 @@ import { RightOutlined } from '@ant-design/icons';
 import { resolveProductImageUrl } from '../../../utils/productDisplay';
 import {
   formatAdminOrderAmount,
+  formatAdminOrderDateTime,
+  getAdminOrderBuyerName,
   getAdminOrderProductTitle,
 } from '../../../utils/adminOrdersDisplay';
 import AdminOrderSellerBadge from '../AdminOrderSellerBadge/AdminOrderSellerBadge';
@@ -30,28 +32,62 @@ export default function AdminOrderCollectionCard({ order, onOpen }) {
       className="seller-order-collection-card"
       onClick={() => onOpen?.(order)}
     >
-      <img
-        className="seller-order-collection-card__image"
-        src={resolveProductImageUrl(order.imageUrl)}
-        alt={title}
-        onError={(event) => {
-          event.currentTarget.src = resolveProductImageUrl('');
-        }}
-      />
+      <div className="seller-order-collection-card__main">
+        <div className="seller-order-collection-card__header">
+          <AdminOrderSellerBadge order={order} />
+          <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
+        </div>
 
-      <div className="seller-order-collection-card__content">
-        <AdminOrderSellerBadge order={order} className="admin-order-seller-badge--block" />
-        <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
-        <strong title={title}>{title}</strong>
-        <span>{order.productCode || '—'}</span>
-        {variants ? <p title={variants}>{variants}</p> : null}
+        <div className="seller-order-collection-card__body">
+          <div className="seller-order-collection-card__product">
+            <img
+              className="seller-order-collection-card__image"
+              src={resolveProductImageUrl(order.imageUrl)}
+              alt={title}
+              onError={(event) => {
+                event.currentTarget.src = resolveProductImageUrl('');
+              }}
+            />
+            <div className="seller-order-collection-card__product-text">
+              <span className="seller-order-collection-card__label">Mahsulot</span>
+              <strong title={title}>{title}</strong>
+              <span className="seller-order-collection-card__code">
+                {order.productCode || '—'}
+              </span>
+              {variants ? (
+                <p className="seller-order-collection-card__variants" title={variants}>
+                  {variants}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="seller-order-collection-card__meta">
+            <div className="seller-order-collection-card__field">
+              <span className="seller-order-collection-card__label">Buyurtma ID</span>
+              <strong>{order.orderCode || '—'}</strong>
+            </div>
+            <div className="seller-order-collection-card__field">
+              <span className="seller-order-collection-card__label">Sana va vaqt</span>
+              <strong>{formatAdminOrderDateTime(order.orderedAt)}</strong>
+            </div>
+            <div className="seller-order-collection-card__field">
+              <span className="seller-order-collection-card__label">Xaridor</span>
+              <strong>{getAdminOrderBuyerName(order.buyer)}</strong>
+            </div>
+            <div className="seller-order-collection-card__field">
+              <span className="seller-order-collection-card__label">Mahsulot narxi</span>
+              <strong className="seller-order-collection-card__amount">
+                {formatAdminOrderAmount(order.amount)}
+              </strong>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="seller-order-collection-card__amount">
-        {formatAdminOrderAmount(order.amount)}
-      </div>
-
-      <RightOutlined className="seller-order-collection-card__chevron" />
+      <span className="seller-order-collection-card__chevron" aria-hidden="true">
+        <RightOutlined />
+      </span>
     </button>
   );
 }
