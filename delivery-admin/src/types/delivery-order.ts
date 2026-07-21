@@ -40,6 +40,7 @@ export type DeliverySellerPickup = {
   id: string;
   name: string;
   address: string;
+  sellerPhone: string;
   coordinates: number[] | null;
 };
 

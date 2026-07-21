@@ -190,6 +190,7 @@ function toSellerPickup(account) {
       id: "",
       name: "",
       address: "",
+      sellerPhone: "",
       coordinates: null,
     };
   }
@@ -200,6 +201,7 @@ function toSellerPickup(account) {
     id: String(account.id || ""),
     name: pickSellerName(account) || String(account.id || ""),
     address: String(account.address || "").trim(),
+    sellerPhone: String(account.sellerPhone || "").trim(),
     coordinates:
       coords && Number.isFinite(coords[0]) && Number.isFinite(coords[1])
         ? coords
@@ -212,7 +214,7 @@ async function loadSellerPickupMap(sellerIds = []) {
   if (!ids.length) return new Map();
 
   const rows = await SellerAccount.find({ id: { $in: ids } })
-    .select("id name address coordinates")
+    .select("id name address sellerPhone coordinates")
     .lean();
 
   return new Map(rows.map((row) => [String(row.id), toSellerPickup(row)]));
@@ -227,7 +229,13 @@ async function attachSellerPickup(publicRows = []) {
     const sellerId = String(row.sellerId || "").trim();
     const sellerPickup =
       sellerMap.get(sellerId) ||
-      toSellerPickup({ id: sellerId, name: sellerId, address: "", coordinates: null });
+      toSellerPickup({
+        id: sellerId,
+        name: sellerId,
+        address: "",
+        sellerPhone: "",
+        coordinates: null,
+      });
     return {
       ...row,
       sellerPickup,

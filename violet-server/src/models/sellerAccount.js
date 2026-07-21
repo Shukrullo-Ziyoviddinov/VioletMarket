@@ -17,6 +17,8 @@ const sellerAccountSchema = new mongoose.Schema(
     logo: { type: String, required: true, trim: true },
     /** UI da ko‘rinadigan manzil matni */
     address: { type: String, default: "", trim: true },
+    /** Kuryer uchun sotuvchi telefoni */
+    sellerPhone: { type: String, default: "", trim: true },
     /** [lat, lng] — do‘kon turgan joy koordinatasi */
     coordinates: {
       type: [Number],

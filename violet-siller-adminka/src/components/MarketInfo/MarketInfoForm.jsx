@@ -4,6 +4,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   GlobalOutlined,
+  PhoneOutlined,
   PictureOutlined,
   SaveOutlined,
   ShopOutlined,
@@ -33,6 +34,7 @@ function buildFormValues(profile) {
     descriptionUz: account?.description?.uz || '',
     descriptionRu: account?.description?.ru || '',
     logo: account?.logo || DEFAULT_LOGO,
+    sellerPhone: account?.sellerPhone || '',
   };
 }
 
@@ -97,6 +99,7 @@ export default function MarketInfoForm() {
         descriptionUz: values.descriptionUz,
         descriptionRu: values.descriptionRu,
         logo: values.logo,
+        sellerPhone: values.sellerPhone || '',
         address: location.address || '',
         coordinates: location.coordinates || null,
       });
@@ -269,6 +272,26 @@ export default function MarketInfoForm() {
             rules={[{ required: true, message: t('marketInfo.validationShopName') }]}
           >
             <Input placeholder={t('marketInfo.placeholderShopName')} />
+          </Form.Item>
+        </div>
+
+        <div className="market-info-form__field-card">
+          <div className="market-info-form__field-head">
+            <div className="market-info-form__icon-wrap">
+              <PhoneOutlined />
+            </div>
+            <Text className="market-info-form__field-title">{t('marketInfo.phone')}</Text>
+          </div>
+          <Form.Item
+            name="sellerPhone"
+            rules={[
+              {
+                max: 40,
+                message: t('marketInfo.validationPhone'),
+              },
+            ]}
+          >
+            <Input placeholder={t('marketInfo.placeholderPhone')} />
           </Form.Item>
         </div>
 

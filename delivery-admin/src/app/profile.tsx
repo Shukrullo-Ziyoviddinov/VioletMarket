@@ -547,6 +547,7 @@ export default function ProfileScreen() {
         title="Hisobdan chiqish"
         message="Chindan ham hisobdan chiqmoqchimisiz?"
         loading={isSigningOut}
+        loadingText="Chiqilmoqda..."
         onConfirm={confirmSignOut}
         onCancel={() => setLogoutModalOpen(false)}
       />

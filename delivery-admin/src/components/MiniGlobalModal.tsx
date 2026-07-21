@@ -8,6 +8,7 @@ type Props = PropsWithChildren<{
   confirmText?: string;
   cancelText?: string;
   loading?: boolean;
+  loadingText?: string;
   onConfirm?: () => void;
   onCancel: () => void;
   /** Agar berilsa, default Ha/Yo‘q tugmalari o‘rniga shu chiqadi */
@@ -22,6 +23,7 @@ export function MiniGlobalModal({
   confirmText = 'Ha',
   cancelText = 'Yo‘q',
   loading = false,
+  loadingText = 'Kutilmoqda...',
   onConfirm,
   onCancel,
   footer,
@@ -64,7 +66,7 @@ export function MiniGlobalModal({
                 ]}
                 onPress={onConfirm}>
                 <Text style={styles.confirmText}>
-                  {loading ? 'Chiqilmoqda...' : confirmText}
+                  {loading ? loadingText : confirmText}
                 </Text>
               </Pressable>
             </View>

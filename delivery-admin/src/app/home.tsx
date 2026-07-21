@@ -5,6 +5,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AcceptedOrderCard } from '@/components/home/AcceptedOrderCard';
+import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import {
   BrandLoader,
   PullRefreshFlatList,
@@ -57,6 +58,8 @@ export default function HomeScreen() {
   const [orders, setOrders] = useState<DeliveryAcceptedOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [pickingUpId, setPickingUpId] = useState<string | null>(null);
+  const [pickupConfirmOrder, setPickupConfirmOrder] =
+    useState<DeliveryAcceptedOrder | null>(null);
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
@@ -99,32 +102,31 @@ export default function HomeScreen() {
     }, [token]),
   );
 
-  const handlePickUp = useCallback(
-    async (order: DeliveryAcceptedOrder) => {
-      if (!token || pickingUpId) return;
-      setPickingUpId(order.id);
-      try {
-        const updated = await pickUpDeliveryOrder(token, {
-          assignmentId: order.id,
-        });
-        setOrders((prev) =>
-          prev.map((row) => (row.id === order.id ? { ...row, ...updated } : row)),
-        );
-        Alert.alert(
-          'Mahsulot olindi',
-          'Endi mijozga yetkazish mumkin — mashrut mijoz manziliga ochiladi.',
-        );
-      } catch (error) {
-        Alert.alert(
-          'Xatolik',
-          error instanceof Error ? error.message : 'Mahsulotni olishda xatolik',
-        );
-      } finally {
-        setPickingUpId(null);
-      }
-    },
-    [pickingUpId, token],
-  );
+  const confirmPickUp = useCallback(async () => {
+    if (!token || !pickupConfirmOrder || pickingUpId) return;
+    const order = pickupConfirmOrder;
+    setPickingUpId(order.id);
+    try {
+      const updated = await pickUpDeliveryOrder(token, {
+        assignmentId: order.id,
+      });
+      setOrders((prev) =>
+        prev.map((row) => (row.id === order.id ? { ...row, ...updated } : row)),
+      );
+      setPickupConfirmOrder(null);
+      Alert.alert(
+        'Mahsulot olindi',
+        'Endi mijozga yetkazish mumkin — mashrut mijoz manziliga ochiladi.',
+      );
+    } catch (error) {
+      Alert.alert(
+        'Xatolik',
+        error instanceof Error ? error.message : 'Mahsulotni olishda xatolik',
+      );
+    } finally {
+      setPickingUpId(null);
+    }
+  }, [pickingUpId, pickupConfirmOrder, token]);
 
   if (isLoading || !delivery) {
     return (
@@ -172,7 +174,7 @@ export default function HomeScreen() {
                 void handleBuildRoute(item);
               }}
               onPickUp={() => {
-                void handlePickUp(item);
+                setPickupConfirmOrder(item);
               }}
               onOpenDetails={() =>
                 router.push({
@@ -184,6 +186,22 @@ export default function HomeScreen() {
           )}
         />
       </View>
+
+      <MiniGlobalModal
+        visible={Boolean(pickupConfirmOrder)}
+        title="Mahsulotni olish"
+        message="Chindan ham mahsulot olinganligini tasdiqlaysizmi?"
+        confirmText="Ha"
+        cancelText="Yo‘q"
+        loading={Boolean(pickingUpId)}
+        loadingText="Tasdiqlanmoqda..."
+        onCancel={() => {
+          if (!pickingUpId) setPickupConfirmOrder(null);
+        }}
+        onConfirm={() => {
+          void confirmPickUp();
+        }}
+      />
 
       <BottomNavbar />
     </SafeAreaView>

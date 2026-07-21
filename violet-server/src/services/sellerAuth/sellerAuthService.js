@@ -271,6 +271,7 @@ async function getSellerCabinetProfile(shopId) {
       sellerCountry: sellerAccount.sellerCountry || "",
       logo: sellerAccount.logo,
       address: String(sellerAccount.address || "").trim(),
+      sellerPhone: String(sellerAccount.sellerPhone || "").trim(),
       coordinates: Array.isArray(sellerAccount.coordinates) && sellerAccount.coordinates.length >= 2
         ? [Number(sellerAccount.coordinates[0]), Number(sellerAccount.coordinates[1])]
         : null,
@@ -325,6 +326,9 @@ async function updateSellerMarketProfile(shopId, payload = {}) {
   }
   if (payload.address !== undefined) {
     sellerAccount.address = trimText(payload.address, "Manzil", { maxLength: 500 });
+  }
+  if (payload.sellerPhone !== undefined) {
+    sellerAccount.sellerPhone = trimText(payload.sellerPhone, "Telefon", { maxLength: 40 });
   }
   if (payload.coordinates !== undefined) {
     const raw = payload.coordinates;

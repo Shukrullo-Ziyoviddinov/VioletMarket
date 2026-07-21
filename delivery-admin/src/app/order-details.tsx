@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeliveredSuccessModal } from '@/components/home/DeliveredSuccessModal';
 import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal';
+import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
   deliverDeliveryOrder,
@@ -137,6 +138,8 @@ export default function OrderDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
   const [pickingUp, setPickingUp] = useState(false);
+  const [pickupConfirmOpen, setPickupConfirmOpen] = useState(false);
+  const [deliverConfirmOpen, setDeliverConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returning, setReturning] = useState(false);
@@ -172,6 +175,7 @@ export default function OrderDetailsScreen() {
         assignmentId: order.id,
       });
       setOrder(data);
+      setPickupConfirmOpen(false);
       Alert.alert(
         'Mahsulot olindi',
         'Endi mijozga yetkazish mumkin.',
@@ -195,6 +199,7 @@ export default function OrderDetailsScreen() {
         courierLat: location.coords?.latitude,
         courierLng: location.coords?.longitude,
       });
+      setDeliverConfirmOpen(false);
       setDeliveredSnapshot(data);
       setSuccessOpen(true);
     } catch (error) {
@@ -298,6 +303,25 @@ export default function OrderDetailsScreen() {
                   <Text style={styles.sellerName}>
                     {displayOrDash(order.sellerPickup?.name)}
                   </Text>
+                  <View style={styles.customerRow}>
+                    <View style={styles.customerInfo}>
+                      <Text style={styles.customerPhone}>
+                        {displayOrDash(order.sellerPickup?.sellerPhone)}
+                      </Text>
+                    </View>
+                    {order.sellerPickup?.sellerPhone ? (
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          pressed && styles.pressed,
+                        ]}
+                        onPress={() =>
+                          callCustomer(order.sellerPickup?.sellerPhone || '')
+                        }>
+                        <Ionicons name="call" size={20} color="#FFFFFF" />
+                      </Pressable>
+                    ) : null}
+                  </View>
                   <View style={styles.addressRow}>
                     <View style={styles.addressInfo}>
                       <Text style={styles.addressText}>
@@ -462,9 +486,7 @@ export default function OrderDetailsScreen() {
                       pressed && styles.pressed,
                       pickingUp && styles.disabled,
                     ]}
-                    onPress={() => {
-                      void handlePickUp();
-                    }}>
+                    onPress={() => setPickupConfirmOpen(true)}>
                     <Text style={styles.pickupFooterText}>
                       {pickingUp ? '...' : 'Mahsulotni oldim'}
                     </Text>
@@ -488,7 +510,7 @@ export default function OrderDetailsScreen() {
                         pressed && styles.pressed,
                         delivering && styles.disabled,
                       ]}
-                      onPress={handleDeliver}>
+                      onPress={() => setDeliverConfirmOpen(true)}>
                       <Text style={styles.deliverText}>
                         {delivering ? '...' : 'Topshirdim'}
                       </Text>
@@ -500,6 +522,38 @@ export default function OrderDetailsScreen() {
           </>
         )}
       </View>
+
+      <MiniGlobalModal
+        visible={pickupConfirmOpen}
+        title="Mahsulotni olish"
+        message="Chindan ham mahsulot olinganligini tasdiqlaysizmi?"
+        confirmText="Ha"
+        cancelText="Yo‘q"
+        loading={pickingUp}
+        loadingText="Tasdiqlanmoqda..."
+        onCancel={() => {
+          if (!pickingUp) setPickupConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          void handlePickUp();
+        }}
+      />
+
+      <MiniGlobalModal
+        visible={deliverConfirmOpen}
+        title="Mijozga topshirish"
+        message="Chindan ham mahsulotni mijozga topshirganingizni tasdiqlaysizmi?"
+        confirmText="Ha"
+        cancelText="Yo‘q"
+        loading={delivering}
+        loadingText="Topshirilmoqda..."
+        onCancel={() => {
+          if (!delivering) setDeliverConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          void handleDeliver();
+        }}
+      />
 
       <DeliveredSuccessModal
         visible={successOpen}

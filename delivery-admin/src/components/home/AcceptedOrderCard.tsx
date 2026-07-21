@@ -98,6 +98,11 @@ export function AcceptedOrderCard({
           {seller.name}
         </Text>
       ) : null}
+      {sellerPhase && seller?.sellerPhone ? (
+        <Text style={styles.sellerPhone} numberOfLines={1}>
+          {seller.sellerPhone}
+        </Text>
+      ) : null}
 
       <View style={styles.addressBlock}>
         <View style={styles.addressHead}>
@@ -259,6 +264,12 @@ const styles = StyleSheet.create({
     color: '#56337d',
     fontSize: 14,
     fontWeight: '700',
+  },
+  sellerPhone: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: -6,
   },
   addressBlock: {
     gap: 10,
