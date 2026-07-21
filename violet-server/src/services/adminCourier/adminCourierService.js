@@ -115,8 +115,12 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
 
   const status = String(options.status || "").trim().toLowerCase();
   const listFilter = { deliveryId: account._id };
-  if (status === "accepted" || status === "delivered") {
-    listFilter.status = status;
+  if (status === "accepted" || status === "picked_up" || status === "delivered") {
+    if (status === "accepted") {
+      listFilter.status = { $in: ["accepted", "picked_up"] };
+    } else {
+      listFilter.status = status;
+    }
   }
 
   const [allRows, rows] = await Promise.all([

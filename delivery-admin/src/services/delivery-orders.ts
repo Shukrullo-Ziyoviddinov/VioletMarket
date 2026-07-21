@@ -64,6 +64,20 @@ export async function acceptDeliveryOrder(
   );
 }
 
+export async function pickUpDeliveryOrder(
+  token: string,
+  payload: { assignmentId: string },
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    '/api/delivery/orders/pickup',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
 export async function deliverDeliveryOrder(
   token: string,
   payload: {

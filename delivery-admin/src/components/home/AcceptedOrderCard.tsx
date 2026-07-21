@@ -1,18 +1,32 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { CourierNoteModal } from '@/components/home/CourierNoteModal';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
 type AcceptedOrderCardProps = {
   order: DeliveryAcceptedOrder;
+  pickingUp?: boolean;
   onBuildRoute?: (order: DeliveryAcceptedOrder) => void;
   onOpenDetails?: (order: DeliveryAcceptedOrder) => void;
+  onPickUp?: (order: DeliveryAcceptedOrder) => void;
 };
 
 function formatAmount(value: number) {
   return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
+}
+
+function isSellerPhase(order: DeliveryAcceptedOrder) {
+  if (order.pickupPhase === 'customer') return false;
+  if (order.pickupPhase === 'seller') return true;
+  return String(order.status || '') === 'accepted';
 }
 
 function DetailCell({ label, value }: { label: string; value?: string }) {
@@ -29,10 +43,14 @@ function DetailCell({ label, value }: { label: string; value?: string }) {
 
 export function AcceptedOrderCard({
   order,
+  pickingUp = false,
   onBuildRoute,
   onOpenDetails,
+  onPickUp,
 }: AcceptedOrderCardProps) {
   const [noteOpen, setNoteOpen] = useState(false);
+  const sellerPhase = isSellerPhase(order);
+  const seller = order.sellerPickup;
   const address = order.deliveryAddress || {
     city: '',
     district: '',
@@ -46,6 +64,14 @@ export function AcceptedOrderCard({
   };
   const courierNote = String(address.courierNote || '').trim();
 
+  const addressTitle = sellerPhase
+    ? String(seller?.address || '').trim() ||
+      String(seller?.name || '').trim() ||
+      'Sotuvchi manzili ko‘rsatilmagan'
+    : address.addressLine ||
+      [address.city, address.district].filter(Boolean).join(', ') ||
+      'Manzil ko‘rsatilmagan';
+
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
@@ -53,25 +79,49 @@ export function AcceptedOrderCard({
         <Text style={styles.amount}>{formatAmount(order.amount)}</Text>
       </View>
 
+      <View
+        style={[
+          styles.phaseBadge,
+          sellerPhase ? styles.phaseBadgeSeller : styles.phaseBadgeCustomer,
+        ]}>
+        <Text
+          style={[
+            styles.phaseBadgeText,
+            sellerPhase ? styles.phaseBadgeTextSeller : styles.phaseBadgeTextCustomer,
+          ]}>
+          {sellerPhase ? 'Sotuvchidan olish' : 'Mijozga yetkazish'}
+        </Text>
+      </View>
+
+      {sellerPhase && seller?.name ? (
+        <Text style={styles.sellerName} numberOfLines={1}>
+          {seller.name}
+        </Text>
+      ) : null}
+
       <View style={styles.addressBlock}>
         <View style={styles.addressHead}>
-          <Ionicons name="location" size={16} color="#6d32c5" />
+          <Ionicons
+            name={sellerPhase ? 'storefront-outline' : 'location'}
+            size={16}
+            color="#6d32c5"
+          />
           <Text style={styles.addressTitle} numberOfLines={2}>
-            {address.addressLine ||
-              [address.city, address.district].filter(Boolean).join(', ') ||
-              'Manzil ko‘rsatilmagan'}
+            {addressTitle}
           </Text>
         </View>
 
-        <View style={styles.detailsRow}>
-          <DetailCell label="Uy" value={address.placeType} />
-          <DetailCell label="Yo‘lak" value={address.entrance} />
-          <DetailCell label="Qavat" value={address.floor} />
-          <DetailCell label="Domofon" value={address.domofon} />
-        </View>
+        {!sellerPhase ? (
+          <View style={styles.detailsRow}>
+            <DetailCell label="Uy" value={address.placeType} />
+            <DetailCell label="Yo‘lak" value={address.entrance} />
+            <DetailCell label="Qavat" value={address.floor} />
+            <DetailCell label="Domofon" value={address.domofon} />
+          </View>
+        ) : null}
       </View>
 
-      {courierNote ? (
+      {!sellerPhase && courierNote ? (
         <Pressable
           style={({ pressed }) => [
             styles.noteTrigger,
@@ -93,7 +143,7 @@ export function AcceptedOrderCard({
           <Ionicons name="cube-outline" size={16} color="#6d32c5" />
           <Text style={styles.count}>{order.productCount} mahsulot</Text>
         </View>
-        {address.district ? (
+        {!sellerPhase && address.district ? (
           <Text style={styles.district} numberOfLines={1}>
             {address.district}
           </Text>
@@ -120,6 +170,26 @@ export function AcceptedOrderCard({
           <Text style={styles.infoText}>Ma'lumot</Text>
         </Pressable>
       </View>
+
+      {sellerPhase ? (
+        <Pressable
+          disabled={pickingUp}
+          style={({ pressed }) => [
+            styles.pickupButton,
+            pressed && styles.pressed,
+            pickingUp && styles.disabled,
+          ]}
+          onPress={() => onPickUp?.(order)}>
+          {pickingUp ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.pickupText}>Mahsulotni oldim</Text>
+            </>
+          )}
+        </Pressable>
+      ) : null}
 
       <CourierNoteModal
         visible={noteOpen}
@@ -158,6 +228,37 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontSize: 17,
     fontWeight: '800',
+  },
+  phaseBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  phaseBadgeSeller: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  phaseBadgeCustomer: {
+    backgroundColor: '#EDF9F0',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  phaseBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  phaseBadgeTextSeller: {
+    color: '#C2410C',
+  },
+  phaseBadgeTextCustomer: {
+    color: '#15803D',
+  },
+  sellerName: {
+    color: '#56337d',
+    fontSize: 14,
+    fontWeight: '700',
   },
   addressBlock: {
     gap: 10,
@@ -275,7 +376,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
   },
+  pickupButton: {
+    minHeight: 50,
+    borderRadius: 14,
+    backgroundColor: '#15803D',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  pickupText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
   pressed: {
     opacity: 0.9,
+  },
+  disabled: {
+    opacity: 0.7,
   },
 });

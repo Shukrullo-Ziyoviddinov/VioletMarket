@@ -13,11 +13,32 @@ import {
 } from '@/components/loading/PageRefresh';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
-import { fetchAcceptedDeliveryOrders } from '@/services/delivery-orders';
+import {
+  fetchAcceptedDeliveryOrders,
+  pickUpDeliveryOrder,
+} from '@/services/delivery-orders';
 import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
+function isSellerPhase(order: DeliveryAcceptedOrder) {
+  if (order.pickupPhase === 'customer') return false;
+  if (order.pickupPhase === 'seller') return true;
+  return String(order.status || '') === 'accepted';
+}
+
 async function handleBuildRoute(order: DeliveryAcceptedOrder) {
+  if (isSellerPhase(order)) {
+    const seller = order.sellerPickup;
+    const opened = await openYandexRoute({
+      coords: seller?.coordinates || null,
+      addressLine: seller?.address || '',
+    });
+    if (!opened) {
+      Alert.alert('Mashrut', 'Sotuvchi manzili topilmadi yoki xarita ochilmadi');
+    }
+    return;
+  }
+
   const address = order.deliveryAddress || {};
   const opened = await openYandexRoute({
     coords: address.coords,
@@ -35,6 +56,7 @@ export default function HomeScreen() {
   const { token, delivery, isLoading } = useAuth();
   const [orders, setOrders] = useState<DeliveryAcceptedOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pickingUpId, setPickingUpId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
@@ -75,6 +97,33 @@ export default function HomeScreen() {
         cancelled = true;
       };
     }, [token]),
+  );
+
+  const handlePickUp = useCallback(
+    async (order: DeliveryAcceptedOrder) => {
+      if (!token || pickingUpId) return;
+      setPickingUpId(order.id);
+      try {
+        const updated = await pickUpDeliveryOrder(token, {
+          assignmentId: order.id,
+        });
+        setOrders((prev) =>
+          prev.map((row) => (row.id === order.id ? { ...row, ...updated } : row)),
+        );
+        Alert.alert(
+          'Mahsulot olindi',
+          'Endi mijozga yetkazish mumkin — mashrut mijoz manziliga ochiladi.',
+        );
+      } catch (error) {
+        Alert.alert(
+          'Xatolik',
+          error instanceof Error ? error.message : 'Mahsulotni olishda xatolik',
+        );
+      } finally {
+        setPickingUpId(null);
+      }
+    },
+    [pickingUpId, token],
   );
 
   if (isLoading || !delivery) {
@@ -118,8 +167,12 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <AcceptedOrderCard
               order={item}
+              pickingUp={pickingUpId === item.id}
               onBuildRoute={() => {
                 void handleBuildRoute(item);
+              }}
+              onPickUp={() => {
+                void handlePickUp(item);
               }}
               onOpenDetails={() =>
                 router.push({

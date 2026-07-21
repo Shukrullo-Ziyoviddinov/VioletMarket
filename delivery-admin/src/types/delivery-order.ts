@@ -36,6 +36,13 @@ export type DeliveryCustomer = {
   phone: string;
 };
 
+export type DeliverySellerPickup = {
+  id: string;
+  name: string;
+  address: string;
+  coordinates: number[] | null;
+};
+
 export type DeliveryAcceptedOrder = {
   id: string;
   orderId: number;
@@ -56,7 +63,11 @@ export type DeliveryAcceptedOrder = {
   customer: DeliveryCustomer;
   deliveryAddress: DeliveryAddressDetails;
   status: string;
+  pickupPhase?: 'seller' | 'customer';
+  sellerId?: string;
+  sellerPickup?: DeliverySellerPickup | null;
   acceptedAt: string | null;
+  pickedUpAt?: string | null;
   handedToCourierAt: string | null;
   deliveredAt: string | null;
   distanceKm?: number | null;

@@ -1,6 +1,7 @@
 const { Order } = require("../../models/order");
 const { User } = require("../../models/user");
 const { DeliveryAccount } = require("../../models/deliveryAccount");
+const { SellerAccount } = require("../../models/sellerAccount");
 const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { HttpError } = require("../../utils/httpError");
 const {
@@ -140,9 +141,12 @@ function toPublicAssignment(doc, extras = {}) {
       coords: Array.isArray(address.coords) ? address.coords : null,
     },
     status: String(row.status || "accepted"),
+    pickupPhase: String(row.status || "") === "picked_up" ? "customer" : "seller",
     handedToCourierAt: row.handedToCourierAt || null,
     acceptedAt: row.acceptedAt || null,
+    pickedUpAt: row.pickedUpAt || null,
     deliveredAt: row.deliveredAt || null,
+    sellerPickup: extras.sellerPickup || null,
     distanceKm:
       row.distanceKm == null || row.distanceKm === ""
         ? null
@@ -172,6 +176,64 @@ async function loadOrderPaymentMap(orderIds = []) {
     });
   }
   return map;
+}
+
+function pickSellerName(account) {
+  if (!account?.name) return "";
+  if (typeof account.name === "string") return account.name;
+  return String(account.name.uz || account.name.ru || "").trim();
+}
+
+function toSellerPickup(account) {
+  if (!account) {
+    return {
+      id: "",
+      name: "",
+      address: "",
+      coordinates: null,
+    };
+  }
+  const coords = Array.isArray(account.coordinates) && account.coordinates.length >= 2
+    ? [Number(account.coordinates[0]), Number(account.coordinates[1])]
+    : null;
+  return {
+    id: String(account.id || ""),
+    name: pickSellerName(account) || String(account.id || ""),
+    address: String(account.address || "").trim(),
+    coordinates:
+      coords && Number.isFinite(coords[0]) && Number.isFinite(coords[1])
+        ? coords
+        : null,
+  };
+}
+
+async function loadSellerPickupMap(sellerIds = []) {
+  const ids = [...new Set(sellerIds.map((id) => String(id || "").trim()).filter(Boolean))];
+  if (!ids.length) return new Map();
+
+  const rows = await SellerAccount.find({ id: { $in: ids } })
+    .select("id name address coordinates")
+    .lean();
+
+  return new Map(rows.map((row) => [String(row.id), toSellerPickup(row)]));
+}
+
+async function attachSellerPickup(publicRows = []) {
+  const list = Array.isArray(publicRows) ? publicRows.filter(Boolean) : [];
+  if (!list.length) return list;
+
+  const sellerMap = await loadSellerPickupMap(list.map((row) => row.sellerId));
+  return list.map((row) => {
+    const sellerId = String(row.sellerId || "").trim();
+    const sellerPickup =
+      sellerMap.get(sellerId) ||
+      toSellerPickup({ id: sellerId, name: sellerId, address: "", coordinates: null });
+    return {
+      ...row,
+      sellerPickup,
+      pickupPhase: String(row.status || "") === "picked_up" ? "customer" : "seller",
+    };
+  });
 }
 
 /**
@@ -277,18 +339,18 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       await existing.save();
 
       const paymentMap = await loadOrderPaymentMap([existing.orderId]);
-      return toPublicAssignment(
-        existing,
-        paymentMap.get(Number(existing.orderId)) || {},
-      );
+      const [publicRow] = await attachSellerPickup([
+        toPublicAssignment(existing, paymentMap.get(Number(existing.orderId)) || {}),
+      ]);
+      return publicRow;
     }
 
     if (String(existing.deliveryId) === String(deliveryId)) {
       const paymentMap = await loadOrderPaymentMap([existing.orderId]);
-      return toPublicAssignment(
-        existing,
-        paymentMap.get(Number(existing.orderId)) || {},
-      );
+      const [publicRow] = await attachSellerPickup([
+        toPublicAssignment(existing, paymentMap.get(Number(existing.orderId)) || {}),
+      ]);
+      return publicRow;
     }
 
     throw new HttpError(
@@ -323,7 +385,10 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   });
 
   const paymentMap = await loadOrderPaymentMap([created.orderId]);
-  return toPublicAssignment(created, paymentMap.get(Number(created.orderId)) || {});
+  const [publicRow] = await attachSellerPickup([
+    toPublicAssignment(created, paymentMap.get(Number(created.orderId)) || {}),
+  ]);
+  return publicRow;
 }
 
 /**
@@ -356,14 +421,19 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
   }
 
   if (String(assignment.status) === "delivered") {
-    return toPublicAssignment(assignment);
+    const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+    const payment = paymentMap.get(Number(assignment.orderId)) || {};
+    const [publicRow] = await attachSellerPickup([
+      toPublicAssignment(assignment, payment),
+    ]);
+    return publicRow;
   }
 
-  if (String(assignment.status) !== "accepted") {
+  if (String(assignment.status) !== "picked_up") {
     throw new HttpError(
       409,
-      "Bu buyurtmani topshirish mumkin emas",
-      "ASSIGNMENT_STATUS_CONFLICT",
+      "Avval sotuvchidan mahsulotni oling",
+      "ASSIGNMENT_NOT_PICKED_UP",
     );
   }
 
@@ -452,7 +522,58 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
 
   const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
   const payment = paymentMap.get(Number(assignment.orderId)) || {};
-  return toPublicAssignment(assignment, payment);
+  const [publicRow] = await attachSellerPickup([
+    toPublicAssignment(assignment, payment),
+  ]);
+  return publicRow;
+}
+
+/**
+ * Kuryer sotuvchidan mahsulotni oldi — keyin mijozga yetkazish bosqichi.
+ */
+async function pickUpOrderUnitByCourier(deliveryId, payload = {}) {
+  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
+  if (!assignmentId) {
+    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
+  }
+
+  const assignment = await CourierOrderAssignment.findById(assignmentId);
+  if (!assignment) {
+    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+
+  if (String(assignment.deliveryId) !== String(deliveryId)) {
+    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
+  }
+
+  if (String(assignment.status) === "picked_up") {
+    const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+    const payment = paymentMap.get(Number(assignment.orderId)) || {};
+    const [publicRow] = await attachSellerPickup([
+      toPublicAssignment(assignment, payment),
+    ]);
+    return publicRow;
+  }
+
+  if (String(assignment.status) !== "accepted") {
+    throw new HttpError(
+      409,
+      "Bu buyurtmani olish mumkin emas",
+      "ASSIGNMENT_STATUS_CONFLICT",
+    );
+  }
+
+  const pickedUpAt = new Date();
+  assignment.status = "picked_up";
+  assignment.pickedUpAt = pickedUpAt;
+  await assignment.save();
+
+  const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+  const payment = paymentMap.get(Number(assignment.orderId)) || {};
+  const [publicRow] = await attachSellerPickup([
+    toPublicAssignment(assignment, payment),
+  ]);
+  return publicRow;
 }
 
 async function getAssignmentForCourier(deliveryId, assignmentId) {
@@ -486,7 +607,10 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
 
   const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
   const payment = paymentMap.get(Number(assignment.orderId)) || {};
-  return toPublicAssignment(assignment, payment);
+  const [publicRow] = await attachSellerPickup([
+    toPublicAssignment(assignment, payment),
+  ]);
+  return publicRow;
 }
 
 async function listAssignmentsByKeys(keys = []) {
@@ -514,11 +638,13 @@ function assignmentLookupKey(orderId, itemIndex, unitIndex) {
 
 module.exports = {
   acceptOrderUnitByCourier,
+  pickUpOrderUnitByCourier,
   deliverOrderUnitByCourier,
   getAssignmentForCourier,
   listAssignmentsByKeys,
   assignmentLookupKey,
   toPublicAssignment,
+  attachSellerPickup,
   loadOrderPaymentMap,
   resolveAssignmentDistanceKm,
   parseCourierCoords,

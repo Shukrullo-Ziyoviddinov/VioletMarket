@@ -19,6 +19,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import {
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
+  pickUpDeliveryOrder,
   returnDeliveryOrder,
   type ReturnReasonType,
 } from '@/services/delivery-orders';
@@ -49,6 +50,12 @@ function customerName(order: DeliveryAcceptedOrder) {
   return name || 'Mijoz';
 }
 
+function isSellerPhase(order: DeliveryAcceptedOrder) {
+  if (order.pickupPhase === 'customer') return false;
+  if (order.pickupPhase === 'seller') return true;
+  return String(order.status || '') === 'accepted';
+}
+
 function addressText(order: DeliveryAcceptedOrder) {
   const address = order.deliveryAddress;
   return (
@@ -58,7 +65,28 @@ function addressText(order: DeliveryAcceptedOrder) {
   );
 }
 
+function sellerAddressText(order: DeliveryAcceptedOrder) {
+  const seller = order.sellerPickup;
+  return (
+    String(seller?.address || '').trim() ||
+    String(seller?.name || '').trim() ||
+    'Sotuvchi manzili ko‘rsatilmagan'
+  );
+}
+
 async function openRoute(order: DeliveryAcceptedOrder) {
+  if (isSellerPhase(order)) {
+    const seller = order.sellerPickup;
+    const opened = await openYandexRoute({
+      coords: seller?.coordinates || null,
+      addressLine: seller?.address || '',
+    });
+    if (!opened) {
+      Alert.alert('Mashrut', 'Sotuvchi manzili topilmadi yoki xarita ochilmadi');
+    }
+    return;
+  }
+
   const address = order.deliveryAddress || {};
   const opened = await openYandexRoute({
     coords: address.coords,
@@ -108,6 +136,7 @@ export default function OrderDetailsScreen() {
   const [order, setOrder] = useState<DeliveryAcceptedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [delivering, setDelivering] = useState(false);
+  const [pickingUp, setPickingUp] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returning, setReturning] = useState(false);
@@ -134,6 +163,27 @@ export default function OrderDetailsScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handlePickUp = async () => {
+    if (!token || !order || pickingUp) return;
+    setPickingUp(true);
+    try {
+      const data = await pickUpDeliveryOrder(token, {
+        assignmentId: order.id,
+      });
+      setOrder(data);
+      Alert.alert(
+        'Mahsulot olindi',
+        'Endi mijozga yetkazish mumkin.',
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Mahsulotni olishda xatolik';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setPickingUp(false);
+    }
+  };
 
   const handleDeliver = async () => {
     if (!token || !order || delivering) return;
@@ -222,6 +272,52 @@ export default function OrderDetailsScreen() {
             <ScrollView
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}>
+              <View
+                style={[
+                  styles.phaseBadge,
+                  isSellerPhase(order)
+                    ? styles.phaseBadgeSeller
+                    : styles.phaseBadgeCustomer,
+                ]}>
+                <Text
+                  style={[
+                    styles.phaseBadgeText,
+                    isSellerPhase(order)
+                      ? styles.phaseBadgeTextSeller
+                      : styles.phaseBadgeTextCustomer,
+                  ]}>
+                  {isSellerPhase(order)
+                    ? 'Sotuvchidan olish'
+                    : 'Mijozga yetkazish'}
+                </Text>
+              </View>
+
+              {isSellerPhase(order) ? (
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>Sotuvchi manzili</Text>
+                  <Text style={styles.sellerName}>
+                    {displayOrDash(order.sellerPickup?.name)}
+                  </Text>
+                  <View style={styles.addressRow}>
+                    <View style={styles.addressInfo}>
+                      <Text style={styles.addressText}>
+                        {sellerAddressText(order)}
+                      </Text>
+                    </View>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.iconButton,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        void openRoute(order);
+                      }}>
+                      <Ionicons name="navigate" size={20} color="#FFFFFF" />
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <>
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mijoz ma'lumotlari</Text>
                 <View style={styles.customerRow}>
@@ -298,6 +394,8 @@ export default function OrderDetailsScreen() {
                   {displayOrDash(order.deliveryAddress?.courierNote)}
                 </Text>
               </View>
+                </>
+              )}
 
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mahsulotlar</Text>
@@ -355,28 +453,48 @@ export default function OrderDetailsScreen() {
                   }}>
                   <Text style={styles.routeFooterText}>Mashrut</Text>
                 </Pressable>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.footerButton,
-                    styles.ajdaniyaFooter,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => setReturnModalOpen(true)}>
-                  <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
-                </Pressable>
-                <Pressable
-                  disabled={delivering}
-                  style={({ pressed }) => [
-                    styles.footerButton,
-                    styles.deliverFooter,
-                    pressed && styles.pressed,
-                    delivering && styles.disabled,
-                  ]}
-                  onPress={handleDeliver}>
-                  <Text style={styles.deliverText}>
-                    {delivering ? '...' : 'Topshirdim'}
-                  </Text>
-                </Pressable>
+                {isSellerPhase(order) ? (
+                  <Pressable
+                    disabled={pickingUp}
+                    style={({ pressed }) => [
+                      styles.footerButton,
+                      styles.pickupFooter,
+                      pressed && styles.pressed,
+                      pickingUp && styles.disabled,
+                    ]}
+                    onPress={() => {
+                      void handlePickUp();
+                    }}>
+                    <Text style={styles.pickupFooterText}>
+                      {pickingUp ? '...' : 'Mahsulotni oldim'}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.footerButton,
+                        styles.ajdaniyaFooter,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => setReturnModalOpen(true)}>
+                      <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={delivering}
+                      style={({ pressed }) => [
+                        styles.footerButton,
+                        styles.deliverFooter,
+                        pressed && styles.pressed,
+                        delivering && styles.disabled,
+                      ]}
+                      onPress={handleDeliver}>
+                      <Text style={styles.deliverText}>
+                        {delivering ? '...' : 'Topshirdim'}
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
               </View>
             ) : null}
           </>
@@ -450,6 +568,37 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
     gap: 12,
+  },
+  phaseBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  phaseBadgeSeller: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+  },
+  phaseBadgeCustomer: {
+    backgroundColor: '#EDF9F0',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  phaseBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  phaseBadgeTextSeller: {
+    color: '#C2410C',
+  },
+  phaseBadgeTextCustomer: {
+    color: '#15803D',
+  },
+  sellerName: {
+    color: '#56337d',
+    fontSize: 15,
+    fontWeight: '700',
   },
   centered: {
     flex: 1,
@@ -639,6 +788,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
   },
   deliverText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  pickupFooter: {
+    flex: 1.4,
+    backgroundColor: '#15803D',
+  },
+  pickupFooterText: {
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',

@@ -117,11 +117,11 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     );
   }
 
-  if (String(assignment.status) !== "accepted") {
+  if (String(assignment.status) !== "picked_up") {
     throw new HttpError(
       409,
-      "Bu buyurtmani qaytarib bo‘lmaydi",
-      "ASSIGNMENT_STATUS_CONFLICT",
+      "Avval sotuvchidan mahsulotni oling",
+      "ASSIGNMENT_NOT_PICKED_UP",
     );
   }
 

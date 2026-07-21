@@ -56,12 +56,13 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["accepted", "delivered", "cancelled"],
+      enum: ["accepted", "picked_up", "delivered", "cancelled"],
       default: "accepted",
       index: true,
     },
     handedToCourierAt: { type: Date, default: null },
     acceptedAt: { type: Date, required: true, index: true },
+    pickedUpAt: { type: Date, default: null },
     deliveredAt: { type: Date, default: null, index: true },
     distanceKm: { type: Number, default: null },
     courierPayment: { type: Number, default: 0 },

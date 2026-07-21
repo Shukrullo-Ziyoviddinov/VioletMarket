@@ -35,6 +35,12 @@ router.post(
 );
 
 router.post(
+  "/delivery/orders/pickup",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.pickUpOrder,
+);
+
+router.post(
   "/delivery/orders/deliver",
   deliveryAuthMiddleware,
   deliveryOrdersController.deliverOrder,
