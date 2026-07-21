@@ -1,6 +1,5 @@
-const { Order } = require("../../models/order");
-const { PAID_STATUSES, toNumber, resolveTrendTone } = require("./salesStatisticsHelpers");
-const { formatWeekKey } = require("./salesStatisticsHelpers");
+const { SellerSale } = require("../../models/sellerSale");
+const { toNumber, resolveTrendTone, formatWeekKey } = require("./salesStatisticsHelpers");
 const {
   formatChartDayLabel,
   formatChartDayTooltip,
@@ -21,46 +20,19 @@ const {
 } = require("../../utils/customerStatisticsDate");
 const { resolveSelectedFilters, buildSalesFilterOptions } = require("./salesFilterOptionsService");
 
-function dateKeyToRange(dateKey) {
-  const start = new Date(`${dateKey}T00:00:00+05:00`);
-  const end = new Date(`${addDaysToDateKey(dateKey, 1)}T00:00:00+05:00`);
-  return { start, end };
-}
-
-function monthKeyToRange(monthKey) {
-  const { year, month } = parseMonthKey(monthKey);
-  const monthRange = getMonthRange(year, month);
-  return {
-    start: new Date(`${monthRange.startKey}T00:00:00+05:00`),
-    end: new Date(`${monthRange.endKey}T00:00:00+05:00`),
-  };
-}
-
 async function aggregateRevenueByDayKeys(dayKeys) {
   if (!Array.isArray(dayKeys) || dayKeys.length === 0) return new Map();
 
-  const minKey = dayKeys[0];
-  const maxKey = dayKeys[dayKeys.length - 1];
-  const start = new Date(`${minKey}T00:00:00+05:00`);
-  const end = new Date(`${addDaysToDateKey(maxKey, 1)}T00:00:00+05:00`);
-
-  const rows = await Order.aggregate([
+  const rows = await SellerSale.aggregate([
     {
       $match: {
-        status: { $in: PAID_STATUSES },
-        paidAt: { $gte: start, $lt: end },
+        dateKey: { $in: dayKeys.map(String) },
       },
     },
     {
       $group: {
-        _id: {
-          $dateToString: {
-            format: "%Y-%m-%d",
-            date: "$paidAt",
-            timezone: "Asia/Tashkent",
-          },
-        },
-        revenue: { $sum: "$totalAmount" },
+        _id: "$dateKey",
+        revenue: { $sum: "$amount" },
       },
     },
   ]);
@@ -156,7 +128,9 @@ async function buildWeeklyChartPoints(monthKey) {
     weekBuckets.get(bucketKey).revenue += revenueMap.get(dateKey) || 0;
   }
 
-  const points = [...weekBuckets.values()].sort((a, b) => a.weekStartKey.localeCompare(b.weekStartKey));
+  const points = [...weekBuckets.values()].sort((a, b) =>
+    a.weekStartKey.localeCompare(b.weekStartKey),
+  );
   return attachPointMeta(points);
 }
 
@@ -179,29 +153,17 @@ async function buildMonthlyChartPoints(monthKey) {
     month = prev.month;
   }
 
-  const oldest = points[0]?.key;
-  const newest = points[points.length - 1]?.key;
-  if (!oldest || !newest) return [];
-
-  const startRange = monthKeyToRange(oldest);
-  const endRange = monthKeyToRange(newest);
-  const rows = await Order.aggregate([
+  const monthKeys = points.map((point) => point.key);
+  const rows = await SellerSale.aggregate([
     {
       $match: {
-        status: { $in: PAID_STATUSES },
-        paidAt: { $gte: startRange.start, $lt: endRange.end },
+        monthKey: { $in: monthKeys },
       },
     },
     {
       $group: {
-        _id: {
-          $dateToString: {
-            format: "%Y-%m",
-            date: "$paidAt",
-            timezone: "Asia/Tashkent",
-          },
-        },
-        revenue: { $sum: "$totalAmount" },
+        _id: "$monthKey",
+        revenue: { $sum: "$amount" },
       },
     },
   ]);

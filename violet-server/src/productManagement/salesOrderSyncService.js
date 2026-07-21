@@ -6,6 +6,7 @@ const { CountryCategoryProductSale } = require("../models/countryCategoryProduct
 const { BrandCategoryProductSale } = require("../models/brandCategoryProductSale");
 const { SellerSoldItem } = require("../models/sellerSoldItem");
 const { Product } = require("../models/product");
+const { CourierOrderAssignment } = require("../models/courierOrderAssignment");
 const { recordSellerSalesFromOrder } = require("./recordSellerSales");
 const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
 const { recordSellerSoldItemsFromOrder } = require("./recordSellerSoldItems");
@@ -50,14 +51,41 @@ async function enrichOrderItemsWithProductData(order) {
   };
 }
 
+async function resolveSoldAtForOrder(order) {
+  const orderId = Number(order?.id);
+  if (Number.isFinite(orderId) && orderId > 0) {
+    const latestDelivered = await CourierOrderAssignment.findOne({
+      orderId,
+      status: "delivered",
+      deliveredAt: { $ne: null },
+    })
+      .sort({ deliveredAt: -1 })
+      .select("deliveredAt")
+      .lean();
+
+    if (latestDelivered?.deliveredAt) {
+      return latestDelivered.deliveredAt;
+    }
+  }
+
+  return order?.paidAt || order?.createdAt || new Date();
+}
+
 async function recordAllSalesFromOrder(order) {
   const enrichedOrder = await enrichOrderItemsWithProductData(order);
-  await recordSellerSalesFromOrder(enrichedOrder);
-  await recordSellerProductSalesFromOrder(enrichedOrder);
-  await recordSellerSoldItemsFromOrder(enrichedOrder);
-  await recordCategoryProductSalesFromOrder(enrichedOrder);
-  await recordCountryCategoryProductSalesFromOrder(enrichedOrder);
-  await recordBrandCategoryProductSalesFromOrder(enrichedOrder);
+  const soldAt = await resolveSoldAtForOrder(enrichedOrder);
+  const orderForSales = {
+    ...enrichedOrder,
+    status: "delivered",
+    paidAt: soldAt,
+  };
+
+  await recordSellerSalesFromOrder(orderForSales);
+  await recordSellerProductSalesFromOrder(orderForSales);
+  await recordSellerSoldItemsFromOrder(orderForSales);
+  await recordCategoryProductSalesFromOrder(orderForSales);
+  await recordCountryCategoryProductSalesFromOrder(orderForSales);
+  await recordBrandCategoryProductSalesFromOrder(orderForSales);
 }
 
 async function findOrderIdsNeedingSync() {
