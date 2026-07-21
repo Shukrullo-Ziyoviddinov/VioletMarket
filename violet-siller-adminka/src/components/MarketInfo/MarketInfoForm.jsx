@@ -17,6 +17,7 @@ import {
 } from '../../api/sellerAuthApi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { resolveAssetUrl } from '../../utils/mediaUrl';
+import MarketAddressField from './MarketAddressField/MarketAddressField';
 import './MarketInfoForm.css';
 
 const { Text } = Typography;
@@ -35,6 +36,17 @@ function buildFormValues(profile) {
   };
 }
 
+function buildLocationValues(profile) {
+  const account = profile?.account || {};
+  return {
+    address: account?.address || '',
+    coordinates:
+      Array.isArray(account?.coordinates) && account.coordinates.length >= 2
+        ? [Number(account.coordinates[0]), Number(account.coordinates[1])]
+        : null,
+  };
+}
+
 export default function MarketInfoForm() {
   const { t } = useTranslation();
   const { token } = useSellerAuth();
@@ -45,6 +57,7 @@ export default function MarketInfoForm() {
   const [uploading, setUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
+  const [location, setLocation] = useState({ address: '', coordinates: null });
 
   const logoValue = Form.useWatch('logo', form);
   const logoPreview = useMemo(() => resolveAssetUrl(logoValue), [logoValue]);
@@ -61,6 +74,7 @@ export default function MarketInfoForm() {
       const data = await fetchSellerCabinetProfile(token);
       setProfile(data);
       form.setFieldsValue(buildFormValues(data));
+      setLocation(buildLocationValues(data));
     } catch (err) {
       setError(err.message || t('marketInfo.loadError'));
     } finally {
@@ -83,9 +97,12 @@ export default function MarketInfoForm() {
         descriptionUz: values.descriptionUz,
         descriptionRu: values.descriptionRu,
         logo: values.logo,
+        address: location.address || '',
+        coordinates: location.coordinates || null,
       });
       setProfile(data);
       form.setFieldsValue(buildFormValues(data));
+      setLocation(buildLocationValues(data));
       setIsEditing(false);
       message.success(t('marketInfo.saveSuccess'));
     } catch (err) {
@@ -98,6 +115,7 @@ export default function MarketInfoForm() {
 
   const handleCancel = () => {
     form.setFieldsValue(buildFormValues(profile));
+    setLocation(buildLocationValues(profile));
     setIsEditing(false);
   };
 
@@ -298,6 +316,15 @@ export default function MarketInfoForm() {
           ) : null}
         </div>
       </Form>
+
+      <MarketAddressField
+        address={location.address || ''}
+        coordinates={location.coordinates}
+        disabled={!isEditing}
+        onChange={({ address, coordinates }) => {
+          setLocation({ address, coordinates });
+        }}
+      />
 
       <div className="market-info-form__readonly market-info-form__readonly--footer">
         <Text className="market-info-form__label">{t('marketInfo.owner')}</Text>

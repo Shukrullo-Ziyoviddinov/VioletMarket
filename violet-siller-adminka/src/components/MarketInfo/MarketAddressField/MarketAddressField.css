@@ -1,0 +1,59 @@
+.market-address-field {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.market-address-field__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.market-address-field__icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ece7f3;
+  color: #764ba2;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.market-address-field__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a1842;
+}
+
+.market-address-field__trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.market-address-field__trigger:disabled {
+  cursor: not-allowed;
+}
+
+.market-address-field__input {
+  pointer-events: none;
+  border-radius: 10px !important;
+}
+
+.market-address-field__coords {
+  display: block;
+  margin-top: 8px;
+  color: #7a6f8d;
+  font-size: 12px;
+}

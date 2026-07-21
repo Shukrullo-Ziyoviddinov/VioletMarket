@@ -15,6 +15,30 @@ const sellerAccountSchema = new mongoose.Schema(
     },
     sellerCountry: { type: String, required: true, trim: true, lowercase: true, index: true },
     logo: { type: String, required: true, trim: true },
+    /** UI da ko‘rinadigan manzil matni */
+    address: { type: String, default: "", trim: true },
+    /** [lat, lng] — do‘kon turgan joy koordinatasi */
+    coordinates: {
+      type: [Number],
+      default: undefined,
+      validate: {
+        validator(value) {
+          if (value == null) return true;
+          if (!Array.isArray(value) || value.length < 2) return false;
+          const lat = Number(value[0]);
+          const lng = Number(value[1]);
+          return (
+            Number.isFinite(lat) &&
+            Number.isFinite(lng) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            lng >= -180 &&
+            lng <= 180
+          );
+        },
+        message: "coordinates [lat, lng] formatida bo‘lishi kerak",
+      },
+    },
     subscriberCount: { type: Number, default: 0 },
     orderCount: { type: Number, default: 0 },
     status: {

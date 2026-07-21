@@ -270,6 +270,10 @@ async function getSellerCabinetProfile(shopId) {
       description: sellerAccount.description,
       sellerCountry: sellerAccount.sellerCountry || "",
       logo: sellerAccount.logo,
+      address: String(sellerAccount.address || "").trim(),
+      coordinates: Array.isArray(sellerAccount.coordinates) && sellerAccount.coordinates.length >= 2
+        ? [Number(sellerAccount.coordinates[0]), Number(sellerAccount.coordinates[1])]
+        : null,
       subscriberCount: sellerAccount.subscriberCount,
       orderCount: Math.max(0, Number(sellerAccount.orderCount) || 0),
       status: normalizeSellerAccountStatus(sellerAccount.status),
@@ -318,6 +322,29 @@ async function updateSellerMarketProfile(shopId, payload = {}) {
   if (payload.logo !== undefined) {
     const logo = trimText(payload.logo, "Logo", { maxLength: 500 });
     sellerAccount.logo = logo || "img/vm logo.jpg";
+  }
+  if (payload.address !== undefined) {
+    sellerAccount.address = trimText(payload.address, "Manzil", { maxLength: 500 });
+  }
+  if (payload.coordinates !== undefined) {
+    const raw = payload.coordinates;
+    if (raw == null || raw === "" || (Array.isArray(raw) && raw.length === 0)) {
+      sellerAccount.coordinates = undefined;
+    } else {
+      const lat = Number(Array.isArray(raw) ? raw[0] : raw.lat ?? raw.latitude);
+      const lng = Number(Array.isArray(raw) ? raw[1] : raw.lng ?? raw.longitude);
+      if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng) ||
+        lat < -90 ||
+        lat > 90 ||
+        lng < -180 ||
+        lng > 180
+      ) {
+        throw new HttpError(400, "Koordinata noto‘g‘ri", "INVALID_COORDINATES");
+      }
+      sellerAccount.coordinates = [lat, lng];
+    }
   }
 
   await sellerAccount.save();

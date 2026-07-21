@@ -14,6 +14,8 @@ const sellers = [
     },
     sellerCountry: "uzb",
     logo: 'img/vm logo.jpg',
+    address: 'Toshkent shahri, Yunusobod tumani, Amir Temur ko‘chasi',
+    coordinates: [41.311151, 69.279737],
     subscriberCount: 10,
     status: 'active',
   },
