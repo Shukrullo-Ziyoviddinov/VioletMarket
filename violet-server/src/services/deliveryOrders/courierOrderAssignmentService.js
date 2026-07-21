@@ -176,6 +176,7 @@ async function loadOrderPaymentMap(orderIds = []) {
 
 /**
  * Kuryer "Qabul qilish" bosganda — alohida collectionga yoziladi.
+ * Qaytarilgan (cancelled) assignment qayta qabul qilinsa — qayta faollashtiriladi.
  */
 async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const orderId = Number(payload.orderId);
@@ -194,22 +195,6 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     throw new HttpError(403, "Kuryer hisobi faol emas", "DELIVERY_INACTIVE");
   }
 
-  const existing = await CourierOrderAssignment.findOne({
-    orderId,
-    itemIndex,
-    unitIndex,
-  }).lean();
-  if (existing) {
-    if (String(existing.deliveryId) === String(deliveryId)) {
-      return toPublicAssignment(existing);
-    }
-    throw new HttpError(
-      409,
-      "Bu mahsulotni boshqa kuryer allaqachon qabul qilgan",
-      "ALREADY_ACCEPTED",
-    );
-  }
-
   const order = await Order.findOne({ id: orderId });
   if (!order) {
     throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
@@ -220,8 +205,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     throw new HttpError(404, "Mahsulot topilmadi", "ORDER_ITEM_NOT_FOUND");
   }
 
-  const status = normalizeOrderTrackingStatus(item.trackingStatus);
-  if (status !== "handed_to_courier") {
+  const trackingStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+  if (trackingStatus !== "handed_to_courier") {
     throw new HttpError(
       409,
       "Mahsulot hali kuryerga topshirilmagan",
@@ -247,6 +232,71 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const user = order.userId
     ? await User.findById(order.userId).select("firstName lastName phone").lean()
     : null;
+  const courierSnapshot = {
+    firstName: String(delivery.firstName || "").trim(),
+    lastName: String(delivery.lastName || "").trim(),
+    phone: String(delivery.phone || "").trim(),
+    email: String(delivery.email || "").trim(),
+  };
+  const customerSnapshot = snapshotCustomer(user);
+
+  const existing = await CourierOrderAssignment.findOne({
+    orderId,
+    itemIndex,
+    unitIndex,
+  });
+
+  if (existing) {
+    const existingStatus = String(existing.status || "");
+
+    // Qaytarilgan buyurtmani qayta qabul qilish
+    if (existingStatus === "cancelled") {
+      existing.deliveryId = delivery._id;
+      existing.courier = courierSnapshot;
+      existing.customer = customerSnapshot;
+      existing.deliveryAddress = deliveryAddress;
+      existing.status = "accepted";
+      existing.acceptedAt = acceptedAt;
+      existing.deliveredAt = null;
+      existing.courierPayment = 0;
+      existing.courierPaymentUpdatedAt = null;
+      existing.handedToCourierAt = handedEntry?.at || existing.handedToCourierAt || null;
+      existing.productId = productId;
+      existing.productCode = formatProductCode(productId);
+      existing.sellerId = String(item.sellerId || "").trim();
+      existing.title = resolveTitle(item.title);
+      existing.amount = amount;
+      existing.imageUrl = String(item.image || "");
+      existing.color = String(item.color || "");
+      existing.size = String(item.size || "");
+      existing.storage = String(item.storage || "");
+      existing.model = String(item.model || "");
+      if (distanceKm != null) {
+        existing.distanceKm = distanceKm;
+      }
+      await existing.save();
+
+      const paymentMap = await loadOrderPaymentMap([existing.orderId]);
+      return toPublicAssignment(
+        existing,
+        paymentMap.get(Number(existing.orderId)) || {},
+      );
+    }
+
+    if (String(existing.deliveryId) === String(deliveryId)) {
+      const paymentMap = await loadOrderPaymentMap([existing.orderId]);
+      return toPublicAssignment(
+        existing,
+        paymentMap.get(Number(existing.orderId)) || {},
+      );
+    }
+
+    throw new HttpError(
+      409,
+      "Bu mahsulotni boshqa kuryer allaqachon qabul qilgan",
+      "ALREADY_ACCEPTED",
+    );
+  }
 
   const created = await CourierOrderAssignment.create({
     orderId,
@@ -263,13 +313,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     storage: String(item.storage || ""),
     model: String(item.model || ""),
     deliveryId: delivery._id,
-    courier: {
-      firstName: String(delivery.firstName || "").trim(),
-      lastName: String(delivery.lastName || "").trim(),
-      phone: String(delivery.phone || "").trim(),
-      email: String(delivery.email || "").trim(),
-    },
-    customer: snapshotCustomer(user),
+    courier: courierSnapshot,
+    customer: customerSnapshot,
     deliveryAddress,
     status: "accepted",
     handedToCourierAt: handedEntry?.at || null,
@@ -277,7 +322,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     ...(distanceKm != null ? { distanceKm } : {}),
   });
 
-  return toPublicAssignment(created);
+  const paymentMap = await loadOrderPaymentMap([created.orderId]);
+  return toPublicAssignment(created, paymentMap.get(Number(created.orderId)) || {});
 }
 
 /**

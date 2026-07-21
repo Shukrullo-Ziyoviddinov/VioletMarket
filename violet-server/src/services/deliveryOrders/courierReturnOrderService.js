@@ -109,13 +109,6 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     );
   }
 
-  const existingReturn = await CourierReturnedOrder.findOne({
-    assignmentId: assignment._id,
-  }).lean();
-  if (existingReturn) {
-    return toPublicReturnedOrder(existingReturn);
-  }
-
   if (String(assignment.status) === "cancelled") {
     throw new HttpError(
       409,
@@ -147,8 +140,7 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
 
   const returnedAt = new Date();
   const periodKeys = resolvePeriodKeys(returnedAt);
-
-  const created = await CourierReturnedOrder.create({
+  const returnPayload = {
     assignmentId: assignment._id,
     orderId: assignment.orderId,
     itemIndex: assignment.itemIndex,
@@ -188,12 +180,19 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     monthKey: periodKeys.monthKey,
     orderPaymentStatus: String(order?.status || ""),
     isPaid: paid,
-  });
+  };
+
+  // Qayta qabul qilingan buyurtma yana qaytarilsa — eski yozuv yangilanadi
+  const saved = await CourierReturnedOrder.findOneAndUpdate(
+    { assignmentId: assignment._id },
+    { $set: returnPayload },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
 
   assignment.status = "cancelled";
   await assignment.save();
 
-  return toPublicReturnedOrder(created);
+  return toPublicReturnedOrder(saved);
 }
 
 module.exports = {
