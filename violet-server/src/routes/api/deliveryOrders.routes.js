@@ -40,4 +40,10 @@ router.post(
   deliveryOrdersController.deliverOrder,
 );
 
+router.post(
+  "/delivery/orders/return",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.returnOrder,
+);
+
 module.exports = router;

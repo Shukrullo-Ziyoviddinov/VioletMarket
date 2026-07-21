@@ -1,0 +1,46 @@
+.seller-returned-orders-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.seller-returned-orders-stats__card {
+  padding: 16px 18px;
+  border: 1px solid #e8eaf2;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.seller-returned-orders-stats__title {
+  margin: 0 0 8px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seller-returned-orders-stats__count {
+  margin: 0 0 6px;
+  color: #2a1842;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.seller-returned-orders-stats__amount {
+  margin: 0;
+  color: #56337d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .seller-returned-orders-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .seller-returned-orders-stats {
+    grid-template-columns: 1fr;
+  }
+}

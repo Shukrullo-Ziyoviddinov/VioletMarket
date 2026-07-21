@@ -5,9 +5,42 @@
   "sidebar": {
     "home": "Home",
     "orders": "Orders",
+    "returnedOrders": "Returned orders",
     "salesStatistics": "Sales & statistics",
     "salesEarnings": "Sales & earnings",
     "salesWithdrawals": "Withdrawn amounts history"
+  },
+  "returnedOrders": {
+    "title": "Returned orders",
+    "subtitle": "Products returned by courier and their statistics",
+    "loading": "Loading...",
+    "empty": "No returned products for the selected period",
+    "loadError": "Failed to load returned orders",
+    "filters": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "empty": "No options"
+    },
+    "stats": {
+      "day": "Returned today",
+      "week": "Returned this week",
+      "month": "Returned this month",
+      "allTime": "Total returned"
+    },
+    "reason": {
+      "noAnswer": "No answer",
+      "return": "Returned"
+    },
+    "card": {
+      "quantity": "Qty",
+      "price": "Price",
+      "orderedAt": "Ordered at",
+      "returnedAt": "Returned at",
+      "customer": "Customer",
+      "courier": "Courier",
+      "comment": "Comment"
+    }
   },
   "orders": {
     "title": "Orders",

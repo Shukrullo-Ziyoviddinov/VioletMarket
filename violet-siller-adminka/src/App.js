@@ -15,6 +15,7 @@ import SellerSalesStatisticsPage from './pages/SellerSalesStatisticsPage/SellerS
 import SellerEarningsPage from './pages/SellerEarningsPage/SellerEarningsPage';
 import SellerWithdrawalsPage from './pages/SellerWithdrawalsPage/SellerWithdrawalsPage';
 import SellerOrdersPage from './pages/SellerOrdersPage/SellerOrdersPage';
+import SellerReturnedOrdersPage from './pages/SellerReturnedOrdersPage/SellerReturnedOrdersPage';
 import MyProductsPage from './pages/MyProductsPage/MyProductsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterStartPage from './pages/RegisterStartPage/RegisterStartPage';
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="products/add" element={<AddProductsPage />} />
             <Route path="products/:productId/edit" element={<EditProductPage />} />
             <Route path="orders" element={<SellerOrdersPage />} />
+            <Route path="orders/returned" element={<SellerReturnedOrdersPage />} />
             <Route path="sales/statistics" element={<SellerSalesStatisticsPage />} />
             <Route path="sales/earnings" element={<SellerEarningsPage />} />
             <Route path="sales/withdrawals" element={<SellerWithdrawalsPage />} />

@@ -1,6 +1,7 @@
 const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const {
   toPublicAssignment,
+  loadOrderPaymentMap,
 } = require("./courierOrderAssignmentService");
 
 /**
@@ -20,7 +21,10 @@ async function listAcceptedOrdersForCourier(deliveryId, query = {}) {
     .sort({ acceptedAt: -1, createdAt: -1 })
     .lean();
 
-  const orders = rows.map(toPublicAssignment);
+  const paymentMap = await loadOrderPaymentMap(rows.map((row) => row.orderId));
+  const orders = rows.map((row) =>
+    toPublicAssignment(row, paymentMap.get(Number(row.orderId)) || {}),
+  );
 
   return {
     total: orders.length,

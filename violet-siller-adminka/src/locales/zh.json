@@ -5,9 +5,42 @@
   "sidebar": {
     "home": "首页",
     "orders": "订单",
+    "returnedOrders": "退回订单",
     "salesStatistics": "销售与统计",
     "salesEarnings": "销售与收入",
     "salesWithdrawals": "已提现金额历史"
+  },
+  "returnedOrders": {
+    "title": "退回订单",
+    "subtitle": "快递员退回的商品及其统计",
+    "loading": "加载中...",
+    "empty": "所选时段没有退回商品",
+    "loadError": "加载退回订单失败",
+    "filters": {
+      "day": "日",
+      "week": "周",
+      "month": "月",
+      "empty": "无选项"
+    },
+    "stats": {
+      "day": "当日退回",
+      "week": "本周退回",
+      "month": "本月退回",
+      "allTime": "累计退回"
+    },
+    "reason": {
+      "noAnswer": "未接听",
+      "return": "已退回"
+    },
+    "card": {
+      "quantity": "数量",
+      "price": "价格",
+      "orderedAt": "下单时间",
+      "returnedAt": "退回时间",
+      "customer": "客户",
+      "courier": "快递员",
+      "comment": "备注"
+    }
   },
   "orders": {
     "title": "订单",

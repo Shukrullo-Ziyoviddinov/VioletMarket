@@ -19,6 +19,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import {
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
+  returnDeliveryOrder,
+  type ReturnReasonType,
 } from '@/services/delivery-orders';
 import { requestCourierLocation } from '@/services/courier-location';
 import { openYandexRoute } from '@/services/open-yandex-route';
@@ -108,6 +110,7 @@ export default function OrderDetailsScreen() {
   const [delivering, setDelivering] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returning, setReturning] = useState(false);
   const [deliveredSnapshot, setDeliveredSnapshot] =
     useState<DeliveryAcceptedOrder | null>(null);
 
@@ -150,6 +153,35 @@ export default function OrderDetailsScreen() {
       Alert.alert('Xatolik', message);
     } finally {
       setDelivering(false);
+    }
+  };
+
+  const handleReturn = async (payload: {
+    reasonType: ReturnReasonType;
+    comment: string;
+  }) => {
+    if (!token || !order || returning) return;
+    setReturning(true);
+    try {
+      await returnDeliveryOrder(token, {
+        assignmentId: order.id,
+        reasonType: payload.reasonType,
+        comment: payload.comment,
+      });
+      setReturnModalOpen(false);
+      Alert.alert(
+        'Qaytarildi',
+        payload.reasonType === 'no_answer'
+          ? 'Buyurtma «Javob bermadi» sifatida siller adminiga yuborildi'
+          : 'Mahsulot qaytarildi va siller adminiga yuborildi',
+        [{ text: 'OK', onPress: () => router.replace('/home') }],
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Qaytarish amalga oshmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setReturning(false);
     }
   };
 
@@ -364,7 +396,12 @@ export default function OrderDetailsScreen() {
 
       <OrderReturnReasonModal
         visible={returnModalOpen}
-        onClose={() => setReturnModalOpen(false)}
+        isPaid={Boolean(order?.isPaid)}
+        submitting={returning}
+        onClose={() => {
+          if (!returning) setReturnModalOpen(false);
+        }}
+        onSubmit={handleReturn}
       />
     </SafeAreaView>
   );

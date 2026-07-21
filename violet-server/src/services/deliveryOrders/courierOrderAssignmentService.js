@@ -17,6 +17,7 @@ const {
   getCourierPaymentSettings,
   resolveCourierPaymentForDistance,
 } = require("../courierPayment/courierPaymentService");
+const { isOrderPaid } = require("./courierReturnOrderService");
 
 function parseCourierCoords(payload = {}) {
   const lat = Number(payload.courierLat ?? payload.lat);
@@ -90,11 +91,13 @@ function snapshotDeliveryAddress(raw) {
   };
 }
 
-function toPublicAssignment(doc) {
+function toPublicAssignment(doc, extras = {}) {
   if (!doc) return null;
   const row = doc.toObject ? doc.toObject() : doc;
   const address = row.deliveryAddress || {};
   const customer = row.customer || {};
+  const isPaid =
+    extras.isPaid != null ? Boolean(extras.isPaid) : Boolean(row.isPaid);
   return {
     id: String(row._id),
     orderId: Number(row.orderId) || 0,
@@ -146,7 +149,29 @@ function toPublicAssignment(doc) {
         : Math.max(0, Number(row.distanceKm) || 0),
     courierPayment: Math.max(0, Number(row.courierPayment) || 0),
     createdAt: row.createdAt || null,
+    isPaid,
+    paymentStatus: String(extras.paymentStatus || row.paymentStatus || ""),
+    orderedAt: extras.orderedAt || row.orderedAt || null,
   };
+}
+
+async function loadOrderPaymentMap(orderIds = []) {
+  const ids = [...new Set(orderIds.map((id) => Number(id)).filter((id) => id > 0))];
+  if (!ids.length) return new Map();
+
+  const orders = await Order.find({ id: { $in: ids } })
+    .select("id status paidAt createdAt")
+    .lean();
+
+  const map = new Map();
+  for (const order of orders) {
+    map.set(Number(order.id), {
+      isPaid: isOrderPaid(order),
+      paymentStatus: String(order.status || ""),
+      orderedAt: order.createdAt || null,
+    });
+  }
+  return map;
 }
 
 /**
@@ -379,7 +404,9 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
     }
   }
 
-  return toPublicAssignment(assignment);
+  const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+  const payment = paymentMap.get(Number(assignment.orderId)) || {};
+  return toPublicAssignment(assignment, payment);
 }
 
 async function getAssignmentForCourier(deliveryId, assignmentId) {
@@ -411,7 +438,9 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
     }
   }
 
-  return toPublicAssignment(assignment);
+  const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+  const payment = paymentMap.get(Number(assignment.orderId)) || {};
+  return toPublicAssignment(assignment, payment);
 }
 
 async function listAssignmentsByKeys(keys = []) {
@@ -444,6 +473,7 @@ module.exports = {
   listAssignmentsByKeys,
   assignmentLookupKey,
   toPublicAssignment,
+  loadOrderPaymentMap,
   resolveAssignmentDistanceKm,
   parseCourierCoords,
 };

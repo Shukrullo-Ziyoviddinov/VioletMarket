@@ -100,6 +100,11 @@ router.get(
   sellerAuthMiddleware,
   sellerOrdersController.listOrders,
 );
+router.get(
+  "/seller-auth/returned-orders",
+  sellerAuthMiddleware,
+  sellerOrdersController.listReturnedOrders,
+);
 router.patch(
   "/seller-auth/orders/:orderId/items/:itemIndex/confirm",
   sellerAuthMiddleware,

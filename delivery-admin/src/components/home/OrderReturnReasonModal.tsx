@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+} from 'react-native';
 
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
+import type { ReturnReasonType } from '@/services/delivery-orders';
 
 type OrderReturnReasonModalProps = {
   visible: boolean;
+  isPaid: boolean;
+  submitting?: boolean;
   onClose: () => void;
+  onSubmit: (payload: { reasonType: ReturnReasonType; comment: string }) => void;
 };
 
 export function OrderReturnReasonModal({
   visible,
+  isPaid,
+  submitting = false,
   onClose,
+  onSubmit,
 }: OrderReturnReasonModalProps) {
   const [comment, setComment] = useState('');
 
@@ -18,41 +31,70 @@ export function OrderReturnReasonModal({
     if (!visible) setComment('');
   }, [visible]);
 
+  const handleSubmit = (reasonType: ReturnReasonType) => {
+    if (submitting) return;
+    if (reasonType === 'no_answer' && !isPaid) return;
+    onSubmit({ reasonType, comment: comment.trim() });
+  };
+
   return (
     <MiniGlobalModal
       visible={visible}
       title="Mahsulot nima sababdan qaytarilmoqda"
-      onCancel={onClose}
+      onCancel={() => {
+        if (!submitting) onClose();
+      }}
       footer={
         <>
           <Pressable
+            disabled={submitting || !isPaid}
             style={({ pressed }) => [
               styles.button,
               styles.secondaryButton,
-              pressed && styles.secondaryPressed,
+              (!isPaid || submitting) && styles.disabledButton,
+              pressed && isPaid && !submitting && styles.secondaryPressed,
             ]}
-            onPress={() => {
-              // Keyingi qadam
-            }}>
-            <Text style={styles.secondaryText}>Javob bermadi</Text>
+            onPress={() => handleSubmit('no_answer')}>
+            {submitting ? (
+              <ActivityIndicator color="#DC2626" />
+            ) : (
+              <Text
+                style={[
+                  styles.secondaryText,
+                  !isPaid && styles.disabledText,
+                ]}>
+                Javob bermadi
+              </Text>
+            )}
           </Pressable>
           <Pressable
+            disabled={submitting}
             style={({ pressed }) => [
               styles.button,
               styles.primaryButton,
-              pressed && styles.primaryPressed,
+              submitting && styles.disabledButton,
+              pressed && !submitting && styles.primaryPressed,
             ]}
-            onPress={() => {
-              // Keyingi qadam
-            }}>
-            <Text style={styles.primaryText}>Qaytarish</Text>
+            onPress={() => handleSubmit('return')}>
+            {submitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.primaryText}>Qaytarish</Text>
+            )}
           </Pressable>
         </>
       }>
+      {!isPaid ? (
+        <Text style={styles.paidHint}>
+          To‘lov qilinmagan buyurtmada faqat «Qaytarish» ishlaydi. «Javob
+          bermadi» faqat to‘lov qilingan buyurtmada.
+        </Text>
+      ) : null}
       <Text style={styles.hint}>Izoh</Text>
       <TextInput
         value={comment}
         onChangeText={setComment}
+        editable={!submitting}
         placeholder="Nima sababdan javob bermadi / qaytarilmoqda..."
         placeholderTextColor="#9CA3AF"
         multiline
@@ -64,6 +106,17 @@ export function OrderReturnReasonModal({
 }
 
 const styles = StyleSheet.create({
+  paidHint: {
+    color: '#B45309',
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 18,
+    marginBottom: 12,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
   hint: {
     color: '#6B7280',
     fontSize: 13,
@@ -104,6 +157,9 @@ const styles = StyleSheet.create({
   primaryPressed: {
     backgroundColor: '#B91C1C',
   },
+  disabledButton: {
+    opacity: 0.45,
+  },
   secondaryText: {
     color: '#DC2626',
     fontSize: 14,
@@ -115,5 +171,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  disabledText: {
+    color: '#9CA3AF',
   },
 });

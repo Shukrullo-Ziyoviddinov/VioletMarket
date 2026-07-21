@@ -1,0 +1,45 @@
+.seller-returned-orders-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.seller-returned-orders-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seller-returned-orders-page__title {
+  margin: 0;
+  color: #2a1842;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.seller-returned-orders-page__subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.seller-returned-orders-page__alert {
+  margin: 0;
+}
+
+.seller-returned-orders-page__stats-wrap {
+  position: relative;
+}
+
+.seller-returned-orders-page__loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}

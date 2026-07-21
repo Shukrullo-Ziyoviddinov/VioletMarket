@@ -1,0 +1,165 @@
+.seller-returned-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.seller-returned-orders-list--empty {
+  padding: 28px 18px;
+  border: 1px dashed #d8dce8;
+  border-radius: 16px;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  background: #fafafa;
+}
+
+.seller-returned-orders-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e8eaf2;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.seller-returned-orders-card__media {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.seller-returned-orders-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.seller-returned-orders-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.seller-returned-orders-card__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-returned-orders-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seller-returned-orders-card__title {
+  margin: 0;
+  color: #2a1842;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.seller-returned-orders-card__badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.seller-returned-orders-card__badge--return {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.seller-returned-orders-card__badge--no-answer {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.seller-returned-orders-card__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.seller-returned-orders-card__grid div,
+.seller-returned-orders-card__people div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seller-returned-orders-card__grid span,
+.seller-returned-orders-card__people span {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.seller-returned-orders-card__grid strong,
+.seller-returned-orders-card__people strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.seller-returned-orders-card__people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.seller-returned-orders-card__people p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.seller-returned-orders-card__comment {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.seller-returned-orders-card__comment span {
+  font-weight: 700;
+  color: #111827;
+}
+
+@media (max-width: 900px) {
+  .seller-returned-orders-card__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .seller-returned-orders-card {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-returned-orders-card__media {
+    width: 100%;
+    height: 180px;
+  }
+
+  .seller-returned-orders-card__people {
+    grid-template-columns: 1fr;
+  }
+}

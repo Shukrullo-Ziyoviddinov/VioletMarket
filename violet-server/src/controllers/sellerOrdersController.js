@@ -1,9 +1,17 @@
 const { asyncHandler } = require("../utils/asyncHandler");
 const { listSellerOrders } = require("../productManagement/sellerOrders");
 const sellerOrderTrackingService = require("../services/sellerOrders/sellerOrderTrackingService");
+const {
+  listSellerReturnedOrders,
+} = require("../services/sellerOrders/sellerReturnedOrdersService");
 
 const listOrders = asyncHandler(async (req, res) => {
   const data = await listSellerOrders(req.sellerShopId, req.query || {});
+  res.json({ ok: true, data });
+});
+
+const listReturnedOrders = asyncHandler(async (req, res) => {
+  const data = await listSellerReturnedOrders(req.sellerShopId, req.query || {});
   res.json({ ok: true, data });
 });
 
@@ -36,6 +44,7 @@ const handoffOrderItem = asyncHandler(async (req, res) => {
 
 module.exports = {
   listOrders,
+  listReturnedOrders,
   confirmOrderItem,
   collectOrderItem,
   handoffOrderItem,

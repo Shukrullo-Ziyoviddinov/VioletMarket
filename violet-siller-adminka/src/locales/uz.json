@@ -5,9 +5,42 @@
   "sidebar": {
     "home": "Bosh sahifa",
     "orders": "Buyurtmalar",
+    "returnedOrders": "Qaytarilgan buyurtma",
     "salesStatistics": "Sotuv va statistika",
     "salesEarnings": "Sotuv va daromat",
     "salesWithdrawals": "Yechilgan summalar tarixi"
+  },
+  "returnedOrders": {
+    "title": "Qaytarilgan buyurtma",
+    "subtitle": "Kuryer qaytargan mahsulotlar va statistikasi",
+    "loading": "Yuklanmoqda...",
+    "empty": "Tanlangan davr uchun qaytarilgan mahsulotlar yo'q",
+    "loadError": "Qaytarilgan buyurtmalarni yuklashda xatolik yuz berdi",
+    "filters": {
+      "day": "Kun",
+      "week": "Hafta",
+      "month": "Oy",
+      "empty": "Variantlar yo'q"
+    },
+    "stats": {
+      "day": "Kunlik qaytarilgan",
+      "week": "Haftalik qaytarilgan",
+      "month": "Oylik qaytarilgan",
+      "allTime": "Jami qaytarilgan"
+    },
+    "reason": {
+      "noAnswer": "Javob bermadi",
+      "return": "Qaytarilgan"
+    },
+    "card": {
+      "quantity": "Dona",
+      "price": "Narx",
+      "orderedAt": "Zakas qilingan sana",
+      "returnedAt": "Qaytarilgan sana",
+      "customer": "Mijoz",
+      "courier": "Kuryer",
+      "comment": "Izoh"
+    }
   },
   "orders": {
     "title": "Buyurtmalar",

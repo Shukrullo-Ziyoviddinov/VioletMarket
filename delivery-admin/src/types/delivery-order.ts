@@ -61,6 +61,9 @@ export type DeliveryAcceptedOrder = {
   deliveredAt: string | null;
   distanceKm?: number | null;
   courierPayment?: number;
+  isPaid?: boolean;
+  paymentStatus?: string;
+  orderedAt?: string | null;
 };
 
 export type DeliveryHistoryStats = {

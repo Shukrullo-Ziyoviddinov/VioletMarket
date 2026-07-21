@@ -107,3 +107,28 @@ export async function fetchDeliveredHistory(token: string) {
     orders: DeliveryAcceptedOrder[];
   }>('/api/delivery/orders/history', { method: 'GET' }, token);
 }
+
+export type ReturnReasonType = 'no_answer' | 'return';
+
+export async function returnDeliveryOrder(
+  token: string,
+  payload: {
+    assignmentId: string;
+    reasonType: ReturnReasonType;
+    comment?: string;
+  },
+) {
+  return apiRequest<{
+    id: string;
+    assignmentId: string;
+    reasonType: ReturnReasonType;
+    returnedAt: string | null;
+  }>(
+    '/api/delivery/orders/return',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}

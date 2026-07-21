@@ -13,6 +13,9 @@ const {
 const {
   listDeliveredHistoryForCourier,
 } = require("../services/deliveryOrders/courierDeliveredHistoryService");
+const {
+  returnOrderUnitByCourier,
+} = require("../services/deliveryOrders/courierReturnOrderService");
 
 const listAvailableOrders = asyncHandler(async (req, res) => {
   const data = await listAvailableDeliveryOrders(req.query || {});
@@ -28,6 +31,12 @@ const acceptOrder = asyncHandler(async (req, res) => {
 const deliverOrder = asyncHandler(async (req, res) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};
   const data = await deliverOrderUnitByCourier(req.deliveryId, body);
+  res.json({ ok: true, data });
+});
+
+const returnOrder = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await returnOrderUnitByCourier(req.deliveryId, body);
   res.json({ ok: true, data });
 });
 
@@ -50,6 +59,7 @@ module.exports = {
   listAvailableOrders,
   acceptOrder,
   deliverOrder,
+  returnOrder,
   listAcceptedOrders,
   getAcceptedOrder,
   listDeliveredHistory,
