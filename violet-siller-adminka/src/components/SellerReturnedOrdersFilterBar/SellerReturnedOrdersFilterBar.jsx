@@ -15,6 +15,13 @@ function getSelectedLabel(type, value, options) {
   return match?.label || value || type;
 }
 
+function getOptionsForType(type, filterOptions) {
+  if (type === 'day') return filterOptions?.days || [];
+  if (type === 'week') return filterOptions?.weeks || [];
+  if (type === 'month') return filterOptions?.months || [];
+  return [];
+}
+
 export default function SellerReturnedOrdersFilterBar({
   filters,
   filterOptions,
@@ -46,13 +53,6 @@ export default function SellerReturnedOrdersFilterBar({
     [filters, filterOptions],
   );
 
-  const activeOptions = useMemo(() => {
-    if (openFilter === 'day') return filterOptions?.days || [];
-    if (openFilter === 'week') return filterOptions?.weeks || [];
-    if (openFilter === 'month') return filterOptions?.months || [];
-    return [];
-  }, [openFilter, filterOptions]);
-
   const handleButtonClick = (type) => {
     onOpenFilterChange(openFilter === type ? null : type);
   };
@@ -72,60 +72,63 @@ export default function SellerReturnedOrdersFilterBar({
         {FILTER_TYPES.map((item) => {
           const isOpen = openFilter === item.key;
           const isActivePeriod = activePeriod === item.key;
+          const options = getOptionsForType(item.key, filterOptions);
+
           return (
-            <button
-              key={item.key}
-              type="button"
-              className={`seller-returned-orders-filter-bar__button${
-                isOpen || isActivePeriod
-                  ? ' seller-returned-orders-filter-bar__button--active'
-                  : ''
-              }`}
-              onClick={() => handleButtonClick(item.key)}
-              aria-expanded={isOpen}
-            >
-              <span className="seller-returned-orders-filter-bar__button-title">
-                {t(item.labelKey)}
-              </span>
-              <span className="seller-returned-orders-filter-bar__button-value">
-                {selectedLabels[item.key]}
-              </span>
-              <DownOutlined
-                className={`seller-returned-orders-filter-bar__button-icon${
-                  isOpen ? ' seller-returned-orders-filter-bar__button-icon--open' : ''
+            <div key={item.key} className="seller-returned-orders-filter-bar__button-wrap">
+              <button
+                type="button"
+                className={`seller-returned-orders-filter-bar__button${
+                  isOpen || isActivePeriod
+                    ? ' seller-returned-orders-filter-bar__button--active'
+                    : ''
                 }`}
-              />
-            </button>
+                onClick={() => handleButtonClick(item.key)}
+                aria-expanded={isOpen}
+              >
+                <span className="seller-returned-orders-filter-bar__button-title">
+                  {t(item.labelKey)}
+                </span>
+                <span className="seller-returned-orders-filter-bar__button-value">
+                  {selectedLabels[item.key]}
+                </span>
+                <DownOutlined
+                  className={`seller-returned-orders-filter-bar__button-icon${
+                    isOpen ? ' seller-returned-orders-filter-bar__button-icon--open' : ''
+                  }`}
+                />
+              </button>
+
+              {isOpen ? (
+                <div className="seller-returned-orders-filter-bar__dropdown" role="listbox">
+                  {options.length === 0 ? (
+                    <p className="seller-returned-orders-filter-bar__dropdown-empty">
+                      {t('returnedOrders.filters.empty')}
+                    </p>
+                  ) : (
+                    options.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="option"
+                        aria-selected={filters?.[item.key] === option.value}
+                        className={`seller-returned-orders-filter-bar__dropdown-item${
+                          filters?.[item.key] === option.value
+                            ? ' seller-returned-orders-filter-bar__dropdown-item--selected'
+                            : ''
+                        }`}
+                        onClick={() => handleOptionSelect(item.key, option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))
+                  )}
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </div>
-
-      {openFilter ? (
-        <div className="seller-returned-orders-filter-bar__dropdown" role="listbox">
-          {activeOptions.length === 0 ? (
-            <p className="seller-returned-orders-filter-bar__dropdown-empty">
-              {t('returnedOrders.filters.empty')}
-            </p>
-          ) : (
-            activeOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={filters?.[openFilter] === option.value}
-                className={`seller-returned-orders-filter-bar__dropdown-item${
-                  filters?.[openFilter] === option.value
-                    ? ' seller-returned-orders-filter-bar__dropdown-item--selected'
-                    : ''
-                }`}
-                onClick={() => handleOptionSelect(openFilter, option.value)}
-              >
-                {option.label}
-              </button>
-            ))
-          )}
-        </div>
-      ) : null}
     </div>
   );
 }

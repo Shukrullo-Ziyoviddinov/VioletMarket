@@ -66,7 +66,12 @@ export default function SellerReturnedOrdersList({ orders = [], loading = false 
 
           <div className="seller-returned-orders-card__body">
             <div className="seller-returned-orders-card__header">
-              <h3 className="seller-returned-orders-card__title">{productTitle(order)}</h3>
+              <div className="seller-returned-orders-card__heading">
+                <h3 className="seller-returned-orders-card__title">{productTitle(order)}</h3>
+                {order.productCode ? (
+                  <p className="seller-returned-orders-card__code">{order.productCode}</p>
+                ) : null}
+              </div>
               <span
                 className={`seller-returned-orders-card__badge seller-returned-orders-card__badge--${
                   order.reasonType === 'no_answer' ? 'no-answer' : 'return'
@@ -78,42 +83,73 @@ export default function SellerReturnedOrdersList({ orders = [], loading = false 
               </span>
             </div>
 
-            <div className="seller-returned-orders-card__grid">
-              <div>
-                <span>{t('returnedOrders.card.quantity')}</span>
-                <strong>{order.quantity}</strong>
+            <div className="seller-returned-orders-card__meta">
+              <div className="seller-returned-orders-card__meta-item">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.quantity')}
+                </span>
+                <strong className="seller-returned-orders-card__value">
+                  {order.quantity}
+                </strong>
               </div>
-              <div>
-                <span>{t('returnedOrders.card.price')}</span>
-                <strong>{formatSellerRevenue(order.amount)}</strong>
+              <div className="seller-returned-orders-card__meta-item seller-returned-orders-card__meta-item--accent">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.price')}
+                </span>
+                <strong className="seller-returned-orders-card__value seller-returned-orders-card__value--price">
+                  {formatSellerRevenue(order.amount)}
+                </strong>
               </div>
-              <div>
-                <span>{t('returnedOrders.card.orderedAt')}</span>
-                <strong>{formatDateTime(order.orderedAt)}</strong>
+              <div className="seller-returned-orders-card__meta-item">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.orderedAt')}
+                </span>
+                <strong className="seller-returned-orders-card__value">
+                  {formatDateTime(order.orderedAt)}
+                </strong>
               </div>
-              <div>
-                <span>{t('returnedOrders.card.returnedAt')}</span>
-                <strong>{formatDateTime(order.returnedAt)}</strong>
+              <div className="seller-returned-orders-card__meta-item">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.returnedAt')}
+                </span>
+                <strong className="seller-returned-orders-card__value">
+                  {formatDateTime(order.returnedAt)}
+                </strong>
               </div>
             </div>
 
             <div className="seller-returned-orders-card__people">
-              <div>
-                <span>{t('returnedOrders.card.customer')}</span>
-                <strong>{personName(order.customer)}</strong>
-                <p>{order.customer?.phone || '—'}</p>
+              <div className="seller-returned-orders-card__person">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.customer')}
+                </span>
+                <strong className="seller-returned-orders-card__person-name">
+                  {personName(order.customer)}
+                </strong>
+                <p className="seller-returned-orders-card__person-phone">
+                  {order.customer?.phone || '—'}
+                </p>
               </div>
-              <div>
-                <span>{t('returnedOrders.card.courier')}</span>
-                <strong>{personName(order.courier)}</strong>
-                <p>{order.courier?.phone || '—'}</p>
+              <div className="seller-returned-orders-card__person">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.courier')}
+                </span>
+                <strong className="seller-returned-orders-card__person-name">
+                  {personName(order.courier)}
+                </strong>
+                <p className="seller-returned-orders-card__person-phone">
+                  {order.courier?.phone || '—'}
+                </p>
               </div>
             </div>
 
             {order.comment ? (
-              <p className="seller-returned-orders-card__comment">
-                <span>{t('returnedOrders.card.comment')}:</span> {order.comment}
-              </p>
+              <div className="seller-returned-orders-card__comment">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.card.comment')}
+                </span>
+                <p className="seller-returned-orders-card__comment-text">{order.comment}</p>
+              </div>
             ) : null}
           </div>
         </article>
