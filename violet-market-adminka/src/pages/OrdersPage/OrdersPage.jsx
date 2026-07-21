@@ -34,8 +34,7 @@ export default function OrdersPage() {
       <div className="admin-orders-page__header">
         <h1 className="admin-orders-page__title">Buyurtmalar</h1>
         <p className="admin-orders-page__subtitle">
-          Barcha sillerlar buyurtmalari — qaysi mahsulot, qaysi siller va qaysi
-          jarayonda ekanligi. Holatni siller o‘rnidan ham o‘zgartirish mumkin.
+          Barcha sillerlar buyurtmalari — holatni ko'rish va o'zgartirish
         </p>
       </div>
       <AdminOrdersFilter value={filter} onChange={setFilter} counts={counts} />
