@@ -1,0 +1,12 @@
+.seller-order-no-answer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-order-no-answer-list__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}

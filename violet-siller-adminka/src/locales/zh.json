@@ -50,7 +50,8 @@
       "confirmation": "确认",
       "collection": "备货",
       "courier": "交给快递员",
-      "handed": "已交给快递员"
+      "handed": "已交给快递员",
+      "noAnswer": "未接听"
     },
     "collection": {
       "empty": "暂无待备货商品"
@@ -65,6 +66,17 @@
       "courierPhone": "快递员电话",
       "handedAt": "交接时间",
       "acceptedAt": "快递员接单时间"
+    },
+    "noAnswer": {
+      "empty": "暂无未接听订单",
+      "badge": "未接听",
+      "at": "未接听时间",
+      "courier": "快递员",
+      "courierPhone": "快递员电话",
+      "comment": "备注",
+      "reHandoff": "再次交给快递员",
+      "reactivate": "重新激活",
+      "deliveredToCustomer": "已交付客户"
     },
     "confirm": {
       "success": "订单已确认",

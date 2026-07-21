@@ -1,0 +1,145 @@
+.seller-order-no-answer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e9e3f1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.seller-order-no-answer-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seller-order-no-answer-card__title {
+  margin: 0;
+  color: #2a1842;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.seller-order-no-answer-card__badge {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.seller-order-no-answer-card__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.seller-order-no-answer-card__row span,
+.seller-order-no-answer-card__comment span {
+  display: block;
+  margin-bottom: 3px;
+  color: #93899b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.seller-order-no-answer-card__row strong {
+  display: block;
+  overflow: hidden;
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.seller-order-no-answer-card__courier {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e9e3f1;
+}
+
+.seller-order-no-answer-card__comment {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #e8eaf0;
+}
+
+.seller-order-no-answer-card__comment p {
+  margin: 0;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.seller-order-no-answer-card__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.seller-order-no-answer-card__button {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.seller-order-no-answer-card__button--secondary {
+  border: 1px solid #d8cceb;
+  background: #faf7ff;
+  color: #56337d;
+}
+
+.seller-order-no-answer-card__button--secondary:hover {
+  border-color: #c4b0e0;
+  background: #f3ebfd;
+}
+
+.seller-order-no-answer-card__button--primary {
+  border: 1px solid #56337d;
+  background: #56337d;
+  color: #ffffff;
+}
+
+.seller-order-no-answer-card__button--primary:hover {
+  background: #4a2b6c;
+  border-color: #4a2b6c;
+}
+
+.seller-order-no-answer-card__button--success {
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.seller-order-no-answer-card__button--success:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+@media (max-width: 900px) {
+  .seller-order-no-answer-card__actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .seller-order-no-answer-card__rows {
+    grid-template-columns: 1fr;
+  }
+}

@@ -12,6 +12,7 @@ import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import SellerOrderCollectionList from '../SellerOrderCollectionList/SellerOrderCollectionList';
 import SellerOrderCourierList from '../SellerOrderCourierList/SellerOrderCourierList';
 import SellerOrderHandedList from '../SellerOrderHandedList/SellerOrderHandedList';
+import SellerOrderNoAnswerList from '../SellerOrderNoAnswerList/SellerOrderNoAnswerList';
 import SellerOrdersList from '../SellerOrdersList/SellerOrdersList';
 import SellerOrderDetailModal from '../SellerOrderDetailModal/SellerOrderDetailModal';
 import './SellerOrdersWorkspace.css';
@@ -21,6 +22,7 @@ const FILTER_STATUS = {
   collection: 'seller_confirmed',
   courier: 'collected',
   handed: 'handed_to_courier',
+  noAnswer: 'no_answer',
 };
 
 export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
@@ -78,6 +80,10 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const handedOrders = orders.filter(
     (order) => order.trackingStatus === 'handed_to_courier',
   );
+  const noAnswerOrders =
+    filter === 'noAnswer'
+      ? orders
+      : orders.filter((order) => order.trackingStatus === 'no_answer');
 
   const handleConfirm = async () => {
     if (!token || !activeOrder || confirming) return;
@@ -159,6 +165,10 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   } else if (filter === 'handed') {
     listNode = (
       <SellerOrderHandedList orders={handedOrders} loading={loading} />
+    );
+  } else if (filter === 'noAnswer') {
+    listNode = (
+      <SellerOrderNoAnswerList orders={noAnswerOrders} loading={loading} />
     );
   }
 

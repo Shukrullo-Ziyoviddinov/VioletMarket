@@ -50,7 +50,8 @@
       "confirmation": "Confirm",
       "collection": "Collect product",
       "courier": "Hand over to courier",
-      "handed": "Handed to courier"
+      "handed": "Handed to courier",
+      "noAnswer": "No answer"
     },
     "collection": {
       "empty": "No products to collect"
@@ -65,6 +66,17 @@
       "courierPhone": "Courier phone",
       "handedAt": "Handed over at",
       "acceptedAt": "Courier accepted at"
+    },
+    "noAnswer": {
+      "empty": "No unanswered orders",
+      "badge": "No answer",
+      "at": "No-answer time",
+      "courier": "Courier",
+      "courierPhone": "Courier phone",
+      "comment": "Comment",
+      "reHandoff": "Hand to courier again",
+      "reactivate": "Reactivate",
+      "deliveredToCustomer": "Delivered to customer"
     },
     "confirm": {
       "success": "Order confirmed",

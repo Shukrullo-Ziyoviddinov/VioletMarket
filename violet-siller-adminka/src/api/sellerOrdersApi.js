@@ -34,9 +34,14 @@ function normalizeOrder(row) {
     model: String(row?.model || ''),
     orderedAt: row?.orderedAt || '',
     buyer: {
-      firstName: String(row?.buyer?.firstName || ''),
-      lastName: String(row?.buyer?.lastName || ''),
-      phone: String(row?.buyer?.phone || ''),
+      firstName: String(row?.buyer?.firstName || row?.customer?.firstName || ''),
+      lastName: String(row?.buyer?.lastName || row?.customer?.lastName || ''),
+      phone: String(row?.buyer?.phone || row?.customer?.phone || ''),
+    },
+    customer: {
+      firstName: String(row?.customer?.firstName || row?.buyer?.firstName || ''),
+      lastName: String(row?.customer?.lastName || row?.buyer?.lastName || ''),
+      phone: String(row?.customer?.phone || row?.buyer?.phone || ''),
     },
     paymentMethod: String(row?.paymentMethod || 'mock'),
     status: String(row?.status || 'paid'),
@@ -58,6 +63,10 @@ function normalizeOrder(row) {
       : null,
     acceptedAt: row?.acceptedAt || null,
     assignmentId: row?.assignmentId ? String(row.assignmentId) : null,
+    reasonType: String(row?.reasonType || ''),
+    comment: String(row?.comment || ''),
+    returnedAt: row?.returnedAt || null,
+    noAnswerAt: row?.noAnswerAt || row?.returnedAt || null,
   };
 }
 

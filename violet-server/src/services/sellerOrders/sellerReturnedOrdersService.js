@@ -1,4 +1,5 @@
 const { CourierReturnedOrder } = require("../../models/courierReturnedOrder");
+const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const {
   formatDayLabel,
   formatMonthLabel,
@@ -67,7 +68,10 @@ function buildMonthOptions(startKey, endKey) {
 }
 
 async function loadEarliestReturnedDateKey(sellerId) {
-  const row = await CourierReturnedOrder.findOne({ sellerId: String(sellerId) })
+  const row = await CourierReturnedOrder.findOne({
+    sellerId: String(sellerId),
+    reasonType: "return",
+  })
     .sort({ returnedAt: 1 })
     .select("dateKey returnedAt")
     .lean();
@@ -170,8 +174,11 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
 
   const findFilter = {
     sellerId: shopId,
+    reasonType: "return",
     ...periodMatch,
   };
+
+  const returnOnlyMatch = { reasonType: "return" };
 
   const [rows, total, periodStats, allTimeStats, dayStats, weekStats, monthStats] =
     await Promise.all([
@@ -181,11 +188,11 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
         .limit(limit)
         .lean(),
       CourierReturnedOrder.countDocuments(findFilter),
-      aggregateReturnedStats(shopId, periodMatch),
-      aggregateReturnedStats(shopId),
-      aggregateReturnedStats(shopId, { dateKey: filters.day }),
-      aggregateReturnedStats(shopId, { weekKey: filters.week }),
-      aggregateReturnedStats(shopId, { monthKey: filters.month }),
+      aggregateReturnedStats(shopId, { ...periodMatch, ...returnOnlyMatch }),
+      aggregateReturnedStats(shopId, returnOnlyMatch),
+      aggregateReturnedStats(shopId, { dateKey: filters.day, ...returnOnlyMatch }),
+      aggregateReturnedStats(shopId, { weekKey: filters.week, ...returnOnlyMatch }),
+      aggregateReturnedStats(shopId, { monthKey: filters.month, ...returnOnlyMatch }),
     ]);
 
   return {
@@ -207,7 +214,86 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
   };
 }
 
+/**
+ * Siller "Buyurtmalar" → Javob bermadi filteri.
+ * Faqat hali qayta qabul qilinmagan (assignment cancelled) yozuvlar.
+ */
+async function listSellerNoAnswerOrders(sellerId, query = {}) {
+  const shopId = String(sellerId || "").trim();
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
+  const skip = (page - 1) * limit;
+
+  const rows = await CourierReturnedOrder.find({
+    sellerId: shopId,
+    reasonType: "no_answer",
+  })
+    .sort({ returnedAt: -1, createdAt: -1 })
+    .lean();
+
+  if (!rows.length) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      orders: [],
+    };
+  }
+
+  const assignmentIds = rows
+    .map((row) => row.assignmentId)
+    .filter(Boolean);
+
+  const assignments = assignmentIds.length
+    ? await CourierOrderAssignment.find({ _id: { $in: assignmentIds } })
+        .select("_id status")
+        .lean()
+    : [];
+
+  const cancelledIds = new Set(
+    assignments
+      .filter((row) => String(row.status) === "cancelled")
+      .map((row) => String(row._id)),
+  );
+
+  // Assignment topilmasa ham (edge) — ko‘rsatamiz
+  const assignmentMap = new Map(
+    assignments.map((row) => [String(row._id), row]),
+  );
+
+  const activeRows = rows.filter((row) => {
+    const id = String(row.assignmentId || "");
+    if (!id) return true;
+    if (!assignmentMap.has(id)) return true;
+    return cancelledIds.has(id);
+  });
+
+  const total = activeRows.length;
+  const pageRows = activeRows.slice(skip, skip + limit);
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit) || 1),
+    orders: pageRows.map((row) => {
+      const publicRow = toPublicReturnedOrder(row);
+      return {
+        ...publicRow,
+        trackingStatus: "no_answer",
+        buyer: publicRow.customer,
+        orderedAt: publicRow.orderedAt,
+        noAnswerAt: publicRow.returnedAt,
+        amount: publicRow.amount,
+        quantity: publicRow.quantity,
+      };
+    }),
+  };
+}
+
 module.exports = {
   listSellerReturnedOrders,
+  listSellerNoAnswerOrders,
   buildSellerReturnedFilterOptions,
 };

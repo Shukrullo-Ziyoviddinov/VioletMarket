@@ -50,7 +50,8 @@
       "confirmation": "Tasdiqlash",
       "collection": "Mahsulotni yig'ish",
       "courier": "Kuryerga topshirish",
-      "handed": "Kuryerga topshirilgan"
+      "handed": "Kuryerga topshirilgan",
+      "noAnswer": "Javob bermadi"
     },
     "collection": {
       "empty": "Yig'ish uchun mahsulotlar yo'q"
@@ -65,6 +66,17 @@
       "courierPhone": "Kuryer telefoni",
       "handedAt": "Topshirilgan vaqt",
       "acceptedAt": "Kuryer qabul qilgan vaqt"
+    },
+    "noAnswer": {
+      "empty": "Javob bermagan buyurtmalar yo'q",
+      "badge": "Javob bermadi",
+      "at": "Javob bermagan vaqt",
+      "courier": "Kuryer",
+      "courierPhone": "Kuryer telefoni",
+      "comment": "Izoh",
+      "reHandoff": "Qayta kuryerga topshirish",
+      "reactivate": "Qayta aktiv qilish",
+      "deliveredToCustomer": "Mijozga topshirildi"
     },
     "confirm": {
       "success": "Buyurtma tasdiqlandi",

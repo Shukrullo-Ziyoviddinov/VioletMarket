@@ -13,6 +13,9 @@ const {
   listAssignmentsByKeys,
   assignmentLookupKey,
 } = require("../services/deliveryOrders/courierOrderAssignmentService");
+const {
+  listSellerNoAnswerOrders,
+} = require("../services/sellerOrders/sellerReturnedOrdersService");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -191,6 +194,11 @@ async function listSellerOrders(sellerId, query = {}) {
     throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
   }
 
+  const requestedTrackingStatus = String(query.trackingStatus || "").trim();
+  if (requestedTrackingStatus === "no_answer") {
+    return listSellerNoAnswerOrders(normalizedSellerId, query);
+  }
+
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(100, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
 
@@ -211,7 +219,6 @@ async function listSellerOrders(sellerId, query = {}) {
   const allCards = rows.flatMap((row) =>
     buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
   );
-  const requestedTrackingStatus = String(query.trackingStatus || "").trim();
   const filteredCards = requestedTrackingStatus
     ? allCards.filter((card) => card.trackingStatus === requestedTrackingStatus)
     : allCards;
