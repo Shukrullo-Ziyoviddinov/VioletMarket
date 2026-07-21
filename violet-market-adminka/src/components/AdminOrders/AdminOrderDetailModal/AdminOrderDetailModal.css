@@ -1,0 +1,28 @@
+.seller-order-detail-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee9f3;
+}
+
+.seller-order-detail-modal__confirm {
+  min-width: 128px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 9px;
+  background: #6f35bc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seller-order-detail-modal__confirm:hover:not(:disabled) {
+  background: #5f29a8;
+}
+
+.seller-order-detail-modal__confirm:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}

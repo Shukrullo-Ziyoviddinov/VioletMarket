@@ -55,6 +55,7 @@ const chatsPageSearchRoutes = require("./chatsPageSearch.routes");
 const userOrderTrackingRoutes = require("./userOrderTracking.routes");
 const deliveryAuthRoutes = require("./deliveryAuth.routes");
 const adminCourierRoutes = require("./adminCourier.routes");
+const adminOrdersRoutes = require("./adminOrders.routes");
 const supportChatRoutes = require("./supportChat.routes");
 const deliveryOrdersRoutes = require("./deliveryOrders.routes");
 
@@ -116,6 +117,7 @@ router.use(chatsPageSearchRoutes);
 router.use(userOrderTrackingRoutes);
 router.use(deliveryAuthRoutes);
 router.use(adminCourierRoutes);
+router.use(adminOrdersRoutes);
 router.use(supportChatRoutes);
 router.use(deliveryOrdersRoutes);
 

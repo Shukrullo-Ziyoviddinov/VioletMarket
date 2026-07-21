@@ -1,0 +1,16 @@
+.seller-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-orders-list--loading,
+.seller-orders-list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px solid #ece8f4;
+  border-radius: 14px;
+  background: #fff;
+}

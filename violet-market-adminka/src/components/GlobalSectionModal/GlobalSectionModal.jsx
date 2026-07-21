@@ -57,6 +57,7 @@ import TopSellersStatisticsModalContent from '../TopSellersStatisticsModalConten
 import TopSellingProductsStatisticsModalContent from '../TopSellingProductsStatisticsModalContent/TopSellingProductsStatisticsModalContent';
 import PaymentRequestRejectedProductsModalContent from '../PaymentRequest/PaymentRequestRejectedProductsModalContent/PaymentRequestRejectedProductsModalContent';
 import CourierAcceptedOrdersModalContent from '../CourierAcceptedOrdersModalContent/CourierAcceptedOrdersModalContent';
+import AdminOrderDetailSectionContent from '../AdminOrders/AdminOrderDetailSectionContent/AdminOrderDetailSectionContent';
 import ShippingCountryForm from '../ShippingCountryForm/ShippingCountryForm';
 import ProductTypeForm from '../ProductTypeForm/ProductTypeForm';
 import UzbProductDeliveryInfoForm from '../UzbProductDeliveryInfoForm/UzbProductDeliveryInfoForm';
@@ -3372,6 +3373,13 @@ export default function GlobalSectionModal({ open, section, onClose }) {
       <CourierAcceptedOrdersModalContent
         visible={open}
         courierId={section?.courierId}
+      />
+    ) : section?.key === 'admin-order-detail' ? (
+      <AdminOrderDetailSectionContent
+        visible={open}
+        order={section?.order}
+        mode={section?.mode}
+        onSuccess={section?.onSuccess}
       />
     ) : (
       <SimpleSectionForm sectionLabel={title} />

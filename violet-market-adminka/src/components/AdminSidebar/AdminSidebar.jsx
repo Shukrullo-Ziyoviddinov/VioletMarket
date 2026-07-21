@@ -18,6 +18,7 @@ import {
   MessageOutlined,
   PauseCircleOutlined,
   PictureOutlined,
+  ShoppingOutlined,
   ShopOutlined,
   TeamOutlined,
   TrademarkOutlined,
@@ -42,6 +43,7 @@ const menuItems = [
     label: 'Sotuvlar statistikasi',
     route: '/sales/statistics',
   },
+  { key: 'orders', icon: <ShoppingOutlined />, label: 'Buyurtmalar', route: '/orders' },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
     key: 'flash-products',
@@ -85,6 +87,7 @@ const menuItems = [
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/customers/statistics') return 'customers-statistics';
   if (pathname === '/sales/statistics') return 'sales-statistics';
+  if (pathname === '/orders') return 'orders';
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';

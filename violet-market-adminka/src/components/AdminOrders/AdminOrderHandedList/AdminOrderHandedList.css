@@ -1,0 +1,12 @@
+.seller-order-handed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-order-handed-list__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}

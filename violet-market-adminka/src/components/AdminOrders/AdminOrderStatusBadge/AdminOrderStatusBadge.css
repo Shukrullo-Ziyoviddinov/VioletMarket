@@ -1,0 +1,43 @@
+.admin-order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-order-status-badge--pending {
+  background: #f3eef9;
+  color: #6f35bc;
+}
+
+.admin-order-status-badge--collect {
+  background: #eef6ff;
+  color: #1d4f91;
+}
+
+.admin-order-status-badge--courier {
+  background: #fff3e8;
+  color: #c45a12;
+}
+
+.admin-order-status-badge--handed {
+  background: #edf9f0;
+  color: #1d7a3c;
+}
+
+.admin-order-status-badge--no-answer {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.admin-order-status-badge--unknown {
+  background: #f5f5f5;
+  color: #8c8c8c;
+}
