@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { loadYandexMaps } from '../../utils/loadYandexMaps';
+import { loadYandexMaps } from '../../../utils/loadYandexMaps';
 import './SellerYandexMap.css';
 
 const DEFAULT_CENTER = [41.311151, 69.279737];
