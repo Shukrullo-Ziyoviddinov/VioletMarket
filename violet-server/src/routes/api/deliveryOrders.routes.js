@@ -41,6 +41,12 @@ router.post(
 );
 
 router.post(
+  "/delivery/orders/advance",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.advanceOrderStep,
+);
+
+router.post(
   "/delivery/orders/deliver",
   deliveryAuthMiddleware,
   deliveryOrdersController.deliverOrder,

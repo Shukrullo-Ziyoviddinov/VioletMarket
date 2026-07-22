@@ -5,6 +5,7 @@ const {
 const {
   acceptOrderUnitByCourier,
   pickUpOrderUnitByCourier,
+  advanceAssignmentStepByCourier,
   deliverOrderUnitByCourier,
   getAssignmentForCourier,
 } = require("../services/deliveryOrders/courierOrderAssignmentService");
@@ -32,6 +33,12 @@ const acceptOrder = asyncHandler(async (req, res) => {
 const pickUpOrder = asyncHandler(async (req, res) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};
   const data = await pickUpOrderUnitByCourier(req.deliveryId, body);
+  res.json({ ok: true, data });
+});
+
+const advanceOrderStep = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await advanceAssignmentStepByCourier(req.deliveryId, body);
   res.json({ ok: true, data });
 });
 
@@ -66,6 +73,7 @@ module.exports = {
   listAvailableOrders,
   acceptOrder,
   pickUpOrder,
+  advanceOrderStep,
   deliverOrder,
   returnOrder,
   listAcceptedOrders,

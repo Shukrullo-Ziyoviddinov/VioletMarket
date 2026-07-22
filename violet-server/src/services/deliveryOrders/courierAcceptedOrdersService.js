@@ -3,6 +3,7 @@ const {
   toPublicAssignment,
   loadOrderPaymentMap,
   attachSellerPickup,
+  ACTIVE_ASSIGNMENT_STATUSES,
 } = require("./courierOrderAssignmentService");
 
 /**
@@ -15,8 +16,7 @@ async function listAcceptedOrdersForCourier(deliveryId, query = {}) {
   };
 
   if (!statusFilter || statusFilter === "active" || statusFilter === "accepted") {
-    // accepted (default/eski client) = ikkala faol bosqich
-    filter.status = { $in: ["accepted", "picked_up"] };
+    filter.status = { $in: ACTIVE_ASSIGNMENT_STATUSES };
   } else if (statusFilter !== "all") {
     filter.status = statusFilter;
   }

@@ -140,7 +140,17 @@ async function listAvailableDeliveryOrders(query = {}) {
 
   // Allaqachon qabul qilingan donalarni olib tashlash
   const accepted = await CourierOrderAssignment.find({
-    status: { $in: ["accepted", "delivered"] },
+    status: {
+      $in: [
+        "accepted",
+        "en_route_to_seller",
+        "arrived_at_seller",
+        "picked_up",
+        "en_route_to_customer",
+        "arrived_at_customer",
+        "delivered",
+      ],
+    },
   })
     .select({ orderId: 1, itemIndex: 1, unitIndex: 1 })
     .lean();

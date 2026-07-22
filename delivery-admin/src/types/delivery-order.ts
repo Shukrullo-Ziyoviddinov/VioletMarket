@@ -44,6 +44,16 @@ export type DeliverySellerPickup = {
   coordinates: number[] | null;
 };
 
+export type DeliveryAssignmentStatus =
+  | 'accepted'
+  | 'en_route_to_seller'
+  | 'arrived_at_seller'
+  | 'picked_up'
+  | 'en_route_to_customer'
+  | 'arrived_at_customer'
+  | 'delivered'
+  | 'cancelled';
+
 export type DeliveryAcceptedOrder = {
   id: string;
   orderId: number;
@@ -63,12 +73,16 @@ export type DeliveryAcceptedOrder = {
   model?: string;
   customer: DeliveryCustomer;
   deliveryAddress: DeliveryAddressDetails;
-  status: string;
+  status: DeliveryAssignmentStatus | string;
   pickupPhase?: 'seller' | 'customer';
   sellerId?: string;
   sellerPickup?: DeliverySellerPickup | null;
   acceptedAt: string | null;
+  enRouteToSellerAt?: string | null;
+  arrivedAtSellerAt?: string | null;
   pickedUpAt?: string | null;
+  enRouteToCustomerAt?: string | null;
+  arrivedAtCustomerAt?: string | null;
   handedToCourierAt: string | null;
   deliveredAt: string | null;
   distanceKm?: number | null;

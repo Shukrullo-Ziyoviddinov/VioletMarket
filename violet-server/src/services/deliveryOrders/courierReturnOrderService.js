@@ -10,6 +10,11 @@ const {
 const { formatWeekKey } = require("../adminSales/salesStatisticsHelpers");
 
 const REASON_TYPES = new Set(["no_answer", "return"]);
+const RETURNABLE_STATUSES = new Set([
+  "picked_up",
+  "en_route_to_customer",
+  "arrived_at_customer",
+]);
 
 function isOrderPaid(order) {
   if (!order) return false;
@@ -117,7 +122,7 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     );
   }
 
-  if (String(assignment.status) !== "picked_up") {
+  if (!RETURNABLE_STATUSES.has(String(assignment.status))) {
     throw new HttpError(
       409,
       "Avval sotuvchidan mahsulotni oling",

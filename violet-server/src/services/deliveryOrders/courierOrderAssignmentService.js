@@ -20,6 +20,77 @@ const {
 } = require("../courierPayment/courierPaymentService");
 const { isOrderPaid } = require("./courierReturnOrderService");
 
+const ACTIVE_ASSIGNMENT_STATUSES = [
+  "accepted",
+  "en_route_to_seller",
+  "arrived_at_seller",
+  "picked_up",
+  "en_route_to_customer",
+  "arrived_at_customer",
+];
+
+const SELLER_PHASE_STATUSES = new Set([
+  "accepted",
+  "en_route_to_seller",
+  "arrived_at_seller",
+]);
+
+const CUSTOMER_PHASE_STATUSES = new Set([
+  "picked_up",
+  "en_route_to_customer",
+  "arrived_at_customer",
+]);
+
+const RETURNABLE_STATUSES = new Set([
+  "picked_up",
+  "en_route_to_customer",
+  "arrived_at_customer",
+]);
+
+const ADVANCE_ACTIONS = {
+  go_to_seller: {
+    from: ["accepted"],
+    to: "en_route_to_seller",
+    atField: "enRouteToSellerAt",
+    errorMessage: "Avval buyurtmani qabul qiling",
+  },
+  arrive_seller: {
+    from: ["en_route_to_seller"],
+    to: "arrived_at_seller",
+    atField: "arrivedAtSellerAt",
+    errorMessage: "Avval sotuvchiga yo‘lga chiqing",
+  },
+  go_to_customer: {
+    from: ["picked_up"],
+    to: "en_route_to_customer",
+    atField: "enRouteToCustomerAt",
+    errorMessage: "Avval sotuvchidan mahsulotni oling",
+  },
+  arrive_customer: {
+    from: ["en_route_to_customer"],
+    to: "arrived_at_customer",
+    atField: "arrivedAtCustomerAt",
+    errorMessage: "Avval mijozga yo‘lga chiqing",
+  },
+};
+
+function resolvePickupPhase(status) {
+  const value = String(status || "accepted");
+  if (CUSTOMER_PHASE_STATUSES.has(value) || value === "delivered") {
+    return "customer";
+  }
+  return "seller";
+}
+
+function resetAssignmentStepFields(assignment) {
+  assignment.enRouteToSellerAt = null;
+  assignment.arrivedAtSellerAt = null;
+  assignment.pickedUpAt = null;
+  assignment.enRouteToCustomerAt = null;
+  assignment.arrivedAtCustomerAt = null;
+  assignment.deliveredAt = null;
+}
+
 function parseCourierCoords(payload = {}) {
   const lat = Number(payload.courierLat ?? payload.lat);
   const lng = Number(payload.courierLng ?? payload.lng);
@@ -141,10 +212,14 @@ function toPublicAssignment(doc, extras = {}) {
       coords: Array.isArray(address.coords) ? address.coords : null,
     },
     status: String(row.status || "accepted"),
-    pickupPhase: String(row.status || "") === "picked_up" ? "customer" : "seller",
+    pickupPhase: resolvePickupPhase(row.status),
     handedToCourierAt: row.handedToCourierAt || null,
     acceptedAt: row.acceptedAt || null,
+    enRouteToSellerAt: row.enRouteToSellerAt || null,
+    arrivedAtSellerAt: row.arrivedAtSellerAt || null,
     pickedUpAt: row.pickedUpAt || null,
+    enRouteToCustomerAt: row.enRouteToCustomerAt || null,
+    arrivedAtCustomerAt: row.arrivedAtCustomerAt || null,
     deliveredAt: row.deliveredAt || null,
     sellerPickup: extras.sellerPickup || null,
     distanceKm:
@@ -239,7 +314,7 @@ async function attachSellerPickup(publicRows = []) {
     return {
       ...row,
       sellerPickup,
-      pickupPhase: String(row.status || "") === "picked_up" ? "customer" : "seller",
+      pickupPhase: resolvePickupPhase(row.status),
     };
   });
 }
@@ -327,7 +402,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       existing.deliveryAddress = deliveryAddress;
       existing.status = "accepted";
       existing.acceptedAt = acceptedAt;
-      existing.deliveredAt = null;
+      resetAssignmentStepFields(existing);
       existing.courierPayment = 0;
       existing.courierPaymentUpdatedAt = null;
       existing.handedToCourierAt = handedEntry?.at || existing.handedToCourierAt || null;
@@ -437,11 +512,11 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
     return publicRow;
   }
 
-  if (String(assignment.status) !== "picked_up") {
+  if (String(assignment.status) !== "arrived_at_customer") {
     throw new HttpError(
       409,
-      "Avval sotuvchidan mahsulotni oling",
-      "ASSIGNMENT_NOT_PICKED_UP",
+      "Avval mijoz manziliga yetib boring",
+      "ASSIGNMENT_NOT_AT_CUSTOMER",
     );
   }
 
@@ -538,6 +613,7 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
 
 /**
  * Kuryer sotuvchidan mahsulotni oldi — keyin mijozga yetkazish bosqichi.
+ * Faqat «Sotuvchiga keldim» dan keyin.
  */
 async function pickUpOrderUnitByCourier(deliveryId, payload = {}) {
   const assignmentId = String(payload.assignmentId || payload.id || "").trim();
@@ -563,17 +639,69 @@ async function pickUpOrderUnitByCourier(deliveryId, payload = {}) {
     return publicRow;
   }
 
-  if (String(assignment.status) !== "accepted") {
+  if (String(assignment.status) !== "arrived_at_seller") {
     throw new HttpError(
       409,
-      "Bu buyurtmani olish mumkin emas",
-      "ASSIGNMENT_STATUS_CONFLICT",
+      "Avval sotuvchi manziliga yetib boring",
+      "ASSIGNMENT_NOT_AT_SELLER",
     );
   }
 
   const pickedUpAt = new Date();
   assignment.status = "picked_up";
   assignment.pickedUpAt = pickedUpAt;
+  await assignment.save();
+
+  const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+  const payment = paymentMap.get(Number(assignment.orderId)) || {};
+  const [publicRow] = await attachSellerPickup([
+    toPublicAssignment(assignment, payment),
+  ]);
+  return publicRow;
+}
+
+/**
+ * Soft bosqichlar: sotuvchiga/mijozga ketaman / keldim.
+ */
+async function advanceAssignmentStepByCourier(deliveryId, payload = {}) {
+  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
+  const action = String(payload.action || "").trim().toLowerCase();
+
+  if (!assignmentId) {
+    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
+  }
+
+  const rule = ADVANCE_ACTIONS[action];
+  if (!rule) {
+    throw new HttpError(400, "Noto‘g‘ri bosqich amali", "INVALID_ADVANCE_ACTION");
+  }
+
+  const assignment = await CourierOrderAssignment.findById(assignmentId);
+  if (!assignment) {
+    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+
+  if (String(assignment.deliveryId) !== String(deliveryId)) {
+    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
+  }
+
+  const current = String(assignment.status || "");
+  if (current === rule.to) {
+    const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
+    const payment = paymentMap.get(Number(assignment.orderId)) || {};
+    const [publicRow] = await attachSellerPickup([
+      toPublicAssignment(assignment, payment),
+    ]);
+    return publicRow;
+  }
+
+  if (!rule.from.includes(current)) {
+    throw new HttpError(409, rule.errorMessage, "ASSIGNMENT_STATUS_CONFLICT");
+  }
+
+  const at = new Date();
+  assignment.status = rule.to;
+  assignment[rule.atField] = at;
   await assignment.save();
 
   const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
@@ -645,8 +773,13 @@ function assignmentLookupKey(orderId, itemIndex, unitIndex) {
 }
 
 module.exports = {
+  ACTIVE_ASSIGNMENT_STATUSES,
+  SELLER_PHASE_STATUSES,
+  CUSTOMER_PHASE_STATUSES,
+  RETURNABLE_STATUSES,
   acceptOrderUnitByCourier,
   pickUpOrderUnitByCourier,
+  advanceAssignmentStepByCourier,
   deliverOrderUnitByCourier,
   getAssignmentForCourier,
   listAssignmentsByKeys,
@@ -656,4 +789,5 @@ module.exports = {
   loadOrderPaymentMap,
   resolveAssignmentDistanceKm,
   parseCourierCoords,
+  resolvePickupPhase,
 };

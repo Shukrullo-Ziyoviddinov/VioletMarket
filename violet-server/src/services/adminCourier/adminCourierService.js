@@ -115,12 +115,26 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
 
   const status = String(options.status || "").trim().toLowerCase();
   const listFilter = { deliveryId: account._id };
-  if (status === "accepted" || status === "picked_up" || status === "delivered") {
-    if (status === "accepted") {
-      listFilter.status = { $in: ["accepted", "picked_up"] };
-    } else {
-      listFilter.status = status;
-    }
+  if (status === "accepted") {
+    listFilter.status = {
+      $in: [
+        "accepted",
+        "en_route_to_seller",
+        "arrived_at_seller",
+        "picked_up",
+        "en_route_to_customer",
+        "arrived_at_customer",
+      ],
+    };
+  } else if (
+    status === "picked_up" ||
+    status === "delivered" ||
+    status === "en_route_to_seller" ||
+    status === "arrived_at_seller" ||
+    status === "en_route_to_customer" ||
+    status === "arrived_at_customer"
+  ) {
+    listFilter.status = status;
   }
 
   const [allRows, rows] = await Promise.all([
@@ -169,7 +183,17 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
 
   const orders = rows.map(mapOrder);
   const deliveredRows = allRows.filter((row) => String(row.status) === "delivered");
-  const acceptedRows = allRows.filter((row) => String(row.status) === "accepted");
+  const activeStatuses = new Set([
+    "accepted",
+    "en_route_to_seller",
+    "arrived_at_seller",
+    "picked_up",
+    "en_route_to_customer",
+    "arrived_at_customer",
+  ]);
+  const acceptedRows = allRows.filter((row) =>
+    activeStatuses.has(String(row.status || "")),
+  );
   const totalCourierIncome = deliveredRows.reduce(
     (sum, row) => sum + Math.max(0, Number(row.courierPayment) || 0),
     0,

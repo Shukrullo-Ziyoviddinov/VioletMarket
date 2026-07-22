@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,9 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeliveredSuccessModal } from '@/components/home/DeliveredSuccessModal';
 import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal';
+import { DeliveryStepActions } from '@/components/delivery-steps/DeliveryStepActions';
+import { DeliveryStepBadge } from '@/components/delivery-steps/DeliveryStepBadge';
+import { DeliveryStepProgress } from '@/components/delivery-steps/DeliveryStepProgress';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
+  advanceDeliveryOrderStep,
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
   pickUpDeliveryOrder,
@@ -27,6 +31,12 @@ import {
 import { requestCourierLocation } from '@/services/courier-location';
 import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
+import {
+  getPrimaryAction,
+  isSellerPhase,
+  shouldOpenRouteOnAdvance,
+  type DeliveryAdvanceAction,
+} from '@/utils/deliveryOrderSteps';
 
 function productTitle(order: DeliveryAcceptedOrder) {
   return (
@@ -49,12 +59,6 @@ function customerName(order: DeliveryAcceptedOrder) {
     .filter(Boolean)
     .join(' ');
   return name || 'Mijoz';
-}
-
-function isSellerPhase(order: DeliveryAcceptedOrder) {
-  if (order.pickupPhase === 'customer') return false;
-  if (order.pickupPhase === 'seller') return true;
-  return String(order.status || '') === 'accepted';
 }
 
 function addressText(order: DeliveryAcceptedOrder) {
@@ -136,8 +140,7 @@ export default function OrderDetailsScreen() {
 
   const [order, setOrder] = useState<DeliveryAcceptedOrder | null>(null);
   const [loading, setLoading] = useState(true);
-  const [delivering, setDelivering] = useState(false);
-  const [pickingUp, setPickingUp] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [pickupConfirmOpen, setPickupConfirmOpen] = useState(false);
   const [deliverConfirmOpen, setDeliverConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
@@ -163,13 +166,36 @@ export default function OrderDetailsScreen() {
     if (!isLoading && !delivery) router.replace('/auth');
   }, [delivery, isLoading, router]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
+
+  const handleAdvance = async (action: DeliveryAdvanceAction) => {
+    if (!token || !order || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const data = await advanceDeliveryOrderStep(token, {
+        assignmentId: order.id,
+        action,
+      });
+      setOrder(data);
+      if (shouldOpenRouteOnAdvance(action)) {
+        await openRoute(data);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Bosqichni yangilab bo‘lmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handlePickUp = async () => {
-    if (!token || !order || pickingUp) return;
-    setPickingUp(true);
+    if (!token || !order || actionLoading) return;
+    setActionLoading(true);
     try {
       const data = await pickUpDeliveryOrder(token, {
         assignmentId: order.id,
@@ -178,20 +204,20 @@ export default function OrderDetailsScreen() {
       setPickupConfirmOpen(false);
       Alert.alert(
         'Mahsulot olindi',
-        'Endi mijozga yetkazish mumkin.',
+        'Endi mijozga yetkazish mumkin — «Mijozga ketaman» ni bosing.',
       );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Mahsulotni olishda xatolik';
       Alert.alert('Xatolik', message);
     } finally {
-      setPickingUp(false);
+      setActionLoading(false);
     }
   };
 
   const handleDeliver = async () => {
-    if (!token || !order || delivering) return;
-    setDelivering(true);
+    if (!token || !order || actionLoading) return;
+    setActionLoading(true);
     try {
       const location = await requestCourierLocation();
       const data = await deliverDeliveryOrder(token, {
@@ -207,7 +233,7 @@ export default function OrderDetailsScreen() {
         error instanceof Error ? error.message : 'Topshirish amalga oshmadi';
       Alert.alert('Xatolik', message);
     } finally {
-      setDelivering(false);
+      setActionLoading(false);
     }
   };
 
@@ -257,9 +283,7 @@ export default function OrderDetailsScreen() {
           hitSlop={10}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </Pressable>
-        <Text style={styles.headerTitle}>
-          Buyurtma {orderBarcode(order)}
-        </Text>
+        <Text style={styles.headerTitle}>Ish stoli</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -277,53 +301,49 @@ export default function OrderDetailsScreen() {
             <ScrollView
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}>
-              <View
-                style={[
-                  styles.phaseBadge,
-                  isSellerPhase(order)
-                    ? styles.phaseBadgeSeller
-                    : styles.phaseBadgeCustomer,
-                ]}>
-                <Text
-                  style={[
-                    styles.phaseBadgeText,
-                    isSellerPhase(order)
-                      ? styles.phaseBadgeTextSeller
-                      : styles.phaseBadgeTextCustomer,
-                  ]}>
-                  {isSellerPhase(order)
-                    ? 'Sotuvchidan olish'
-                    : 'Mijozga yetkazish'}
-                </Text>
-              </View>
+              <Text style={styles.workBarcode}>
+                Buyurtma {orderBarcode(order)}
+              </Text>
+              <DeliveryStepBadge order={order} />
+              <DeliveryStepProgress order={order} />
 
               {isSellerPhase(order) ? (
                 <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Sotuvchi manzili</Text>
+                  <Text style={styles.cardTitle}>Sotuvchi ma'lumotlari</Text>
                   <Text style={styles.sellerName}>
                     {displayOrDash(order.sellerPickup?.name)}
                   </Text>
                   <View style={styles.customerRow}>
                     <View style={styles.customerInfo}>
+                      <Text style={styles.metaLabel}>Telefon</Text>
                       <Text style={styles.customerPhone}>
                         {displayOrDash(order.sellerPickup?.sellerPhone)}
                       </Text>
                     </View>
-                    {order.sellerPickup?.sellerPhone ? (
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.iconButton,
-                          pressed && styles.pressed,
-                        ]}
-                        onPress={() =>
-                          callCustomer(order.sellerPickup?.sellerPhone || '')
-                        }>
-                        <Ionicons name="call" size={20} color="#FFFFFF" />
-                      </Pressable>
-                    ) : null}
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.iconButton,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        const phone = String(
+                          order.sellerPickup?.sellerPhone || '',
+                        ).trim();
+                        if (!phone) {
+                          Alert.alert(
+                            'Telefon',
+                            'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
+                          );
+                          return;
+                        }
+                        callCustomer(phone);
+                      }}>
+                      <Ionicons name="call" size={20} color="#FFFFFF" />
+                    </Pressable>
                   </View>
                   <View style={styles.addressRow}>
                     <View style={styles.addressInfo}>
+                      <Text style={styles.metaLabel}>Manzil</Text>
                       <Text style={styles.addressText}>
                         {sellerAddressText(order)}
                       </Text>
@@ -466,57 +486,17 @@ export default function OrderDetailsScreen() {
 
             {order.status !== 'delivered' ? (
               <View style={styles.footer}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.footerButton,
-                    styles.routeFooter,
-                    pressed && styles.pressed,
-                  ]}
-                  onPress={() => {
-                    void openRoute(order);
-                  }}>
-                  <Text style={styles.routeFooterText}>Mashrut</Text>
-                </Pressable>
-                {isSellerPhase(order) ? (
-                  <Pressable
-                    disabled={pickingUp}
-                    style={({ pressed }) => [
-                      styles.footerButton,
-                      styles.pickupFooter,
-                      pressed && styles.pressed,
-                      pickingUp && styles.disabled,
-                    ]}
-                    onPress={() => setPickupConfirmOpen(true)}>
-                    <Text style={styles.pickupFooterText}>
-                      {pickingUp ? '...' : 'Mahsulotni oldim'}
-                    </Text>
-                  </Pressable>
-                ) : (
-                  <>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.footerButton,
-                        styles.ajdaniyaFooter,
-                        pressed && styles.pressed,
-                      ]}
-                      onPress={() => setReturnModalOpen(true)}>
-                      <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
-                    </Pressable>
-                    <Pressable
-                      disabled={delivering}
-                      style={({ pressed }) => [
-                        styles.footerButton,
-                        styles.deliverFooter,
-                        pressed && styles.pressed,
-                        delivering && styles.disabled,
-                      ]}
-                      onPress={() => setDeliverConfirmOpen(true)}>
-                      <Text style={styles.deliverText}>
-                        {delivering ? '...' : 'Topshirdim'}
-                      </Text>
-                    </Pressable>
-                  </>
-                )}
+                <DeliveryStepActions
+                  order={order}
+                  loading={actionLoading}
+                  layout="footer"
+                  onAdvance={(action) => {
+                    void handleAdvance(action);
+                  }}
+                  onPickUp={() => setPickupConfirmOpen(true)}
+                  onDeliver={() => setDeliverConfirmOpen(true)}
+                  onReturn={() => setReturnModalOpen(true)}
+                />
               </View>
             ) : null}
           </>
@@ -525,14 +505,17 @@ export default function OrderDetailsScreen() {
 
       <MiniGlobalModal
         visible={pickupConfirmOpen}
-        title="Mahsulotni olish"
-        message="Chindan ham mahsulot olinganligini tasdiqlaysizmi?"
+        title={getPrimaryAction(order).confirmTitle || 'Mahsulotni olish'}
+        message={
+          getPrimaryAction(order).confirmMessage ||
+          'Chindan ham mahsulot olinganligini tasdiqlaysizmi?'
+        }
         confirmText="Ha"
         cancelText="Yo‘q"
-        loading={pickingUp}
+        loading={actionLoading}
         loadingText="Tasdiqlanmoqda..."
         onCancel={() => {
-          if (!pickingUp) setPickupConfirmOpen(false);
+          if (!actionLoading) setPickupConfirmOpen(false);
         }}
         onConfirm={() => {
           void handlePickUp();
@@ -541,14 +524,17 @@ export default function OrderDetailsScreen() {
 
       <MiniGlobalModal
         visible={deliverConfirmOpen}
-        title="Mijozga topshirish"
-        message="Chindan ham mahsulotni mijozga topshirganingizni tasdiqlaysizmi?"
+        title={getPrimaryAction(order).confirmTitle || 'Mijozga topshirish'}
+        message={
+          getPrimaryAction(order).confirmMessage ||
+          'Chindan ham mahsulotni mijozga topshirganingizni tasdiqlaysizmi?'
+        }
         confirmText="Ha"
         cancelText="Yo‘q"
-        loading={delivering}
+        loading={actionLoading}
         loadingText="Topshirilmoqda..."
         onCancel={() => {
-          if (!delivering) setDeliverConfirmOpen(false);
+          if (!actionLoading) setDeliverConfirmOpen(false);
         }}
         onConfirm={() => {
           void handleDeliver();
@@ -623,31 +609,10 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     gap: 12,
   },
-  phaseBadge: {
-    alignSelf: 'flex-start',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  phaseBadgeSeller: {
-    backgroundColor: '#FFF7ED',
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-  },
-  phaseBadgeCustomer: {
-    backgroundColor: '#EDF9F0',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-  },
-  phaseBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  phaseBadgeTextSeller: {
-    color: '#C2410C',
-  },
-  phaseBadgeTextCustomer: {
-    color: '#15803D',
+  workBarcode: {
+    color: '#111827',
+    fontSize: 18,
+    fontWeight: '900',
   },
   sellerName: {
     color: '#56337d',
@@ -811,49 +776,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-  },
-  footerButton: {
-    flex: 1,
-    minHeight: 50,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  routeFooter: {
-    borderWidth: 1.5,
-    borderColor: '#6d32c5',
-    backgroundColor: '#FFFFFF',
-  },
-  routeFooterText: {
-    color: '#6d32c5',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  ajdaniyaFooter: {
-    backgroundColor: '#6d32c5',
-  },
-  ajdaniyaText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  deliverFooter: {
-    backgroundColor: '#16A34A',
-  },
-  deliverText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  pickupFooter: {
-    flex: 1.4,
-    backgroundColor: '#15803D',
-  },
-  pickupFooterText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
   },
   disabled: {
     opacity: 0.7,

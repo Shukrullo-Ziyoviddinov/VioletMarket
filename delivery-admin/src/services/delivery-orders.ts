@@ -78,6 +78,26 @@ export async function pickUpDeliveryOrder(
   );
 }
 
+export type DeliveryAdvanceAction =
+  | 'go_to_seller'
+  | 'arrive_seller'
+  | 'go_to_customer'
+  | 'arrive_customer';
+
+export async function advanceDeliveryOrderStep(
+  token: string,
+  payload: { assignmentId: string; action: DeliveryAdvanceAction },
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    '/api/delivery/orders/advance',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
 export async function deliverDeliveryOrder(
   token: string,
   payload: {

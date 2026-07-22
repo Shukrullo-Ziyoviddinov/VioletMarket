@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AcceptedOrderCard } from '@/components/home/AcceptedOrderCard';
-import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import {
   BrandLoader,
   PullRefreshFlatList,
@@ -14,52 +13,19 @@ import {
 } from '@/components/loading/PageRefresh';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
-import {
-  fetchAcceptedDeliveryOrders,
-  pickUpDeliveryOrder,
-} from '@/services/delivery-orders';
-import { openYandexRoute } from '@/services/open-yandex-route';
+import { fetchAcceptedDeliveryOrders } from '@/services/delivery-orders';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
+import { isSellerPhase } from '@/utils/deliveryOrderSteps';
 
-function isSellerPhase(order: DeliveryAcceptedOrder) {
-  if (order.pickupPhase === 'customer') return false;
-  if (order.pickupPhase === 'seller') return true;
-  return String(order.status || '') === 'accepted';
-}
-
-async function handleBuildRoute(order: DeliveryAcceptedOrder) {
-  if (isSellerPhase(order)) {
-    const seller = order.sellerPickup;
-    const opened = await openYandexRoute({
-      coords: seller?.coordinates || null,
-      addressLine: seller?.address || '',
-    });
-    if (!opened) {
-      Alert.alert('Mashrut', 'Sotuvchi manzili topilmadi yoki xarita ochilmadi');
-    }
-    return;
-  }
-
-  const address = order.deliveryAddress || {};
-  const opened = await openYandexRoute({
-    coords: address.coords,
-    addressLine: address.addressLine,
-    city: address.city,
-    district: address.district,
-  });
-  if (!opened) {
-    Alert.alert('Mashrut', 'Manzil topilmadi yoki xarita ochilmadi');
-  }
-}
+type HomeListRow =
+  | { type: 'section'; key: string; title: string; count: number }
+  | { type: 'order'; key: string; order: DeliveryAcceptedOrder };
 
 export default function HomeScreen() {
   const router = useRouter();
   const { token, delivery, isLoading } = useAuth();
   const [orders, setOrders] = useState<DeliveryAcceptedOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pickingUpId, setPickingUpId] = useState<string | null>(null);
-  const [pickupConfirmOrder, setPickupConfirmOrder] =
-    useState<DeliveryAcceptedOrder | null>(null);
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
@@ -102,31 +68,51 @@ export default function HomeScreen() {
     }, [token]),
   );
 
-  const confirmPickUp = useCallback(async () => {
-    if (!token || !pickupConfirmOrder || pickingUpId) return;
-    const order = pickupConfirmOrder;
-    setPickingUpId(order.id);
-    try {
-      const updated = await pickUpDeliveryOrder(token, {
-        assignmentId: order.id,
+  const pickupOrders = useMemo(
+    () => orders.filter((order) => isSellerPhase(order)),
+    [orders],
+  );
+  const deliverOrders = useMemo(
+    () => orders.filter((order) => !isSellerPhase(order)),
+    [orders],
+  );
+
+  const listRows = useMemo(() => {
+    const rows: HomeListRow[] = [];
+    if (pickupOrders.length) {
+      rows.push({
+        type: 'section',
+        key: 'section-pickup',
+        title: 'Sotuvchidan olish',
+        count: pickupOrders.length,
       });
-      setOrders((prev) =>
-        prev.map((row) => (row.id === order.id ? { ...row, ...updated } : row)),
-      );
-      setPickupConfirmOrder(null);
-      Alert.alert(
-        'Mahsulot olindi',
-        'Endi mijozga yetkazish mumkin — mashrut mijoz manziliga ochiladi.',
-      );
-    } catch (error) {
-      Alert.alert(
-        'Xatolik',
-        error instanceof Error ? error.message : 'Mahsulotni olishda xatolik',
-      );
-    } finally {
-      setPickingUpId(null);
+      pickupOrders.forEach((order) => {
+        rows.push({ type: 'order', key: order.id, order });
+      });
     }
-  }, [pickingUpId, pickupConfirmOrder, token]);
+    if (deliverOrders.length) {
+      rows.push({
+        type: 'section',
+        key: 'section-deliver',
+        title: 'Mijozga yetkazish',
+        count: deliverOrders.length,
+      });
+      deliverOrders.forEach((order) => {
+        rows.push({ type: 'order', key: order.id, order });
+      });
+    }
+    return rows;
+  }, [deliverOrders, pickupOrders]);
+
+  const openWorkDesk = useCallback(
+    (order: DeliveryAcceptedOrder) => {
+      router.push({
+        pathname: '/order-details',
+        params: { id: order.id },
+      });
+    },
+    [router],
+  );
 
   if (isLoading || !delivery) {
     return (
@@ -140,15 +126,20 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Qabul qilingan buyurtmalar</Text>
+        {orders.length > 0 ? (
+          <Text style={styles.headerSub}>
+            Olish: {pickupOrders.length} · Yetkazish: {deliverOrders.length}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.body}>
         <PullRefreshFlatList
-          data={orders}
-          keyExtractor={(item) => item.id}
+          data={listRows}
+          keyExtractor={(item) => item.key}
           contentContainerStyle={[
             styles.listContent,
-            orders.length === 0 && styles.listContentEmpty,
+            listRows.length === 0 && styles.listContentEmpty,
           ]}
           showsVerticalScrollIndicator={false}
           loading={loading}
@@ -162,46 +153,30 @@ export default function HomeScreen() {
               <Text style={styles.emptyTitle}>Hali qabul qilinmagan</Text>
               <Text style={styles.emptyText}>
                 Buyurtmalar sahifasidan “Qabul qilish” bosilgan mahsulotlar shu
-                yerda chiqadi.
+                yerda chiqadi. Ishlash uchun buyurtmani tanlang.
               </Text>
             </View>
           }
-          renderItem={({ item }) => (
-            <AcceptedOrderCard
-              order={item}
-              pickingUp={pickingUpId === item.id}
-              onBuildRoute={() => {
-                void handleBuildRoute(item);
-              }}
-              onPickUp={() => {
-                setPickupConfirmOrder(item);
-              }}
-              onOpenDetails={() =>
-                router.push({
-                  pathname: '/order-details',
-                  params: { id: item.id },
-                })
-              }
-            />
-          )}
+          renderItem={({ item }) => {
+            if (item.type === 'section') {
+              return (
+                <View style={styles.sectionHead}>
+                  <Text style={styles.sectionTitle}>{item.title}</Text>
+                  <View style={styles.sectionCount}>
+                    <Text style={styles.sectionCountText}>{item.count}</Text>
+                  </View>
+                </View>
+              );
+            }
+            return (
+              <AcceptedOrderCard
+                order={item.order}
+                onStartWork={openWorkDesk}
+              />
+            );
+          }}
         />
       </View>
-
-      <MiniGlobalModal
-        visible={Boolean(pickupConfirmOrder)}
-        title="Mahsulotni olish"
-        message="Chindan ham mahsulot olinganligini tasdiqlaysizmi?"
-        confirmText="Ha"
-        cancelText="Yo‘q"
-        loading={Boolean(pickingUpId)}
-        loadingText="Tasdiqlanmoqda..."
-        onCancel={() => {
-          if (!pickingUpId) setPickupConfirmOrder(null);
-        }}
-        onConfirm={() => {
-          void confirmPickUp();
-        }}
-      />
 
       <BottomNavbar />
     </SafeAreaView>
@@ -220,16 +195,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F3FF',
   },
   header: {
-    height: 64,
+    minHeight: 64,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '900',
     textAlign: 'center',
-    paddingHorizontal: 12,
+  },
+  headerSub: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    fontWeight: '700',
   },
   body: {
     flex: 1,
@@ -247,6 +229,32 @@ const styles = StyleSheet.create({
   listContentEmpty: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 4,
+    paddingBottom: 2,
+  },
+  sectionTitle: {
+    color: '#312E81',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  sectionCount: {
+    minWidth: 28,
+    height: 24,
+    borderRadius: 999,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  sectionCountText: {
+    color: '#6d32c5',
+    fontSize: 12,
+    fontWeight: '800',
   },
   empty: {
     alignItems: 'center',
