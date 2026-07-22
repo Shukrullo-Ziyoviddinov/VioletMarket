@@ -47,7 +47,9 @@ export default function ReturnRequestCard({
       </div>
       <div className="return-request-card__body">
         <div className="return-request-card__top">
-          <h3 className="return-request-card__title">{formatTitle(item.title)}</h3>
+          <h3 className="return-request-card__title" title={formatTitle(item.title)}>
+            {formatTitle(item.title)}
+          </h3>
           <span className={`return-request-card__badge return-request-card__badge--${item.status}`}>
             {statusLabel(item.status)}
           </span>

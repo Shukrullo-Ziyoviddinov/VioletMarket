@@ -29,16 +29,21 @@
 
 .return-request-card__top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
 }
 
 .return-request-card__title {
   margin: 0;
+  min-width: 0;
   font-size: 15px;
   font-weight: 600;
   color: #1f1630;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .return-request-card__badge {

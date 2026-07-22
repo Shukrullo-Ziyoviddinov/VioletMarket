@@ -1,6 +1,6 @@
 .return-requests-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -8,4 +8,11 @@
   display: flex;
   justify-content: center;
   padding: 40px 0;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .return-requests-list {
+    grid-template-columns: 1fr;
+  }
 }

@@ -12,9 +12,11 @@ async function parseJson(res) {
   return data;
 }
 
-export async function fetchReturnRequests(status = 'pending') {
+export async function fetchReturnRequests(status = 'pending', barcode = '') {
   const params = new URLSearchParams();
   if (status) params.set('status', status);
+  const code = String(barcode || '').trim();
+  if (code) params.set('barcode', code);
   const res = await fetch(apiUrl(`/api/admin/return-requests?${params.toString()}`));
   const payload = await parseJson(res);
   return payload?.data || { total: 0, items: [] };

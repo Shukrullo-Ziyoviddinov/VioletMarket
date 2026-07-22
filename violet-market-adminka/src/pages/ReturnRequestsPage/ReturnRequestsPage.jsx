@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Segmented, Spin } from 'antd';
+import { Alert, Input, Segmented, Spin } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { fetchReturnRequests } from '../../api/returnRequestAdminApi';
 import ReturnRequestsList from '../../components/ReturnRequestsList/ReturnRequestsList';
 import ReturnRequestApproveModal from '../../components/ReturnRequestApproveModal/ReturnRequestApproveModal';
@@ -17,12 +18,15 @@ const STATUS_OPTIONS = [
 export default function ReturnRequestsPage() {
   const { setGlobalLoading } = useGlobalLoader();
   const [status, setStatus] = useState('pending');
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [barcodeQuery, setBarcodeQuery] = useState('');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [approveItem, setApproveItem] = useState(null);
   const [rejectItem, setRejectItem] = useState(null);
   const isInitialLoadRef = useRef(true);
+  const searchTimerRef = useRef(null);
 
   const load = useCallback(
     async (options = {}) => {
@@ -31,7 +35,7 @@ export default function ReturnRequestsPage() {
       setError('');
       if (useGlobal) setGlobalLoading(true);
       try {
-        const data = await fetchReturnRequests(status);
+        const data = await fetchReturnRequests(status, barcodeQuery);
         setItems(Array.isArray(data.items) ? data.items : []);
       } catch (err) {
         setError(err.message || "Ma'lumotlarni yuklab bo'lmadi");
@@ -41,7 +45,7 @@ export default function ReturnRequestsPage() {
         if (useGlobal) setGlobalLoading(false);
       }
     },
-    [setGlobalLoading, status],
+    [barcodeQuery, setGlobalLoading, status],
   );
 
   useEffect(() => {
@@ -49,21 +53,53 @@ export default function ReturnRequestsPage() {
     isInitialLoadRef.current = false;
   }, [load]);
 
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        window.clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleBarcodeChange = (event) => {
+    const value = event.target.value;
+    setBarcodeInput(value);
+    if (searchTimerRef.current) {
+      window.clearTimeout(searchTimerRef.current);
+    }
+    searchTimerRef.current = window.setTimeout(() => {
+      setBarcodeQuery(String(value || '').trim());
+    }, 350);
+  };
+
   return (
     <section className="return-requests-page">
       <header className="return-requests-page__header">
-        <div>
-          <h1 className="return-requests-page__title">Qaytarish so‘rovlari</h1>
-          <p className="return-requests-page__subtitle">
-            Kuryer Ajdaniya so‘rovlarini tasdiqlang yoki rad eting. Tasdiqda
-            «Javob bermadi» yoki «Qaytarish» turini belgilaysiz.
-          </p>
+        <div className="return-requests-page__heading">
+          <div className="return-requests-page__heading-top">
+            <h1 className="return-requests-page__title">Qaytarish so‘rovlari</h1>
+            <Segmented
+              options={STATUS_OPTIONS}
+              value={status}
+              onChange={setStatus}
+            />
+          </div>
+          <div className="return-requests-page__subtitle-row">
+            <p className="return-requests-page__subtitle">
+              Kuryer Ajdaniya so‘rovlarini tasdiqlang yoki rad eting. Tasdiqda
+              «Javob bermadi» yoki «Qaytarish» turini belgilaysiz.
+            </p>
+            <Input
+              allowClear
+              className="return-requests-page__search"
+              prefix={<SearchOutlined />}
+              placeholder="Mahsulot shtrix-kod"
+              value={barcodeInput}
+              onChange={handleBarcodeChange}
+              onPressEnter={() => setBarcodeQuery(String(barcodeInput || '').trim())}
+            />
+          </div>
         </div>
-        <Segmented
-          options={STATUS_OPTIONS}
-          value={status}
-          onChange={setStatus}
-        />
       </header>
 
       {error ? (

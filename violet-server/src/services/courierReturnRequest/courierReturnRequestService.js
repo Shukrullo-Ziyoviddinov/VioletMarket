@@ -5,6 +5,9 @@ const { CourierReturnRequest } = require("../../models/courierReturnRequest");
 const { HttpError } = require("../../utils/httpError");
 const { releaseReservedStockOnReturn } = require("../../productManagement/markProductsAsSold");
 const {
+  notifyAdminReturnRequestSubmitted,
+} = require("../adminNotifications/adminNotificationService");
+const {
   isOrderPaid,
   resolvePeriodKeys,
   toPublicReturnedOrder,
@@ -194,6 +197,12 @@ async function createReturnRequestByCourier(deliveryId, payload = {}) {
   assignment.status = "return_request_pending";
   await assignment.save();
 
+  try {
+    await notifyAdminReturnRequestSubmitted(created);
+  } catch (err) {
+    console.error("Admin return request notification:", err?.message || err);
+  }
+
   return {
     request: toPublicReturnRequest(created),
     assignment: await mapAssignmentPublic(assignment),
@@ -202,9 +211,15 @@ async function createReturnRequestByCourier(deliveryId, payload = {}) {
 
 async function listReturnRequestsForAdmin(query = {}) {
   const status = String(query.status || "pending").trim().toLowerCase();
+  const barcode = String(query.barcode || query.productCode || query.q || "")
+    .trim()
+    .toLowerCase();
   const filter = {};
   if (status && status !== "all") {
     filter.status = status;
+  }
+  if (barcode) {
+    filter.productCode = { $regex: barcode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
   }
 
   const rows = await CourierReturnRequest.find(filter)

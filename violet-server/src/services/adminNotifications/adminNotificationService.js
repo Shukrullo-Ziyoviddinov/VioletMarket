@@ -4,7 +4,7 @@ const { HttpError } = require("../../utils/httpError");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { nextSequence } = require("../../models/autoIncrement");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
-const { buildAdminPaymentRequestSubmittedMessage } = require("./adminNotificationMessages");
+const { buildAdminPaymentRequestSubmittedMessage, buildAdminReturnRequestSubmittedMessage } = require("./adminNotificationMessages");
 
 const KEEP_LIMIT = 20;
 
@@ -75,6 +75,44 @@ async function notifyAdminPaymentRequestSubmitted(paymentRequest) {
   return notification;
 }
 
+/**
+ * Kuryer Ajdaniya so‘rovi — Bildirishnomalar modaliga.
+ */
+async function notifyAdminReturnRequestSubmitted(returnRequest) {
+  const request = returnRequest || {};
+  const courierName = [
+    request.courier?.firstName,
+    request.courier?.lastName,
+  ]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    .trim() || "Kuryer";
+
+  const productCode = String(request.productCode || "").trim();
+  const id = await nextSequence("admin_notification_id");
+
+  const notification = await AdminNotification.create({
+    id,
+    type: "return_request_submitted",
+    paymentRequestId: null,
+    requestCode: productCode,
+    sellerId: String(request.sellerId || ""),
+    sellerName: courierName,
+    sellerLogoUrl: resolvePublicAssetUrl(request.imageUrl || ""),
+    itemCount: 1,
+    totalAmount: toNumber(request.amount, 0),
+    message: buildAdminReturnRequestSubmittedMessage({
+      courierName,
+      productCode,
+    }),
+    readAt: null,
+  });
+
+  await pruneOldAdminNotifications().catch(() => null);
+  return notification;
+}
+
 async function getUnreadCount() {
   return AdminNotification.countDocuments({ readAt: null });
 }
@@ -132,6 +170,7 @@ async function markAllNotificationsRead() {
 
 module.exports = {
   notifyAdminPaymentRequestSubmitted,
+  notifyAdminReturnRequestSubmitted,
   getUnreadCount,
   listNotifications,
   markNotificationRead,

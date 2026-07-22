@@ -33,8 +33,12 @@ export default function AdminNotificationsBell() {
     setOpen(false);
   };
 
-  const handleItemClick = () => {
+  const handleItemClick = (notification) => {
     setOpen(false);
+    if (notification?.type === 'return_request_submitted') {
+      navigate('/return-requests');
+      return;
+    }
     navigate('/payment-requests');
   };
 
@@ -72,13 +76,17 @@ export default function AdminNotificationsBell() {
                 className={`admin-notifications-bell__item${
                   notification.readAt ? '' : ' admin-notifications-bell__item--unread'
                 }`}
-                onClick={handleItemClick}
+                onClick={() => handleItemClick(notification)}
               >
                 <div className="admin-notifications-bell__avatar">
                   {notification.sellerLogoUrl ? (
                     <img src={notification.sellerLogoUrl} alt={notification.sellerName} />
                   ) : (
-                    <span>{notification.sellerName?.charAt(0)?.toUpperCase() || 'S'}</span>
+                    <span>
+                      {notification.type === 'return_request_submitted'
+                        ? 'A'
+                        : notification.sellerName?.charAt(0)?.toUpperCase() || 'S'}
+                    </span>
                   )}
                 </div>
                 <div className="admin-notifications-bell__content">
