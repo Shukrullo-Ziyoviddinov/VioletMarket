@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { DeliveryStepBadge } from '@/components/delivery-steps/DeliveryStepBadge';
 import {
   getStepProgress,
   isSellerPhase,
@@ -8,12 +9,17 @@ import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 
 type DeliveryStepProgressProps = {
   order: DeliveryAcceptedOrder;
+  /** Badge + progress bir blokda */
+  withBadge?: boolean;
 };
 
-const SELLER_STEPS = ['Ketaman', 'Keldim', 'Oldim'] as const;
-const CUSTOMER_STEPS = ['Ketaman', 'Keldim', 'Topshir'] as const;
+const SELLER_STEPS = ['Ketdim', 'Keldim', 'Oldim'] as const;
+const CUSTOMER_STEPS = ['Ketdim', 'Keldim', 'Topshirish'] as const;
 
-export function DeliveryStepProgress({ order }: DeliveryStepProgressProps) {
+export function DeliveryStepProgress({
+  order,
+  withBadge = false,
+}: DeliveryStepProgressProps) {
   const sellerActive = isSellerPhase(order);
   const { sellerDone, customerDone } = getStepProgress(order);
   const labels = sellerActive ? SELLER_STEPS : CUSTOMER_STEPS;
@@ -21,7 +27,7 @@ export function DeliveryStepProgress({ order }: DeliveryStepProgressProps) {
   const activeColor = sellerActive ? '#C2410C' : '#15803D';
   const currentIndex = Math.min(done, labels.length - 1);
 
-  return (
+  const progress = (
     <View style={styles.wrap}>
       {labels.map((label, index) => {
         const completed = index < done;
@@ -29,7 +35,7 @@ export function DeliveryStepProgress({ order }: DeliveryStepProgressProps) {
         const filled = completed || current;
 
         return (
-          <View key={label} style={styles.step}>
+          <View key={`${label}-${index}`} style={styles.step}>
             <View
               style={[
                 styles.dot,
@@ -50,9 +56,26 @@ export function DeliveryStepProgress({ order }: DeliveryStepProgressProps) {
       })}
     </View>
   );
+
+  if (!withBadge) return progress;
+
+  return (
+    <View style={styles.block}>
+      <DeliveryStepBadge order={order} />
+      {progress}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+  block: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#EDE9FE',
+  },
   wrap: {
     flexDirection: 'row',
     alignItems: 'center',

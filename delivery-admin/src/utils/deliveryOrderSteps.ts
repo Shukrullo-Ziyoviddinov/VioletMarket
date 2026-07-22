@@ -91,7 +91,7 @@ export function getPrimaryAction(
   const status = getAssignmentStatus(order);
   switch (status) {
     case 'accepted':
-      return { kind: 'go_to_seller', label: 'Sotuvchiga ketaman' };
+      return { kind: 'go_to_seller', label: 'Sotuvchiga borish' };
     case 'en_route_to_seller':
       return { kind: 'arrive_seller', label: 'Sotuvchiga keldim' };
     case 'arrived_at_seller':
@@ -102,7 +102,7 @@ export function getPrimaryAction(
         confirmMessage: 'Chindan ham mahsulot olinganligini tasdiqlaysizmi?',
       };
     case 'picked_up':
-      return { kind: 'go_to_customer', label: 'Mijozga ketaman' };
+      return { kind: 'go_to_customer', label: 'Mijozga borish' };
     case 'en_route_to_customer':
       return { kind: 'arrive_customer', label: 'Mijozga keldim' };
     case 'arrived_at_customer':

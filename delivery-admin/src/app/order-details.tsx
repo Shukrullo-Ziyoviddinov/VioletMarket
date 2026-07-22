@@ -16,8 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DeliveredSuccessModal } from '@/components/home/DeliveredSuccessModal';
 import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal';
 import { DeliveryStepActions } from '@/components/delivery-steps/DeliveryStepActions';
-import { DeliveryStepBadge } from '@/components/delivery-steps/DeliveryStepBadge';
 import { DeliveryStepProgress } from '@/components/delivery-steps/DeliveryStepProgress';
+import { OrderPaymentNotice } from '@/components/payment/OrderPaymentNotice';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
@@ -204,7 +204,7 @@ export default function OrderDetailsScreen() {
       setPickupConfirmOpen(false);
       Alert.alert(
         'Mahsulot olindi',
-        'Endi mijozga yetkazish mumkin — «Mijozga ketaman» ni bosing.',
+        'Endi mijozga yetkazish mumkin — «Mijozga borish» ni bosing.',
       );
     } catch (error) {
       const message =
@@ -283,7 +283,9 @@ export default function OrderDetailsScreen() {
           hitSlop={10}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </Pressable>
-        <Text style={styles.headerTitle}>Ish stoli</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          Buyurtma {orderBarcode(order)}
+        </Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -301,13 +303,16 @@ export default function OrderDetailsScreen() {
             <ScrollView
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}>
-              <Text style={styles.workBarcode}>
-                Buyurtma {orderBarcode(order)}
-              </Text>
-              <DeliveryStepBadge order={order} />
-              <DeliveryStepProgress order={order} />
+              <DeliveryStepProgress order={order} withBadge />
 
               {isSellerPhase(order) ? (
+                <>
+                <OrderPaymentNotice
+                  amount={order.amount}
+                  isPaid={order.isPaid}
+                  paymentStatus={order.paymentStatus}
+                  variant="seller"
+                />
                 <View style={styles.card}>
                   <Text style={styles.cardTitle}>Sotuvchi ma'lumotlari</Text>
                   <Text style={styles.sellerName}>
@@ -360,8 +365,44 @@ export default function OrderDetailsScreen() {
                     </Pressable>
                   </View>
                 </View>
+
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>Mijoz ma'lumotlari</Text>
+                  <View style={styles.customerRow}>
+                    <View style={styles.customerInfo}>
+                      <Text style={styles.customerName}>
+                        {customerName(order)}
+                      </Text>
+                      <Text style={styles.customerPhone}>
+                        {displayOrDash(order.customer?.phone)}
+                      </Text>
+                    </View>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.iconButton,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        const phone = String(order.customer?.phone || '').trim();
+                        if (!phone) {
+                          Alert.alert('Telefon', 'Mijoz telefon raqami topilmadi');
+                          return;
+                        }
+                        callCustomer(phone);
+                      }}>
+                      <Ionicons name="call" size={20} color="#FFFFFF" />
+                    </Pressable>
+                  </View>
+                </View>
+                </>
               ) : (
                 <>
+              <OrderPaymentNotice
+                amount={order.amount}
+                isPaid={order.isPaid}
+                paymentStatus={order.paymentStatus}
+                variant="customer"
+              />
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mijoz ma'lumotlari</Text>
                 <View style={styles.customerRow}>
@@ -377,6 +418,41 @@ export default function OrderDetailsScreen() {
                       pressed && styles.pressed,
                     ]}
                     onPress={() => callCustomer(order.customer?.phone || '')}>
+                    <Ionicons name="call" size={20} color="#FFFFFF" />
+                  </Pressable>
+                </View>
+              </View>
+
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Sotuvchi ma'lumotlari</Text>
+                <Text style={styles.sellerName}>
+                  {displayOrDash(order.sellerPickup?.name)}
+                </Text>
+                <View style={styles.customerRow}>
+                  <View style={styles.customerInfo}>
+                    <Text style={styles.metaLabel}>Telefon</Text>
+                    <Text style={styles.customerPhone}>
+                      {displayOrDash(order.sellerPickup?.sellerPhone)}
+                    </Text>
+                  </View>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.iconButton,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={() => {
+                      const phone = String(
+                        order.sellerPickup?.sellerPhone || '',
+                      ).trim();
+                      if (!phone) {
+                        Alert.alert(
+                          'Telefon',
+                          'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
+                        );
+                        return;
+                      }
+                      callCustomer(phone);
+                    }}>
                     <Ionicons name="call" size={20} color="#FFFFFF" />
                   </Pressable>
                 </View>
@@ -608,11 +684,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
     gap: 12,
-  },
-  workBarcode: {
-    color: '#111827',
-    fontSize: 18,
-    fontWeight: '900',
   },
   sellerName: {
     color: '#56337d',

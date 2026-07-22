@@ -13,6 +13,8 @@ export type DeliveryAvailableOrder = {
   distanceKm: number | null;
   productCount: number;
   amount: number;
+  isPaid?: boolean;
+  paymentStatus?: string;
   orderedAt: string | null;
   handedToCourierAt: string | null;
   trackingStatus: string;

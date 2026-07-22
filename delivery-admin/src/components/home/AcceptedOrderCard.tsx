@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DeliveryStepBadge } from '@/components/delivery-steps/DeliveryStepBadge';
+import { OrderPaymentAmount } from '@/components/payment/OrderPaymentAmount';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 import { isSellerPhase } from '@/utils/deliveryOrderSteps';
 
@@ -9,10 +10,6 @@ type AcceptedOrderCardProps = {
   order: DeliveryAcceptedOrder;
   onStartWork: (order: DeliveryAcceptedOrder) => void;
 };
-
-function formatAmount(value: number) {
-  return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
-}
 
 export function AcceptedOrderCard({
   order,
@@ -42,7 +39,12 @@ export function AcceptedOrderCard({
         <Text style={styles.barcode} numberOfLines={1}>
           {order.barcode || order.productCode}
         </Text>
-        <Text style={styles.amount}>{formatAmount(order.amount)}</Text>
+        <OrderPaymentAmount
+          amount={order.amount}
+          isPaid={order.isPaid}
+          paymentStatus={order.paymentStatus}
+          size="sm"
+        />
       </View>
 
       <DeliveryStepBadge order={order} />
@@ -95,11 +97,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#111827',
-  },
-  amount: {
-    color: '#111827',
-    fontSize: 16,
-    fontWeight: '800',
   },
   sellerName: {
     color: '#56337d',

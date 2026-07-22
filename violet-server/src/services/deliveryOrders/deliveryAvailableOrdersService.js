@@ -11,6 +11,13 @@ const {
   parseCityDistrictFromLine,
 } = require("../../utils/normalizeDeliveryAddress");
 
+function isOrderPaid(order) {
+  if (!order) return false;
+  const status = String(order.status || "");
+  if (status === "paid" || status === "delivered") return true;
+  return Boolean(order.paidAt);
+}
+
 function toRad(value) {
   return (Number(value) * Math.PI) / 180;
 }
@@ -95,6 +102,8 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     distanceKm,
     productCount: 1,
     amount: unitPrice,
+    isPaid: isOrderPaid(order),
+    paymentStatus: String(order?.status || ""),
     orderedAt: order?.paidAt || order?.createdAt || null,
     handedToCourierAt: handedEntry?.at || null,
     trackingStatus: normalizeOrderTrackingStatus(item?.trackingStatus),

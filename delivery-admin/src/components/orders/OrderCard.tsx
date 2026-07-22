@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { OrderPaymentAmount } from '@/components/payment/OrderPaymentAmount';
 import type { DeliveryAvailableOrder } from '@/types/delivery-order';
 
 type OrderCardProps = {
@@ -8,10 +9,6 @@ type OrderCardProps = {
   accepting?: boolean;
   onAccept?: (order: DeliveryAvailableOrder) => void;
 };
-
-function formatAmount(value: number) {
-  return `${Math.round(Number(value) || 0).toLocaleString('uz-UZ')} so'm`;
-}
 
 function formatTime(value?: string | null) {
   if (!value) return '—';
@@ -50,7 +47,11 @@ export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps
           <Ionicons name="cube-outline" size={16} color="#6d32c5" />
           <Text style={styles.count}>{order.productCount} mahsulot</Text>
         </View>
-        <Text style={styles.amount}>{formatAmount(order.amount)}</Text>
+        <OrderPaymentAmount
+          amount={order.amount}
+          isPaid={order.isPaid}
+          paymentStatus={order.paymentStatus}
+        />
       </View>
 
       <View style={styles.bottomRow}>
@@ -134,11 +135,6 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     fontSize: 14,
     fontWeight: '600',
-  },
-  amount: {
-    color: '#111827',
-    fontSize: 18,
-    fontWeight: '800',
   },
   bottomRow: {
     flexDirection: 'row',
