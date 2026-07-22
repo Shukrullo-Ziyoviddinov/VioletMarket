@@ -90,7 +90,7 @@ export default function CourierAcceptedOrdersModalContent({
     setOrders((prev) =>
       prev.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)),
     );
-    if (updatedOrder.status === 'delivered') {
+    if (updatedOrder.status === 'delivered' || updatedOrder.status === 'returned') {
       setStats((prev) => {
         const prevPayment = orders.find((item) => item.id === updatedOrder.id)?.courierPayment || 0;
         const nextIncome =

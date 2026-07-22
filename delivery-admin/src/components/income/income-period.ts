@@ -54,9 +54,10 @@ export function endOfMonth(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 }
 
-function deliveredAt(order: DeliveryAcceptedOrder) {
-  if (!order.deliveredAt) return null;
-  const date = new Date(order.deliveredAt);
+function completedAt(order: DeliveryAcceptedOrder) {
+  const raw = order.deliveredAt || order.returnedAt || null;
+  if (!raw) return null;
+  const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return null;
   return date;
 }
@@ -121,7 +122,7 @@ function incomeForRange(
   to: Date,
 ) {
   const matched = orders.filter((order) => {
-    const at = deliveredAt(order);
+    const at = completedAt(order);
     return at != null && at >= from && at <= to;
   });
   return {
@@ -231,7 +232,7 @@ export function filterOrdersBySelection(
     const to = new Date(day);
     to.setHours(23, 59, 59, 999);
     return orders.filter((order) => {
-      const at = deliveredAt(order);
+      const at = completedAt(order);
       return at != null && at >= day && at <= to;
     });
   }
@@ -243,7 +244,7 @@ export function filterOrdersBySelection(
     weekEnd.setDate(weekEnd.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
     return orders.filter((order) => {
-      const at = deliveredAt(order);
+      const at = completedAt(order);
       return at != null && at >= weekStart && at <= weekEnd;
     });
   }
@@ -252,7 +253,7 @@ export function filterOrdersBySelection(
   if (!month) return [];
   const to = endOfMonth(month);
   return orders.filter((order) => {
-    const at = deliveredAt(order);
+    const at = completedAt(order);
     return at != null && at >= month && at <= to;
   });
 }

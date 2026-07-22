@@ -11,9 +11,12 @@ import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { calcCashChange, parseMoneyInput } from '@/utils/cashChange';
 import { formatOrderMoney } from '@/utils/orderPayment';
 
+export type CollectCashPaymentMode = 'customer' | 'seller';
+
 type CollectCashPaymentSheetProps = {
   visible: boolean;
   dueAmount: number;
+  mode?: CollectCashPaymentMode;
   loading?: boolean;
   onClose: () => void;
   onConfirm: (payload: {
@@ -22,14 +25,32 @@ type CollectCashPaymentSheetProps = {
   }) => void;
 };
 
+const MODE_COPY: Record<
+  CollectCashPaymentMode,
+  { title: string; inputLabel: string; hint: string }
+> = {
+  customer: {
+    title: 'To‘lovni olish',
+    inputLabel: 'Mahsulot narxini kiriting',
+    hint: 'Mijozdan olingan summani kiriting. Qaytim avtomatik hisoblanadi.',
+  },
+  seller: {
+    title: 'Sotuvchidan to‘lovni olish',
+    inputLabel: 'Mahsulot narxini kiriting',
+    hint: 'Sotuvchidan qaytarib olingan summani kiriting. Qaytim avtomatik hisoblanadi.',
+  },
+};
+
 export function CollectCashPaymentSheet({
   visible,
   dueAmount,
+  mode = 'customer',
   loading = false,
   onClose,
   onConfirm,
 }: CollectCashPaymentSheetProps) {
   const [rawInput, setRawInput] = useState('');
+  const copy = MODE_COPY[mode] || MODE_COPY.customer;
 
   useEffect(() => {
     if (visible) setRawInput('');
@@ -46,12 +67,12 @@ export function CollectCashPaymentSheet({
   return (
     <GlobalBottomSheet
       visible={visible}
-      title="To‘lovni olish"
+      title={copy.title}
       onClose={() => {
         if (!loading) onClose();
       }}>
       <View style={styles.body}>
-        <Text style={styles.inputLabel}>Mahsulot narxini kiriting</Text>
+        <Text style={styles.inputLabel}>{copy.inputLabel}</Text>
         <TextInput
           style={styles.input}
           value={rawInput}
@@ -82,9 +103,7 @@ export function CollectCashPaymentSheet({
             Summa mahsulot narxidan kam bo‘lmasligi kerak
           </Text>
         ) : (
-          <Text style={styles.hint}>
-            Mijozdan olingan summani kiriting. Qaytim avtomatik hisoblanadi.
-          </Text>
+          <Text style={styles.hint}>{copy.hint}</Text>
         )}
 
         <Pressable

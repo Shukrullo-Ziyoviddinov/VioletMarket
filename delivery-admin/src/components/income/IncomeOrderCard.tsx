@@ -15,6 +15,9 @@ type IncomeOrderCardProps = {
 };
 
 export function IncomeOrderCard({ order }: IncomeOrderCardProps) {
+  const isReturned = String(order.status) === 'returned';
+  const at = isReturned ? order.returnedAt || null : order.deliveredAt;
+
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
@@ -25,6 +28,12 @@ export function IncomeOrderCard({ order }: IncomeOrderCardProps) {
           {formatIncomeAmount(order.courierPayment ?? 0)}
         </Text>
       </View>
+
+      {isReturned ? (
+        <View style={styles.returnedBadge}>
+          <Text style={styles.returnedBadgeText}>Sotuvchiga qaytarilgan</Text>
+        </View>
+      ) : null}
 
       <Text style={styles.title} numberOfLines={2}>
         {resolveProductTitle(order)}
@@ -44,9 +53,7 @@ export function IncomeOrderCard({ order }: IncomeOrderCardProps) {
         </View>
         <View style={styles.row}>
           <Ionicons name="time-outline" size={15} color="#6B7280" />
-          <Text style={styles.meta}>
-            {formatIncomeDateTime(order.deliveredAt)}
-          </Text>
+          <Text style={styles.meta}>{formatIncomeDateTime(at)}</Text>
         </View>
       </View>
     </View>
@@ -82,6 +89,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 20,
+  },
+  returnedBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEE2E2',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  returnedBadgeText: {
+    color: '#B91C1C',
+    fontSize: 11,
+    fontWeight: '800',
   },
   row: {
     flexDirection: 'row',

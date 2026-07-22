@@ -113,14 +113,25 @@ function HistoryCard({
   order: DeliveryAcceptedOrder;
   onPress: () => void;
 }) {
+  const isReturned = String(order.status) === 'returned';
+  const completedAt = isReturned ? order.returnedAt || null : order.deliveredAt;
+
   return (
     <Pressable
       style={({ pressed }) => [styles.historyCard, pressed && styles.pressed]}
       onPress={onPress}>
       <View style={styles.historyTop}>
         <View style={styles.historyIdWrap}>
-          <View style={styles.checkIcon}>
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          <View
+            style={[
+              styles.checkIcon,
+              isReturned && styles.checkIconReturned,
+            ]}>
+            <Ionicons
+              name={isReturned ? 'return-down-back' : 'checkmark'}
+              size={14}
+              color="#FFFFFF"
+            />
           </View>
           <View>
             <Text style={styles.historyId}>#{order.orderId}</Text>
@@ -130,8 +141,18 @@ function HistoryCard({
           </View>
         </View>
         <View style={styles.historyRight}>
-          <View style={styles.deliveredBadge}>
-            <Text style={styles.deliveredBadgeText}>Topshirilgan</Text>
+          <View
+            style={[
+              styles.deliveredBadge,
+              isReturned && styles.returnedBadge,
+            ]}>
+            <Text
+              style={[
+                styles.deliveredBadgeText,
+                isReturned && styles.returnedBadgeText,
+              ]}>
+              {isReturned ? 'Sotuvchiga qaytarilgan' : 'Topshirilgan'}
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
         </View>
@@ -164,7 +185,8 @@ function HistoryCard({
       <View style={styles.historyRow}>
         <Ionicons name="time-outline" size={15} color="#6B7280" />
         <Text style={styles.metaText}>
-          Topshirilgan: {formatDateTime(order.deliveredAt)}
+          {isReturned ? 'Qaytarilgan' : 'Topshirilgan'}:{' '}
+          {formatDateTime(completedAt ?? null)}
         </Text>
       </View>
     </Pressable>
@@ -281,9 +303,10 @@ export default function HistoryScreen() {
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Hali topshirilgan yo‘q</Text>
+              <Text style={styles.emptyTitle}>Hali yakunlangan buyurtma yo‘q</Text>
               <Text style={styles.emptyText}>
-                “Topshirdim” bosilgan buyurtmalar shu yerda chiqadi.
+                Topshirilgan yoki sotuvchiga qaytarilgan buyurtmalar shu yerda
+                chiqadi.
               </Text>
             </View>
           }
@@ -412,6 +435,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  checkIconReturned: {
+    backgroundColor: '#DC2626',
+  },
   historyId: {
     color: '#6d32c5',
     fontSize: 16,
@@ -438,6 +464,12 @@ const styles = StyleSheet.create({
     color: '#15803D',
     fontSize: 12,
     fontWeight: '800',
+  },
+  returnedBadge: {
+    backgroundColor: '#FEE2E2',
+  },
+  returnedBadgeText: {
+    color: '#B91C1C',
   },
   historyRow: {
     flexDirection: 'row',

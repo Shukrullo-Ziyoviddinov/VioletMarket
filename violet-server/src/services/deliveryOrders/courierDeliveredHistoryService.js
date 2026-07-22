@@ -17,16 +17,27 @@ function startOfWeek(date = new Date()) {
   return d;
 }
 
+function completedAt(row) {
+  const raw = row.deliveredAt || row.returnedAt || null;
+  if (!raw) return null;
+  const at = new Date(raw);
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
 /**
- * Kuryer Tarix — o‘zi topshirgan buyurtmalar.
+ * Kuryer Tarix — topshirgan yoki sotuvchiga qaytargan buyurtmalar.
  */
 async function listDeliveredHistoryForCourier(deliveryId) {
   const rows = await CourierOrderAssignment.find({
     deliveryId,
-    status: "delivered",
-  })
-    .sort({ deliveredAt: -1, acceptedAt: -1 })
-    .lean();
+    status: { $in: ["delivered", "returned"] },
+  }).lean();
+
+  rows.sort((a, b) => {
+    const aAt = completedAt(a)?.getTime() || 0;
+    const bAt = completedAt(b)?.getTime() || 0;
+    return bAt - aAt;
+  });
 
   const orders = rows.map(toPublicAssignment);
   const now = new Date();
@@ -40,8 +51,8 @@ async function listDeliveredHistoryForCourier(deliveryId) {
   for (const row of rows) {
     const income = Math.max(0, Number(row.courierPayment) || 0);
     totalIncome += income;
-    const at = row.deliveredAt ? new Date(row.deliveredAt) : null;
-    if (!at || Number.isNaN(at.getTime())) continue;
+    const at = completedAt(row);
+    if (!at) continue;
     if (at >= todayStart) todayCount += 1;
     if (at >= weekStart) weekCount += 1;
   }

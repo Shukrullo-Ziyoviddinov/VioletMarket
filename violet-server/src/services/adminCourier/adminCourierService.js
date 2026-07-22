@@ -132,13 +132,15 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
         "arrived_at_customer",
       ],
     };
+  } else if (status === "delivered") {
+    listFilter.status = { $in: ["delivered", "returned"] };
   } else if (
     status === "picked_up" ||
-    status === "delivered" ||
     status === "en_route_to_seller" ||
     status === "arrived_at_seller" ||
     status === "en_route_to_customer" ||
-    status === "arrived_at_customer"
+    status === "arrived_at_customer" ||
+    status === "returned"
   ) {
     listFilter.status = status;
   }
@@ -191,7 +193,10 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
   }
 
   const orders = rows.map(mapOrder);
-  const deliveredRows = allRows.filter((row) => String(row.status) === "delivered");
+  const paidRows = allRows.filter((row) => {
+    const status = String(row.status || "");
+    return status === "delivered" || status === "returned";
+  });
   const activeStatuses = new Set([
     "accepted",
     "en_route_to_seller",
@@ -203,7 +208,7 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
   const acceptedRows = allRows.filter((row) =>
     activeStatuses.has(String(row.status || "")),
   );
-  const totalCourierIncome = deliveredRows.reduce(
+  const totalCourierIncome = paidRows.reduce(
     (sum, row) => sum + Math.max(0, Number(row.courierPayment) || 0),
     0,
   );
@@ -212,7 +217,7 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
     courier: toAdminCourierJSON(account),
     stats: {
       totalAccepted: allRows.length,
-      deliveredCount: deliveredRows.length,
+      deliveredCount: paidRows.length,
       activeCount: acceptedRows.length,
       totalCourierIncome,
     },
@@ -226,10 +231,11 @@ async function updateCourierAssignmentPayment(assignmentId, payload = {}) {
   if (!assignment) {
     throw new HttpError(404, "Buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
   }
-  if (String(assignment.status) !== "delivered") {
+  const status = String(assignment.status || "");
+  if (status !== "delivered" && status !== "returned") {
     throw new HttpError(
       400,
-      "Faqat topshirilgan buyurtma to‘lovini tahrirlash mumkin",
+      "Faqat topshirilgan yoki qaytarilgan buyurtma to‘lovini tahrirlash mumkin",
       "INVALID_ASSIGNMENT_STATUS",
     );
   }

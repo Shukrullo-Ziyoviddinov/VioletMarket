@@ -124,6 +124,23 @@ function resolveAssignmentDistanceKm(assignment, courierCoords) {
   return Number.isFinite(stored) && stored >= 0 ? stored : null;
 }
 
+/** Topshirish yoki sotuvchiga qaytarishda km bo‘yicha kuryer to‘lovini yozadi. */
+async function applyCourierKmPayment(assignment, payload = {}, atDate = new Date()) {
+  const courierCoords = parseCourierCoords(payload);
+  const distanceKm = resolveAssignmentDistanceKm(assignment, courierCoords);
+  if (distanceKm != null) {
+    assignment.distanceKm = distanceKm;
+  }
+
+  const paymentSettings = await getCourierPaymentSettings();
+  assignment.courierPayment = resolveCourierPaymentForDistance(
+    assignment.distanceKm,
+    paymentSettings.tiers,
+  );
+  assignment.courierPaymentUpdatedAt = atDate;
+  return assignment;
+}
+
 function formatProductCode(productId) {
   const id = Math.max(0, Math.floor(Number(productId) || 0));
   if (!id) return "";
@@ -547,20 +564,7 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
   const deliveredAt = new Date();
   assignment.status = "delivered";
   assignment.deliveredAt = deliveredAt;
-
-  const courierCoords = parseCourierCoords(payload);
-  const distanceKm = resolveAssignmentDistanceKm(assignment, courierCoords);
-  if (distanceKm != null) {
-    assignment.distanceKm = distanceKm;
-  }
-
-  const paymentSettings = await getCourierPaymentSettings();
-  const resolvedDistance = assignment.distanceKm;
-  assignment.courierPayment = resolveCourierPaymentForDistance(
-    resolvedDistance,
-    paymentSettings.tiers,
-  );
-  assignment.courierPaymentUpdatedAt = deliveredAt;
+  await applyCourierKmPayment(assignment, payload, deliveredAt);
 
   if (
     !assignment.customer?.phone &&
@@ -816,5 +820,6 @@ module.exports = {
   loadOrderPaymentMap,
   resolveAssignmentDistanceKm,
   parseCourierCoords,
+  applyCourierKmPayment,
   resolvePickupPhase,
 };

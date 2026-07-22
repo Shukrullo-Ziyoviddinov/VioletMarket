@@ -31,6 +31,8 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
     `${order?.customer?.firstName || ''} ${order?.customer?.lastName || ''}`.trim() ||
     'Mijoz nomi yo‘q';
   const isDelivered = order?.status === 'delivered';
+  const isReturned = order?.status === 'returned';
+  const isPayable = isDelivered || isReturned;
 
   return (
     <article className="courier-accepted-order-card">
@@ -47,7 +49,7 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
 
       <div
         className={`courier-accepted-order-card__meta-grid${
-          isDelivered ? ' courier-accepted-order-card__meta-grid--delivered' : ''
+          isPayable ? ' courier-accepted-order-card__meta-grid--delivered' : ''
         }`}
       >
         <div>
@@ -68,6 +70,14 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
             </p>
           </div>
         ) : null}
+        {isReturned ? (
+          <div>
+            <span className="courier-accepted-order-card__label">Qaytarilgan vaqt</span>
+            <p className="courier-accepted-order-card__value courier-accepted-order-card__value--delivered">
+              {formatDateTime(order?.returnedAt)}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="courier-accepted-order-card__customer">
@@ -80,7 +90,7 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
 
       <CourierAcceptedOrderPaymentEditor
         order={order}
-        editable={isDelivered}
+        editable={isPayable}
         onUpdated={(updated) =>
           onPaymentUpdated?.({
             ...order,

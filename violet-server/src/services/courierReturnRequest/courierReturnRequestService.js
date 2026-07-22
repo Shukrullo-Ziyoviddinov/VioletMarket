@@ -16,6 +16,7 @@ const {
   toPublicAssignment,
   loadOrderPaymentMap,
   attachSellerPickup,
+  applyCourierKmPayment,
 } = require("../deliveryOrders/courierOrderAssignmentService");
 
 const REASON_TYPES = new Set(["no_answer", "return"]);
@@ -535,6 +536,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;
+  await applyCourierKmPayment(assignment, payload, returnedAt);
   await assignment.save();
 
   return {

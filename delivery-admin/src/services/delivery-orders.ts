@@ -199,7 +199,11 @@ export async function advanceReturnDeliveryStep(
 
 export async function completeReturnDeliveryOrder(
   token: string,
-  payload: { assignmentId: string },
+  payload: {
+    assignmentId: string;
+    courierLat?: number;
+    courierLng?: number;
+  },
 ) {
   return apiRequest<{
     returned: { id: string; reasonType: ReturnReasonType };

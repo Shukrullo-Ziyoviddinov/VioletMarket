@@ -17,7 +17,7 @@ export default function CourierAcceptedOrderPaymentEditor({
   const [value, setValue] = useState(Number(order?.courierPayment) || 0);
   const [saving, setSaving] = useState(false);
 
-  if (!editable || order?.status !== 'delivered') {
+  if (!editable || (order?.status !== 'delivered' && order?.status !== 'returned')) {
     return (
       <div className="courier-order-payment">
         <span className="courier-order-payment__label">Kuryer to‘lovi</span>

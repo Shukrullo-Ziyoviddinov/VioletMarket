@@ -18,7 +18,10 @@ import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal
 import { DeliveryStepActions } from '@/components/delivery-steps/DeliveryStepActions';
 import { DeliveryStepProgress } from '@/components/delivery-steps/DeliveryStepProgress';
 import { OrderPaymentNotice } from '@/components/payment/OrderPaymentNotice';
-import { CollectCashPaymentSheet } from '@/components/payment/CollectCashPaymentSheet';
+import {
+  CollectCashPaymentSheet,
+  type CollectCashPaymentMode,
+} from '@/components/payment/CollectCashPaymentSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
@@ -150,7 +153,10 @@ export default function OrderDetailsScreen() {
   const [pickupConfirmOpen, setPickupConfirmOpen] = useState(false);
   const [deliverConfirmOpen, setDeliverConfirmOpen] = useState(false);
   const [cashCollectOpen, setCashCollectOpen] = useState(false);
+  const [cashCollectMode, setCashCollectMode] =
+    useState<CollectCashPaymentMode>('customer');
   const [cashCollected, setCashCollected] = useState(false);
+  const [sellerCashCollected, setSellerCashCollected] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returnModalMode, setReturnModalMode] = useState<'request' | 'confirm'>(
@@ -164,6 +170,8 @@ export default function OrderDetailsScreen() {
 
   useEffect(() => {
     setCashCollected(false);
+    setSellerCashCollected(false);
+    setCashCollectMode('customer');
     setCashCollectOpen(false);
     setDeliverConfirmOpen(false);
   }, [assignmentId]);
@@ -195,6 +203,7 @@ export default function OrderDetailsScreen() {
     if (!order) return;
     const unpaid = !resolveOrderPaid(order);
     if (unpaid && !cashCollected) {
+      setCashCollectMode('customer');
       setCashCollectOpen(true);
       return;
     }
@@ -359,12 +368,26 @@ export default function OrderDetailsScreen() {
     }
   };
 
+  const requestStartReturnToSeller = () => {
+    if (!order) return;
+    const unpaid = !resolveOrderPaid(order);
+    if (unpaid && !sellerCashCollected) {
+      setCashCollectMode('seller');
+      setCashCollectOpen(true);
+      return;
+    }
+    void handleStartReturnToSeller();
+  };
+
   const handleCompleteReturn = async () => {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
+      const location = await requestCourierLocation();
       const data = await completeReturnDeliveryOrder(token, {
         assignmentId: order.id,
+        courierLat: location.coords?.latitude,
+        courierLng: location.coords?.longitude,
       });
       setCompleteReturnConfirmOpen(false);
       setOrder(data.assignment);
@@ -699,9 +722,7 @@ export default function OrderDetailsScreen() {
                     setReturnModalMode('confirm');
                     setReturnModalOpen(true);
                   }}
-                  onStartReturnToSeller={() => {
-                    void handleStartReturnToSeller();
-                  }}
+                  onStartReturnToSeller={requestStartReturnToSeller}
                   onCompleteReturn={() => setCompleteReturnConfirmOpen(true)}
                 />
               </View>
@@ -712,9 +733,16 @@ export default function OrderDetailsScreen() {
 
       <CollectCashPaymentSheet
         visible={cashCollectOpen}
+        mode={cashCollectMode}
         dueAmount={Math.max(0, Number(order?.amount) || 0)}
         onClose={() => setCashCollectOpen(false)}
         onConfirm={() => {
+          if (cashCollectMode === 'seller') {
+            setSellerCashCollected(true);
+            setCashCollectOpen(false);
+            void handleStartReturnToSeller();
+            return;
+          }
           setCashCollected(true);
           setCashCollectOpen(false);
         }}
