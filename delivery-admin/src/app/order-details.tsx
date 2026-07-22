@@ -323,12 +323,17 @@ export default function OrderDetailsScreen() {
         assignmentId: order.id,
         reasonType: payload.reasonType,
       });
-      setOrder(data);
+      const advanced = await advanceReturnDeliveryStep(token, {
+        assignmentId: order.id,
+        action: 'go_return_to_seller',
+      });
+      setOrder(advanced);
       setReturnModalOpen(false);
-      Alert.alert(
-        'Qaytarish boshlandi',
-        'Endi «Sotuvchiga borish» orqali mahsulotni qaytarishingiz mumkin.',
-      );
+      try {
+        await openRoute(advanced);
+      } catch {
+        // ignore
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Tasdiqlash amalga oshmadi';
@@ -338,7 +343,7 @@ export default function OrderDetailsScreen() {
     }
   };
 
-  /** Admin allaqachon turni belgilagan — bitta tugma bilan sotuvchiga qaytarish */
+  /** Admin allaqachon turni belgilagan — sotuvchiga yo‘lni boshlash */
   const handleStartReturnToSeller = async () => {
     if (!token || !order || returning || actionLoading) return;
     const reasonType = order.approvedReturnReasonType;
@@ -349,13 +354,17 @@ export default function OrderDetailsScreen() {
     }
     setReturning(true);
     try {
-      const data = await confirmReturnReason(token, {
+      await confirmReturnReason(token, {
         assignmentId: order.id,
         reasonType,
       });
-      setOrder(data);
+      const advanced = await advanceReturnDeliveryStep(token, {
+        assignmentId: order.id,
+        action: 'go_return_to_seller',
+      });
+      setOrder(advanced);
       try {
-        await openRoute(data);
+        await openRoute(advanced);
       } catch {
         // ignore route errors
       }
@@ -368,7 +377,7 @@ export default function OrderDetailsScreen() {
     }
   };
 
-  const requestStartReturnToSeller = () => {
+  const requestCompleteReturn = () => {
     if (!order) return;
     const unpaid = !resolveOrderPaid(order);
     if (unpaid && !sellerCashCollected) {
@@ -376,7 +385,7 @@ export default function OrderDetailsScreen() {
       setCashCollectOpen(true);
       return;
     }
-    void handleStartReturnToSeller();
+    setCompleteReturnConfirmOpen(true);
   };
 
   const handleCompleteReturn = async () => {
@@ -722,8 +731,10 @@ export default function OrderDetailsScreen() {
                     setReturnModalMode('confirm');
                     setReturnModalOpen(true);
                   }}
-                  onStartReturnToSeller={requestStartReturnToSeller}
-                  onCompleteReturn={() => setCompleteReturnConfirmOpen(true)}
+                  onStartReturnToSeller={() => {
+                    void handleStartReturnToSeller();
+                  }}
+                  onCompleteReturn={requestCompleteReturn}
                 />
               </View>
             ) : null}
@@ -740,7 +751,7 @@ export default function OrderDetailsScreen() {
           if (cashCollectMode === 'seller') {
             setSellerCashCollected(true);
             setCashCollectOpen(false);
-            void handleStartReturnToSeller();
+            setCompleteReturnConfirmOpen(true);
             return;
           }
           setCashCollected(true);

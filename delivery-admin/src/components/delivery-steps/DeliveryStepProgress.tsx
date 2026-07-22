@@ -16,7 +16,7 @@ type DeliveryStepProgressProps = {
 
 const SELLER_STEPS = ['Ketdim', 'Keldim', 'Oldim'] as const;
 const CUSTOMER_STEPS = ['Ketdim', 'Keldim', 'Topshirish'] as const;
-const RETURN_STEPS = ['Ketdim', 'Keldim', 'Qaytardim'] as const;
+const RETURN_STEPS = ['Ketdim', 'Keldim', 'Qaytarish'] as const;
 
 export function DeliveryStepProgress({
   order,

@@ -46,10 +46,10 @@ const CUSTOMER_STATUSES = new Set<string>([
   'en_route_to_customer',
   'arrived_at_customer',
   'return_request_pending',
-  'return_approved',
 ]);
 
 const RETURN_STATUSES = new Set<string>([
+  'return_approved',
   'return_to_seller',
   'en_route_return_to_seller',
   'arrived_return_at_seller',
@@ -168,7 +168,7 @@ export function getPrimaryAction(
     case 'return_approved':
       return {
         kind: 'start_return_to_seller',
-        label: 'Sotuvchiga qaytarish',
+        label: 'Sotuvchiga borish',
       };
     case 'return_to_seller':
       return { kind: 'go_return_to_seller', label: 'Sotuvchiga borish' };
@@ -177,7 +177,7 @@ export function getPrimaryAction(
     case 'arrived_return_at_seller':
       return {
         kind: 'complete_return',
-        label: 'Qaytardim',
+        label: 'Sotuvchiga qaytarish',
         confirmTitle: 'Sotuvchiga qaytarish',
         confirmMessage: 'Mahsulotni sotuvchiga qaytarganingizni tasdiqlaysizmi?',
       };
@@ -204,11 +204,11 @@ export function getStepProgress(
       return { sellerDone: 3, customerDone: 1, returnDone: 0 };
     case 'arrived_at_customer':
     case 'return_request_pending':
-    case 'return_approved':
       return { sellerDone: 3, customerDone: 2, returnDone: 0 };
     case 'delivered':
       return { sellerDone: 3, customerDone: 3, returnDone: 0 };
-    // Qaytarish: Ketdim → Keldim → Qaytardim (0..3)
+    // Qaytarish: Ketdim → Keldim → Qaytarish (0..3)
+    case 'return_approved':
     case 'return_to_seller':
       return { sellerDone: 0, customerDone: 0, returnDone: 0 };
     case 'en_route_return_to_seller':

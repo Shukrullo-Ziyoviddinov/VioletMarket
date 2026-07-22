@@ -45,10 +45,10 @@ const CUSTOMER_PHASE_STATUSES = new Set([
   "en_route_to_customer",
   "arrived_at_customer",
   "return_request_pending",
-  "return_approved",
 ]);
 
 const RETURN_PHASE_STATUSES = new Set([
+  "return_approved",
   "return_to_seller",
   "en_route_return_to_seller",
   "arrived_return_at_seller",

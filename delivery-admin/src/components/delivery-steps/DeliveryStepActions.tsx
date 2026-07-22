@@ -113,10 +113,8 @@ export function DeliveryStepActions({
 
   const isWaiting = primary.kind === 'waiting_admin';
   const isGreen =
-    primary.kind === 'deliver' ||
-    primary.kind === 'pick_up' ||
-    primary.kind === 'complete_return';
-  const isReturnStart = primary.kind === 'start_return_to_seller';
+    primary.kind === 'deliver' || primary.kind === 'pick_up';
+  const isReturnFinal = primary.kind === 'complete_return';
 
   if (layout === 'footer') {
     return (
@@ -139,7 +137,7 @@ export function DeliveryStepActions({
             styles.primaryFooterBtn,
             isWaiting
               ? styles.waitingBtn
-              : isReturnStart
+              : isReturnFinal
                 ? styles.returnStartBtn
                 : isGreen
                   ? styles.primaryGreen
@@ -183,7 +181,7 @@ export function DeliveryStepActions({
           styles.primaryCardBtn,
           isWaiting
             ? styles.waitingBtn
-            : isReturnStart
+            : isReturnFinal
               ? styles.returnStartBtn
               : isGreen
                 ? styles.primaryGreen
