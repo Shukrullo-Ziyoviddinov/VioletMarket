@@ -24,7 +24,7 @@ export const TestOrderModalProvider = ({ children }) => {
   };
 
   const scheduleOpenOnHome = (options = {}) => {
-    // SOTILDI MODAL (.test-order-modal-content) — ochilishni rejalashtirish (hozir checkout).
+    // Topshirdim / eski oqim — home da .test-order-modal-content ochish.
     setPendingOpenOnHome({
       cartSnapshot: options.cartSnapshot || null,
       onCloseExtra: options.onCloseExtra || null,

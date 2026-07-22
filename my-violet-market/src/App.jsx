@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
-import { UserProvider } from './contexts/UserContext';
+import { UserProvider, useUser } from './contexts/UserContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { NavbarProvider } from './contexts/NavbarContext';
 import { SearchHistoryProvider } from './contexts/SearchHistoryContext';
@@ -11,7 +11,10 @@ import { SellerSubscriptionProvider } from './contexts/SellerSubscriptionContext
 import { CommentsProvider } from './contexts/CommentsContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { TestOrderModalProvider, useTestOrderModal } from './contexts/TestOrderModalContext';
-import { consumePendingPostOrderReviewOnHome } from './productManagement';
+import {
+  consumePendingPostOrderReviewOnHome,
+  maybeOpenPendingReviewModalFromDelivery,
+} from './productManagement';
 import './i18n';
 import Navbar from './components/Navbar';
 import CheckoutNavbar from './components/CheckoutNavbar';
@@ -34,10 +37,13 @@ import ChatsPage from './pages/ChatsPage';
 import './App.css';
 import MessageChatSocketBridge from './components/MessageChatSocketBridge/MessageChatSocketBridge';
 
+const PENDING_REVIEW_POLL_MS = 15000;
+
 const AppContent = () => {
   const location = useLocation();
   const isCheckout = location.pathname === '/checkout';
   const { toast } = useToast();
+  const { authToken, userData } = useUser();
   const { isOpen, closeModal, cartSnapshot, pendingOpenOnHome, openModal, clearPendingOpenOnHome } = useTestOrderModal();
 
   useEffect(() => {
@@ -48,6 +54,36 @@ const AppContent = () => {
       clearPendingOpenOnHome,
     });
   }, [location.pathname, pendingOpenOnHome, openModal, clearPendingOpenOnHome]);
+
+  // Topshirdim → pendingReview: clientda .test-order-modal-content ochish
+  useEffect(() => {
+    if (!authToken || !userData?.isAuthenticated) return undefined;
+
+    let cancelled = false;
+    const check = async () => {
+      if (cancelled) return;
+      await maybeOpenPendingReviewModalFromDelivery({
+        token: authToken,
+        isModalOpen: isOpen,
+        openModal,
+      });
+    };
+
+    check();
+    const timerId = window.setInterval(check, PENDING_REVIEW_POLL_MS);
+    const onFocus = () => {
+      check();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timerId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [authToken, userData?.isAuthenticated, isOpen, openModal]);
 
   return (
     <div className="App">
@@ -95,7 +131,7 @@ const AppContent = () => {
           onClose={() => {}}
         />
       )}
-      {/* SOTILDI MODAL (.test-order-modal-content) — UI bloki; keyin real to'lov joyiga ko'chiriladi */}
+      {/* Topshirdimdan keyin pending review → .test-order-modal-content */}
       <TestOrderModal
         isOpen={isOpen}
         onClose={closeModal}

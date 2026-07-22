@@ -77,10 +77,12 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
 
     const cartItems = displayCartRef.current || [];
     const commented = commentedRef.current;
+    // Topshirdimdan kelganlar allaqachon pending — qayta yaratmaslik
     const pendingItems = cartItems
       .map((item) => {
         const productId = getCartItemProductId(item);
         if (productId == null || commented.has(String(productId))) return null;
+        if (item?.pendingReviewId) return null;
         return { productId };
       })
       .filter(Boolean);
@@ -139,9 +141,8 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
   if (!isOpen) return null;
 
   // -------------------------------------------------------------------------
-  // SOTILDI MODAL — .test-order-modal-content bloki.
-  // Hozir checkout tasdiqlanganda ko'rsatiladi (test/review oqimi).
-  // Keyinchalik real to'lov muvaffaqiyatli bo'lganda boshqa joydan ochiladi.
+  // SOTILDI MODAL — .test-order-modal-content
+  // Topshirdim → pendingReview → App poll → shu modal.
   // -------------------------------------------------------------------------
   const modalContent = (
     <div className="test-order-modal-overlay" onClick={handleClose}>
@@ -167,7 +168,7 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
                 itemProductId != null && commentedInThisOrder.has(String(itemProductId));
               return (
                 <div
-                  key={index}
+                  key={item.pendingReviewId || `${itemProductId}-${index}`}
                   className={`test-order-product-item ${hasCommentInThisOrder ? 'has-comment' : ''}`}
                   onClick={() => handleProductClick(item)}
                 >
@@ -181,7 +182,9 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
                   />
                   <div className="test-order-product-info">
                     <h3 className="test-order-product-title">{getLocalizedText(item.title, lang)}</h3>
-                    <p className="test-order-product-price">{item.price} UZS</p>
+                    {item.price !== '' && item.price != null ? (
+                      <p className="test-order-product-price">{item.price} UZS</p>
+                    ) : null}
                     {hasCommentInThisOrder && (
                       <span className="test-order-comment-badge">Izoh qo'shilgan</span>
                     )}
@@ -210,6 +213,7 @@ const TestOrderModal = ({ isOpen, onClose, cartSnapshot }) => {
           productId={getCartItemProductId(selectedProduct)}
           productName={getLocalizedText(selectedProduct.title, lang)}
           productImage={selectedProduct.image}
+          pendingReviewId={selectedProduct.pendingReviewId || null}
         />
       )}
     </>
