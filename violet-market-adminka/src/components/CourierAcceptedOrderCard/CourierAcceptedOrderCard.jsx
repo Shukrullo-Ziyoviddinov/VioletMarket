@@ -1,5 +1,7 @@
 import React from 'react';
 import CourierAcceptedOrderPaymentEditor from '../CourierAcceptedOrderPaymentEditor/CourierAcceptedOrderPaymentEditor';
+import CourierAcceptedOrderProgress from '../CourierAcceptedOrderProgress/CourierAcceptedOrderProgress';
+import CourierAcceptedOrderStatusBadge from '../CourierAcceptedOrderStatusBadge/CourierAcceptedOrderStatusBadge';
 import './CourierAcceptedOrderCard.css';
 
 function formatDateTime(value) {
@@ -28,6 +30,7 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
   const customerName =
     `${order?.customer?.firstName || ''} ${order?.customer?.lastName || ''}`.trim() ||
     'Mijoz nomi yo‘q';
+  const isDelivered = order?.status === 'delivered';
 
   return (
     <article className="courier-accepted-order-card">
@@ -35,24 +38,16 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
         <p className="courier-accepted-order-card__barcode">
           {order?.barcode || order?.productCode || '—'}
         </p>
-        <span
-          className={`courier-accepted-order-card__status ${
-            order?.status === 'delivered'
-              ? 'courier-accepted-order-card__status--delivered'
-              : ''
-          }`}
-        >
-          {order?.status === 'delivered' ? 'Topshirilgan' : 'Qabul qilingan'}
-        </span>
+        <CourierAcceptedOrderStatusBadge status={order?.status} />
       </div>
 
       <h4 className="courier-accepted-order-card__title">{resolveTitle(order)}</h4>
 
+      <CourierAcceptedOrderProgress status={order?.status} />
+
       <div
         className={`courier-accepted-order-card__meta-grid${
-          order?.status === 'delivered'
-            ? ' courier-accepted-order-card__meta-grid--delivered'
-            : ''
+          isDelivered ? ' courier-accepted-order-card__meta-grid--delivered' : ''
         }`}
       >
         <div>
@@ -65,7 +60,7 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
             {formatDateTime(order?.acceptedAt)}
           </p>
         </div>
-        {order?.status === 'delivered' ? (
+        {isDelivered ? (
           <div>
             <span className="courier-accepted-order-card__label">Topshirilgan vaqt</span>
             <p className="courier-accepted-order-card__value courier-accepted-order-card__value--delivered">
@@ -85,7 +80,7 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
 
       <CourierAcceptedOrderPaymentEditor
         order={order}
-        editable={order?.status === 'delivered'}
+        editable={isDelivered}
         onUpdated={(updated) =>
           onPaymentUpdated?.({
             ...order,

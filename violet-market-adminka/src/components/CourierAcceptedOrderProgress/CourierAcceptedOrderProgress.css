@@ -1,0 +1,67 @@
+.courier-accepted-order-progress {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  padding: 8px 4px 2px;
+  border-radius: 12px;
+  background: #f8f5ff;
+  border: 1px solid #ede9fe;
+}
+
+.courier-accepted-order-progress__step {
+  flex: 1 0 auto;
+  min-width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.courier-accepted-order-progress__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  border: 2px solid #e5e7eb;
+  box-sizing: border-box;
+}
+
+.courier-accepted-order-progress__label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.courier-accepted-order-progress__line {
+  flex: 0 0 10px;
+  height: 2px;
+  margin-top: 4px;
+  background: #e5e7eb;
+  align-self: flex-start;
+}
+
+.courier-accepted-order-progress__step--done .courier-accepted-order-progress__dot {
+  background: #6d32c5;
+  border-color: #6d32c5;
+}
+
+.courier-accepted-order-progress__step--done .courier-accepted-order-progress__label {
+  color: #56337d;
+}
+
+.courier-accepted-order-progress__step--current .courier-accepted-order-progress__dot {
+  background: #fff;
+  border-color: #6d32c5;
+  box-shadow: 0 0 0 3px rgba(109, 50, 197, 0.18);
+}
+
+.courier-accepted-order-progress__step--current .courier-accepted-order-progress__label {
+  color: #6d32c5;
+}
+
+.courier-accepted-order-progress__line--done {
+  background: #6d32c5;
+}

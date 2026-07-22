@@ -21,22 +21,6 @@
   color: #1f2937;
 }
 
-.courier-accepted-order-card__status {
-  font-size: 12px;
-  font-weight: 700;
-  color: #6d32c5;
-  background: #f3ecff;
-  border: 1px solid #e9d5ff;
-  border-radius: 999px;
-  padding: 4px 10px;
-}
-
-.courier-accepted-order-card__status--delivered {
-  color: #166534;
-  background: #ecfdf3;
-  border-color: #bbf7d0;
-}
-
 .courier-accepted-order-card__title {
   margin: 0;
   font-size: 15px;

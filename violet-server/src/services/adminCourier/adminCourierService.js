@@ -8,6 +8,12 @@ const {
 const {
   deleteMessagesForCourier,
 } = require("../supportChat/supportChatService");
+const {
+  getCourierAssignmentStatusLabel,
+  getCourierAssignmentProgress,
+  pickAssignmentTimestamps,
+  normalizeCourierAssignmentStatus,
+} = require("../../utils/courierAssignmentStatus");
 
 function toAdminCourierJSON(account) {
   if (!account) return null;
@@ -147,6 +153,8 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
   function mapOrder(row) {
     const address = row.deliveryAddress || {};
     const customer = row.customer || {};
+    const status = normalizeCourierAssignmentStatus(row.status);
+    const timestamps = pickAssignmentTimestamps(row);
     return {
       id: String(row._id),
       orderId: Number(row.orderId) || 0,
@@ -160,9 +168,10 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
         ru: String(row.title?.ru || ""),
       },
       amount: Math.max(0, Number(row.amount) || 0),
-      status: String(row.status || "accepted"),
-      acceptedAt: row.acceptedAt || null,
-      deliveredAt: row.deliveredAt || null,
+      status,
+      statusLabel: getCourierAssignmentStatusLabel(status),
+      progress: getCourierAssignmentProgress(status),
+      ...timestamps,
       distanceKm:
         row.distanceKm == null || row.distanceKm === ""
           ? null
