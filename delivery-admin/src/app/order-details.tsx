@@ -222,7 +222,11 @@ export default function OrderDetailsScreen() {
           });
       setOrder(data);
       if (shouldOpenRouteOnAdvance(action)) {
-        await openRoute(data);
+        try {
+          await openRoute(data);
+        } catch {
+          // Marshrut ochilmasa ham status yangilangan — xato chiqarmaymiz
+        }
       }
     } catch (error) {
       const message =
@@ -319,6 +323,36 @@ export default function OrderDetailsScreen() {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Tasdiqlash amalga oshmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setReturning(false);
+    }
+  };
+
+  /** Admin allaqachon turni belgilagan — bitta tugma bilan sotuvchiga qaytarish */
+  const handleStartReturnToSeller = async () => {
+    if (!token || !order || returning || actionLoading) return;
+    const reasonType = order.approvedReturnReasonType;
+    if (reasonType !== 'no_answer' && reasonType !== 'return') {
+      setReturnModalMode('confirm');
+      setReturnModalOpen(true);
+      return;
+    }
+    setReturning(true);
+    try {
+      const data = await confirmReturnReason(token, {
+        assignmentId: order.id,
+        reasonType,
+      });
+      setOrder(data);
+      try {
+        await openRoute(data);
+      } catch {
+        // ignore route errors
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Qaytarishni boshlab bo‘lmadi';
       Alert.alert('Xatolik', message);
     } finally {
       setReturning(false);
@@ -650,7 +684,7 @@ export default function OrderDetailsScreen() {
               <View style={styles.footer}>
                 <DeliveryStepActions
                   order={order}
-                  loading={actionLoading}
+                  loading={actionLoading || returning}
                   layout="footer"
                   onAdvance={(action) => {
                     void handleAdvance(action);
@@ -664,6 +698,9 @@ export default function OrderDetailsScreen() {
                   onConfirmReturnReason={() => {
                     setReturnModalMode('confirm');
                     setReturnModalOpen(true);
+                  }}
+                  onStartReturnToSeller={() => {
+                    void handleStartReturnToSeller();
                   }}
                   onCompleteReturn={() => setCompleteReturnConfirmOpen(true)}
                 />

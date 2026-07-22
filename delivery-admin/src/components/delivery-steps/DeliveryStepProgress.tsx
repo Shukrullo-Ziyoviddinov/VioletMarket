@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { DeliveryStepBadge } from '@/components/delivery-steps/DeliveryStepBadge';
 import {
   getStepProgress,
+  isReturnPhase,
   isSellerPhase,
 } from '@/utils/deliveryOrderSteps';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
@@ -15,16 +16,31 @@ type DeliveryStepProgressProps = {
 
 const SELLER_STEPS = ['Ketdim', 'Keldim', 'Oldim'] as const;
 const CUSTOMER_STEPS = ['Ketdim', 'Keldim', 'Topshirish'] as const;
+const RETURN_STEPS = ['Ketdim', 'Keldim', 'Qaytardim'] as const;
 
 export function DeliveryStepProgress({
   order,
   withBadge = false,
 }: DeliveryStepProgressProps) {
-  const sellerActive = isSellerPhase(order);
-  const { sellerDone, customerDone } = getStepProgress(order);
-  const labels = sellerActive ? SELLER_STEPS : CUSTOMER_STEPS;
-  const done = sellerActive ? sellerDone : customerDone;
-  const activeColor = sellerActive ? '#C2410C' : '#15803D';
+  const returnActive = isReturnPhase(order);
+  const sellerActive = !returnActive && isSellerPhase(order);
+  const { sellerDone, customerDone, returnDone } = getStepProgress(order);
+
+  const labels = returnActive
+    ? RETURN_STEPS
+    : sellerActive
+      ? SELLER_STEPS
+      : CUSTOMER_STEPS;
+  const done = returnActive
+    ? returnDone
+    : sellerActive
+      ? sellerDone
+      : customerDone;
+  const activeColor = returnActive
+    ? '#DC2626'
+    : sellerActive
+      ? '#C2410C'
+      : '#15803D';
   const currentIndex = Math.min(done, labels.length - 1);
 
   const progress = (

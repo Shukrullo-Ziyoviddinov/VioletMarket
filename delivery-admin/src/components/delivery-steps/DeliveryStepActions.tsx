@@ -26,6 +26,7 @@ type DeliveryStepActionsProps = {
   onDeliver?: () => void;
   onReturn?: () => void;
   onConfirmReturnReason?: () => void;
+  onStartReturnToSeller?: () => void;
   onCompleteReturn?: () => void;
 };
 
@@ -47,6 +48,7 @@ function actionIcon(kind: DeliveryPrimaryActionKind): keyof typeof Ionicons.glyp
     case 'waiting_admin':
       return 'time-outline';
     case 'confirm_return_reason':
+    case 'start_return_to_seller':
       return 'return-down-back-outline';
     default:
       return 'ellipse-outline';
@@ -63,6 +65,7 @@ export function DeliveryStepActions({
   onDeliver,
   onReturn,
   onConfirmReturnReason,
+  onStartReturnToSeller,
   onCompleteReturn,
 }: DeliveryStepActionsProps) {
   const primary = getPrimaryAction(order);
@@ -99,6 +102,10 @@ export function DeliveryStepActions({
       onConfirmReturnReason?.();
       return;
     }
+    if (primary.kind === 'start_return_to_seller') {
+      onStartReturnToSeller?.();
+      return;
+    }
     if (primary.kind === 'complete_return') {
       onCompleteReturn?.();
     }
@@ -109,6 +116,7 @@ export function DeliveryStepActions({
     primary.kind === 'deliver' ||
     primary.kind === 'pick_up' ||
     primary.kind === 'complete_return';
+  const isReturnStart = primary.kind === 'start_return_to_seller';
 
   if (layout === 'footer') {
     return (
@@ -129,7 +137,13 @@ export function DeliveryStepActions({
           style={({ pressed }) => [
             styles.footerBtn,
             styles.primaryFooterBtn,
-            isWaiting ? styles.waitingBtn : isGreen ? styles.primaryGreen : styles.primaryPurple,
+            isWaiting
+              ? styles.waitingBtn
+              : isReturnStart
+                ? styles.returnStartBtn
+                : isGreen
+                  ? styles.primaryGreen
+                  : styles.primaryPurple,
             pressed && !isWaiting && styles.pressed,
             (loading || isWaiting) && styles.disabled,
             showAjdaniya ? styles.footerBtnFlex : styles.footerBtnFull,
@@ -167,7 +181,13 @@ export function DeliveryStepActions({
         disabled={loading || isWaiting}
         style={({ pressed }) => [
           styles.primaryCardBtn,
-          isWaiting ? styles.waitingBtn : isGreen ? styles.primaryGreen : styles.primaryPurple,
+          isWaiting
+            ? styles.waitingBtn
+            : isReturnStart
+              ? styles.returnStartBtn
+              : isGreen
+                ? styles.primaryGreen
+                : styles.primaryPurple,
           pressed && !isWaiting && styles.pressed,
           (loading || isWaiting) && styles.disabled,
         ]}
@@ -264,6 +284,9 @@ const styles = StyleSheet.create({
   },
   primaryGreen: {
     backgroundColor: '#15803D',
+  },
+  returnStartBtn: {
+    backgroundColor: '#DC2626',
   },
   waitingBtn: {
     backgroundColor: '#FEF3C7',

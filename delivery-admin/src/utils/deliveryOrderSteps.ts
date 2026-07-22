@@ -30,6 +30,7 @@ export type DeliveryPrimaryActionKind =
   | 'deliver'
   | 'request_return'
   | 'confirm_return_reason'
+  | 'start_return_to_seller'
   | 'complete_return'
   | 'waiting_admin'
   | 'none';
@@ -73,7 +74,8 @@ export function isSellerPhase(
   order: Pick<DeliveryAcceptedOrder, 'status' | 'pickupPhase'> | null | undefined,
 ) {
   if (!order) return true;
-  if (isReturnPhase(order)) return false;
+  // Qaytarish oqimi ham sotuvchi manziliga boradi
+  if (isReturnPhase(order)) return true;
   if (order.pickupPhase === 'customer') return false;
   if (order.pickupPhase === 'seller') return true;
   const status = getAssignmentStatus(order);
@@ -119,7 +121,7 @@ export function getStepBadgeLabel(
     case 'en_route_return_to_seller':
       return 'Sotuvchiga yo‘lda';
     case 'arrived_return_at_seller':
-      return 'Qaytarish';
+      return 'Sotuvchiga keldim';
     case 'returned':
       return 'Qaytarildi';
     default:
@@ -164,7 +166,10 @@ export function getPrimaryAction(
     case 'return_request_pending':
       return { kind: 'waiting_admin', label: 'Admin javobini kutmoqda' };
     case 'return_approved':
-      return { kind: 'confirm_return_reason', label: 'Qaytarishni tasdiqlash' };
+      return {
+        kind: 'start_return_to_seller',
+        label: 'Sotuvchiga qaytarish',
+      };
     case 'return_to_seller':
       return { kind: 'go_return_to_seller', label: 'Sotuvchiga borish' };
     case 'en_route_return_to_seller':
@@ -188,30 +193,32 @@ export function getStepProgress(
   const status = getAssignmentStatus(order);
   switch (status) {
     case 'accepted':
-      return { sellerDone: 0, customerDone: 0 };
+      return { sellerDone: 0, customerDone: 0, returnDone: 0 };
     case 'en_route_to_seller':
-      return { sellerDone: 1, customerDone: 0 };
+      return { sellerDone: 1, customerDone: 0, returnDone: 0 };
     case 'arrived_at_seller':
-      return { sellerDone: 2, customerDone: 0 };
+      return { sellerDone: 2, customerDone: 0, returnDone: 0 };
     case 'picked_up':
-      return { sellerDone: 3, customerDone: 0 };
+      return { sellerDone: 3, customerDone: 0, returnDone: 0 };
     case 'en_route_to_customer':
-      return { sellerDone: 3, customerDone: 1 };
+      return { sellerDone: 3, customerDone: 1, returnDone: 0 };
     case 'arrived_at_customer':
     case 'return_request_pending':
     case 'return_approved':
-      return { sellerDone: 3, customerDone: 2 };
+      return { sellerDone: 3, customerDone: 2, returnDone: 0 };
     case 'delivered':
-      return { sellerDone: 3, customerDone: 3 };
+      return { sellerDone: 3, customerDone: 3, returnDone: 0 };
+    // Qaytarish: Ketdim → Keldim → Qaytardim (0..3)
     case 'return_to_seller':
-      return { sellerDone: 1, customerDone: 0 };
+      return { sellerDone: 0, customerDone: 0, returnDone: 0 };
     case 'en_route_return_to_seller':
-      return { sellerDone: 2, customerDone: 0 };
+      return { sellerDone: 0, customerDone: 0, returnDone: 1 };
     case 'arrived_return_at_seller':
+      return { sellerDone: 0, customerDone: 0, returnDone: 2 };
     case 'returned':
-      return { sellerDone: 3, customerDone: 0 };
+      return { sellerDone: 0, customerDone: 0, returnDone: 3 };
     default:
-      return { sellerDone: 0, customerDone: 0 };
+      return { sellerDone: 0, customerDone: 0, returnDone: 0 };
   }
 }
 

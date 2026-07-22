@@ -334,13 +334,10 @@ async function rejectReturnRequest(requestId, payload = {}) {
  */
 async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
   const assignmentId = String(payload.assignmentId || payload.id || "").trim();
-  const reasonType = String(payload.reasonType || "").trim().toLowerCase();
+  let reasonType = String(payload.reasonType || "").trim().toLowerCase();
 
   if (!assignmentId) {
     throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
-  }
-  if (!REASON_TYPES.has(reasonType)) {
-    throw new HttpError(400, "Sabab turi noto‘g‘ri", "INVALID_REASON_TYPE");
   }
 
   const assignment = await CourierOrderAssignment.findById(assignmentId);
@@ -358,7 +355,35 @@ async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
     );
   }
 
-  const approved = String(assignment.approvedReturnReasonType || "");
+  let approved = String(assignment.approvedReturnReasonType || "").trim().toLowerCase();
+  if (!REASON_TYPES.has(approved)) {
+    const request = await CourierReturnRequest.findOne({
+      assignmentId: assignment._id,
+      status: "approved",
+    })
+      .sort({ reviewedAt: -1 })
+      .lean();
+    approved = String(request?.approvedReasonType || "").trim().toLowerCase();
+    if (REASON_TYPES.has(approved)) {
+      assignment.approvedReturnReasonType = approved;
+    }
+  }
+
+  if (!REASON_TYPES.has(approved)) {
+    throw new HttpError(
+      409,
+      "Admin qaytarish turini belgilamagan",
+      "RETURN_REASON_MISSING",
+    );
+  }
+
+  // Client tur yubormasa — admin belgilagan tur ishlatiladi
+  if (!reasonType) {
+    reasonType = approved;
+  }
+  if (!REASON_TYPES.has(reasonType)) {
+    throw new HttpError(400, "Sabab turi noto‘g‘ri", "INVALID_REASON_TYPE");
+  }
   if (approved !== reasonType) {
     throw new HttpError(
       409,
@@ -381,6 +406,7 @@ async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
   }
 
   assignment.status = "return_to_seller";
+  assignment.approvedReturnReasonType = approved;
   await assignment.save();
   return mapAssignmentPublic(assignment);
 }

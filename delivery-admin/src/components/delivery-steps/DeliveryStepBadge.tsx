@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import {
   getStepBadgeLabel,
+  isReturnPhase,
   isSellerPhase,
 } from '@/utils/deliveryOrderSteps';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
@@ -11,17 +12,27 @@ type DeliveryStepBadgeProps = {
 };
 
 export function DeliveryStepBadge({ order }: DeliveryStepBadgeProps) {
-  const sellerPhase = isSellerPhase(order);
+  const returnPhase = isReturnPhase(order);
+  const sellerPhase = !returnPhase && isSellerPhase(order);
+
   return (
     <View
       style={[
         styles.badge,
-        sellerPhase ? styles.badgeSeller : styles.badgeCustomer,
+        returnPhase
+          ? styles.badgeReturn
+          : sellerPhase
+            ? styles.badgeSeller
+            : styles.badgeCustomer,
       ]}>
       <Text
         style={[
           styles.text,
-          sellerPhase ? styles.textSeller : styles.textCustomer,
+          returnPhase
+            ? styles.textReturn
+            : sellerPhase
+              ? styles.textSeller
+              : styles.textCustomer,
         ]}>
         {getStepBadgeLabel(order)}
       </Text>
@@ -46,6 +57,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BBF7D0',
   },
+  badgeReturn: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
   text: {
     fontSize: 12,
     fontWeight: '800',
@@ -55,5 +71,8 @@ const styles = StyleSheet.create({
   },
   textCustomer: {
     color: '#15803D',
+  },
+  textReturn: {
+    color: '#DC2626',
   },
 });
