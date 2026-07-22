@@ -36,8 +36,9 @@ async function incrementSellerOrderCounts(requestedByProductId, productMap) {
 }
 
 /**
- * Checkout: faqat ombor rezervi (qoldiq kamayadi).
+ * Checkout: ombor rezervi (qoldiq kamayadi, reservedQuantity oshadi).
  * «Sotildi» foizi / ranking — Topshirdim da recordProductSoldDisplayMetrics.
+ * reservedQuantity: sotilmagan, lekin buyurtmada band — sold % oshmasligi uchun.
  */
 async function reserveProductsOnCheckout({
   requestedByProductId,
@@ -57,7 +58,7 @@ async function reserveProductsOnCheckout({
     if (hasRootQty) {
       const result = await Product.updateOne(
         { id: productId, quantity: { $gte: requestedQty } },
-        { $inc: { quantity: -requestedQty } },
+        { $inc: { quantity: -requestedQty, reservedQuantity: requestedQty } },
       );
       if (result.modifiedCount !== 1 && !hasVariantStock) {
         throw new HttpError(
@@ -73,6 +74,12 @@ async function reserveProductsOnCheckout({
         `Mahsulot qoldig'i yangilash vaqtida o'zgardi: ${productId}`,
         "INSUFFICIENT_STOCK",
         [{ productId, requestedQty }],
+      );
+    } else {
+      // Faqat variant stock — qoldiq variantlarda, lekin sold % uchun rezervni yozamiz.
+      await Product.updateOne(
+        { id: productId },
+        { $inc: { reservedQuantity: requestedQty } },
       );
     }
   }
@@ -131,7 +138,23 @@ async function recordProductSoldDisplayMetrics(productQtyMap = new Map()) {
     ops.push({
       updateOne: {
         filter: { id: productId },
-        update: { $inc: { flashSaleSoldCount: soldQty } },
+        update: [
+          {
+            $set: {
+              flashSaleSoldCount: {
+                $add: [{ $ifNull: ["$flashSaleSoldCount", 0] }, soldQty],
+              },
+              reservedQuantity: {
+                $max: [
+                  0,
+                  {
+                    $subtract: [{ $ifNull: ["$reservedQuantity", 0] }, soldQty],
+                  },
+                ],
+              },
+            },
+          },
+        ],
       },
     });
 

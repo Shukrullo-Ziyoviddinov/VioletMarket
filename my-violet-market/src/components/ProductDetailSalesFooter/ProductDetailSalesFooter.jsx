@@ -26,7 +26,8 @@ const ProductDetailSalesFooter = ({ meta, remainingQuantity = 0, soldCount = 0 }
   const normalized = useMemo(() => {
     const safeRemaining = toNonNegativeInt(meta?.remainingQuantity ?? remainingQuantity);
     const safeSold = toNonNegativeInt(meta?.soldCount ?? soldCount);
-    const total = safeRemaining + safeSold;
+    const safeReserved = toNonNegativeInt(meta?.reservedQuantity);
+    const total = safeRemaining + safeSold + safeReserved;
 
     const soldPercent =
       meta?.soldPercent != null

@@ -142,6 +142,7 @@ function buildFlashSaleMeta(product, cartHeldCount, rules = DEFAULT_RULES) {
   };
   const remainingQuantity = resolveRemainingQuantity(product);
   const soldCount = toPositiveInt(product?.flashSaleSoldCount);
+  const reservedQuantity = toPositiveInt(product?.reservedQuantity);
   const inCartCount = toPositiveInt(cartHeldCount);
   const signals = buildSignals({
     remainingQuantity,
@@ -150,7 +151,8 @@ function buildFlashSaleMeta(product, cartHeldCount, rules = DEFAULT_RULES) {
   }, normalizedRules);
   const autoFlashEnabled = normalizedRules.active && signals.length > 0 && remainingQuantity > 0;
   const flashSaleActive = autoFlashEnabled;
-  const totalForProgress = remainingQuantity + soldCount;
+  // reservedQuantity: checkout bandi — sold % faqat Topshirdim da o‘zgaradi
+  const totalForProgress = remainingQuantity + soldCount + reservedQuantity;
   const soldPercent =
     totalForProgress > 0
       ? Math.max(0, Math.min(100, Math.round((soldCount / totalForProgress) * 100)))

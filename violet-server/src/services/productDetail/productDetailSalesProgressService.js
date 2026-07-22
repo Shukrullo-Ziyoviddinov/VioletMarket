@@ -23,7 +23,10 @@ function buildProductDetailSalesProgressMeta(product) {
     product?.effectiveQuantity ?? product?.quantity,
     0,
   );
-  const total = soldCount + remainingQuantity;
+  // Checkout band qilgan, lekin hali topshirilmagan donalar.
+  // Ularni denominatorga qo‘shmasak, qoldiq kamayganda «sotildi %» noto‘g‘ri oshadi.
+  const reservedQuantity = toNonNegativeInt(product?.reservedQuantity, 0);
+  const total = soldCount + remainingQuantity + reservedQuantity;
 
   const soldPercent = total > 0 ? clampPercent((soldCount / total) * 100) : 0;
   const remainingPercent = total > 0 ? clampPercent((remainingQuantity / total) * 100) : 100;
@@ -31,6 +34,7 @@ function buildProductDetailSalesProgressMeta(product) {
   return {
     soldCount,
     remainingQuantity,
+    reservedQuantity,
     soldPercent,
     remainingPercent,
     tone: resolveProgressTone(remainingPercent),
