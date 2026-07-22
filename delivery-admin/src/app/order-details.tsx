@@ -18,6 +18,7 @@ import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal
 import { DeliveryStepActions } from '@/components/delivery-steps/DeliveryStepActions';
 import { DeliveryStepProgress } from '@/components/delivery-steps/DeliveryStepProgress';
 import { OrderPaymentNotice } from '@/components/payment/OrderPaymentNotice';
+import { CollectCashPaymentSheet } from '@/components/payment/CollectCashPaymentSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
@@ -37,6 +38,7 @@ import {
   shouldOpenRouteOnAdvance,
   type DeliveryAdvanceAction,
 } from '@/utils/deliveryOrderSteps';
+import { resolveOrderPaid } from '@/utils/orderPayment';
 
 function productTitle(order: DeliveryAcceptedOrder) {
   return (
@@ -143,11 +145,19 @@ export default function OrderDetailsScreen() {
   const [actionLoading, setActionLoading] = useState(false);
   const [pickupConfirmOpen, setPickupConfirmOpen] = useState(false);
   const [deliverConfirmOpen, setDeliverConfirmOpen] = useState(false);
+  const [cashCollectOpen, setCashCollectOpen] = useState(false);
+  const [cashCollected, setCashCollected] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [returning, setReturning] = useState(false);
   const [deliveredSnapshot, setDeliveredSnapshot] =
     useState<DeliveryAcceptedOrder | null>(null);
+
+  useEffect(() => {
+    setCashCollected(false);
+    setCashCollectOpen(false);
+    setDeliverConfirmOpen(false);
+  }, [assignmentId]);
 
   const load = useCallback(async () => {
     if (!token || !assignmentId) return;
@@ -171,6 +181,16 @@ export default function OrderDetailsScreen() {
       void load();
     }, [load]),
   );
+
+  const requestDeliver = () => {
+    if (!order) return;
+    const unpaid = !resolveOrderPaid(order);
+    if (unpaid && !cashCollected) {
+      setCashCollectOpen(true);
+      return;
+    }
+    setDeliverConfirmOpen(true);
+  };
 
   const handleAdvance = async (action: DeliveryAdvanceAction) => {
     if (!token || !order || actionLoading) return;
@@ -310,6 +330,7 @@ export default function OrderDetailsScreen() {
                 <OrderPaymentNotice
                   amount={order.amount}
                   isPaid={order.isPaid}
+                  paymentMethod={order.paymentMethod}
                   paymentStatus={order.paymentStatus}
                   variant="seller"
                 />
@@ -400,6 +421,7 @@ export default function OrderDetailsScreen() {
               <OrderPaymentNotice
                 amount={order.amount}
                 isPaid={order.isPaid}
+                paymentMethod={order.paymentMethod}
                 paymentStatus={order.paymentStatus}
                 variant="customer"
               />
@@ -570,7 +592,7 @@ export default function OrderDetailsScreen() {
                     void handleAdvance(action);
                   }}
                   onPickUp={() => setPickupConfirmOpen(true)}
-                  onDeliver={() => setDeliverConfirmOpen(true)}
+                  onDeliver={requestDeliver}
                   onReturn={() => setReturnModalOpen(true)}
                 />
               </View>
@@ -578,6 +600,16 @@ export default function OrderDetailsScreen() {
           </>
         )}
       </View>
+
+      <CollectCashPaymentSheet
+        visible={cashCollectOpen}
+        dueAmount={Math.max(0, Number(order?.amount) || 0)}
+        onClose={() => setCashCollectOpen(false)}
+        onConfirm={() => {
+          setCashCollected(true);
+          setCashCollectOpen(false);
+        }}
+      />
 
       <MiniGlobalModal
         visible={pickupConfirmOpen}

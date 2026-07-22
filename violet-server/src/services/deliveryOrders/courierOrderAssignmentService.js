@@ -229,6 +229,9 @@ function toPublicAssignment(doc, extras = {}) {
     courierPayment: Math.max(0, Number(row.courierPayment) || 0),
     createdAt: row.createdAt || null,
     isPaid,
+    paymentMethod: String(
+      extras.paymentMethod || row.paymentMethod || "",
+    ),
     paymentStatus: String(extras.paymentStatus || row.paymentStatus || ""),
     orderedAt: extras.orderedAt || row.orderedAt || null,
   };
@@ -239,13 +242,14 @@ async function loadOrderPaymentMap(orderIds = []) {
   if (!ids.length) return new Map();
 
   const orders = await Order.find({ id: { $in: ids } })
-    .select("id status paidAt createdAt")
+    .select("id status paidAt createdAt paymentMethod")
     .lean();
 
   const map = new Map();
   for (const order of orders) {
     map.set(Number(order.id), {
       isPaid: isOrderPaid(order),
+      paymentMethod: String(order.paymentMethod || ""),
       paymentStatus: String(order.status || ""),
       orderedAt: order.createdAt || null,
     });

@@ -8,6 +8,7 @@ import {
 type OrderPaymentAmountProps = {
   amount: number;
   isPaid?: boolean;
+  paymentMethod?: string;
   paymentStatus?: string;
   size?: 'sm' | 'md';
 };
@@ -20,10 +21,11 @@ type OrderPaymentAmountProps = {
 export function OrderPaymentAmount({
   amount,
   isPaid,
+  paymentMethod,
   paymentStatus,
   size = 'md',
 }: OrderPaymentAmountProps) {
-  const paid = resolveOrderPaid({ isPaid, paymentStatus });
+  const paid = resolveOrderPaid({ isPaid, paymentMethod, paymentStatus });
   const textStyle = size === 'sm' ? styles.textSm : styles.textMd;
 
   if (paid) {

@@ -42,6 +42,7 @@ export function AcceptedOrderCard({
         <OrderPaymentAmount
           amount={order.amount}
           isPaid={order.isPaid}
+          paymentMethod={order.paymentMethod}
           paymentStatus={order.paymentStatus}
           size="sm"
         />

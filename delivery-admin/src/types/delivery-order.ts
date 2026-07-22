@@ -14,6 +14,7 @@ export type DeliveryAvailableOrder = {
   productCount: number;
   amount: number;
   isPaid?: boolean;
+  paymentMethod?: string;
   paymentStatus?: string;
   orderedAt: string | null;
   handedToCourierAt: string | null;
@@ -90,6 +91,7 @@ export type DeliveryAcceptedOrder = {
   distanceKm?: number | null;
   courierPayment?: number;
   isPaid?: boolean;
+  paymentMethod?: string;
   paymentStatus?: string;
   orderedAt?: string | null;
 };

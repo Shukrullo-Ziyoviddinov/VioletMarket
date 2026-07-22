@@ -50,6 +50,7 @@ export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps
         <OrderPaymentAmount
           amount={order.amount}
           isPaid={order.isPaid}
+          paymentMethod={order.paymentMethod}
           paymentStatus={order.paymentStatus}
         />
       </View>

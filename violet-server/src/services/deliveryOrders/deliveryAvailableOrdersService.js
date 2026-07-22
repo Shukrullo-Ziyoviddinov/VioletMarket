@@ -10,13 +10,10 @@ const {
 const {
   parseCityDistrictFromLine,
 } = require("../../utils/normalizeDeliveryAddress");
-
-function isOrderPaid(order) {
-  if (!order) return false;
-  const status = String(order.status || "");
-  if (status === "paid" || status === "delivered") return true;
-  return Boolean(order.paidAt);
-}
+const { isOrderPaid } = require("./courierReturnOrderService");
+const {
+  resolveStoredPaymentMethod,
+} = require("../../productManagement/paymentMethods");
 
 function toRad(value) {
   return (Number(value) * Math.PI) / 180;
@@ -103,6 +100,7 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     productCount: 1,
     amount: unitPrice,
     isPaid: isOrderPaid(order),
+    paymentMethod: resolveStoredPaymentMethod(order?.paymentMethod),
     paymentStatus: String(order?.status || ""),
     orderedAt: order?.paidAt || order?.createdAt || null,
     handedToCourierAt: handedEntry?.at || null,

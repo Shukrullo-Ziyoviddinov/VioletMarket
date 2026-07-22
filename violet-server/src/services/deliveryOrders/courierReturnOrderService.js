@@ -8,6 +8,9 @@ const {
   getIsoWeekFromYmd,
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey } = require("../adminSales/salesStatisticsHelpers");
+const {
+  resolveStoredPaymentMethod,
+} = require("../../productManagement/paymentMethods");
 
 const REASON_TYPES = new Set(["no_answer", "return"]);
 const RETURNABLE_STATUSES = new Set([
@@ -16,8 +19,16 @@ const RETURNABLE_STATUSES = new Set([
   "arrived_at_customer",
 ]);
 
+/**
+ * Kuryer uchun: online (payme/click) = to‘langan.
+ * Naqd (on_delivery) = hali olinmagan — status "paid" bo‘lsa ham.
+ */
 function isOrderPaid(order) {
   if (!order) return false;
+  const method = resolveStoredPaymentMethod(order.paymentMethod);
+  if (method === "on_delivery") return false;
+  if (method === "payme" || method === "click") return true;
+
   const status = String(order.status || "");
   if (status === "paid" || status === "delivered") return true;
   return Boolean(order.paidAt);

@@ -8,6 +8,7 @@ import {
 type OrderPaymentNoticeProps = {
   amount: number;
   isPaid?: boolean;
+  paymentMethod?: string;
   paymentStatus?: string;
   /** seller = olish bosqichi; customer = yetkazish bosqichi */
   variant: 'seller' | 'customer';
@@ -21,10 +22,11 @@ type OrderPaymentNoticeProps = {
 export function OrderPaymentNotice({
   amount,
   isPaid,
+  paymentMethod,
   paymentStatus,
   variant,
 }: OrderPaymentNoticeProps) {
-  const paid = resolveOrderPaid({ isPaid, paymentStatus });
+  const paid = resolveOrderPaid({ isPaid, paymentMethod, paymentStatus });
 
   if (variant === 'customer') {
     if (paid) return null;
