@@ -10,20 +10,30 @@ import {
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import type { ReturnReasonType } from '@/services/delivery-orders';
 
+export type OrderReturnModalMode = 'request' | 'confirm';
+
 type OrderReturnReasonModalProps = {
   visible: boolean;
   isPaid: boolean;
   submitting?: boolean;
+  /** request = admin so‘rovi; confirm = admin tanlagan tugma */
+  mode?: OrderReturnModalMode;
+  /** confirm rejimida faqat shu tur aktiv */
+  approvedReasonType?: ReturnReasonType | null;
   onClose: () => void;
-  onSubmit: (payload: { reasonType: ReturnReasonType; comment: string }) => void;
+  onSubmitRequest?: (payload: { comment: string }) => void;
+  onSubmitReason?: (payload: { reasonType: ReturnReasonType }) => void;
 };
 
 export function OrderReturnReasonModal({
   visible,
   isPaid,
   submitting = false,
+  mode = 'request',
+  approvedReasonType = null,
   onClose,
-  onSubmit,
+  onSubmitRequest,
+  onSubmitReason,
 }: OrderReturnReasonModalProps) {
   const [comment, setComment] = useState('');
 
@@ -31,76 +41,145 @@ export function OrderReturnReasonModal({
     if (!visible) setComment('');
   }, [visible]);
 
-  const handleSubmit = (reasonType: ReturnReasonType) => {
+  const isConfirm = mode === 'confirm';
+  const title = isConfirm
+    ? 'Admin tasdiqlagan qaytarish'
+    : 'Qaytarish so‘rovi';
+
+  const handleReason = (reasonType: ReturnReasonType) => {
     if (submitting) return;
-    if (reasonType === 'no_answer' && !isPaid) return;
-    onSubmit({ reasonType, comment: comment.trim() });
+    if (isConfirm) {
+      if (approvedReasonType && approvedReasonType !== reasonType) return;
+      if (reasonType === 'no_answer' && !isPaid) return;
+      onSubmitReason?.({ reasonType });
+      return;
+    }
+  };
+
+  const handleRequest = () => {
+    if (submitting) return;
+    onSubmitRequest?.({ comment: comment.trim() });
   };
 
   return (
     <MiniGlobalModal
       visible={visible}
-      title="Mahsulot nima sababdan qaytarilmoqda"
+      title={title}
       onCancel={() => {
         if (!submitting) onClose();
       }}
       footer={
-        <>
-          <Pressable
-            disabled={submitting || !isPaid}
-            style={({ pressed }) => [
-              styles.button,
-              styles.secondaryButton,
-              (!isPaid || submitting) && styles.disabledButton,
-              pressed && isPaid && !submitting && styles.secondaryPressed,
-            ]}
-            onPress={() => handleSubmit('no_answer')}>
-            {submitting ? (
-              <ActivityIndicator color="#DC2626" />
-            ) : (
-              <Text
-                style={[
-                  styles.secondaryText,
-                  !isPaid && styles.disabledText,
-                ]}>
-                Javob bermadi
-              </Text>
-            )}
-          </Pressable>
+        isConfirm ? (
+          <>
+            <Pressable
+              disabled={
+                submitting ||
+                !isPaid ||
+                (approvedReasonType != null && approvedReasonType !== 'no_answer')
+              }
+              style={({ pressed }) => [
+                styles.button,
+                styles.secondaryButton,
+                (submitting ||
+                  !isPaid ||
+                  (approvedReasonType != null &&
+                    approvedReasonType !== 'no_answer')) &&
+                  styles.disabledButton,
+                pressed &&
+                  isPaid &&
+                  !submitting &&
+                  approvedReasonType !== 'return' &&
+                  styles.secondaryPressed,
+              ]}
+              onPress={() => handleReason('no_answer')}>
+              {submitting && approvedReasonType === 'no_answer' ? (
+                <ActivityIndicator color="#DC2626" />
+              ) : (
+                <Text
+                  style={[
+                    styles.secondaryText,
+                    (!isPaid ||
+                      (approvedReasonType != null &&
+                        approvedReasonType !== 'no_answer')) &&
+                      styles.disabledText,
+                  ]}>
+                  Javob bermadi
+                </Text>
+              )}
+            </Pressable>
+            <Pressable
+              disabled={
+                submitting ||
+                (approvedReasonType != null && approvedReasonType !== 'return')
+              }
+              style={({ pressed }) => [
+                styles.button,
+                styles.primaryButton,
+                (submitting ||
+                  (approvedReasonType != null &&
+                    approvedReasonType !== 'return')) &&
+                  styles.disabledButton,
+                pressed &&
+                  !submitting &&
+                  approvedReasonType !== 'no_answer' &&
+                  styles.primaryPressed,
+              ]}
+              onPress={() => handleReason('return')}>
+              {submitting && approvedReasonType === 'return' ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryText}>Qaytarish</Text>
+              )}
+            </Pressable>
+          </>
+        ) : (
           <Pressable
             disabled={submitting}
             style={({ pressed }) => [
               styles.button,
               styles.primaryButton,
+              styles.fullButton,
               submitting && styles.disabledButton,
               pressed && !submitting && styles.primaryPressed,
             ]}
-            onPress={() => handleSubmit('return')}>
+            onPress={handleRequest}>
             {submitting ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.primaryText}>Qaytarish</Text>
+              <Text style={styles.primaryText}>So‘rov yuborish</Text>
             )}
           </Pressable>
-        </>
+        )
       }>
-      {!isPaid ? (
+      {isConfirm ? (
         <Text style={styles.paidHint}>
-          To‘lov qilinmagan buyurtmada faqat «Qaytarish» ishlaydi. «Javob
-          bermadi» faqat to‘lov qilingan buyurtmada.
+          Faqat admin tanlagan tugma ishlaydi
+          {approvedReasonType === 'no_answer'
+            ? ': Javob bermadi'
+            : approvedReasonType === 'return'
+              ? ': Qaytarish'
+              : ''}
+          .
         </Text>
-      ) : null}
-      <Text style={styles.hint}>Izoh</Text>
-      <TextInput
-        value={comment}
-        onChangeText={setComment}
-        editable={!submitting}
-        placeholder="Nima sababdan javob bermadi / qaytarilmoqda..."
-        placeholderTextColor="#9CA3AF"
-        multiline
-        textAlignVertical="top"
-        style={styles.input}
-      />
+      ) : (
+        <>
+          <Text style={styles.paidHint}>
+            So‘rov asosiy adminga yuboriladi. Tasdiqlanguncha qaytarish
+            tugmalari ochilmaydi.
+          </Text>
+          <Text style={styles.hint}>Izoh</Text>
+          <TextInput
+            value={comment}
+            onChangeText={setComment}
+            editable={!submitting}
+            placeholder="Nima sababdan qaytarilishi kerak..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            textAlignVertical="top"
+            style={styles.input}
+          />
+        </>
+      )}
     </MiniGlobalModal>
   );
 }
@@ -142,6 +221,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 15,
     paddingHorizontal: 8,
+  },
+  fullButton: {
+    flex: 1,
   },
   secondaryButton: {
     borderWidth: 1,

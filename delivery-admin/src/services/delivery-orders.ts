@@ -144,21 +144,68 @@ export async function fetchDeliveredHistory(token: string) {
 
 export type ReturnReasonType = 'no_answer' | 'return';
 
+/** Ajdaniya → admin so‘rovi */
 export async function returnDeliveryOrder(
   token: string,
   payload: {
     assignmentId: string;
-    reasonType: ReturnReasonType;
     comment?: string;
   },
 ) {
   return apiRequest<{
-    id: string;
-    assignmentId: string;
-    reasonType: ReturnReasonType;
-    returnedAt: string | null;
+    request: { id: string; status: string };
+    assignment: DeliveryAcceptedOrder;
   }>(
     '/api/delivery/orders/return',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
+export async function confirmReturnReason(
+  token: string,
+  payload: { assignmentId: string; reasonType: ReturnReasonType },
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    '/api/delivery/orders/return/confirm-reason',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
+export type DeliveryReturnAdvanceAction =
+  | 'go_return_to_seller'
+  | 'arrive_return_seller';
+
+export async function advanceReturnDeliveryStep(
+  token: string,
+  payload: { assignmentId: string; action: DeliveryReturnAdvanceAction },
+) {
+  return apiRequest<DeliveryAcceptedOrder>(
+    '/api/delivery/orders/return/advance',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
+export async function completeReturnDeliveryOrder(
+  token: string,
+  payload: { assignmentId: string },
+) {
+  return apiRequest<{
+    returned: { id: string; reasonType: ReturnReasonType };
+    assignment: DeliveryAcceptedOrder;
+  }>(
+    '/api/delivery/orders/return/complete',
     {
       method: 'POST',
       body: JSON.stringify(payload),

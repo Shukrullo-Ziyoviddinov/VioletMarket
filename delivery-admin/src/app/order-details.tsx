@@ -23,6 +23,9 @@ import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { useAuth } from '@/providers/AuthProvider';
 import {
   advanceDeliveryOrderStep,
+  advanceReturnDeliveryStep,
+  completeReturnDeliveryOrder,
+  confirmReturnReason,
   deliverDeliveryOrder,
   fetchAcceptedDeliveryOrder,
   pickUpDeliveryOrder,
@@ -34,6 +37,7 @@ import { openYandexRoute } from '@/services/open-yandex-route';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
 import {
   getPrimaryAction,
+  isReturnPhase,
   isSellerPhase,
   shouldOpenRouteOnAdvance,
   type DeliveryAdvanceAction,
@@ -82,7 +86,7 @@ function sellerAddressText(order: DeliveryAcceptedOrder) {
 }
 
 async function openRoute(order: DeliveryAcceptedOrder) {
-  if (isSellerPhase(order)) {
+  if (isSellerPhase(order) || isReturnPhase(order)) {
     const seller = order.sellerPickup;
     const opened = await openYandexRoute({
       coords: seller?.coordinates || null,
@@ -149,7 +153,12 @@ export default function OrderDetailsScreen() {
   const [cashCollected, setCashCollected] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returnModalMode, setReturnModalMode] = useState<'request' | 'confirm'>(
+    'request',
+  );
   const [returning, setReturning] = useState(false);
+  const [completeReturnConfirmOpen, setCompleteReturnConfirmOpen] =
+    useState(false);
   const [deliveredSnapshot, setDeliveredSnapshot] =
     useState<DeliveryAcceptedOrder | null>(null);
 
@@ -196,10 +205,21 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
-      const data = await advanceDeliveryOrderStep(token, {
-        assignmentId: order.id,
-        action,
-      });
+      const isReturnAdvance =
+        action === 'go_return_to_seller' || action === 'arrive_return_seller';
+      const data = isReturnAdvance
+        ? await advanceReturnDeliveryStep(token, {
+            assignmentId: order.id,
+            action,
+          })
+        : await advanceDeliveryOrderStep(token, {
+            assignmentId: order.id,
+            action: action as
+              | 'go_to_seller'
+              | 'arrive_seller'
+              | 'go_to_customer'
+              | 'arrive_customer',
+          });
       setOrder(data);
       if (shouldOpenRouteOnAdvance(action)) {
         await openRoute(data);
@@ -257,24 +277,68 @@ export default function OrderDetailsScreen() {
     }
   };
 
-  const handleReturn = async (payload: {
+  const handleReturnRequest = async (payload: { comment: string }) => {
+    if (!token || !order || returning) return;
+    setReturning(true);
+    try {
+      const data = await returnDeliveryOrder(token, {
+        assignmentId: order.id,
+        comment: payload.comment,
+      });
+      setOrder(data.assignment);
+      setReturnModalOpen(false);
+      Alert.alert(
+        'So‘rov yuborildi',
+        'Asosiy admin tasdiqlamaguncha qaytarish tugmalari ochilmaydi.',
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'So‘rov yuborilmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setReturning(false);
+    }
+  };
+
+  const handleConfirmReturnReason = async (payload: {
     reasonType: ReturnReasonType;
-    comment: string;
   }) => {
     if (!token || !order || returning) return;
     setReturning(true);
     try {
-      await returnDeliveryOrder(token, {
+      const data = await confirmReturnReason(token, {
         assignmentId: order.id,
         reasonType: payload.reasonType,
-        comment: payload.comment,
       });
+      setOrder(data);
       setReturnModalOpen(false);
       Alert.alert(
+        'Qaytarish boshlandi',
+        'Endi «Sotuvchiga borish» orqali mahsulotni qaytarishingiz mumkin.',
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Tasdiqlash amalga oshmadi';
+      Alert.alert('Xatolik', message);
+    } finally {
+      setReturning(false);
+    }
+  };
+
+  const handleCompleteReturn = async () => {
+    if (!token || !order || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const data = await completeReturnDeliveryOrder(token, {
+        assignmentId: order.id,
+      });
+      setCompleteReturnConfirmOpen(false);
+      setOrder(data.assignment);
+      Alert.alert(
         'Qaytarildi',
-        payload.reasonType === 'no_answer'
-          ? 'Buyurtma «Javob bermadi» sifatida siller adminiga yuborildi'
-          : 'Mahsulot qaytarildi va siller adminiga yuborildi',
+        data.returned?.reasonType === 'no_answer'
+          ? 'Buyurtma «Javob bermadi» sifatida yozildi, ombor yangilandi.'
+          : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
         [{ text: 'OK', onPress: () => router.replace('/home') }],
       );
     } catch (error) {
@@ -282,7 +346,7 @@ export default function OrderDetailsScreen() {
         error instanceof Error ? error.message : 'Qaytarish amalga oshmadi';
       Alert.alert('Xatolik', message);
     } finally {
-      setReturning(false);
+      setActionLoading(false);
     }
   };
 
@@ -582,7 +646,7 @@ export default function OrderDetailsScreen() {
               </View>
             </ScrollView>
 
-            {order.status !== 'delivered' ? (
+            {order.status !== 'delivered' && order.status !== 'returned' ? (
               <View style={styles.footer}>
                 <DeliveryStepActions
                   order={order}
@@ -593,7 +657,15 @@ export default function OrderDetailsScreen() {
                   }}
                   onPickUp={() => setPickupConfirmOpen(true)}
                   onDeliver={requestDeliver}
-                  onReturn={() => setReturnModalOpen(true)}
+                  onReturn={() => {
+                    setReturnModalMode('request');
+                    setReturnModalOpen(true);
+                  }}
+                  onConfirmReturnReason={() => {
+                    setReturnModalMode('confirm');
+                    setReturnModalOpen(true);
+                  }}
+                  onCompleteReturn={() => setCompleteReturnConfirmOpen(true)}
                 />
               </View>
             ) : null}
@@ -664,11 +736,32 @@ export default function OrderDetailsScreen() {
         visible={returnModalOpen}
         isPaid={Boolean(order?.isPaid)}
         submitting={returning}
+        mode={returnModalMode}
+        approvedReasonType={order?.approvedReturnReasonType || null}
         onClose={() => {
           if (!returning) setReturnModalOpen(false);
         }}
-        onSubmit={handleReturn}
+        onSubmitRequest={handleReturnRequest}
+        onSubmitReason={handleConfirmReturnReason}
       />
+
+      <MiniGlobalModal
+        visible={completeReturnConfirmOpen}
+        title="Sotuvchiga qaytarish"
+        confirmText="Ha"
+        cancelText="Yo‘q"
+        loading={actionLoading}
+        loadingText="Qaytarilmoqda..."
+        onCancel={() => {
+          if (!actionLoading) setCompleteReturnConfirmOpen(false);
+        }}
+        onConfirm={() => {
+          void handleCompleteReturn();
+        }}>
+        <Text style={{ color: '#374151', fontSize: 14, lineHeight: 20 }}>
+          Mahsulotni sotuvchiga qaytarganingizni tasdiqlaysizmi?
+        </Text>
+      </MiniGlobalModal>
     </SafeAreaView>
   );
 }

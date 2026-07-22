@@ -15,9 +15,7 @@ const {
 const {
   listDeliveredHistoryForCourier,
 } = require("../services/deliveryOrders/courierDeliveredHistoryService");
-const {
-  returnOrderUnitByCourier,
-} = require("../services/deliveryOrders/courierReturnOrderService");
+const courierReturnRequestController = require("./courierReturnRequestController");
 
 const listAvailableOrders = asyncHandler(async (req, res) => {
   const data = await listAvailableDeliveryOrders(req.query || {});
@@ -48,11 +46,10 @@ const deliverOrder = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
-const returnOrder = asyncHandler(async (req, res) => {
-  const body = req.body && typeof req.body === "object" ? req.body : {};
-  const data = await returnOrderUnitByCourier(req.deliveryId, body);
-  res.json({ ok: true, data });
-});
+const returnOrder = courierReturnRequestController.createReturnRequest;
+const confirmReturnReason = courierReturnRequestController.confirmReturnReason;
+const advanceReturnStep = courierReturnRequestController.advanceReturnStep;
+const completeReturn = courierReturnRequestController.completeReturn;
 
 const listAcceptedOrders = asyncHandler(async (req, res) => {
   const data = await listAcceptedOrdersForCourier(req.deliveryId, req.query || {});
@@ -76,6 +73,9 @@ module.exports = {
   advanceOrderStep,
   deliverOrder,
   returnOrder,
+  confirmReturnReason,
+  advanceReturnStep,
+  completeReturn,
   listAcceptedOrders,
   getAcceptedOrder,
   listDeliveredHistory,

@@ -8,18 +8,30 @@ export type DeliveryAssignmentStatus =
   | 'en_route_to_customer'
   | 'arrived_at_customer'
   | 'delivered'
-  | 'cancelled';
+  | 'cancelled'
+  | 'return_request_pending'
+  | 'return_approved'
+  | 'return_to_seller'
+  | 'en_route_return_to_seller'
+  | 'arrived_return_at_seller'
+  | 'returned';
 
 export type DeliveryAdvanceAction =
   | 'go_to_seller'
   | 'arrive_seller'
   | 'go_to_customer'
-  | 'arrive_customer';
+  | 'arrive_customer'
+  | 'go_return_to_seller'
+  | 'arrive_return_seller';
 
 export type DeliveryPrimaryActionKind =
   | DeliveryAdvanceAction
   | 'pick_up'
   | 'deliver'
+  | 'request_return'
+  | 'confirm_return_reason'
+  | 'complete_return'
+  | 'waiting_admin'
   | 'none';
 
 const SELLER_STATUSES = new Set<string>([
@@ -32,6 +44,14 @@ const CUSTOMER_STATUSES = new Set<string>([
   'picked_up',
   'en_route_to_customer',
   'arrived_at_customer',
+  'return_request_pending',
+  'return_approved',
+]);
+
+const RETURN_STATUSES = new Set<string>([
+  'return_to_seller',
+  'en_route_return_to_seller',
+  'arrived_return_at_seller',
 ]);
 
 export function getAssignmentStatus(
@@ -41,10 +61,19 @@ export function getAssignmentStatus(
   return String(order?.status || 'accepted');
 }
 
+export function isReturnPhase(
+  order: Pick<DeliveryAcceptedOrder, 'status' | 'pickupPhase'> | null | undefined,
+) {
+  if (!order) return false;
+  if (order.pickupPhase === 'return') return true;
+  return RETURN_STATUSES.has(getAssignmentStatus(order));
+}
+
 export function isSellerPhase(
   order: Pick<DeliveryAcceptedOrder, 'status' | 'pickupPhase'> | null | undefined,
 ) {
   if (!order) return true;
+  if (isReturnPhase(order)) return false;
   if (order.pickupPhase === 'customer') return false;
   if (order.pickupPhase === 'seller') return true;
   const status = getAssignmentStatus(order);
@@ -52,10 +81,16 @@ export function isSellerPhase(
   return SELLER_STATUSES.has(status) || status === 'accepted';
 }
 
+/** Ajdaniya so‘rov yuborish (admin kutishdan oldin) */
 export function canShowReturnActions(
   order: Pick<DeliveryAcceptedOrder, 'status'> | null | undefined,
 ) {
-  return CUSTOMER_STATUSES.has(getAssignmentStatus(order));
+  const status = getAssignmentStatus(order);
+  return (
+    status === 'picked_up' ||
+    status === 'en_route_to_customer' ||
+    status === 'arrived_at_customer'
+  );
 }
 
 export function getStepBadgeLabel(
@@ -75,13 +110,26 @@ export function getStepBadgeLabel(
       return 'Mijozga yo‘lda';
     case 'arrived_at_customer':
       return 'Topshirish';
+    case 'return_request_pending':
+      return 'Admin javobi';
+    case 'return_approved':
+      return 'Qaytarish tasdiqlandi';
+    case 'return_to_seller':
+      return 'Sotuvchiga qaytarish';
+    case 'en_route_return_to_seller':
+      return 'Sotuvchiga yo‘lda';
+    case 'arrived_return_at_seller':
+      return 'Qaytarish';
+    case 'returned':
+      return 'Qaytarildi';
     default:
+      if (isReturnPhase(order)) return 'Sotuvchiga qaytarish';
       return isSellerPhase(order) ? 'Sotuvchidan olish' : 'Mijozga yetkazish';
   }
 }
 
 export function getPrimaryAction(
-  order: Pick<DeliveryAcceptedOrder, 'status'> | null | undefined,
+  order: Pick<DeliveryAcceptedOrder, 'status' | 'approvedReturnReasonType'> | null | undefined,
 ): {
   kind: DeliveryPrimaryActionKind;
   label: string;
@@ -113,6 +161,21 @@ export function getPrimaryAction(
         confirmMessage:
           'Chindan ham mahsulotni mijozga topshirganingizni tasdiqlaysizmi?',
       };
+    case 'return_request_pending':
+      return { kind: 'waiting_admin', label: 'Admin javobini kutmoqda' };
+    case 'return_approved':
+      return { kind: 'confirm_return_reason', label: 'Qaytarishni tasdiqlash' };
+    case 'return_to_seller':
+      return { kind: 'go_return_to_seller', label: 'Sotuvchiga borish' };
+    case 'en_route_return_to_seller':
+      return { kind: 'arrive_return_seller', label: 'Sotuvchiga keldim' };
+    case 'arrived_return_at_seller':
+      return {
+        kind: 'complete_return',
+        label: 'Qaytardim',
+        confirmTitle: 'Sotuvchiga qaytarish',
+        confirmMessage: 'Mahsulotni sotuvchiga qaytarganingizni tasdiqlaysizmi?',
+      };
     default:
       return { kind: 'none', label: '' };
   }
@@ -135,14 +198,27 @@ export function getStepProgress(
     case 'en_route_to_customer':
       return { sellerDone: 3, customerDone: 1 };
     case 'arrived_at_customer':
+    case 'return_request_pending':
+    case 'return_approved':
       return { sellerDone: 3, customerDone: 2 };
     case 'delivered':
       return { sellerDone: 3, customerDone: 3 };
+    case 'return_to_seller':
+      return { sellerDone: 1, customerDone: 0 };
+    case 'en_route_return_to_seller':
+      return { sellerDone: 2, customerDone: 0 };
+    case 'arrived_return_at_seller':
+    case 'returned':
+      return { sellerDone: 3, customerDone: 0 };
     default:
       return { sellerDone: 0, customerDone: 0 };
   }
 }
 
 export function shouldOpenRouteOnAdvance(kind: DeliveryPrimaryActionKind) {
-  return kind === 'go_to_seller' || kind === 'go_to_customer';
+  return (
+    kind === 'go_to_seller' ||
+    kind === 'go_to_customer' ||
+    kind === 'go_return_to_seller'
+  );
 }

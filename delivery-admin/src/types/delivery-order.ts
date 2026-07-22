@@ -55,7 +55,13 @@ export type DeliveryAssignmentStatus =
   | 'en_route_to_customer'
   | 'arrived_at_customer'
   | 'delivered'
-  | 'cancelled';
+  | 'cancelled'
+  | 'return_request_pending'
+  | 'return_approved'
+  | 'return_to_seller'
+  | 'en_route_return_to_seller'
+  | 'arrived_return_at_seller'
+  | 'returned';
 
 export type DeliveryAcceptedOrder = {
   id: string;
@@ -77,7 +83,7 @@ export type DeliveryAcceptedOrder = {
   customer: DeliveryCustomer;
   deliveryAddress: DeliveryAddressDetails;
   status: DeliveryAssignmentStatus | string;
-  pickupPhase?: 'seller' | 'customer';
+  pickupPhase?: 'seller' | 'customer' | 'return';
   sellerId?: string;
   sellerPickup?: DeliverySellerPickup | null;
   acceptedAt: string | null;
@@ -88,6 +94,10 @@ export type DeliveryAcceptedOrder = {
   arrivedAtCustomerAt?: string | null;
   handedToCourierAt: string | null;
   deliveredAt: string | null;
+  approvedReturnReasonType?: 'no_answer' | 'return' | null;
+  enRouteReturnToSellerAt?: string | null;
+  arrivedReturnAtSellerAt?: string | null;
+  returnedAt?: string | null;
   distanceKm?: number | null;
   courierPayment?: number;
   isPaid?: boolean;

@@ -1,0 +1,36 @@
+.return-requests-page {
+  padding: 8px 4px 24px;
+}
+
+.return-requests-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.return-requests-page__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f1630;
+}
+
+.return-requests-page__subtitle {
+  margin: 6px 0 0;
+  max-width: 560px;
+  font-size: 14px;
+  color: #5b5268;
+}
+
+.return-requests-page__alert {
+  margin-bottom: 14px;
+}
+
+.return-requests-page__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}

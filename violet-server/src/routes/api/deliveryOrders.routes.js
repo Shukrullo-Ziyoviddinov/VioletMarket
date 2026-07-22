@@ -58,4 +58,22 @@ router.post(
   deliveryOrdersController.returnOrder,
 );
 
+router.post(
+  "/delivery/orders/return/confirm-reason",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.confirmReturnReason,
+);
+
+router.post(
+  "/delivery/orders/return/advance",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.advanceReturnStep,
+);
+
+router.post(
+  "/delivery/orders/return/complete",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.completeReturn,
+);
+
 module.exports = router;

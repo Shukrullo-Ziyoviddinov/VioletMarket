@@ -23,6 +23,7 @@ import {
   TeamOutlined,
   TrademarkOutlined,
   VideoCameraOutlined,
+  UndoOutlined,
 } from '@ant-design/icons';
 import ScrollArea from '../ScrollArea/ScrollArea';
 import './AdminSidebar.css';
@@ -44,6 +45,12 @@ const menuItems = [
     route: '/sales/statistics',
   },
   { key: 'orders', icon: <ShoppingOutlined />, label: 'Buyurtmalar', route: '/orders' },
+  {
+    key: 'return-requests',
+    icon: <UndoOutlined />,
+    label: 'Qaytarish so‘rovlari',
+    route: '/return-requests',
+  },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
     key: 'flash-products',
@@ -88,6 +95,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/customers/statistics') return 'customers-statistics';
   if (pathname === '/sales/statistics') return 'sales-statistics';
   if (pathname === '/orders') return 'orders';
+  if (pathname === '/return-requests') return 'return-requests';
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';

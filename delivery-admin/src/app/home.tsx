@@ -15,7 +15,7 @@ import { BottomNavbar } from '@/components/navigation/BottomNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchAcceptedDeliveryOrders } from '@/services/delivery-orders';
 import type { DeliveryAcceptedOrder } from '@/types/delivery-order';
-import { isSellerPhase } from '@/utils/deliveryOrderSteps';
+import { isReturnPhase, isSellerPhase } from '@/utils/deliveryOrderSteps';
 
 type HomeListRow =
   | { type: 'section'; key: string; title: string; count: number }
@@ -69,11 +69,21 @@ export default function HomeScreen() {
   );
 
   const pickupOrders = useMemo(
-    () => orders.filter((order) => isSellerPhase(order)),
+    () =>
+      orders.filter(
+        (order) => isSellerPhase(order) && !isReturnPhase(order),
+      ),
     [orders],
   );
   const deliverOrders = useMemo(
-    () => orders.filter((order) => !isSellerPhase(order)),
+    () =>
+      orders.filter(
+        (order) => !isSellerPhase(order) && !isReturnPhase(order),
+      ),
+    [orders],
+  );
+  const returnOrders = useMemo(
+    () => orders.filter((order) => isReturnPhase(order)),
     [orders],
   );
 
@@ -101,8 +111,19 @@ export default function HomeScreen() {
         rows.push({ type: 'order', key: order.id, order });
       });
     }
+    if (returnOrders.length) {
+      rows.push({
+        type: 'section',
+        key: 'section-return',
+        title: 'Sotuvchiga qaytarish',
+        count: returnOrders.length,
+      });
+      returnOrders.forEach((order) => {
+        rows.push({ type: 'order', key: order.id, order });
+      });
+    }
     return rows;
-  }, [deliverOrders, pickupOrders]);
+  }, [deliverOrders, pickupOrders, returnOrders]);
 
   const openWorkDesk = useCallback(
     (order: DeliveryAcceptedOrder) => {
@@ -129,6 +150,9 @@ export default function HomeScreen() {
         {orders.length > 0 ? (
           <Text style={styles.headerSub}>
             Olish: {pickupOrders.length} · Yetkazish: {deliverOrders.length}
+            {returnOrders.length
+              ? ` · Qaytarish: ${returnOrders.length}`
+              : ''}
           </Text>
         ) : null}
       </View>

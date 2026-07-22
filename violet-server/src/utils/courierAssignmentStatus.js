@@ -11,6 +11,12 @@ const COURIER_ASSIGNMENT_STATUSES = [
   "arrived_at_customer",
   "delivered",
   "cancelled",
+  "return_request_pending",
+  "return_approved",
+  "return_to_seller",
+  "en_route_return_to_seller",
+  "arrived_return_at_seller",
+  "returned",
 ];
 
 const STATUS_LABELS_UZ = {
@@ -22,6 +28,12 @@ const STATUS_LABELS_UZ = {
   arrived_at_customer: "Topshirish",
   delivered: "Topshirilgan",
   cancelled: "Qaytarilgan",
+  return_request_pending: "Qaytarish so‘rovi",
+  return_approved: "Qaytarish tasdiqlandi",
+  return_to_seller: "Sotuvchiga qaytarish",
+  en_route_return_to_seller: "Sotuvchiga qaytarish yo‘lda",
+  arrived_return_at_seller: "Sotuvchiga qaytarish",
+  returned: "Qaytarildi",
 };
 
 /** Ketma-ket pozitsiya qadamlari (admin kartochka progress). */
@@ -44,6 +56,12 @@ const STATUS_STEP_INDEX = {
   arrived_at_customer: 5,
   delivered: 6,
   cancelled: -1,
+  return_request_pending: 5,
+  return_approved: 5,
+  return_to_seller: -1,
+  en_route_return_to_seller: -1,
+  arrived_return_at_seller: -1,
+  returned: -1,
 };
 
 function normalizeCourierAssignmentStatus(status) {
@@ -79,6 +97,9 @@ function pickAssignmentTimestamps(row = {}) {
     enRouteToCustomerAt: row.enRouteToCustomerAt || null,
     arrivedAtCustomerAt: row.arrivedAtCustomerAt || null,
     deliveredAt: row.deliveredAt || null,
+    enRouteReturnToSellerAt: row.enRouteReturnToSellerAt || null,
+    arrivedReturnAtSellerAt: row.arrivedReturnAtSellerAt || null,
+    returnedAt: row.returnedAt || null,
   };
 }
 

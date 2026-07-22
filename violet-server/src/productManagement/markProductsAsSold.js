@@ -112,6 +112,37 @@ async function reserveProductsOnCheckout({
 }
 
 /**
+ * Qaytardim: rezervni bo‘shatish + omborga qaytarish.
+ * flashSaleSoldCount o‘zgarmaydi (topshirilmagan).
+ */
+async function releaseReservedStockOnReturn(productIdRaw, qtyRaw = 1) {
+  const productId = Number(productIdRaw);
+  const qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
+  if (!Number.isFinite(productId) || productId <= 0) return;
+
+  await Product.updateOne(
+    { id: productId },
+    [
+      {
+        $set: {
+          quantity: {
+            $add: [{ $ifNull: ["$quantity", 0] }, qty],
+          },
+          reservedQuantity: {
+            $max: [
+              0,
+              {
+                $subtract: [{ $ifNull: ["$reservedQuantity", 0] }, qty],
+              },
+            ],
+          },
+        },
+      },
+    ],
+  );
+}
+
+/**
  * Topshirdim: flash «sotildi» foizi + ranking soldCount.
  * Ombor rezervi checkout da bo‘lgani uchun quantity yana kamaytirilmaydi.
  */
@@ -188,5 +219,6 @@ async function markProductsAsSold(args) {
 module.exports = {
   reserveProductsOnCheckout,
   recordProductSoldDisplayMetrics,
+  releaseReservedStockOnReturn,
   markProductsAsSold,
 };

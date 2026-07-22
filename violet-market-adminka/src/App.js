@@ -11,6 +11,7 @@ import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage
 import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
 import WithdrawalPage from './pages/WithdrawalPage/WithdrawalPage';
 import OrdersPage from './pages/OrdersPage/OrdersPage';
+import ReturnRequestsPage from './pages/ReturnRequestsPage/ReturnRequestsPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -33,6 +34,7 @@ function App() {
           <Route path="flash-products" element={<FlashPage />} />
           <Route path="sellers" element={<SellersPage />} />
           <Route path="orders" element={<OrdersPage />} />
+          <Route path="return-requests" element={<ReturnRequestsPage />} />
           <Route path="couriers" element={<CouriersPage />} />
           <Route path="courier-chats" element={<CourierChatsPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />

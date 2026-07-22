@@ -25,20 +25,29 @@ type DeliveryStepActionsProps = {
   onPickUp?: () => void;
   onDeliver?: () => void;
   onReturn?: () => void;
+  onConfirmReturnReason?: () => void;
+  onCompleteReturn?: () => void;
 };
 
 function actionIcon(kind: DeliveryPrimaryActionKind): keyof typeof Ionicons.glyphMap {
   switch (kind) {
     case 'go_to_seller':
     case 'go_to_customer':
+    case 'go_return_to_seller':
       return 'navigate-outline';
     case 'arrive_seller':
     case 'arrive_customer':
+    case 'arrive_return_seller':
       return 'location-outline';
     case 'pick_up':
       return 'checkmark-circle-outline';
     case 'deliver':
+    case 'complete_return':
       return 'cube-outline';
+    case 'waiting_admin':
+      return 'time-outline';
+    case 'confirm_return_reason':
+      return 'return-down-back-outline';
     default:
       return 'ellipse-outline';
   }
@@ -53,6 +62,8 @@ export function DeliveryStepActions({
   onPickUp,
   onDeliver,
   onReturn,
+  onConfirmReturnReason,
+  onCompleteReturn,
 }: DeliveryStepActionsProps) {
   const primary = getPrimaryAction(order);
   const showAjdaniya =
@@ -64,11 +75,14 @@ export function DeliveryStepActions({
 
   const handlePrimary = () => {
     if (loading) return;
+    if (primary.kind === 'waiting_admin') return;
     if (
       primary.kind === 'go_to_seller' ||
       primary.kind === 'arrive_seller' ||
       primary.kind === 'go_to_customer' ||
-      primary.kind === 'arrive_customer'
+      primary.kind === 'arrive_customer' ||
+      primary.kind === 'go_return_to_seller' ||
+      primary.kind === 'arrive_return_seller'
     ) {
       onAdvance?.(primary.kind);
       return;
@@ -79,8 +93,22 @@ export function DeliveryStepActions({
     }
     if (primary.kind === 'deliver') {
       onDeliver?.();
+      return;
+    }
+    if (primary.kind === 'confirm_return_reason') {
+      onConfirmReturnReason?.();
+      return;
+    }
+    if (primary.kind === 'complete_return') {
+      onCompleteReturn?.();
     }
   };
+
+  const isWaiting = primary.kind === 'waiting_admin';
+  const isGreen =
+    primary.kind === 'deliver' ||
+    primary.kind === 'pick_up' ||
+    primary.kind === 'complete_return';
 
   if (layout === 'footer') {
     return (
@@ -97,22 +125,26 @@ export function DeliveryStepActions({
           </Pressable>
         ) : null}
         <Pressable
-          disabled={loading}
+          disabled={loading || isWaiting}
           style={({ pressed }) => [
             styles.footerBtn,
             styles.primaryFooterBtn,
-            primary.kind === 'deliver' || primary.kind === 'pick_up'
-              ? styles.primaryGreen
-              : styles.primaryPurple,
-            pressed && styles.pressed,
-            loading && styles.disabled,
+            isWaiting ? styles.waitingBtn : isGreen ? styles.primaryGreen : styles.primaryPurple,
+            pressed && !isWaiting && styles.pressed,
+            (loading || isWaiting) && styles.disabled,
             showAjdaniya ? styles.footerBtnFlex : styles.footerBtnFull,
           ]}
           onPress={handlePrimary}>
           {loading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.primaryFooterText}>{primary.label}</Text>
+            <Text
+              style={[
+                styles.primaryFooterText,
+                isWaiting && styles.waitingText,
+              ]}>
+              {primary.label}
+            </Text>
           )}
         </Pressable>
       </View>
@@ -132,14 +164,12 @@ export function DeliveryStepActions({
         </Pressable>
       ) : null}
       <Pressable
-        disabled={loading}
+        disabled={loading || isWaiting}
         style={({ pressed }) => [
           styles.primaryCardBtn,
-          primary.kind === 'deliver' || primary.kind === 'pick_up'
-            ? styles.primaryGreen
-            : styles.primaryPurple,
-          pressed && styles.pressed,
-          loading && styles.disabled,
+          isWaiting ? styles.waitingBtn : isGreen ? styles.primaryGreen : styles.primaryPurple,
+          pressed && !isWaiting && styles.pressed,
+          (loading || isWaiting) && styles.disabled,
         ]}
         onPress={handlePrimary}>
         {loading ? (
@@ -149,9 +179,15 @@ export function DeliveryStepActions({
             <Ionicons
               name={actionIcon(primary.kind)}
               size={18}
-              color="#FFFFFF"
+              color={isWaiting ? '#92400E' : '#FFFFFF'}
             />
-            <Text style={styles.primaryCardText}>{primary.label}</Text>
+            <Text
+              style={[
+                styles.primaryCardText,
+                isWaiting && styles.waitingText,
+              ]}>
+              {primary.label}
+            </Text>
           </>
         )}
       </Pressable>
@@ -228,6 +264,14 @@ const styles = StyleSheet.create({
   },
   primaryGreen: {
     backgroundColor: '#15803D',
+  },
+  waitingBtn: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+  waitingText: {
+    color: '#92400E',
   },
   pressed: {
     opacity: 0.9,

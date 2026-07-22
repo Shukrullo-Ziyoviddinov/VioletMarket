@@ -1,0 +1,101 @@
+.return-request-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #e8e4f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.return-request-card__media {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f3f8;
+}
+
+.return-request-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.return-request-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.return-request-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.return-request-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f1630;
+}
+
+.return-request-card__badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.return-request-card__badge--pending {
+  background: #fff4e5;
+  color: #b25e00;
+}
+
+.return-request-card__badge--approved {
+  background: #e8f8ef;
+  color: #0f7a3f;
+}
+
+.return-request-card__badge--rejected {
+  background: #fdecec;
+  color: #b42318;
+}
+
+.return-request-card__meta,
+.return-request-card__comment {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #5b5268;
+}
+
+.return-request-card__comment {
+  color: #3d3550;
+}
+
+.return-request-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.return-request-card__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.return-request-card__btn--approve {
+  background: #6d32c5;
+  color: #fff;
+}
+
+.return-request-card__btn--reject {
+  background: #f3f0f7;
+  color: #5b5268;
+}

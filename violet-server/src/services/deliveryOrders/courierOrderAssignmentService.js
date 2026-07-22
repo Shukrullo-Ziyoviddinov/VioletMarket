@@ -27,6 +27,11 @@ const ACTIVE_ASSIGNMENT_STATUSES = [
   "picked_up",
   "en_route_to_customer",
   "arrived_at_customer",
+  "return_request_pending",
+  "return_approved",
+  "return_to_seller",
+  "en_route_return_to_seller",
+  "arrived_return_at_seller",
 ];
 
 const SELLER_PHASE_STATUSES = new Set([
@@ -39,6 +44,14 @@ const CUSTOMER_PHASE_STATUSES = new Set([
   "picked_up",
   "en_route_to_customer",
   "arrived_at_customer",
+  "return_request_pending",
+  "return_approved",
+]);
+
+const RETURN_PHASE_STATUSES = new Set([
+  "return_to_seller",
+  "en_route_return_to_seller",
+  "arrived_return_at_seller",
 ]);
 
 const RETURNABLE_STATUSES = new Set([
@@ -76,6 +89,9 @@ const ADVANCE_ACTIONS = {
 
 function resolvePickupPhase(status) {
   const value = String(status || "accepted");
+  if (RETURN_PHASE_STATUSES.has(value) || value === "returned") {
+    return "return";
+  }
   if (CUSTOMER_PHASE_STATUSES.has(value) || value === "delivered") {
     return "customer";
   }
@@ -221,6 +237,10 @@ function toPublicAssignment(doc, extras = {}) {
     enRouteToCustomerAt: row.enRouteToCustomerAt || null,
     arrivedAtCustomerAt: row.arrivedAtCustomerAt || null,
     deliveredAt: row.deliveredAt || null,
+    approvedReturnReasonType: row.approvedReturnReasonType || null,
+    enRouteReturnToSellerAt: row.enRouteReturnToSellerAt || null,
+    arrivedReturnAtSellerAt: row.arrivedReturnAtSellerAt || null,
+    returnedAt: row.returnedAt || null,
     sellerPickup: extras.sellerPickup || null,
     distanceKm:
       row.distanceKm == null || row.distanceKm === ""
@@ -782,6 +802,7 @@ module.exports = {
   ACTIVE_ASSIGNMENT_STATUSES,
   SELLER_PHASE_STATUSES,
   CUSTOMER_PHASE_STATUSES,
+  RETURN_PHASE_STATUSES,
   RETURNABLE_STATUSES,
   acceptOrderUnitByCourier,
   pickUpOrderUnitByCourier,
