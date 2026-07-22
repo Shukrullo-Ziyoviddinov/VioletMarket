@@ -120,25 +120,22 @@ async function releaseReservedStockOnReturn(productIdRaw, qtyRaw = 1) {
   const qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
   if (!Number.isFinite(productId) || productId <= 0) return;
 
+  const product = await Product.findOne({ id: productId })
+    .select("quantity reservedQuantity")
+    .lean();
+  if (!product) return;
+
+  const currentQty = Math.max(0, Number(product.quantity) || 0);
+  const currentReserved = Math.max(0, Number(product.reservedQuantity) || 0);
+
   await Product.updateOne(
     { id: productId },
-    [
-      {
-        $set: {
-          quantity: {
-            $add: [{ $ifNull: ["$quantity", 0] }, qty],
-          },
-          reservedQuantity: {
-            $max: [
-              0,
-              {
-                $subtract: [{ $ifNull: ["$reservedQuantity", 0] }, qty],
-              },
-            ],
-          },
-        },
+    {
+      $set: {
+        quantity: currentQty + qty,
+        reservedQuantity: Math.max(0, currentReserved - qty),
       },
-    ],
+    },
   );
 }
 
@@ -154,7 +151,7 @@ async function recordProductSoldDisplayMetrics(productQtyMap = new Map()) {
 
   const productIds = entries.map(([productId]) => Number(productId));
   const products = await Product.find({ id: { $in: productIds } })
-    .select("id categoryName flashSale")
+    .select("id categoryName flashSale flashSaleSoldCount reservedQuantity")
     .lean();
   const productMap = new Map(products.map((row) => [Number(row.id), row]));
 
@@ -166,30 +163,22 @@ async function recordProductSoldDisplayMetrics(productQtyMap = new Map()) {
     const soldQty = Math.max(0, Math.floor(Number(rawQty) || 0));
     if (!productId || soldQty <= 0) continue;
 
+    const product = productMap.get(productId);
+    const currentSold = Math.max(0, Number(product?.flashSaleSoldCount) || 0);
+    const currentReserved = Math.max(0, Number(product?.reservedQuantity) || 0);
+
     ops.push({
       updateOne: {
         filter: { id: productId },
-        update: [
-          {
-            $set: {
-              flashSaleSoldCount: {
-                $add: [{ $ifNull: ["$flashSaleSoldCount", 0] }, soldQty],
-              },
-              reservedQuantity: {
-                $max: [
-                  0,
-                  {
-                    $subtract: [{ $ifNull: ["$reservedQuantity", 0] }, soldQty],
-                  },
-                ],
-              },
-            },
+        update: {
+          $set: {
+            flashSaleSoldCount: currentSold + soldQty,
+            reservedQuantity: Math.max(0, currentReserved - soldQty),
           },
-        ],
+        },
       },
     });
 
-    const product = productMap.get(productId);
     const sectionKey = String(product?.categoryName || "").trim();
     if (!sectionKey) continue;
 
