@@ -47,20 +47,27 @@ async function reserveProductsOnCheckout({
   applyVariantDecrement,
 }) {
   for (const [productId, requestedQty] of requestedByProductId.entries()) {
+    const product = productMap.get(productId) || productMap.get(Number(productId));
     const hasVariantStock = hasVariantStockByProductId.get(productId) === true;
-    let result;
+    const rootQty = Number(product?.quantity);
+    const hasRootQty = Number.isFinite(rootQty);
 
-    if (hasVariantStock) {
-      // Variant ombori pastda yangilanadi — asosiy quantity tegilmaydi
-      result = { modifiedCount: 1 };
-    } else {
-      result = await Product.updateOne(
+    // Detail sahifadagi qoldiq ko‘pincha `quantity` / effectiveQuantity dan.
+    // Variant bo‘lsa ham root quantity bo‘lsa — rezerv qilamiz.
+    if (hasRootQty) {
+      const result = await Product.updateOne(
         { id: productId, quantity: { $gte: requestedQty } },
         { $inc: { quantity: -requestedQty } },
       );
-    }
-
-    if (result.modifiedCount !== 1) {
+      if (result.modifiedCount !== 1 && !hasVariantStock) {
+        throw new HttpError(
+          409,
+          `Mahsulot qoldig'i yangilash vaqtida o'zgardi: ${productId}`,
+          "INSUFFICIENT_STOCK",
+          [{ productId, requestedQty }],
+        );
+      }
+    } else if (!hasVariantStock) {
       throw new HttpError(
         409,
         `Mahsulot qoldig'i yangilash vaqtida o'zgardi: ${productId}`,
@@ -85,7 +92,9 @@ async function reserveProductsOnCheckout({
           colors: Array.isArray(product.colors) ? product.colors : [],
           colorStock: product.colorStock,
           sizeStock: product.sizeStock,
+          storage: product.storage,
           storageStock: product.storageStock,
+          models: product.models,
           modelStock: product.modelStock,
         },
       },

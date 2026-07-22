@@ -236,6 +236,13 @@ function consumeFromOptionList(
   }
 }
 
+function hasNonEmptyStockMap(stockMap) {
+  if (!stockMap || typeof stockMap !== "object" || Array.isArray(stockMap)) {
+    return false;
+  }
+  return Object.keys(stockMap).length > 0;
+}
+
 function applyVariantDecrement(product, variant, requestedQty) {
   const matchedColors = getMatchedColors(product, variant.color);
   if (matchedColors.length === 0) {
@@ -262,19 +269,19 @@ function applyVariantDecrement(product, variant, requestedQty) {
 function hasVariantStockData(product) {
   if (Array.isArray(product?.models) && product.models.length > 0) return true;
   if (Array.isArray(product?.storage) && product.storage.length > 0) return true;
-  if (product?.colorStock && typeof product.colorStock === "object") return true;
-  if (product?.modelStock && typeof product.modelStock === "object") return true;
-  if (product?.storageStock && typeof product.storageStock === "object") return true;
-  if (product?.sizeStock && typeof product.sizeStock === "object") return true;
+  if (hasNonEmptyStockMap(product?.colorStock)) return true;
+  if (hasNonEmptyStockMap(product?.modelStock)) return true;
+  if (hasNonEmptyStockMap(product?.storageStock)) return true;
+  if (hasNonEmptyStockMap(product?.sizeStock)) return true;
 
   const colors = Array.isArray(product?.colors) ? product.colors : [];
   for (const color of colors) {
     if (!color || typeof color !== "object") continue;
     if (Array.isArray(color.models) && color.models.length > 0) return true;
     if (Array.isArray(color.storage) && color.storage.length > 0) return true;
-    if (color.modelStock && typeof color.modelStock === "object") return true;
-    if (color.storageStock && typeof color.storageStock === "object") return true;
-    if (color.sizeStock && typeof color.sizeStock === "object") return true;
+    if (hasNonEmptyStockMap(color.modelStock)) return true;
+    if (hasNonEmptyStockMap(color.storageStock)) return true;
+    if (hasNonEmptyStockMap(color.sizeStock)) return true;
     if (Number.isFinite(Number(color.quantity))) return true;
   }
   return false;
