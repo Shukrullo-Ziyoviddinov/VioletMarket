@@ -8,12 +8,16 @@ const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProduct
 const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
 const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
 const { enrichOrderItemsWithProductData } = require("./salesOrderSyncService");
+const { recordProductSoldDisplayMetrics } = require("./markProductsAsSold");
+const {
+  ensurePendingReviewForDeliveredProduct,
+} = require("../services/pendingReview/pendingReviewService");
 
 /**
- * Kuryer "Topshirdim" (yoki keyin asosiy admin) — sotuv/daromad yozuvi.
- * Faqat topshirilgan (delivered) donalar bo‘yicha siller + asosiy admin statistikaga tushadi.
+ * Kuryer "Topshirdim" — sotuv/daromad + «sotildi» foizi + mijoz pending izoh.
+ * options.assignmentId — faqat shu yangi topshirilgan dona uchun display/izoh (qayta hisoblanmasin).
  */
-async function recordSalesOnDelivery(orderDoc, soldAt = new Date()) {
+async function recordSalesOnDelivery(orderDoc, soldAt = new Date(), options = {}) {
   if (!orderDoc?.id) return null;
 
   const order = await enrichOrderItemsWithProductData(
@@ -30,6 +34,7 @@ async function recordSalesOnDelivery(orderDoc, soldAt = new Date()) {
   const when = soldAt instanceof Date ? soldAt : new Date(soldAt);
   const periodKeys = getPeriodKeysFromPaidAt(when);
   const items = Array.isArray(order.items) ? order.items : [];
+  const focusId = String(options.assignmentId || "").trim();
 
   for (const assignment of assignments) {
     const itemIndex = Number(assignment.itemIndex);
@@ -65,6 +70,32 @@ async function recordSalesOnDelivery(orderDoc, soldAt = new Date()) {
         monthKey: periodKeys.monthKey,
       },
     );
+  }
+
+  const focusAssignments = focusId
+    ? assignments.filter((row) => String(row._id) === focusId)
+    : assignments;
+
+  const soldQtyByProduct = new Map();
+  for (const assignment of focusAssignments) {
+    const item = items[Number(assignment.itemIndex)];
+    const productId = Number(item?.productId || assignment.productId);
+    if (!Number.isFinite(productId) || productId <= 0) continue;
+    soldQtyByProduct.set(productId, (soldQtyByProduct.get(productId) || 0) + 1);
+  }
+
+  if (soldQtyByProduct.size) {
+    await recordProductSoldDisplayMetrics(soldQtyByProduct);
+  }
+
+  if (order.userId) {
+    for (const productId of soldQtyByProduct.keys()) {
+      try {
+        await ensurePendingReviewForDeliveredProduct(order.userId, productId, when);
+      } catch (err) {
+        console.error("Pending review yaratilmadi:", err?.message || err);
+      }
+    }
   }
 
   const grouped = new Map();

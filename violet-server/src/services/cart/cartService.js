@@ -3,7 +3,7 @@ const { Product } = require("../../models/product");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
-  markProductsAsSold,
+  reserveProductsOnCheckout,
   buildPostOrderReviewPayload,
   recordCartPayment,
 } = require("../../productManagement");
@@ -657,7 +657,10 @@ async function checkoutCartForUser(userId, options = {}) {
     );
   }
 
-  const postOrderReview = buildPostOrderReviewPayload(items);
+  const postOrderReview = {
+    ...buildPostOrderReviewPayload(items),
+    shouldShowReview: false,
+  };
 
   const order = await recordCartPayment({
     userId,
@@ -673,7 +676,7 @@ async function checkoutCartForUser(userId, options = {}) {
     }).catch(() => null);
   }
 
-  await markProductsAsSold({
+  await reserveProductsOnCheckout({
     requestedByProductId,
     variantRequestsByProductId,
     productMap,

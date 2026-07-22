@@ -36,10 +36,10 @@ async function incrementSellerOrderCounts(requestedByProductId, productMap) {
 }
 
 /**
- * Buyurtma yaratilganda ombor qoldig'ini kamaytirish (rezerv).
- * Daromad/sotuv statistikasi esa "Topshirdim" da recordSalesOnDelivery orqali yoziladi.
+ * Checkout: faqat ombor rezervi (qoldiq kamayadi).
+ * «Sotildi» foizi / ranking — Topshirdim da recordProductSoldDisplayMetrics.
  */
-async function markProductsAsSold({
+async function reserveProductsOnCheckout({
   requestedByProductId,
   variantRequestsByProductId,
   productMap,
@@ -51,14 +51,12 @@ async function markProductsAsSold({
     let result;
 
     if (hasVariantStock) {
-      result = await Product.updateOne(
-        { id: productId },
-        { $inc: { flashSaleSoldCount: requestedQty } },
-      );
+      // Variant ombori pastda yangilanadi — asosiy quantity tegilmaydi
+      result = { modifiedCount: 1 };
     } else {
       result = await Product.updateOne(
         { id: productId, quantity: { $gte: requestedQty } },
-        { $inc: { quantity: -requestedQty, flashSaleSoldCount: requestedQty } },
+        { $inc: { quantity: -requestedQty } },
       );
     }
 
@@ -94,29 +92,69 @@ async function markProductsAsSold({
     );
   }
 
-  const rankingMetrics = [];
-  for (const [productId, requestedQty] of requestedByProductId.entries()) {
-    const product = productMap.get(productId);
-    if (!product) continue;
-    const sectionKey = String(product.categoryName || "").trim();
-    if (!sectionKey) continue;
-    rankingMetrics.push({
-      productId,
-      sectionKey,
-      soldQty: requestedQty,
-    });
-    if (isFlashCategoryActive(product)) {
-      rankingMetrics.push({
-        productId,
-        sectionKey: FLASH_CATEGORY_SECTION_KEY,
-        soldQty: requestedQty,
-      });
-    }
-  }
-  await recordCheckoutSales(rankingMetrics);
   await incrementSellerOrderCounts(requestedByProductId, productMap);
 }
 
+/**
+ * Topshirdim: flash «sotildi» foizi + ranking soldCount.
+ * Ombor rezervi checkout da bo‘lgani uchun quantity yana kamaytirilmaydi.
+ */
+async function recordProductSoldDisplayMetrics(productQtyMap = new Map()) {
+  const entries = [...productQtyMap.entries()].filter(
+    ([, qty]) => Number(qty) > 0,
+  );
+  if (!entries.length) return;
+
+  const productIds = entries.map(([productId]) => Number(productId));
+  const products = await Product.find({ id: { $in: productIds } })
+    .select("id categoryName flashSale")
+    .lean();
+  const productMap = new Map(products.map((row) => [Number(row.id), row]));
+
+  const ops = [];
+  const rankingMetrics = [];
+
+  for (const [rawId, rawQty] of entries) {
+    const productId = Number(rawId);
+    const soldQty = Math.max(0, Math.floor(Number(rawQty) || 0));
+    if (!productId || soldQty <= 0) continue;
+
+    ops.push({
+      updateOne: {
+        filter: { id: productId },
+        update: { $inc: { flashSaleSoldCount: soldQty } },
+      },
+    });
+
+    const product = productMap.get(productId);
+    const sectionKey = String(product?.categoryName || "").trim();
+    if (!sectionKey) continue;
+
+    rankingMetrics.push({ productId, sectionKey, soldQty });
+    if (product && isFlashCategoryActive(product)) {
+      rankingMetrics.push({
+        productId,
+        sectionKey: FLASH_CATEGORY_SECTION_KEY,
+        soldQty,
+      });
+    }
+  }
+
+  if (ops.length) {
+    await Product.bulkWrite(ops, { ordered: false });
+  }
+  await recordCheckoutSales(rankingMetrics);
+}
+
+/**
+ * @deprecated Eski nom — checkout rezervi. Yangi kod reserveProductsOnCheckout ishlating.
+ */
+async function markProductsAsSold(args) {
+  return reserveProductsOnCheckout(args);
+}
+
 module.exports = {
+  reserveProductsOnCheckout,
+  recordProductSoldDisplayMetrics,
   markProductsAsSold,
 };

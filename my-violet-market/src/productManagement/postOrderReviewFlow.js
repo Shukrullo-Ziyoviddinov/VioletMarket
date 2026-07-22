@@ -1,6 +1,7 @@
 /**
  * Buyurtmadan keyin izoh modalini (.test-order-modal-content) ko'rsatish oqimi.
- * Hozir checkout pay tugmasidan chaqiriladi; keyin yetkazib berish adminkasiga o'tkaziladi.
+ * Hozir checkout pay tugmasidan chaqirilmaydi; Topshirdim dan keyin
+ * pendingReviews orqali profilga tushadi. Bu fayl eski oqim / kelajak UI uchun.
  */
 
 export const POST_ORDER_REVIEW_PENDING_KEY = 'pendingTestOrderModal';

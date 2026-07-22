@@ -91,6 +91,31 @@ async function createPendingBatch(userId, payload) {
   }));
 }
 
+/**
+ * Topshirdim: mijoz profilida «kutilayotgan izoh» uchun yozuv.
+ * Bir xil mahsulot uchun pending bo‘lsa — qayta yozilmaydi.
+ */
+async function ensurePendingReviewForDeliveredProduct(userId, productIdRaw, orderDate = new Date()) {
+  if (!userId) return null;
+  const uid = toUserObjectId(userId);
+  const productId = parseProductId(productIdRaw);
+
+  const existing = await PendingReview.findOne({
+    userId: uid,
+    productId,
+    status: "pending",
+  }).lean();
+  if (existing) return existing;
+
+  const created = await PendingReview.create({
+    userId: uid,
+    productId,
+    orderDate: orderDate instanceof Date ? orderDate : new Date(orderDate),
+    status: "pending",
+  });
+  return created;
+}
+
 async function completePendingReview(userId, pendingReviewIdRaw) {
   if (!pendingReviewIdRaw) return;
 
@@ -117,5 +142,6 @@ async function completePendingReview(userId, pendingReviewIdRaw) {
 module.exports = {
   listPendingForUser,
   createPendingBatch,
+  ensurePendingReviewForDeliveredProduct,
   completePendingReview,
 };

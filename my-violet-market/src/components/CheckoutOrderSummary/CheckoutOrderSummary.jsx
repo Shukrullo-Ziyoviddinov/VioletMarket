@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { formatPrice, formatCargoPrice } from '../../utils/utils';
 import { useCart } from '../../contexts/CartContext';
-import { useTestOrderModal } from '../../contexts/TestOrderModalContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useCheckoutPayment } from '../../contexts/CheckoutPaymentContext';
-import { startPostOrderReviewFlow } from '../../productManagement';
 import ButtonLoader from '../ButtonLoader/ButtonLoader';
+import { formatPrice, formatCargoPrice } from '../../utils/utils';
 import './CheckoutOrderSummary.css';
 
 const CheckoutOrderSummary = ({
@@ -22,10 +19,8 @@ const CheckoutOrderSummary = ({
   onOrderConfirmed,
 }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { selectedPayment, isPayOnDelivery } = useCheckoutPayment();
   const { cart, checkoutCart, refreshCart } = useCart();
-  const { scheduleOpenOnHome } = useTestOrderModal();
   const { showToast } = useToast();
   const [isPayLoading, setIsPayLoading] = useState(false);
 
@@ -51,21 +46,13 @@ const CheckoutOrderSummary = ({
         }
       }
 
-      if (isPayOnDelivery) {
-        const addressText =
-          addressPayload?.addressLine || addressPayload?.formatted || '';
-        await checkoutCart(paymentMethod, addressPayload);
-        onOrderConfirmed?.({ cartSnapshot, addressText });
-        return;
-      }
+      const addressText =
+        addressPayload?.addressLine || addressPayload?.formatted || '';
 
+      // Faqat zakaz yuboriladi — «sotildi» / izoh modal yo‘q (ular Topshirdim da)
       await checkoutCart(paymentMethod, addressPayload);
       window.dispatchEvent(new Event('appDataRefreshRequested'));
-      startPostOrderReviewFlow({
-        cartSnapshot,
-        scheduleOpenOnHome,
-        navigate,
-      });
+      onOrderConfirmed?.({ cartSnapshot, addressText });
     } catch (error) {
       if (error?.status === 409) {
         await refreshCart();

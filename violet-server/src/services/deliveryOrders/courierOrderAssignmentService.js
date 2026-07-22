@@ -603,7 +603,9 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
       await order.save();
 
       // Sotuv/daromad — faqat topshirilganda (siller + asosiy admin)
-      await recordSalesOnDelivery(order, deliveredAt);
+      await recordSalesOnDelivery(order, deliveredAt, {
+        assignmentId: String(assignment._id),
+      });
     }
   }
 

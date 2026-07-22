@@ -1,4 +1,4 @@
-const { markProductsAsSold } = require("./markProductsAsSold");
+const { markProductsAsSold, reserveProductsOnCheckout, recordProductSoldDisplayMetrics } = require("./markProductsAsSold");
 const {
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
@@ -29,6 +29,8 @@ const {
 
 module.exports = {
   markProductsAsSold,
+  reserveProductsOnCheckout,
+  recordProductSoldDisplayMetrics,
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,
