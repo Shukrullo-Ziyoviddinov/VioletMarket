@@ -3,7 +3,13 @@ import { Empty, Spin } from 'antd';
 import AdminOrderNoAnswerCard from '../AdminOrderNoAnswerCard/AdminOrderNoAnswerCard';
 import './AdminOrderNoAnswerList.css';
 
-export default function AdminOrderNoAnswerList({ orders = [], loading = false }) {
+export default function AdminOrderNoAnswerList({
+  orders = [],
+  loading = false,
+  onReHandoff,
+  onReactivate,
+  onDeliver,
+}) {
   if (loading && !orders.length) {
     return (
       <div className="seller-order-no-answer-list__state">
@@ -28,7 +34,13 @@ export default function AdminOrderNoAnswerList({ orders = [], loading = false })
         </div>
       ) : null}
       {orders.map((order) => (
-        <AdminOrderNoAnswerCard key={order.id} order={order} />
+        <AdminOrderNoAnswerCard
+          key={order.id}
+          order={order}
+          onReHandoff={onReHandoff}
+          onReactivate={onReactivate}
+          onDeliver={onDeliver}
+        />
       ))}
     </div>
   );

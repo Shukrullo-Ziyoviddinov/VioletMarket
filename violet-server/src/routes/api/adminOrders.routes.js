@@ -17,5 +17,17 @@ router.patch(
   "/admin/orders/:orderId/items/:itemIndex/handoff",
   controller.handoffOrderItem,
 );
+router.post(
+  "/admin/orders/no-answer/:returnedOrderId/re-handoff",
+  controller.reHandoffNoAnswer,
+);
+router.post(
+  "/admin/orders/no-answer/:returnedOrderId/reactivate",
+  controller.reactivateNoAnswer,
+);
+router.post(
+  "/admin/orders/no-answer/:returnedOrderId/deliver",
+  controller.deliverNoAnswer,
+);
 
 module.exports = router;

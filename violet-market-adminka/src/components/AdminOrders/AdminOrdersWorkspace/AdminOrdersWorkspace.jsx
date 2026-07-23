@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import {
+  deliverAdminNoAnswerOrder,
   fetchAdminOrders,
   handoffAdminOrderItem,
+  reactivateAdminNoAnswerOrder,
+  reHandoffAdminNoAnswerOrder,
 } from '../../../api/adminOrdersApi';
 import { useAdminModal } from '../../../context/AdminModalContext';
 import AdminOrderCollectionList from '../AdminOrderCollectionList/AdminOrderCollectionList';
@@ -104,6 +107,39 @@ export default function AdminOrdersWorkspace({
     }
   };
 
+  const handleNoAnswerReHandoff = async (order) => {
+    if (!order?.id) return;
+    try {
+      await reHandoffAdminNoAnswerOrder(order.id);
+      message.success('Buyurtma qayta kuryerga topshirildi');
+      await refreshAfterStatusChange();
+    } catch (error) {
+      message.error(error?.message || 'Amal bajarilmadi');
+    }
+  };
+
+  const handleNoAnswerReactivate = async (order) => {
+    if (!order?.id) return;
+    try {
+      await reactivateAdminNoAnswerOrder(order.id);
+      message.success('Mahsulot qayta sotuvga qo‘yildi');
+      await refreshAfterStatusChange();
+    } catch (error) {
+      message.error(error?.message || 'Amal bajarilmadi');
+    }
+  };
+
+  const handleNoAnswerDeliver = async (order) => {
+    if (!order?.id) return;
+    try {
+      await deliverAdminNoAnswerOrder(order.id);
+      message.success('Buyurtma mijozga topshirildi deb belgilandi');
+      await refreshAfterStatusChange();
+    } catch (error) {
+      message.error(error?.message || 'Amal bajarilmadi');
+    }
+  };
+
   let listNode = null;
   if (filter === 'confirmation') {
     listNode = (
@@ -132,7 +168,15 @@ export default function AdminOrdersWorkspace({
   } else if (filter === 'handed') {
     listNode = <AdminOrderHandedList orders={orders} loading={loading} />;
   } else if (filter === 'noAnswer') {
-    listNode = <AdminOrderNoAnswerList orders={orders} loading={loading} />;
+    listNode = (
+      <AdminOrderNoAnswerList
+        orders={orders}
+        loading={loading}
+        onReHandoff={handleNoAnswerReHandoff}
+        onReactivate={handleNoAnswerReactivate}
+        onDeliver={handleNoAnswerDeliver}
+      />
+    );
   }
 
   return (

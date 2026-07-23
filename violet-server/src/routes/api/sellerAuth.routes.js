@@ -120,6 +120,21 @@ router.patch(
   sellerAuthMiddleware,
   sellerOrdersController.handoffOrderItem,
 );
+router.post(
+  "/seller-auth/orders/no-answer/:returnedOrderId/re-handoff",
+  sellerAuthMiddleware,
+  sellerOrdersController.reHandoffNoAnswer,
+);
+router.post(
+  "/seller-auth/orders/no-answer/:returnedOrderId/reactivate",
+  sellerAuthMiddleware,
+  sellerOrdersController.reactivateNoAnswer,
+);
+router.post(
+  "/seller-auth/orders/no-answer/:returnedOrderId/deliver",
+  sellerAuthMiddleware,
+  sellerOrdersController.deliverNoAnswer,
+);
 router.get(
   "/seller-auth/notifications/unread-count",
   sellerAuthMiddleware,

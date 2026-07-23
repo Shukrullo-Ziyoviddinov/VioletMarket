@@ -8,6 +8,7 @@ const {
 } = require("../utils/flashCategoryProduct");
 const {
   applyVariantIncrement,
+  applyVariantDecrement,
   hasVariantHint,
   hasVariantStockData,
   normalizeVariant,
@@ -162,6 +163,50 @@ async function releaseReservedStockOnReturn(
 }
 
 /**
+ * Qayta kuryerga / admin Topshirdim oldidan: ombordan yana rezerv (release aksini).
+ */
+async function reserveStockUnitOnRehandoff(
+  productIdRaw,
+  qtyRaw = 1,
+  variantRaw = {},
+) {
+  const productId = Number(productIdRaw);
+  const qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
+  if (!Number.isFinite(productId) || productId <= 0) return;
+
+  const row = await Product.findOne({ id: productId }).lean();
+  if (!row) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  const working = JSON.parse(JSON.stringify(row));
+  const variant = normalizeVariant(variantRaw);
+  const currentReserved = Math.max(0, Number(working.reservedQuantity) || 0);
+  const $set = {
+    reservedQuantity: currentReserved + qty,
+  };
+
+  const rootQty = Number(working.quantity);
+  if (Number.isFinite(rootQty)) {
+    if (rootQty < qty) {
+      throw new HttpError(
+        409,
+        "Omborda yetarli mahsulot yo‘q",
+        "INSUFFICIENT_STOCK",
+      );
+    }
+    $set.quantity = rootQty - qty;
+  }
+
+  if (hasVariantStockData(working) && hasVariantHint(variant)) {
+    applyVariantDecrement(working, variant, qty);
+    Object.assign($set, buildStockWritePayload(working));
+  }
+
+  await Product.updateOne({ id: productId }, { $set });
+}
+
+/**
  * Topshirdim: flash «sotildi» foizi + ranking soldCount.
  * Ombor rezervi checkout da bo‘lgani uchun quantity yana kamaytirilmaydi.
  */
@@ -231,5 +276,6 @@ module.exports = {
   reserveProductsOnCheckout,
   recordProductSoldDisplayMetrics,
   releaseReservedStockOnReturn,
+  reserveStockUnitOnRehandoff,
   markProductsAsSold,
 };

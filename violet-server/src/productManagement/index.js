@@ -3,6 +3,7 @@ const {
   reserveProductsOnCheckout,
   recordProductSoldDisplayMetrics,
   releaseReservedStockOnReturn,
+  reserveStockUnitOnRehandoff,
 } = require("./markProductsAsSold");
 const {
   POST_ORDER_REVIEW_SOURCES,
@@ -37,6 +38,7 @@ module.exports = {
   reserveProductsOnCheckout,
   recordProductSoldDisplayMetrics,
   releaseReservedStockOnReturn,
+  reserveStockUnitOnRehandoff,
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,

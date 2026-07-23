@@ -126,6 +126,29 @@ export function handoffAdminOrderItem(orderId, itemIndex, sellerId) {
   return patchOrderItem('handoff', orderId, itemIndex, sellerId);
 }
 
+async function postNoAnswerAction(returnedOrderId, action) {
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/orders/no-answer/${encodeURIComponent(returnedOrderId)}/${action}`,
+    ),
+    { method: 'POST' },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+export function reHandoffAdminNoAnswerOrder(returnedOrderId) {
+  return postNoAnswerAction(returnedOrderId, 're-handoff');
+}
+
+export function reactivateAdminNoAnswerOrder(returnedOrderId) {
+  return postNoAnswerAction(returnedOrderId, 'reactivate');
+}
+
+export function deliverAdminNoAnswerOrder(returnedOrderId) {
+  return postNoAnswerAction(returnedOrderId, 'deliver');
+}
+
 export async function fetchAdminOrderCounts() {
   const res = await fetch(apiUrl('/api/admin/orders/counts'));
   const payload = await parseJson(res);

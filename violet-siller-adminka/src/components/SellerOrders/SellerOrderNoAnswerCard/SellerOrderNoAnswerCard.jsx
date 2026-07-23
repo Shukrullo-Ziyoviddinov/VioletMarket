@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   formatSellerOrderAmount,
@@ -17,10 +17,28 @@ function personName(person) {
   return name || '—';
 }
 
-export default function SellerOrderNoAnswerCard({ order }) {
+export default function SellerOrderNoAnswerCard({
+  order,
+  actionLoading = false,
+  onReHandoff,
+  onReactivate,
+  onDeliver,
+}) {
   const { t, i18n } = useTranslation();
+  const [busyAction, setBusyAction] = useState('');
   const title = getSellerOrderProductTitle(order, i18n.language);
   const buyer = order?.buyer || order?.customer || {};
+  const busy = Boolean(actionLoading || busyAction);
+
+  const runAction = async (key, handler) => {
+    if (!handler || busy) return;
+    setBusyAction(key);
+    try {
+      await handler(order);
+    } finally {
+      setBusyAction('');
+    }
+  };
 
   return (
     <article className="seller-order-no-answer-card">
@@ -80,30 +98,33 @@ export default function SellerOrderNoAnswerCard({ order }) {
       <div className="seller-order-no-answer-card__actions">
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--secondary"
-          onClick={() => {
-            // Keyingi bosqich
-          }}
+          onClick={() => runAction('reHandoff', onReHandoff)}
         >
-          {t('orders.noAnswer.reHandoff')}
+          {busyAction === 'reHandoff'
+            ? '...'
+            : t('orders.noAnswer.reHandoff')}
         </button>
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--primary"
-          onClick={() => {
-            // Keyingi bosqich
-          }}
+          onClick={() => runAction('reactivate', onReactivate)}
         >
-          {t('orders.noAnswer.reactivate')}
+          {busyAction === 'reactivate'
+            ? '...'
+            : t('orders.noAnswer.reactivate')}
         </button>
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--success"
-          onClick={() => {
-            // Keyingi bosqich
-          }}
+          onClick={() => runAction('deliver', onDeliver)}
         >
-          {t('orders.noAnswer.deliveredToCustomer')}
+          {busyAction === 'deliver'
+            ? '...'
+            : t('orders.noAnswer.deliveredToCustomer')}
         </button>
       </div>
     </article>

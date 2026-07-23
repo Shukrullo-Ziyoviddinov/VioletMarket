@@ -65,6 +65,15 @@ const courierReturnedOrderSchema = new mongoose.Schema(
 
     orderPaymentStatus: { type: String, default: "" },
     isPaid: { type: Boolean, default: false },
+
+    /** Admin/siller tugmalari: re_handoff | reactivated | delivered */
+    resolutionType: {
+      type: String,
+      enum: ["re_handoff", "reactivated", "delivered"],
+      default: undefined,
+    },
+    resolvedAt: { type: Date, default: null, index: true },
+    resolvedBy: { type: String, default: "" },
   },
   {
     collection: "courier_returned_orders",
@@ -77,6 +86,8 @@ courierReturnedOrderSchema.index({ sellerId: 1, returnedAt: -1 });
 courierReturnedOrderSchema.index({ sellerId: 1, dateKey: 1 });
 courierReturnedOrderSchema.index({ sellerId: 1, weekKey: 1 });
 courierReturnedOrderSchema.index({ sellerId: 1, monthKey: 1 });
+courierReturnedOrderSchema.index({ sellerId: 1, reasonType: 1, resolvedAt: 1 });
+courierReturnedOrderSchema.index({ reasonType: 1, resolvedAt: 1 });
 courierReturnedOrderSchema.index(
   { orderId: 1, itemIndex: 1, unitIndex: 1 },
   { unique: true },

@@ -4,8 +4,11 @@ import { useTranslation } from 'react-i18next';
 import {
   collectSellerOrderItem,
   confirmSellerOrderItem,
+  deliverSellerNoAnswerOrder,
   fetchSellerOrders,
   handoffSellerOrderItem,
+  reactivateSellerNoAnswerOrder,
+  reHandoffSellerNoAnswerOrder,
 } from '../../../api/sellerOrdersApi';
 import { useSellerAuth } from '../../../context/SellerAuthContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
@@ -138,6 +141,60 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     }
   };
 
+  const handleNoAnswerReHandoff = async (order) => {
+    if (!token || !order?.id) return;
+    try {
+      await reHandoffSellerNoAnswerOrder(token, order.id);
+      message.success(
+        t('orders.noAnswer.reHandoffSuccess', {
+          defaultValue: 'Buyurtma qayta kuryerga topshirildi',
+        }),
+      );
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.noAnswer.actionError', { defaultValue: 'Amal bajarilmadi' }),
+      );
+    }
+  };
+
+  const handleNoAnswerReactivate = async (order) => {
+    if (!token || !order?.id) return;
+    try {
+      await reactivateSellerNoAnswerOrder(token, order.id);
+      message.success(
+        t('orders.noAnswer.reactivateSuccess', {
+          defaultValue: 'Mahsulot qayta sotuvga qo‘yildi',
+        }),
+      );
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.noAnswer.actionError', { defaultValue: 'Amal bajarilmadi' }),
+      );
+    }
+  };
+
+  const handleNoAnswerDeliver = async (order) => {
+    if (!token || !order?.id) return;
+    try {
+      await deliverSellerNoAnswerOrder(token, order.id);
+      message.success(
+        t('orders.noAnswer.deliverSuccess', {
+          defaultValue: 'Buyurtma mijozga topshirildi deb belgilandi',
+        }),
+      );
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.noAnswer.actionError', { defaultValue: 'Amal bajarilmadi' }),
+      );
+    }
+  };
+
   let listNode = null;
   if (filter === 'confirmation') {
     listNode = (
@@ -169,7 +226,13 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     );
   } else if (filter === 'noAnswer') {
     listNode = (
-      <SellerOrderNoAnswerList orders={noAnswerOrders} loading={loading} />
+      <SellerOrderNoAnswerList
+        orders={noAnswerOrders}
+        loading={loading}
+        onReHandoff={handleNoAnswerReHandoff}
+        onReactivate={handleNoAnswerReactivate}
+        onDeliver={handleNoAnswerDeliver}
+      />
     );
   }
 

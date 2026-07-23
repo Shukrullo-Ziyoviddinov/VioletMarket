@@ -70,12 +70,12 @@ async function listAdminNoAnswerOrders(query = {}) {
   const skip = (page - 1) * limit;
 
   const [rows, total] = await Promise.all([
-    CourierReturnedOrder.find({ reasonType: "no_answer" })
+    CourierReturnedOrder.find({ reasonType: "no_answer", resolvedAt: null })
       .sort({ returnedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),
-    CourierReturnedOrder.countDocuments({ reasonType: "no_answer" }),
+    CourierReturnedOrder.countDocuments({ reasonType: "no_answer", resolvedAt: null }),
   ]);
 
   const sellerMap = await loadSellerMap(rows.map((row) => row.sellerId));
@@ -146,7 +146,7 @@ async function buildAllAdminOrderCards() {
 async function getAdminOrderCounts() {
   const [allCards, noAnswerTotal] = await Promise.all([
     buildAllAdminOrderCards(),
-    CourierReturnedOrder.countDocuments({ reasonType: "no_answer" }),
+    CourierReturnedOrder.countDocuments({ reasonType: "no_answer", resolvedAt: null }),
   ]);
 
   const counts = {

@@ -227,6 +227,7 @@ async function listSellerNoAnswerOrders(sellerId, query = {}) {
   const findFilter = {
     reasonType: "no_answer",
     sellerId: shopId,
+    resolvedAt: null,
   };
 
   const [rows, total] = await Promise.all([

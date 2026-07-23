@@ -131,3 +131,29 @@ export async function handoffSellerOrderItem(token, orderId, itemIndex) {
   const payload = await parseJson(res);
   return payload?.data || {};
 }
+
+async function postNoAnswerAction(token, returnedOrderId, action) {
+  const res = await fetch(
+    apiUrl(
+      `/api/seller-auth/orders/no-answer/${encodeURIComponent(returnedOrderId)}/${action}`,
+    ),
+    {
+      method: 'POST',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+export function reHandoffSellerNoAnswerOrder(token, returnedOrderId) {
+  return postNoAnswerAction(token, returnedOrderId, 're-handoff');
+}
+
+export function reactivateSellerNoAnswerOrder(token, returnedOrderId) {
+  return postNoAnswerAction(token, returnedOrderId, 'reactivate');
+}
+
+export function deliverSellerNoAnswerOrder(token, returnedOrderId) {
+  return postNoAnswerAction(token, returnedOrderId, 'deliver');
+}

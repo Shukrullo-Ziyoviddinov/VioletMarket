@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   formatAdminOrderAmount,
   formatAdminOrderDateTime,
@@ -17,9 +17,27 @@ function personName(person) {
   return name || '—';
 }
 
-export default function AdminOrderNoAnswerCard({ order }) {
+export default function AdminOrderNoAnswerCard({
+  order,
+  actionLoading = false,
+  onReHandoff,
+  onReactivate,
+  onDeliver,
+}) {
+  const [busyAction, setBusyAction] = useState('');
   const title = getAdminOrderProductTitle(order);
   const buyer = order?.buyer || order?.customer || {};
+  const busy = Boolean(actionLoading || busyAction);
+
+  const runAction = async (key, handler) => {
+    if (!handler || busy) return;
+    setBusyAction(key);
+    try {
+      await handler(order);
+    } finally {
+      setBusyAction('');
+    }
+  };
 
   return (
     <article className="seller-order-no-answer-card">
@@ -77,21 +95,27 @@ export default function AdminOrderNoAnswerCard({ order }) {
       <div className="seller-order-no-answer-card__actions">
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--secondary"
+          onClick={() => runAction('reHandoff', onReHandoff)}
         >
-          Qayta kuryerga topshirish
+          {busyAction === 'reHandoff' ? '...' : 'Qayta kuryerga topshirish'}
         </button>
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--primary"
+          onClick={() => runAction('reactivate', onReactivate)}
         >
-          Qayta aktiv qilish
+          {busyAction === 'reactivate' ? '...' : 'Qayta aktiv qilish'}
         </button>
         <button
           type="button"
+          disabled={busy}
           className="seller-order-no-answer-card__button seller-order-no-answer-card__button--success"
+          onClick={() => runAction('deliver', onDeliver)}
         >
-          Mijozga topshirildi
+          {busyAction === 'deliver' ? '...' : 'Mijozga topshirildi'}
         </button>
       </div>
     </article>

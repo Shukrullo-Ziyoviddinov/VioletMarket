@@ -7,6 +7,9 @@ import './SellerOrderNoAnswerList.css';
 export default function SellerOrderNoAnswerList({
   orders = [],
   loading = false,
+  onReHandoff,
+  onReactivate,
+  onDeliver,
 }) {
   const { t } = useTranslation();
 
@@ -34,7 +37,13 @@ export default function SellerOrderNoAnswerList({
         </div>
       ) : null}
       {orders.map((order) => (
-        <SellerOrderNoAnswerCard key={order.id} order={order} />
+        <SellerOrderNoAnswerCard
+          key={order.id}
+          order={order}
+          onReHandoff={onReHandoff}
+          onReactivate={onReactivate}
+          onDeliver={onDeliver}
+        />
       ))}
     </div>
   );
