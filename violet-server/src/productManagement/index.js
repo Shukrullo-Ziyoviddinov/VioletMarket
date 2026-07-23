@@ -1,10 +1,10 @@
+const { recordProductSoldDisplayMetrics } = require("./markProductsAsSold");
 const {
-  markProductsAsSold,
-  reserveProductsOnCheckout,
-  recordProductSoldDisplayMetrics,
-  releaseReservedStockOnReturn,
-  reserveStockUnitOnRehandoff,
-} = require("./markProductsAsSold");
+  reserveOnCheckout,
+  releaseToWarehouse,
+  reReserveForCourier,
+  keepReserved,
+} = require("../inventory");
 const {
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
@@ -34,11 +34,11 @@ const {
 } = require("./paymentMethods");
 
 module.exports = {
-  markProductsAsSold,
-  reserveProductsOnCheckout,
+  reserveOnCheckout,
   recordProductSoldDisplayMetrics,
-  releaseReservedStockOnReturn,
-  reserveStockUnitOnRehandoff,
+  releaseToWarehouse,
+  reReserveForCourier,
+  keepReserved,
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,

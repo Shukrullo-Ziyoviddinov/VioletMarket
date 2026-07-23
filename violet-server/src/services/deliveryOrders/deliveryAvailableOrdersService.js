@@ -1,5 +1,4 @@
 const { Order } = require("../../models/order");
-const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const {
   formatOrderCode,
   formatProductCode,
@@ -14,6 +13,10 @@ const { isOrderPaid } = require("./courierReturnOrderService");
 const {
   resolveStoredPaymentMethod,
 } = require("../../productManagement/paymentMethods");
+const {
+  loadTakenAssignmentUnitKeys,
+  assignmentUnitKey,
+} = require("../../unitLifecycle/assignmentPoolRules");
 
 function toRad(value) {
   return (Number(value) * Math.PI) / 180;
@@ -145,40 +148,13 @@ async function listAvailableDeliveryOrders(query = {}) {
     });
   }
 
-  // Band / yakunlangan donalar — qaytarilganlar ham Buyurtmalarga qaytmasin
-  const taken = await CourierOrderAssignment.find({
-    status: {
-      $in: [
-        "accepted",
-        "en_route_to_seller",
-        "arrived_at_seller",
-        "picked_up",
-        "en_route_to_customer",
-        "arrived_at_customer",
-        "delivered",
-        "cancelled",
-        "return_request_pending",
-        "return_approved",
-        "return_to_seller",
-        "en_route_return_to_seller",
-        "arrived_return_at_seller",
-        "returned",
-      ],
-    },
-  })
-    .select({ orderId: 1, itemIndex: 1, unitIndex: 1 })
-    .lean();
-  const takenKeys = new Set(
-    taken.map(
-      (row) =>
-        `${Number(row.orderId)}:${Number(row.itemIndex)}:${Number(row.unitIndex) || 0}`,
-    ),
-  );
+  // Band donalar — assignmentPoolRules (accept bilan bir xil)
+  const takenKeys = await loadTakenAssignmentUnitKeys();
 
   let filtered = cards.filter(
     (card) =>
       !takenKeys.has(
-        `${Number(card.orderId)}:${Number(card.itemIndex)}:${Number(card.unitIndex) || 0}`,
+        assignmentUnitKey(card.orderId, card.itemIndex, card.unitIndex),
       ),
   );
 

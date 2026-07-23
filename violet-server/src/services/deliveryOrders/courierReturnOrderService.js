@@ -1,23 +1,12 @@
-const { Order } = require("../../models/order");
-const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
-const { CourierReturnedOrder } = require("../../models/courierReturnedOrder");
-const { HttpError } = require("../../utils/httpError");
+const {
+  resolveStoredPaymentMethod,
+} = require("../../productManagement/paymentMethods");
 const {
   getStatisticsDateKey,
   getTashkentYmd,
   getIsoWeekFromYmd,
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey } = require("../adminSales/salesStatisticsHelpers");
-const {
-  resolveStoredPaymentMethod,
-} = require("../../productManagement/paymentMethods");
-
-const REASON_TYPES = new Set(["no_answer", "return"]);
-const RETURNABLE_STATUSES = new Set([
-  "picked_up",
-  "en_route_to_customer",
-  "arrived_at_customer",
-]);
 
 /**
  * Kuryer uchun: online (payme/click) = to‘langan.
@@ -92,150 +81,7 @@ function toPublicReturnedOrder(doc) {
   };
 }
 
-/**
- * Kuryer "Javob bermadi" yoki "Qaytarish".
- * no_answer faqat to‘lov qilingan buyurtmada.
- */
-async function returnOrderUnitByCourier(deliveryId, payload = {}) {
-  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
-  const reasonType = String(payload.reasonType || "").trim().toLowerCase();
-  const comment = String(payload.comment || "").trim();
-
-  if (!assignmentId) {
-    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
-  }
-  if (!REASON_TYPES.has(reasonType)) {
-    throw new HttpError(400, "Sabab turi noto‘g‘ri", "INVALID_REASON_TYPE");
-  }
-
-  const assignment = await CourierOrderAssignment.findById(assignmentId);
-  if (!assignment) {
-    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
-  }
-
-  if (String(assignment.deliveryId) !== String(deliveryId)) {
-    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
-  }
-
-  if (String(assignment.status) === "delivered") {
-    throw new HttpError(
-      409,
-      "Topshirilgan buyurtmani qaytarib bo‘lmaydi",
-      "ASSIGNMENT_ALREADY_DELIVERED",
-    );
-  }
-
-  if (String(assignment.status) === "cancelled") {
-    throw new HttpError(
-      409,
-      "Bu buyurtma allaqachon qaytarilgan",
-      "ASSIGNMENT_ALREADY_RETURNED",
-    );
-  }
-
-  if (!RETURNABLE_STATUSES.has(String(assignment.status))) {
-    throw new HttpError(
-      409,
-      "Avval sotuvchidan mahsulotni oling",
-      "ASSIGNMENT_NOT_PICKED_UP",
-    );
-  }
-
-  const order = await Order.findOne({ id: assignment.orderId })
-    .select("status paidAt createdAt items")
-    .lean();
-  const paid = isOrderPaid(order);
-
-  if (reasonType === "no_answer" && !paid) {
-    throw new HttpError(
-      409,
-      "To‘lov qilinmagan buyurtmada «Javob bermadi» ishlatib bo‘lmaydi",
-      "NO_ANSWER_REQUIRES_PAID",
-    );
-  }
-
-  const orderItem = Array.isArray(order?.items)
-    ? order.items[Number(assignment.itemIndex)]
-    : null;
-  const sellerId =
-    String(assignment.sellerId || "").trim() ||
-    String(orderItem?.sellerId || "").trim();
-
-  if (!sellerId) {
-    throw new HttpError(409, "Siller ID topilmadi", "SELLER_ID_MISSING");
-  }
-
-  const returnedAt = new Date();
-  const periodKeys = resolvePeriodKeys(returnedAt);
-  const returnPayload = {
-    assignmentId: assignment._id,
-    orderId: assignment.orderId,
-    itemIndex: assignment.itemIndex,
-    unitIndex: assignment.unitIndex,
-    productId: assignment.productId,
-    productCode: String(assignment.productCode || ""),
-    sellerId,
-    title: {
-      uz: String(assignment.title?.uz || ""),
-      ru: String(assignment.title?.ru || ""),
-    },
-    amount: Math.max(0, Number(assignment.amount) || 0),
-    quantity: 1,
-    imageUrl: String(assignment.imageUrl || ""),
-    color: String(assignment.color || ""),
-    size: String(assignment.size || ""),
-    storage: String(assignment.storage || ""),
-    model: String(assignment.model || ""),
-    deliveryId: assignment.deliveryId,
-    courier: {
-      firstName: String(assignment.courier?.firstName || ""),
-      lastName: String(assignment.courier?.lastName || ""),
-      phone: String(assignment.courier?.phone || ""),
-      email: String(assignment.courier?.email || ""),
-    },
-    customer: {
-      firstName: String(assignment.customer?.firstName || ""),
-      lastName: String(assignment.customer?.lastName || ""),
-      phone: String(assignment.customer?.phone || ""),
-    },
-    reasonType,
-    comment,
-    orderedAt: order?.createdAt || assignment.acceptedAt || null,
-    returnedAt,
-    dateKey: periodKeys.dateKey,
-    weekKey: periodKeys.weekKey,
-    monthKey: periodKeys.monthKey,
-    orderPaymentStatus: String(order?.status || ""),
-    isPaid: paid,
-  };
-
-  // Unique: orderId+itemIndex+unitIndex — eski yozuv yangilanadi (assignmentId o‘zgarsa ham)
-  const saved = await CourierReturnedOrder.findOneAndUpdate(
-    {
-      orderId: Number(assignment.orderId),
-      itemIndex: Number(assignment.itemIndex),
-      unitIndex: Number(assignment.unitIndex) || 0,
-    },
-    {
-      $set: {
-        ...returnPayload,
-        stockReleased: reasonType === "return",
-        resolvedAt: null,
-        resolvedBy: "",
-      },
-      $unset: { resolutionType: 1 },
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
-  );
-
-  assignment.status = "cancelled";
-  await assignment.save();
-
-  return toPublicReturnedOrder(saved);
-}
-
 module.exports = {
-  returnOrderUnitByCourier,
   toPublicReturnedOrder,
   isOrderPaid,
   resolvePeriodKeys,

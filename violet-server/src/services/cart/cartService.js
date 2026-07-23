@@ -3,7 +3,9 @@ const { Product } = require("../../models/product");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
-  reserveProductsOnCheckout,
+  reserveOnCheckout,
+} = require("../../inventory");
+const {
   buildPostOrderReviewPayload,
   recordCartPayment,
 } = require("../../productManagement");
@@ -436,7 +438,7 @@ async function checkoutCartForUser(userId, options = {}) {
     }).catch(() => null);
   }
 
-  await reserveProductsOnCheckout({
+  await reserveOnCheckout({
     requestedByProductId,
     variantRequestsByProductId,
     productMap,

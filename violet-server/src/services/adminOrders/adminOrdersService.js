@@ -13,45 +13,8 @@ const {
 } = require("../deliveryOrders/courierOrderAssignmentService");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
 const sellerOrderTrackingService = require("../sellerOrders/sellerOrderTrackingService");
-const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 
 const DEFAULT_PAGE_SIZE = 100;
-
-/**
- * Qayta siklda upsert resolvedAt ni tozalamagan bo‘lsa — assignment hali
- * returned bo‘lsa «Javob bermadi»da qayta ochiladi (reactivated emas).
- */
-async function reopenStaleNoAnswerRows() {
-  const rows = await CourierReturnedOrder.find({
-    reasonType: "no_answer",
-    resolvedAt: { $ne: null },
-    $or: [
-      { resolutionType: { $in: ["re_handoff", "delivered"] } },
-      { resolutionType: null },
-      { resolutionType: { $exists: false } },
-    ],
-  })
-    .select({ _id: 1, assignmentId: 1 })
-    .lean();
-
-  if (!rows.length) return;
-
-  for (const row of rows) {
-    if (!row.assignmentId) continue;
-    const assignment = await CourierOrderAssignment.findById(row.assignmentId)
-      .select({ status: 1 })
-      .lean();
-    if (!assignment || String(assignment.status) !== "returned") continue;
-
-    await CourierReturnedOrder.updateOne(
-      { _id: row._id },
-      {
-        $set: { resolvedAt: null, resolvedBy: "" },
-        $unset: { resolutionType: 1 },
-      },
-    );
-  }
-}
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -102,8 +65,6 @@ function attachSeller(card, sellerMap) {
 }
 
 async function listAdminNoAnswerOrders(query = {}) {
-  await reopenStaleNoAnswerRows();
-
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
   const skip = (page - 1) * limit;
@@ -189,8 +150,6 @@ async function buildAllAdminOrderCards() {
  * Har bir jarayon (filter) bo‘yicha barcha sillerlar buyurtma soni.
  */
 async function getAdminOrderCounts() {
-  await reopenStaleNoAnswerRows();
-
   const [allCards, noAnswerTotal] = await Promise.all([
     buildAllAdminOrderCards(),
     CourierReturnedOrder.countDocuments({

@@ -1,6 +1,6 @@
 /**
  * Variant ombori: checkout decrement va qaytarish increment — bir xil pozitsiya.
- * cartService / markProductsAsSold circular dependency bo‘lmasligi uchun alohida.
+ * cartService / inventory circular dependency bo‘lmasligi uchun alohida.
  */
 
 const { hasVariantStockData } = require("../utils/productStockRules");

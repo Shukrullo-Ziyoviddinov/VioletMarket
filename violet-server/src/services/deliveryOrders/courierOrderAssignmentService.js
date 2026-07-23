@@ -19,41 +19,14 @@ const {
   resolveCourierPaymentForDistance,
 } = require("../courierPayment/courierPaymentService");
 const { isOrderPaid } = require("./courierReturnOrderService");
+const {
+  COURIER_IN_PROGRESS_STATUSES,
+  REACCEPTABLE_ASSIGNMENT_STATUSES,
+  assignmentUnitKey,
+} = require("../../unitLifecycle/assignmentPoolRules");
+const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
 
-function resolveOptionLabel(value) {
-  if (value == null) return "";
-  if (typeof value === "string" || typeof value === "number") {
-    const text = String(value).trim();
-    if (!text || text === "[object Object]") return "";
-    return text;
-  }
-  if (typeof value === "object") {
-    const fromName = value.name ?? value.size ?? value.label ?? "";
-    if (typeof fromName === "string" || typeof fromName === "number") {
-      return String(fromName).trim();
-    }
-    if (fromName && typeof fromName === "object") {
-      return String(fromName.uz || fromName.ru || "").trim();
-    }
-    return String(value.uz || value.ru || "").trim();
-  }
-  return "";
-}
-
-const ACTIVE_ASSIGNMENT_STATUSES = [
-  "accepted",
-  "en_route_to_seller",
-  "arrived_at_seller",
-  "picked_up",
-  "en_route_to_customer",
-  "arrived_at_customer",
-  "return_request_pending",
-  "return_approved",
-  "return_to_seller",
-  "en_route_return_to_seller",
-  "arrived_return_at_seller",
-];
-
+const ACTIVE_ASSIGNMENT_STATUSES = COURIER_IN_PROGRESS_STATUSES;
 const SELLER_PHASE_STATUSES = new Set([
   "accepted",
   "en_route_to_seller",
@@ -130,8 +103,6 @@ function resetAssignmentStepFields(assignment) {
   assignment.returnedAt = null;
   assignment.set("approvedReturnReasonType", undefined);
 }
-
-const REACCEPTABLE_STATUSES = new Set(["cancelled"]);
 
 function parseCourierCoords(payload = {}) {
   const lat = Number(payload.courierLat ?? payload.lat);
@@ -387,8 +358,8 @@ async function attachSellerPickup(publicRows = []) {
 }
 
 /**
- * Kuryer "Qabul qilish" bosganda — alohida collectionga yoziladi.
- * cancelled / returned assignment qayta qabul qilinsa — qayta faollashtiriladi.
+ * Kuryer "Qabul qilish" — assignment yaratadi yoki cancelled ni qayta ochadi.
+ * returned: available/accept bir xil — re_handoff assignmentni o‘chiradi, keyin yangi create.
  */
 async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const orderId = Number(payload.orderId);
@@ -461,8 +432,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   if (existing) {
     const existingStatus = String(existing.status || "");
 
-    // Qaytarilgan / bekor qilingan buyurtmani qayta qabul qilish
-    if (REACCEPTABLE_STATUSES.has(existingStatus)) {
+    // cancelled — available pool bilan bir xil: qayta qabul
+    if (REACCEPTABLE_ASSIGNMENT_STATUSES.has(existingStatus)) {
       existing.deliveryId = delivery._id;
       existing.courier = courierSnapshot;
       existing.customer = customerSnapshot;
@@ -495,6 +466,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       return publicRow;
     }
 
+    // returned = taken (available’da yo‘q). Qayta kuryerga assignment o‘chiradi.
     if (existingStatus === "returned") {
       throw new HttpError(
         409,
@@ -833,7 +805,7 @@ async function listAssignmentsByKeys(keys = []) {
 }
 
 function assignmentLookupKey(orderId, itemIndex, unitIndex) {
-  return `${Number(orderId)}:${Number(itemIndex)}:${Number(unitIndex) || 0}`;
+  return assignmentUnitKey(orderId, itemIndex, unitIndex);
 }
 
 module.exports = {
