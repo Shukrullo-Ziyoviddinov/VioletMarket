@@ -1,4 +1,5 @@
 const { Order } = require("../../models/order");
+const { Product } = require("../../models/product");
 const { CourierReturnedOrder } = require("../../models/courierReturnedOrder");
 const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { HttpError } = require("../../utils/httpError");
@@ -10,16 +11,45 @@ const {
   recordSalesOnDelivery,
 } = require("../../productManagement/recordSalesOnDelivery");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
+const {
+  normalizeVariant,
+  hasVariantHint,
+} = require("../../productManagement/variantStockAdjust");
 
 const RESOLUTION_TYPES = new Set(["re_handoff", "reactivated", "delivered"]);
 
+function resolveOptionLabel(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    const text = String(value).trim();
+    if (!text || text === "[object Object]") return "";
+    return text;
+  }
+  if (typeof value === "object") {
+    const fromName = value.name ?? value.size ?? value.label ?? "";
+    if (typeof fromName === "string" || typeof fromName === "number") {
+      return String(fromName).trim();
+    }
+    if (fromName && typeof fromName === "object") {
+      return String(fromName.uz || fromName.ru || "").trim();
+    }
+    return String(value.uz || value.ru || "").trim();
+  }
+  return "";
+}
+
+function isBadVariantLabel(value) {
+  const text = String(value || "").trim();
+  return !text || text === "[object Object]";
+}
+
 function variantFromReturned(doc) {
-  return {
-    color: String(doc.color || "").trim(),
-    size: String(doc.size || "").trim(),
-    storage: String(doc.storage || "").trim(),
-    model: String(doc.model || "").trim(),
-  };
+  return normalizeVariant({
+    color: resolveOptionLabel(doc.color),
+    size: resolveOptionLabel(doc.size),
+    storage: resolveOptionLabel(doc.storage),
+    model: resolveOptionLabel(doc.model),
+  });
 }
 
 function isStockReleased(doc) {
@@ -32,6 +62,61 @@ function unitKeyFromReturned(doc) {
     itemIndex: Number(doc.itemIndex),
     unitIndex: Number(doc.unitIndex) || 0,
   };
+}
+
+/**
+ * Rang/o‘lcham qaytarish yozuvida bo‘sh yoki [object Object] bo‘lsa —
+ * assignment / order item dan tiklaymiz (aks holda variant ombori yangilanmaydi).
+ */
+async function resolveVariantForStockRestore(doc) {
+  let variant = variantFromReturned(doc);
+  const needsFallback =
+    !hasVariantHint(variant) ||
+    isBadVariantLabel(variant.color) ||
+    isBadVariantLabel(variant.size);
+
+  if (!needsFallback) return variant;
+
+  let assignment = null;
+  if (doc.assignmentId) {
+    assignment = await CourierOrderAssignment.findById(doc.assignmentId)
+      .select("color size storage model")
+      .lean();
+  }
+  if (!assignment) {
+    assignment = await CourierOrderAssignment.findOne(unitKeyFromReturned(doc))
+      .select("color size storage model")
+      .lean();
+  }
+  if (assignment) {
+    variant = normalizeVariant({
+      color: resolveOptionLabel(assignment.color) || variant.color,
+      size: resolveOptionLabel(assignment.size) || variant.size,
+      storage: resolveOptionLabel(assignment.storage) || variant.storage,
+      model: resolveOptionLabel(assignment.model) || variant.model,
+    });
+  }
+
+  const stillBad =
+    !hasVariantHint(variant) ||
+    isBadVariantLabel(variant.color) ||
+    isBadVariantLabel(variant.size);
+
+  if (!stillBad) return variant;
+
+  const order = await Order.findOne({ id: doc.orderId }).select("items").lean();
+  const item = Array.isArray(order?.items)
+    ? order.items[Number(doc.itemIndex)]
+    : null;
+  if (item) {
+    variant = normalizeVariant({
+      color: resolveOptionLabel(item.color) || variant.color,
+      size: resolveOptionLabel(item.size) || variant.size,
+      storage: resolveOptionLabel(item.storage) || variant.storage,
+      model: resolveOptionLabel(item.model) || variant.model,
+    });
+  }
+  return variant;
 }
 
 async function loadUnresolvedNoAnswer(returnedOrderId, sellerId = null) {
@@ -83,11 +168,12 @@ async function deleteAssignmentForReturned(doc) {
  */
 async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
-  const variant = variantFromReturned(doc);
+  const variant = await resolveVariantForStockRestore(doc);
 
   if (isStockReleased(doc)) {
     await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
     doc.stockReleased = false;
+    await doc.save();
   }
 
   const order = await Order.findOne({ id: doc.orderId });
@@ -118,15 +204,29 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
 
 /**
  * Qayta aktiv qilish — omborga qaytarish + assignmentni tozalash.
+ * stockReleased flagiga qaramay bir marta ochamiz (eski skip xatosini yo‘qotish).
+ * resolved bo‘lgach qayta bosilmaydi — ikki marta +1 bo‘lmaydi.
  */
 async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
-  const variant = variantFromReturned(doc);
+  const variant = await resolveVariantForStockRestore(doc);
 
-  if (!isStockReleased(doc)) {
-    await releaseReservedStockOnReturn(doc.productId, 1, variant);
-    doc.stockReleased = true;
+  const product = await Product.findOne({ id: doc.productId }).select("id").lean();
+  if (!product) {
+    throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
+
+  // Variant yorliqlarini yozuvga ham yozib qo‘yamiz (keyingi amallar uchun)
+  if (hasVariantHint(variant)) {
+    doc.color = variant.color;
+    doc.size = variant.size;
+    doc.storage = variant.storage;
+    doc.model = variant.model;
+  }
+
+  await releaseReservedStockOnReturn(doc.productId, 1, variant);
+  doc.stockReleased = true;
+  await doc.save();
 
   await deleteAssignmentForReturned(doc);
 
@@ -143,12 +243,13 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
  */
 async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
-  const variant = variantFromReturned(doc);
+  const variant = await resolveVariantForStockRestore(doc);
   const deliveredAt = new Date();
 
   if (isStockReleased(doc)) {
     await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
     doc.stockReleased = false;
+    await doc.save();
   }
 
   let assignment = doc.assignmentId

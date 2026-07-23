@@ -20,6 +20,26 @@ const {
 } = require("../courierPayment/courierPaymentService");
 const { isOrderPaid } = require("./courierReturnOrderService");
 
+function resolveOptionLabel(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    const text = String(value).trim();
+    if (!text || text === "[object Object]") return "";
+    return text;
+  }
+  if (typeof value === "object") {
+    const fromName = value.name ?? value.size ?? value.label ?? "";
+    if (typeof fromName === "string" || typeof fromName === "number") {
+      return String(fromName).trim();
+    }
+    if (fromName && typeof fromName === "object") {
+      return String(fromName.uz || fromName.ru || "").trim();
+    }
+    return String(value.uz || value.ru || "").trim();
+  }
+  return "";
+}
+
 const ACTIVE_ASSIGNMENT_STATUSES = [
   "accepted",
   "en_route_to_seller",
@@ -508,10 +528,10 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     title: resolveTitle(item.title),
     amount,
     imageUrl: String(item.image || ""),
-    color: String(item.color || ""),
-    size: String(item.size || ""),
-    storage: String(item.storage || ""),
-    model: String(item.model || ""),
+    color: resolveOptionLabel(item.color),
+    size: resolveOptionLabel(item.size),
+    storage: resolveOptionLabel(item.storage),
+    model: resolveOptionLabel(item.model),
     deliveryId: delivery._id,
     courier: courierSnapshot,
     customer: customerSnapshot,

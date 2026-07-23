@@ -23,7 +23,9 @@ const { normalizeVariant } = require("../../productManagement/variantStockAdjust
 function resolveOptionLabel(value) {
   if (value == null) return "";
   if (typeof value === "string" || typeof value === "number") {
-    return String(value).trim();
+    const text = String(value).trim();
+    if (!text || text === "[object Object]") return "";
+    return text;
   }
   if (typeof value === "object") {
     const fromName = value.name ?? value.size ?? value.label ?? "";
@@ -237,10 +239,11 @@ async function createReturnRequestByCourier(deliveryId, payload = {}) {
     },
     amount: Math.max(0, Number(assignment.amount) || 0),
     imageUrl: String(assignment.imageUrl || ""),
-    color: String(assignment.color || ""),
-    size: String(assignment.size || ""),
-    storage: String(assignment.storage || ""),
-    model: String(assignment.model || ""),
+    color: resolveOptionLabel(assignment.color) || resolveOptionLabel(orderItem?.color),
+    size: resolveOptionLabel(assignment.size) || resolveOptionLabel(orderItem?.size),
+    storage:
+      resolveOptionLabel(assignment.storage) || resolveOptionLabel(orderItem?.storage),
+    model: resolveOptionLabel(assignment.model) || resolveOptionLabel(orderItem?.model),
     deliveryId: assignment.deliveryId,
     courier: {
       firstName: String(assignment.courier?.firstName || ""),
@@ -569,10 +572,18 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
           ? leanOrder.items[Number(assignment.itemIndex)]
           : null;
         const variant = normalizeVariant({
-          color: assignment.color || resolveOptionLabel(orderItem?.color),
-          size: assignment.size || resolveOptionLabel(orderItem?.size),
-          storage: assignment.storage || resolveOptionLabel(orderItem?.storage),
-          model: assignment.model || resolveOptionLabel(orderItem?.model),
+          color:
+            resolveOptionLabel(assignment.color) ||
+            resolveOptionLabel(orderItem?.color),
+          size:
+            resolveOptionLabel(assignment.size) ||
+            resolveOptionLabel(orderItem?.size),
+          storage:
+            resolveOptionLabel(assignment.storage) ||
+            resolveOptionLabel(orderItem?.storage),
+          model:
+            resolveOptionLabel(assignment.model) ||
+            resolveOptionLabel(orderItem?.model),
         });
         await releaseReservedStockOnReturn(assignment.productId, 1, variant);
         existingDoc.stockReleased = true;
@@ -623,10 +634,11 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   }
 
   const variant = normalizeVariant({
-    color: assignment.color || resolveOptionLabel(orderItem?.color),
-    size: assignment.size || resolveOptionLabel(orderItem?.size),
-    storage: assignment.storage || resolveOptionLabel(orderItem?.storage),
-    model: assignment.model || resolveOptionLabel(orderItem?.model),
+    color: resolveOptionLabel(assignment.color) || resolveOptionLabel(orderItem?.color),
+    size: resolveOptionLabel(assignment.size) || resolveOptionLabel(orderItem?.size),
+    storage:
+      resolveOptionLabel(assignment.storage) || resolveOptionLabel(orderItem?.storage),
+    model: resolveOptionLabel(assignment.model) || resolveOptionLabel(orderItem?.model),
   });
 
   const returnPayload = {
@@ -689,14 +701,14 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     await releaseReservedStockOnReturn(assignment.productId, 1, variant);
   }
 
-  const stockReleased =
-    reasonType === "return" ? true : alreadyReleased;
+  const stockReleased = reasonType === "return";
 
   const saved = await CourierReturnedOrder.findOneAndUpdate(
     unitFilter,
     {
       $set: {
         ...returnPayload,
+        // no_answer: har doim false — ombor faqat «Qayta aktiv qilish»da ochiladi
         stockReleased,
       },
       $unset: { resolutionType: 1 },
