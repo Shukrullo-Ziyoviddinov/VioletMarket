@@ -18,6 +18,25 @@ const {
   attachSellerPickup,
   applyCourierKmPayment,
 } = require("../deliveryOrders/courierOrderAssignmentService");
+const { normalizeVariant } = require("../../productManagement/variantStockAdjust");
+
+function resolveOptionLabel(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+  if (typeof value === "object") {
+    const fromName = value.name ?? value.size ?? value.label ?? "";
+    if (typeof fromName === "string" || typeof fromName === "number") {
+      return String(fromName).trim();
+    }
+    if (fromName && typeof fromName === "object") {
+      return String(fromName.uz || fromName.ru || "").trim();
+    }
+    return String(value.uz || value.ru || "").trim();
+  }
+  return "";
+}
 
 const REASON_TYPES = new Set(["no_answer", "return"]);
 const REQUESTABLE_STATUSES = new Set([
@@ -483,6 +502,16 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   const paid = isOrderPaid(order);
   const returnedAt = new Date();
   const periodKeys = resolvePeriodKeys(returnedAt);
+  const orderItem = Array.isArray(order?.items)
+    ? order.items[Number(assignment.itemIndex)]
+    : null;
+
+  const variant = normalizeVariant({
+    color: assignment.color || resolveOptionLabel(orderItem?.color),
+    size: assignment.size || resolveOptionLabel(orderItem?.size),
+    storage: assignment.storage || resolveOptionLabel(orderItem?.storage),
+    model: assignment.model || resolveOptionLabel(orderItem?.model),
+  });
 
   const returnPayload = {
     assignmentId: assignment._id,
@@ -499,10 +528,10 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     amount: Math.max(0, Number(assignment.amount) || 0),
     quantity: 1,
     imageUrl: String(assignment.imageUrl || ""),
-    color: String(assignment.color || ""),
-    size: String(assignment.size || ""),
-    storage: String(assignment.storage || ""),
-    model: String(assignment.model || ""),
+    color: variant.color,
+    size: variant.size,
+    storage: variant.storage,
+    model: variant.model,
     deliveryId: assignment.deliveryId,
     courier: {
       firstName: String(assignment.courier?.firstName || ""),
@@ -532,7 +561,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 
-  await releaseReservedStockOnReturn(assignment.productId, 1);
+  await releaseReservedStockOnReturn(assignment.productId, 1, variant);
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;

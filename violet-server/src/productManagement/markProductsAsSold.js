@@ -6,6 +6,13 @@ const {
   FLASH_CATEGORY_SECTION_KEY,
   isFlashCategoryActive,
 } = require("../utils/flashCategoryProduct");
+const {
+  applyVariantIncrement,
+  hasVariantHint,
+  hasVariantStockData,
+  normalizeVariant,
+  buildStockWritePayload,
+} = require("./variantStockAdjust");
 
 async function incrementSellerOrderCounts(requestedByProductId, productMap) {
   const incrementsBySeller = new Map();
@@ -113,30 +120,45 @@ async function reserveProductsOnCheckout({
 
 /**
  * Qaytardim: rezervni bo‘shatish + omborga qaytarish.
- * flashSaleSoldCount o‘zgarmaydi (topshirilmagan).
+ * Checkout dagi applyVariantDecrement bilan bir xil pozitsiyaga +qty (rang/o‘lcham/…).
+ * flashSaleSoldCount o‘zgarmaydi — progress faqat Topshirdim da oshadi.
  */
-async function releaseReservedStockOnReturn(productIdRaw, qtyRaw = 1) {
+async function releaseReservedStockOnReturn(
+  productIdRaw,
+  qtyRaw = 1,
+  variantRaw = {},
+) {
   const productId = Number(productIdRaw);
   const qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
   if (!Number.isFinite(productId) || productId <= 0) return;
 
-  const product = await Product.findOne({ id: productId })
-    .select("quantity reservedQuantity")
-    .lean();
-  if (!product) return;
+  const row = await Product.findOne({ id: productId }).lean();
+  if (!row) return;
 
-  const currentQty = Math.max(0, Number(product.quantity) || 0);
-  const currentReserved = Math.max(0, Number(product.reservedQuantity) || 0);
+  const working = JSON.parse(JSON.stringify(row));
+  const variant = normalizeVariant(variantRaw);
 
-  await Product.updateOne(
-    { id: productId },
-    {
-      $set: {
-        quantity: currentQty + qty,
-        reservedQuantity: Math.max(0, currentReserved - qty),
-      },
-    },
-  );
+  const currentReserved = Math.max(0, Number(working.reservedQuantity) || 0);
+  const $set = {
+    reservedQuantity: Math.max(0, currentReserved - qty),
+  };
+
+  // Root quantity faqat mavjud bo‘lsa (variantli mahsulotda odatda yo‘q).
+  const rootQty = Number(working.quantity);
+  if (Number.isFinite(rootQty)) {
+    $set.quantity = Math.max(0, rootQty) + qty;
+  }
+
+  // Checkout qaysi rang/o‘lchamni kamaytirgan bo‘lsa — shu yerga qayta yozamiz.
+  if (hasVariantStockData(working) && hasVariantHint(variant)) {
+    applyVariantIncrement(working, variant, qty);
+    Object.assign($set, buildStockWritePayload(working));
+  } else if (hasVariantStockData(working) && !hasVariantHint(variant)) {
+    // Variantli, lekin assignmentda pozitsiya yo‘q — hech bo‘lmasa rezervni bo‘shatamiz.
+    // Root quantity qo‘shmaymiz (noto‘g‘ri tashqi quantity yaratmaslik).
+  }
+
+  await Product.updateOne({ id: productId }, { $set });
 }
 
 /**
