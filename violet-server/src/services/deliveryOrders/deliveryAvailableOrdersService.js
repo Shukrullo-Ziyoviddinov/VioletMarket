@@ -145,8 +145,9 @@ async function listAvailableDeliveryOrders(query = {}) {
     });
   }
 
-  // Allaqachon qabul qilingan donalarni olib tashlash
-  const accepted = await CourierOrderAssignment.find({
+  // Allaqachon band qilingan donalarni olib tashlash
+  // cancelled / returned — qayta qabul qilish mumkin, shuning uchun filterda yo‘q
+  const taken = await CourierOrderAssignment.find({
     status: {
       $in: [
         "accepted",
@@ -156,13 +157,18 @@ async function listAvailableDeliveryOrders(query = {}) {
         "en_route_to_customer",
         "arrived_at_customer",
         "delivered",
+        "return_request_pending",
+        "return_approved",
+        "return_to_seller",
+        "en_route_return_to_seller",
+        "arrived_return_at_seller",
       ],
     },
   })
     .select({ orderId: 1, itemIndex: 1, unitIndex: 1 })
     .lean();
-  const acceptedKeys = new Set(
-    accepted.map(
+  const takenKeys = new Set(
+    taken.map(
       (row) =>
         `${Number(row.orderId)}:${Number(row.itemIndex)}:${Number(row.unitIndex) || 0}`,
     ),
@@ -170,7 +176,7 @@ async function listAvailableDeliveryOrders(query = {}) {
 
   let filtered = cards.filter(
     (card) =>
-      !acceptedKeys.has(
+      !takenKeys.has(
         `${Number(card.orderId)}:${Number(card.itemIndex)}:${Number(card.unitIndex) || 0}`,
       ),
   );

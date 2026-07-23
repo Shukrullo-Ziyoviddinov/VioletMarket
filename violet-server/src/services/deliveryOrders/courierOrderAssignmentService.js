@@ -105,7 +105,13 @@ function resetAssignmentStepFields(assignment) {
   assignment.enRouteToCustomerAt = null;
   assignment.arrivedAtCustomerAt = null;
   assignment.deliveredAt = null;
+  assignment.enRouteReturnToSellerAt = null;
+  assignment.arrivedReturnAtSellerAt = null;
+  assignment.returnedAt = null;
+  assignment.set("approvedReturnReasonType", undefined);
 }
+
+const REACCEPTABLE_STATUSES = new Set(["cancelled", "returned"]);
 
 function parseCourierCoords(payload = {}) {
   const lat = Number(payload.courierLat ?? payload.lat);
@@ -362,7 +368,7 @@ async function attachSellerPickup(publicRows = []) {
 
 /**
  * Kuryer "Qabul qilish" bosganda — alohida collectionga yoziladi.
- * Qaytarilgan (cancelled) assignment qayta qabul qilinsa — qayta faollashtiriladi.
+ * cancelled / returned assignment qayta qabul qilinsa — qayta faollashtiriladi.
  */
 async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const orderId = Number(payload.orderId);
@@ -435,8 +441,8 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   if (existing) {
     const existingStatus = String(existing.status || "");
 
-    // Qaytarilgan buyurtmani qayta qabul qilish
-    if (existingStatus === "cancelled") {
+    // Qaytarilgan / bekor qilingan buyurtmani qayta qabul qilish
+    if (REACCEPTABLE_STATUSES.has(existingStatus)) {
       existing.deliveryId = delivery._id;
       existing.courier = courierSnapshot;
       existing.customer = customerSnapshot;
