@@ -13,6 +13,9 @@ const {
 } = require("../deliveryOrders/courierOrderAssignmentService");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
 const sellerOrderTrackingService = require("../sellerOrders/sellerOrderTrackingService");
+const {
+  healNoAnswerReturnedReasonTypes,
+} = require("../courierReturnRequest/courierReturnRequestService");
 
 const DEFAULT_PAGE_SIZE = 100;
 
@@ -65,17 +68,25 @@ function attachSeller(card, sellerMap) {
 }
 
 async function listAdminNoAnswerOrders(query = {}) {
+  await healNoAnswerReturnedReasonTypes();
+
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
   const skip = (page - 1) * limit;
 
   const [rows, total] = await Promise.all([
-    CourierReturnedOrder.find({ reasonType: "no_answer", resolvedAt: null })
+    CourierReturnedOrder.find({
+      reasonType: "no_answer",
+      $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
+    })
       .sort({ returnedAt: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),
-    CourierReturnedOrder.countDocuments({ reasonType: "no_answer", resolvedAt: null }),
+    CourierReturnedOrder.countDocuments({
+      reasonType: "no_answer",
+      $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
+    }),
   ]);
 
   const sellerMap = await loadSellerMap(rows.map((row) => row.sellerId));
@@ -144,9 +155,14 @@ async function buildAllAdminOrderCards() {
  * Har bir jarayon (filter) bo‘yicha barcha sillerlar buyurtma soni.
  */
 async function getAdminOrderCounts() {
+  await healNoAnswerReturnedReasonTypes();
+
   const [allCards, noAnswerTotal] = await Promise.all([
     buildAllAdminOrderCards(),
-    CourierReturnedOrder.countDocuments({ reasonType: "no_answer", resolvedAt: null }),
+    CourierReturnedOrder.countDocuments({
+      reasonType: "no_answer",
+      $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
+    }),
   ]);
 
   const counts = {

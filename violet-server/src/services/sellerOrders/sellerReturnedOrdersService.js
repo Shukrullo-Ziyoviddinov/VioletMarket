@@ -16,6 +16,9 @@ const {
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey, toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
+const {
+  healNoAnswerReturnedReasonTypes,
+} = require("../courierReturnRequest/courierReturnRequestService");
 
 function buildFallbackOptions(defaults) {
   return {
@@ -219,6 +222,8 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
  * siller tugmalarni bosmaguncha ro‘yxatda qoladi).
  */
 async function listSellerNoAnswerOrders(sellerId, query = {}) {
+  await healNoAnswerReturnedReasonTypes();
+
   const shopId = String(sellerId || "").trim();
   const page = Math.max(1, Number(query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
@@ -227,7 +232,7 @@ async function listSellerNoAnswerOrders(sellerId, query = {}) {
   const findFilter = {
     reasonType: "no_answer",
     sellerId: shopId,
-    resolvedAt: null,
+    $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
   };
 
   const [rows, total] = await Promise.all([

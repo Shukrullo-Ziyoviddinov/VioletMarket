@@ -45,6 +45,71 @@ const REQUESTABLE_STATUSES = new Set([
   "arrived_at_customer",
 ]);
 
+/**
+ * Admin tasdiqlagan qaytarish turi — assignmentda yo‘q bo‘lsa so‘rovdan oladi.
+ * `|| "return"` ishlatilmaydi (noto‘g‘ri «Qaytarilgan»ga tushib qolmasin).
+ */
+async function resolveApprovedReturnReasonType(assignment) {
+  let approved = String(assignment?.approvedReturnReasonType || "")
+    .trim()
+    .toLowerCase();
+  if (REASON_TYPES.has(approved)) {
+    return approved;
+  }
+
+  const request = await CourierReturnRequest.findOne({
+    assignmentId: assignment._id,
+    status: "approved",
+  })
+    .sort({ reviewedAt: -1 })
+    .select("approvedReasonType")
+    .lean();
+
+  approved = String(request?.approvedReasonType || "").trim().toLowerCase();
+  if (REASON_TYPES.has(approved)) {
+    assignment.approvedReturnReasonType = approved;
+    return approved;
+  }
+
+  return "";
+}
+
+/**
+ * Avvalgi xatolik: no_answer bo‘lishi kerak edi, lekin reasonType=return saqlangan.
+ * Admin/siller «Javob bermadi» ochganda o‘zini tuzatadi.
+ */
+async function healNoAnswerReturnedReasonTypes() {
+  const requests = await CourierReturnRequest.find({
+    status: "approved",
+    approvedReasonType: "no_answer",
+  })
+    .select({ orderId: 1, itemIndex: 1, unitIndex: 1, assignmentId: 1 })
+    .lean();
+
+  if (!requests.length) return 0;
+
+  const ops = requests.map((row) => ({
+    updateOne: {
+      filter: {
+        orderId: Number(row.orderId),
+        itemIndex: Number(row.itemIndex),
+        unitIndex: Number(row.unitIndex) || 0,
+        reasonType: "return",
+        $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
+      },
+      update: {
+        $set: {
+          reasonType: "no_answer",
+          assignmentId: row.assignmentId,
+        },
+      },
+    },
+  }));
+
+  const result = await CourierReturnedOrder.bulkWrite(ops, { ordered: false });
+  return Number(result.modifiedCount || 0);
+}
+
 const RETURN_ADVANCE_ACTIONS = {
   go_return_to_seller: {
     from: ["return_to_seller"],
@@ -490,15 +555,31 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     unitIndex: Number(assignment.unitIndex) || 0,
   };
 
-  // Oldingi urinishda assignment returned bo‘lib tracking saqlanmagan bo‘lishi mumkin
+  // Oldingi urinishda assignment returned bo‘lib tracking/reasonType noto‘g‘ri bo‘lishi mumkin
   if (String(assignment.status) === "returned") {
     await markOrderItemReturnedToSeller(
       assignment,
       assignment.returnedAt || new Date(),
     );
-    const existing = await CourierReturnedOrder.findOne({
-      $or: [{ assignmentId: assignment._id }, unitFilter],
-    }).lean();
+    const prevReason = String(assignment.approvedReturnReasonType || "");
+    const reasonType = await resolveApprovedReturnReasonType(assignment);
+    if (REASON_TYPES.has(reasonType) && prevReason !== reasonType) {
+      await assignment.save();
+    }
+
+    let existing = null;
+    if (REASON_TYPES.has(reasonType)) {
+      existing = await CourierReturnedOrder.findOneAndUpdate(
+        { $or: [{ assignmentId: assignment._id }, unitFilter] },
+        { $set: { reasonType, assignmentId: assignment._id } },
+        { new: true },
+      ).lean();
+    } else {
+      existing = await CourierReturnedOrder.findOne({
+        $or: [{ assignmentId: assignment._id }, unitFilter],
+      }).lean();
+    }
+
     return {
       returned: existing ? toPublicReturnedOrder(existing) : null,
       assignment: await mapAssignmentPublic(assignment),
@@ -513,10 +594,11 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     );
   }
 
-  const reasonType = String(assignment.approvedReturnReasonType || "return");
+  const reasonType = await resolveApprovedReturnReasonType(assignment);
   if (!REASON_TYPES.has(reasonType)) {
     throw new HttpError(409, "Qaytarish turi belgilanmagan", "RETURN_REASON_MISSING");
   }
+  assignment.approvedReturnReasonType = reasonType;
 
   const order = await Order.findOne({ id: assignment.orderId })
     .select("status paidAt createdAt items paymentMethod")
@@ -656,6 +738,7 @@ module.exports = {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
+  healNoAnswerReturnedReasonTypes,
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
 };
