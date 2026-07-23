@@ -209,9 +209,13 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
     isPaid: paid,
   };
 
-  // Qayta qabul qilingan buyurtma yana qaytarilsa — eski yozuv yangilanadi
+  // Unique: orderId+itemIndex+unitIndex — eski yozuv yangilanadi (assignmentId o‘zgarsa ham)
   const saved = await CourierReturnedOrder.findOneAndUpdate(
-    { assignmentId: assignment._id },
+    {
+      orderId: Number(assignment.orderId),
+      itemIndex: Number(assignment.itemIndex),
+      unitIndex: Number(assignment.unitIndex) || 0,
+    },
     { $set: returnPayload },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );

@@ -484,6 +484,12 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
   }
 
+  const unitFilter = {
+    orderId: Number(assignment.orderId),
+    itemIndex: Number(assignment.itemIndex),
+    unitIndex: Number(assignment.unitIndex) || 0,
+  };
+
   // Oldingi urinishda assignment returned bo‘lib tracking saqlanmagan bo‘lishi mumkin
   if (String(assignment.status) === "returned") {
     await markOrderItemReturnedToSeller(
@@ -491,7 +497,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       assignment.returnedAt || new Date(),
     );
     const existing = await CourierReturnedOrder.findOne({
-      assignmentId: assignment._id,
+      $or: [{ assignmentId: assignment._id }, unitFilter],
     }).lean();
     return {
       returned: existing ? toPublicReturnedOrder(existing) : null,
@@ -571,8 +577,13 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     isPaid: paid,
   };
 
+  // Unique: orderId+itemIndex+unitIndex — avvalgi muvaffaqiyatsiz urinish qolgan bo‘lsa yangilanadi
+  const existingReturned = await CourierReturnedOrder.findOne(unitFilter)
+    .select("_id")
+    .lean();
+
   const saved = await CourierReturnedOrder.findOneAndUpdate(
-    { assignmentId: assignment._id },
+    unitFilter,
     { $set: returnPayload },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
@@ -580,7 +591,10 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   // Avval tracking — enum/validation xatosida stock va assignment o‘zgarmasin
   await markOrderItemReturnedToSeller(assignment, returnedAt);
 
-  await releaseReservedStockOnReturn(assignment.productId, 1, variant);
+  // Avvalgi urinishda stock ochilgan bo‘lishi mumkin — ikki marta restore qilinmasin
+  if (!existingReturned) {
+    await releaseReservedStockOnReturn(assignment.productId, 1, variant);
+  }
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;
