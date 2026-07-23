@@ -30,7 +30,8 @@
     },
     "reason": {
       "noAnswer": "No answer",
-      "return": "Returned"
+      "return": "Returned",
+      "defective": "Defective"
     },
     "card": {
       "quantity": "Qty",

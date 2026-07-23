@@ -55,7 +55,7 @@ const courierReturnRequestSchema = new mongoose.Schema(
     comment: { type: String, default: "" },
     approvedReasonType: {
       type: String,
-      enum: ["no_answer", "return"],
+      enum: ["no_answer", "return", "defective"],
       default: undefined,
     },
     reviewedBy: { type: String, default: "" },

@@ -51,7 +51,7 @@ const courierReturnedOrderSchema = new mongoose.Schema(
 
     reasonType: {
       type: String,
-      enum: ["no_answer", "return"],
+      enum: ["no_answer", "return", "defective"],
       required: true,
       index: true,
     },
@@ -69,8 +69,14 @@ const courierReturnedOrderSchema = new mongoose.Schema(
     /**
      * true = ombor ochilgan (quantity qaytgan).
      * no_answer da kuryer qaytarganda false — faqat «Qayta aktiv qilish»da true bo‘ladi.
+     * defective da har doim false (omborga qaytmaydi).
      */
     stockReleased: { type: Boolean, default: false, index: true },
+
+    /**
+     * true = Yaroqsiz — reserved yechilgan, ombor/algoritmga tegilmagan.
+     */
+    stockDiscarded: { type: Boolean, default: false, index: true },
 
     /** Admin/siller tugmalari: re_handoff | reactivated | delivered */
     resolutionType: {

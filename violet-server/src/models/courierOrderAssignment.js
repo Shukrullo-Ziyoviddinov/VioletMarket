@@ -83,10 +83,10 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
     enRouteToCustomerAt: { type: Date, default: null },
     arrivedAtCustomerAt: { type: Date, default: null },
     deliveredAt: { type: Date, default: null, index: true },
-    /** Admin tasdiqlagan qaytarish turi (no_answer | return) */
+    /** Admin tasdiqlagan qaytarish turi (no_answer | return | defective) */
     approvedReturnReasonType: {
       type: String,
-      enum: ["no_answer", "return"],
+      enum: ["no_answer", "return", "defective"],
       default: undefined,
     },
     enRouteReturnToSellerAt: { type: Date, default: null },

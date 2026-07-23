@@ -2,7 +2,7 @@
  * Unit qaytarish lifecycle — Ajdaniya → approve → sotuvchiga qaytarish.
  *
  * Zanjir: createReturnRequest → approve/reject → confirmReason → advance → completeReturn
- * Ombor: inventory.releaseToWarehouse | keepReserved
+ * Ombor: inventory via stockDisposition (release | keep | discard)
  * no_answer yechimlari (re_handoff/reactivate/deliver) — 3-bosqich.
  */
 
@@ -12,9 +12,8 @@ const { CourierReturnedOrder } = require("../models/courierReturnedOrder");
 const { CourierReturnRequest } = require("../models/courierReturnRequest");
 const { HttpError } = require("../utils/httpError");
 const {
-  releaseToWarehouse,
-  keepReserved,
-} = require("../inventory");
+  applyReturnStockDisposition,
+} = require("./stockDisposition");
 const {
   notifyAdminReturnRequestSubmitted,
 } = require("../services/adminNotifications/adminNotificationService");
@@ -540,7 +539,10 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       existingDoc.resolvedBy = "";
       existingDoc.set("resolutionType", undefined);
 
-      if (reasonType === "return" && !existingDoc.stockReleased) {
+      if (
+        (reasonType === "return" && !existingDoc.stockReleased) ||
+        (reasonType === "defective" && !existingDoc.stockDiscarded)
+      ) {
         const leanOrder = await Order.findOne({ id: assignment.orderId })
           .select("items")
           .lean();
@@ -561,8 +563,18 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
             resolveOptionLabel(assignment.model) ||
             resolveOptionLabel(orderItem?.model),
         });
-        await releaseToWarehouse(assignment.productId, 1, variant);
-        existingDoc.stockReleased = true;
+        const flags = await applyReturnStockDisposition(
+          reasonType,
+          assignment.productId,
+          1,
+          variant,
+          {
+            stockReleased: existingDoc.stockReleased,
+            stockDiscarded: existingDoc.stockDiscarded,
+          },
+        );
+        existingDoc.stockReleased = flags.stockReleased;
+        existingDoc.stockDiscarded = flags.stockDiscarded;
       }
 
       await existingDoc.save();
@@ -663,31 +675,30 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   };
 
   const existingReturned = await CourierReturnedOrder.findOne(unitFilter)
-    .select("_id stockReleased")
+    .select("_id stockReleased stockDiscarded")
     .lean();
-
-  const alreadyReleased = Boolean(existingReturned?.stockReleased);
-  const shouldReleaseStock = reasonType === "return" && !alreadyReleased;
 
   // Avval tracking — enum xatosida stock/assignment o‘zgarmasin
   await markOrderItemReturnedToSeller(assignment, returnedAt);
 
-  // Faqat «Qaytarish»: omborni ochamiz. «Javob bermadi»: rezerv saqlanadi.
-  if (shouldReleaseStock) {
-    await releaseToWarehouse(assignment.productId, 1, variant);
-  } else if (reasonType === "no_answer") {
-    await keepReserved(assignment.productId, 1, variant);
-  }
-
-  const stockReleased = reasonType === "return";
+  const stockFlags = await applyReturnStockDisposition(
+    reasonType,
+    assignment.productId,
+    1,
+    variant,
+    {
+      stockReleased: Boolean(existingReturned?.stockReleased),
+      stockDiscarded: Boolean(existingReturned?.stockDiscarded),
+    },
+  );
 
   const saved = await CourierReturnedOrder.findOneAndUpdate(
     unitFilter,
     {
       $set: {
         ...returnPayload,
-        // no_answer: har doim false — ombor faqat «Qayta aktiv qilish»da ochiladi
-        stockReleased,
+        stockReleased: stockFlags.stockReleased,
+        stockDiscarded: stockFlags.stockDiscarded,
       },
       $unset: { resolutionType: 1 },
     },

@@ -30,7 +30,8 @@
     },
     "reason": {
       "noAnswer": "未接听",
-      "return": "已退回"
+      "return": "已退回",
+      "defective": "不合格"
     },
     "card": {
       "quantity": "数量",

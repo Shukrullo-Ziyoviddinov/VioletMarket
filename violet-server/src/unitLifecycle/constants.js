@@ -4,7 +4,7 @@
  * Zanjir (qaytarish):
  *   picked_up|en_route|arrived_at_customer
  *     → return_request_pending   (Ajdaniya)
- *     → return_approved          (admin: no_answer | return)
+ *     → return_approved          (admin: no_answer | return | defective)
  *     → return_to_seller         (kuryer tasdiq)
  *     → en_route_return_to_seller
  *     → arrived_return_at_seller
@@ -14,9 +14,15 @@
  *     → re_handoff   (qayta kuryerga)
  *     → reactivated  (omborga +1)
  *     → delivered    (mijozga topshirildi)
+ *
+ * returned + reasonType=defective (Yaroqsiz):
+ *     ombor/algoritmga tegmaydi — discardReserved; siller «Qaytarilgan»da badge
  */
 
-const REASON_TYPES = new Set(["no_answer", "return"]);
+const REASON_TYPES = new Set(["no_answer", "return", "defective"]);
+
+/** Siller «Qaytarilgan buyurtma» ro‘yxati */
+const SELLER_RETURNED_LIST_REASON_TYPES = ["return", "defective"];
 
 const REQUESTABLE_STATUSES = new Set([
   "picked_up",
@@ -43,6 +49,7 @@ const RETURN_ADVANCE_ACTIONS = {
 
 module.exports = {
   REASON_TYPES,
+  SELLER_RETURNED_LIST_REASON_TYPES,
   REQUESTABLE_STATUSES,
   RESOLUTION_TYPES,
   RETURN_ADVANCE_ACTIONS,

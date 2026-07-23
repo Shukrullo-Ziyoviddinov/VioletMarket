@@ -46,14 +46,27 @@ export function OrderReturnReasonModal({
     ? 'Admin tasdiqlagan qaytarish'
     : 'Qaytarish so‘rovi';
 
-  const handleReason = (reasonType: ReturnReasonType) => {
-    if (submitting) return;
-    if (isConfirm) {
-      if (approvedReasonType && approvedReasonType !== reasonType) return;
-      if (reasonType === 'no_answer' && !isPaid) return;
-      onSubmitReason?.({ reasonType });
-      return;
+  const reasonEnabled = (reasonType: ReturnReasonType) => {
+    if (submitting) return false;
+    if (approvedReasonType != null && approvedReasonType !== reasonType) {
+      return false;
     }
+    if (reasonType === 'no_answer' && !isPaid) return false;
+    return true;
+  };
+
+  const approvedLabel =
+    approvedReasonType === 'no_answer'
+      ? 'Javob bermadi'
+      : approvedReasonType === 'defective'
+        ? 'Yaroqsiz'
+        : approvedReasonType === 'return'
+          ? 'Qaytarish'
+          : '';
+
+  const handleReason = (reasonType: ReturnReasonType) => {
+    if (!reasonEnabled(reasonType)) return;
+    onSubmitReason?.({ reasonType });
   };
 
   const handleRequest = () => {
@@ -72,24 +85,12 @@ export function OrderReturnReasonModal({
         isConfirm ? (
           <>
             <Pressable
-              disabled={
-                submitting ||
-                !isPaid ||
-                (approvedReasonType != null && approvedReasonType !== 'no_answer')
-              }
+              disabled={!reasonEnabled('no_answer')}
               style={({ pressed }) => [
                 styles.button,
                 styles.secondaryButton,
-                (submitting ||
-                  !isPaid ||
-                  (approvedReasonType != null &&
-                    approvedReasonType !== 'no_answer')) &&
-                  styles.disabledButton,
-                pressed &&
-                  isPaid &&
-                  !submitting &&
-                  approvedReasonType !== 'return' &&
-                  styles.secondaryPressed,
+                !reasonEnabled('no_answer') && styles.disabledButton,
+                pressed && reasonEnabled('no_answer') && styles.secondaryPressed,
               ]}
               onPress={() => handleReason('no_answer')}>
               {submitting && approvedReasonType === 'no_answer' ? (
@@ -98,37 +99,52 @@ export function OrderReturnReasonModal({
                 <Text
                   style={[
                     styles.secondaryText,
-                    (!isPaid ||
-                      (approvedReasonType != null &&
-                        approvedReasonType !== 'no_answer')) &&
-                      styles.disabledText,
+                    !reasonEnabled('no_answer') && styles.disabledText,
                   ]}>
                   Javob bermadi
                 </Text>
               )}
             </Pressable>
             <Pressable
-              disabled={
-                submitting ||
-                (approvedReasonType != null && approvedReasonType !== 'return')
-              }
+              disabled={!reasonEnabled('return')}
               style={({ pressed }) => [
                 styles.button,
                 styles.primaryButton,
-                (submitting ||
-                  (approvedReasonType != null &&
-                    approvedReasonType !== 'return')) &&
-                  styles.disabledButton,
-                pressed &&
-                  !submitting &&
-                  approvedReasonType !== 'no_answer' &&
-                  styles.primaryPressed,
+                !reasonEnabled('return') && styles.disabledButton,
+                pressed && reasonEnabled('return') && styles.primaryPressed,
               ]}
               onPress={() => handleReason('return')}>
               {submitting && approvedReasonType === 'return' ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.primaryText}>Qaytarish</Text>
+                <Text
+                  style={[
+                    styles.primaryText,
+                    !reasonEnabled('return') && styles.disabledText,
+                  ]}>
+                  Qaytarish
+                </Text>
+              )}
+            </Pressable>
+            <Pressable
+              disabled={!reasonEnabled('defective')}
+              style={({ pressed }) => [
+                styles.button,
+                styles.defectiveButton,
+                !reasonEnabled('defective') && styles.disabledButton,
+                pressed && reasonEnabled('defective') && styles.defectivePressed,
+              ]}
+              onPress={() => handleReason('defective')}>
+              {submitting && approvedReasonType === 'defective' ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text
+                  style={[
+                    styles.defectiveText,
+                    !reasonEnabled('defective') && styles.disabledText,
+                  ]}>
+                  Yaroqsiz
+                </Text>
               )}
             </Pressable>
           </>
@@ -154,12 +170,7 @@ export function OrderReturnReasonModal({
       {isConfirm ? (
         <Text style={styles.paidHint}>
           Faqat admin tanlagan tugma ishlaydi
-          {approvedReasonType === 'no_answer'
-            ? ': Javob bermadi'
-            : approvedReasonType === 'return'
-              ? ': Qaytarish'
-              : ''}
-          .
+          {approvedLabel ? `: ${approvedLabel}` : ''}.
         </Text>
       ) : (
         <>
@@ -239,6 +250,12 @@ const styles = StyleSheet.create({
   primaryPressed: {
     backgroundColor: '#B91C1C',
   },
+  defectiveButton: {
+    backgroundColor: '#52525B',
+  },
+  defectivePressed: {
+    backgroundColor: '#3F3F46',
+  },
   disabledButton: {
     opacity: 0.45,
   },
@@ -249,6 +266,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   primaryText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  defectiveText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',

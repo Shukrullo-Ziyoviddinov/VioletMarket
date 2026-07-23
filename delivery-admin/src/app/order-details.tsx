@@ -347,7 +347,7 @@ export default function OrderDetailsScreen() {
   const handleStartReturnToSeller = async () => {
     if (!token || !order || returning || actionLoading) return;
     const reasonType = order.approvedReturnReasonType;
-    if (reasonType !== 'no_answer' && reasonType !== 'return') {
+    if (reasonType !== 'no_answer' && reasonType !== 'return' && reasonType !== 'defective') {
       setReturnModalMode('confirm');
       setReturnModalOpen(true);
       return;
@@ -404,7 +404,9 @@ export default function OrderDetailsScreen() {
         'Qaytarildi',
         data.returned?.reasonType === 'no_answer'
           ? 'Buyurtma «Javob bermadi» sifatida yozildi. Ombor hali ochilmaydi — admin «Qayta aktiv qilish» bosganda ochiladi.'
-          : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
+          : data.returned?.reasonType === 'defective'
+            ? 'Buyurtma «Yaroqsiz» sifatida yozildi. Ombor va sotildi hisobiga kirmaydi.'
+            : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
         [{ text: 'OK', onPress: () => router.replace('/home') }],
       );
     } catch (error) {

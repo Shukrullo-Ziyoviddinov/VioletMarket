@@ -72,7 +72,11 @@ export default function ReturnRequestCard({
         {item.approvedReasonType ? (
           <p className="return-request-card__meta">
             Tasdiqlangan tur:{' '}
-            {item.approvedReasonType === 'no_answer' ? 'Javob bermadi' : 'Qaytarish'}
+            {item.approvedReasonType === 'no_answer'
+              ? 'Javob bermadi'
+              : item.approvedReasonType === 'defective'
+                ? 'Yaroqsiz'
+                : 'Qaytarish'}
           </p>
         ) : null}
         {item.rejectReason ? (

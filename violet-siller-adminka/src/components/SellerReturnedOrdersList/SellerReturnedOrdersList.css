@@ -104,6 +104,12 @@
   border: 1px solid #fecaca;
 }
 
+.seller-returned-orders-card__badge--defective {
+  background: #f4f4f5;
+  color: #52525b;
+  border: 1px solid #d4d4d8;
+}
+
 .seller-returned-orders-card__badge--no-answer {
   background: #fff7ed;
   color: #c2410c;

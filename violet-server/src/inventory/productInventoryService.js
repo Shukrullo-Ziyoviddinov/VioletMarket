@@ -2,9 +2,10 @@
  * Ombor (inventory) — bitta kirish nuqtasi.
  *
  * Zanjir:
- *   reserveOnCheckout  → checkout (−qty, +reserved)
- *   keepReserved       → Javob bermadi qaytarish (Product o‘zgarmaydi)
- *   releaseToWarehouse → oddiy qaytarish / Qayta aktiv (+qty, −reserved)
+ *   reserveOnCheckout   → checkout (−qty, +reserved)
+ *   keepReserved        → Javob bermadi (Product o‘zgarmaydi)
+ *   releaseToWarehouse  → oddiy qaytarish / Qayta aktiv (+qty, −reserved)
+ *   discardReserved     → Yaroqsiz (−reserved, ombor/algoritmga tegmaydi)
  *   reReserveForCourier → qayta kuryerga (release aksini)
  *
  * Variant ± : variantStockAdjust.js
@@ -136,6 +137,27 @@ async function keepReserved(productIdRaw, qtyRaw = 1, variantRaw = {}) {
 }
 
 /**
+ * Yaroqsiz: rezervni yechadi, ombor quantity / variant qaytmaydi.
+ * Sotildi / ranking chaqirilmaydi — shunchaki yo‘qolgan rezerv.
+ */
+async function discardReserved(productIdRaw, qtyRaw = 1, _variantRaw = {}) {
+  const productId = Number(productIdRaw);
+  const qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
+  if (!Number.isFinite(productId) || productId <= 0) return;
+
+  const row = await Product.findOne({ id: productId })
+    .select("reservedQuantity")
+    .lean();
+  if (!row) return;
+
+  const currentReserved = Math.max(0, Number(row.reservedQuantity) || 0);
+  await Product.updateOne(
+    { id: productId },
+    { $set: { reservedQuantity: Math.max(0, currentReserved - qty) } },
+  );
+}
+
+/**
  * Oddiy qaytarish / Qayta aktiv: rezervni ochish + omborga +qty.
  */
 async function releaseToWarehouse(productIdRaw, qtyRaw = 1, variantRaw = {}) {
@@ -210,6 +232,7 @@ async function reReserveForCourier(productIdRaw, qtyRaw = 1, variantRaw = {}) {
 module.exports = {
   reserveOnCheckout,
   keepReserved,
+  discardReserved,
   releaseToWarehouse,
   reReserveForCourier,
 };

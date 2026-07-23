@@ -51,9 +51,12 @@ export default function ReturnRequestApproveModal({
         onChange={(e) => setReasonType(e.target.value)}
       >
         <Space direction="vertical">
-          <Radio value="return">Qaytarish</Radio>
+          <Radio value="return">Qaytarish (omborga qaytadi)</Radio>
           <Radio value="no_answer" disabled={!item?.isPaid}>
             Javob bermadi {!item?.isPaid ? '(faqat to‘langan)' : ''}
+          </Radio>
+          <Radio value="defective">
+            Yaroqsiz (omborga kirmaydi, sotilmagan)
           </Radio>
         </Space>
       </Radio.Group>

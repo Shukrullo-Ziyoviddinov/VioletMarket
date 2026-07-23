@@ -16,6 +16,9 @@ const {
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey, toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
+const {
+  SELLER_RETURNED_LIST_REASON_TYPES,
+} = require("../../unitLifecycle/constants");
 
 function buildFallbackOptions(defaults) {
   return {
@@ -69,7 +72,7 @@ function buildMonthOptions(startKey, endKey) {
 async function loadEarliestReturnedDateKey(sellerId) {
   const row = await CourierReturnedOrder.findOne({
     sellerId: String(sellerId),
-    reasonType: "return",
+    reasonType: { $in: SELLER_RETURNED_LIST_REASON_TYPES },
   })
     .sort({ returnedAt: 1 })
     .select("dateKey returnedAt")
@@ -143,7 +146,16 @@ async function aggregateReturnedStats(sellerId, match = {}) {
         },
         returnCount: {
           $sum: {
-            $cond: [{ $eq: ["$reasonType", "return"] }, 1, 0],
+            $cond: [
+              { $in: ["$reasonType", SELLER_RETURNED_LIST_REASON_TYPES] },
+              1,
+              0,
+            ],
+          },
+        },
+        defectiveCount: {
+          $sum: {
+            $cond: [{ $eq: ["$reasonType", "defective"] }, 1, 0],
           },
         },
       },
@@ -157,6 +169,7 @@ async function aggregateReturnedStats(sellerId, match = {}) {
     totalQuantity: toNumber(row.totalQuantity, 0),
     noAnswerCount: toNumber(row.noAnswerCount, 0),
     returnCount: toNumber(row.returnCount, 0),
+    defectiveCount: toNumber(row.defectiveCount, 0),
   };
 }
 
@@ -173,11 +186,13 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
 
   const findFilter = {
     sellerId: shopId,
-    reasonType: "return",
+    reasonType: { $in: SELLER_RETURNED_LIST_REASON_TYPES },
     ...periodMatch,
   };
 
-  const returnOnlyMatch = { reasonType: "return" };
+  const returnOnlyMatch = {
+    reasonType: { $in: SELLER_RETURNED_LIST_REASON_TYPES },
+  };
 
   const [rows, total, periodStats, allTimeStats, dayStats, weekStats, monthStats] =
     await Promise.all([

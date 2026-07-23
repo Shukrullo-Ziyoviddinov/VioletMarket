@@ -142,7 +142,7 @@ export async function fetchDeliveredHistory(token: string) {
   }>('/api/delivery/orders/history', { method: 'GET' }, token);
 }
 
-export type ReturnReasonType = 'no_answer' | 'return';
+export type ReturnReasonType = 'no_answer' | 'return' | 'defective';
 
 /** Ajdaniya → admin so‘rovi */
 export async function returnDeliveryOrder(

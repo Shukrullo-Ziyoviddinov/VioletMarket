@@ -30,7 +30,8 @@
     },
     "reason": {
       "noAnswer": "Javob bermadi",
-      "return": "Qaytarilgan"
+      "return": "Qaytarilgan",
+      "defective": "Yaroqsiz"
     },
     "card": {
       "quantity": "Dona",

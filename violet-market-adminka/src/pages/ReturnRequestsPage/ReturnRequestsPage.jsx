@@ -87,7 +87,7 @@ export default function ReturnRequestsPage() {
           <div className="return-requests-page__subtitle-row">
             <p className="return-requests-page__subtitle">
               Kuryer Ajdaniya so‘rovlarini tasdiqlang yoki rad eting. Tasdiqda
-              «Javob bermadi» yoki «Qaytarish» turini belgilaysiz.
+              «Qaytarish», «Javob bermadi» yoki «Yaroqsiz» turini belgilaysiz.
             </p>
             <Input
               allowClear

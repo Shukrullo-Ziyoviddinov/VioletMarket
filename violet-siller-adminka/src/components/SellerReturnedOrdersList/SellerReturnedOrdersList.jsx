@@ -74,12 +74,18 @@ export default function SellerReturnedOrdersList({ orders = [], loading = false 
               </div>
               <span
                 className={`seller-returned-orders-card__badge seller-returned-orders-card__badge--${
-                  order.reasonType === 'no_answer' ? 'no-answer' : 'return'
+                  order.reasonType === 'no_answer'
+                    ? 'no-answer'
+                    : order.reasonType === 'defective'
+                      ? 'defective'
+                      : 'return'
                 }`}
               >
                 {order.reasonType === 'no_answer'
                   ? t('returnedOrders.reason.noAnswer')
-                  : t('returnedOrders.reason.return')}
+                  : order.reasonType === 'defective'
+                    ? t('returnedOrders.reason.defective')
+                    : t('returnedOrders.reason.return')}
               </span>
             </div>
 

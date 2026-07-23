@@ -4,6 +4,7 @@ const {
   releaseToWarehouse,
   reReserveForCourier,
   keepReserved,
+  discardReserved,
 } = require("../inventory");
 const {
   POST_ORDER_REVIEW_SOURCES,
@@ -39,6 +40,7 @@ module.exports = {
   releaseToWarehouse,
   reReserveForCourier,
   keepReserved,
+  discardReserved,
   POST_ORDER_REVIEW_SOURCES,
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,

@@ -26,6 +26,7 @@ const {
 
 const {
   REASON_TYPES,
+  SELLER_RETURNED_LIST_REASON_TYPES,
   REQUESTABLE_STATUSES,
   RESOLUTION_TYPES,
 } = require("./constants");
@@ -38,6 +39,8 @@ const {
   loadTakenAssignmentUnitKeys,
 } = require("./assignmentPoolRules");
 
+const { applyReturnStockDisposition } = require("./stockDisposition");
+
 module.exports = {
   createReturnRequestByCourier,
   listReturnRequestsForAdmin,
@@ -49,6 +52,7 @@ module.exports = {
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
   REASON_TYPES,
+  SELLER_RETURNED_LIST_REASON_TYPES,
   REQUESTABLE_STATUSES,
   reHandoffNoAnswerOrder,
   reactivateNoAnswerOrder,
@@ -59,4 +63,5 @@ module.exports = {
   REACCEPTABLE_ASSIGNMENT_STATUSES,
   assignmentUnitKey,
   loadTakenAssignmentUnitKeys,
+  applyReturnStockDisposition,
 };

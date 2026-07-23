@@ -94,7 +94,7 @@ export type DeliveryAcceptedOrder = {
   arrivedAtCustomerAt?: string | null;
   handedToCourierAt: string | null;
   deliveredAt: string | null;
-  approvedReturnReasonType?: 'no_answer' | 'return' | null;
+  approvedReturnReasonType?: 'no_answer' | 'return' | 'defective' | null;
   enRouteReturnToSellerAt?: string | null;
   arrivedReturnAtSellerAt?: string | null;
   returnedAt?: string | null;

@@ -1,10 +1,11 @@
 /**
- * Ombor moduli — checkout / qaytarish / qayta kuryer stock amallari.
+ * Ombor moduli — checkout / qaytarish / yaroqsiz / qayta kuryer stock amallari.
  * @see productInventoryService.js
  */
 const {
   reserveOnCheckout,
   keepReserved,
+  discardReserved,
   releaseToWarehouse,
   reReserveForCourier,
 } = require("./productInventoryService");
@@ -12,6 +13,7 @@ const {
 module.exports = {
   reserveOnCheckout,
   keepReserved,
+  discardReserved,
   releaseToWarehouse,
   reReserveForCourier,
 };
