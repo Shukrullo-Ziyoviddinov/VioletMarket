@@ -145,8 +145,7 @@ async function listAvailableDeliveryOrders(query = {}) {
     });
   }
 
-  // Allaqachon band qilingan donalarni olib tashlash
-  // cancelled / returned — qayta qabul qilish mumkin, shuning uchun filterda yo‘q
+  // Band / yakunlangan donalar — qaytarilganlar ham Buyurtmalarga qaytmasin
   const taken = await CourierOrderAssignment.find({
     status: {
       $in: [
@@ -157,11 +156,13 @@ async function listAvailableDeliveryOrders(query = {}) {
         "en_route_to_customer",
         "arrived_at_customer",
         "delivered",
+        "cancelled",
         "return_request_pending",
         "return_approved",
         "return_to_seller",
         "en_route_return_to_seller",
         "arrived_return_at_seller",
+        "returned",
       ],
     },
   })

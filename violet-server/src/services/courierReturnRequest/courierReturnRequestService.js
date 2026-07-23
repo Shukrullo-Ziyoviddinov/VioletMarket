@@ -568,10 +568,54 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   await applyCourierKmPayment(assignment, payload, returnedAt);
   await assignment.save();
 
+  // Order item tracking — handed_to_courier dan chiqarish (Buyurtmalar sahifasiga qaytmasin)
+  await markOrderItemReturnedToSeller(assignment, returnedAt);
+
   return {
     returned: toPublicReturnedOrder(saved),
     assignment: await mapAssignmentPublic(assignment),
   };
+}
+
+/**
+ * Itemdagi barcha donalar qaytarilgan bo‘lsa trackingStatus ni yangilaydi.
+ */
+async function markOrderItemReturnedToSeller(assignment, returnedAt) {
+  const order = await Order.findOne({ id: assignment.orderId });
+  if (!order) return;
+
+  const item = Array.isArray(order.items)
+    ? order.items[Number(assignment.itemIndex)]
+    : null;
+  if (!item) return;
+
+  const unitCount = Math.max(1, Number(item.quantity) || 1);
+  const unitRows = await CourierOrderAssignment.find({
+    orderId: assignment.orderId,
+    itemIndex: assignment.itemIndex,
+  })
+    .select("unitIndex status")
+    .lean();
+
+  const statusByUnit = new Map(
+    unitRows.map((row) => [Number(row.unitIndex) || 0, String(row.status || "")]),
+  );
+  statusByUnit.set(Number(assignment.unitIndex) || 0, "returned");
+
+  for (let i = 0; i < unitCount; i += 1) {
+    if (String(statusByUnit.get(i) || "") !== "returned") {
+      return;
+    }
+  }
+
+  const current = String(item.trackingStatus || "");
+  if (current === "returned_to_seller") return;
+
+  item.trackingStatus = "returned_to_seller";
+  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+  item.trackingHistory.push({ status: "returned_to_seller", at: returnedAt });
+  order.markModified("items");
+  await order.save();
 }
 
 module.exports = {

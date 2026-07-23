@@ -111,7 +111,7 @@ function resetAssignmentStepFields(assignment) {
   assignment.set("approvedReturnReasonType", undefined);
 }
 
-const REACCEPTABLE_STATUSES = new Set(["cancelled", "returned"]);
+const REACCEPTABLE_STATUSES = new Set(["cancelled"]);
 
 function parseCourierCoords(payload = {}) {
   const lat = Number(payload.courierLat ?? payload.lat);
@@ -473,6 +473,14 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
         toPublicAssignment(existing, paymentMap.get(Number(existing.orderId)) || {}),
       ]);
       return publicRow;
+    }
+
+    if (existingStatus === "returned") {
+      throw new HttpError(
+        409,
+        "Bu mahsulot allaqachon sotuvchiga qaytarilgan",
+        "ASSIGNMENT_ALREADY_RETURNED",
+      );
     }
 
     if (String(existing.deliveryId) === String(deliveryId)) {
