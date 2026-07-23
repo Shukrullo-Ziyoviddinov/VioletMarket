@@ -16,9 +16,45 @@ const {
 } = require("../../utils/customerStatisticsDate");
 const { formatWeekKey, toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
-const {
-  healNoAnswerReturnedReasonTypes,
-} = require("../courierReturnRequest/courierReturnRequestService");
+const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
+
+/**
+ * Qayta siklda resolvedAt qolgan no_answer — assignment returned bo‘lsa ochiladi.
+ */
+async function reopenStaleNoAnswerRows(sellerId) {
+  const filter = {
+    reasonType: "no_answer",
+    resolvedAt: { $ne: null },
+    $or: [
+      { resolutionType: { $in: ["re_handoff", "delivered"] } },
+      { resolutionType: null },
+      { resolutionType: { $exists: false } },
+    ],
+  };
+  if (sellerId) filter.sellerId = String(sellerId);
+
+  const rows = await CourierReturnedOrder.find(filter)
+    .select({ _id: 1, assignmentId: 1 })
+    .lean();
+
+  if (!rows.length) return;
+
+  for (const row of rows) {
+    if (!row.assignmentId) continue;
+    const assignment = await CourierOrderAssignment.findById(row.assignmentId)
+      .select({ status: 1 })
+      .lean();
+    if (!assignment || String(assignment.status) !== "returned") continue;
+
+    await CourierReturnedOrder.updateOne(
+      { _id: row._id },
+      {
+        $set: { resolvedAt: null, resolvedBy: "" },
+        $unset: { resolutionType: 1 },
+      },
+    );
+  }
+}
 
 function buildFallbackOptions(defaults) {
   return {
@@ -222,9 +258,9 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
  * siller tugmalarni bosmaguncha ro‘yxatda qoladi).
  */
 async function listSellerNoAnswerOrders(sellerId, query = {}) {
-  await healNoAnswerReturnedReasonTypes();
-
   const shopId = String(sellerId || "").trim();
+  await reopenStaleNoAnswerRows(shopId);
+
   const page = Math.max(1, Number(query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
   const skip = (page - 1) * limit;

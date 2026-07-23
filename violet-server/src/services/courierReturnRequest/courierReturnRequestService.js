@@ -71,53 +71,24 @@ async function resolveApprovedReturnReasonType(assignment) {
     return approved;
   }
 
-  return "";
-}
-
-/**
- * Avvalgi xatolik: no_answer bo‘lishi kerak edi, lekin reasonType=return saqlangan.
- * Admin/siller «Javob bermadi» ochganda o‘zini tuzatadi.
- *
- * Eski no_answer yozuvlari omborni Qaytardim da ochgan — stockReleased=true deb belgilaymiz.
- */
-async function healNoAnswerReturnedReasonTypes() {
-  await CourierReturnedOrder.updateMany(
-    {
-      reasonType: "no_answer",
-      stockReleased: { $exists: false },
-    },
-    { $set: { stockReleased: true } },
-  );
-
-  const requests = await CourierReturnRequest.find({
+  // Bir xil order/item/unit bo‘yicha so‘rov (assignment qayta yaratilgan bo‘lsa)
+  const byUnit = await CourierReturnRequest.findOne({
+    orderId: Number(assignment.orderId),
+    itemIndex: Number(assignment.itemIndex),
+    unitIndex: Number(assignment.unitIndex) || 0,
     status: "approved",
-    approvedReasonType: "no_answer",
   })
-    .select({ orderId: 1, itemIndex: 1, unitIndex: 1, assignmentId: 1 })
+    .sort({ reviewedAt: -1 })
+    .select("approvedReasonType")
     .lean();
 
-  if (!requests.length) return 0;
+  approved = String(byUnit?.approvedReasonType || "").trim().toLowerCase();
+  if (REASON_TYPES.has(approved)) {
+    assignment.approvedReturnReasonType = approved;
+    return approved;
+  }
 
-  const ops = requests.map((row) => ({
-    updateOne: {
-      filter: {
-        orderId: Number(row.orderId),
-        itemIndex: Number(row.itemIndex),
-        unitIndex: Number(row.unitIndex) || 0,
-        reasonType: "return",
-        $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
-      },
-      update: {
-        $set: {
-          reasonType: "no_answer",
-          assignmentId: row.assignmentId,
-        },
-      },
-    },
-  }));
-
-  const result = await CourierReturnedOrder.bulkWrite(ops, { ordered: false });
-  return Number(result.modifiedCount || 0);
+  return "";
 }
 
 const RETURN_ADVANCE_ACTIONS = {
@@ -565,7 +536,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     unitIndex: Number(assignment.unitIndex) || 0,
   };
 
-  // Oldingi urinishda assignment returned bo‘lib tracking/reasonType noto‘g‘ri bo‘lishi mumkin
+  // Oldingi urinishda assignment returned — tracking/reason/stock ni tugatish
   if (String(assignment.status) === "returned") {
     await markOrderItemReturnedToSeller(
       assignment,
@@ -577,21 +548,45 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       await assignment.save();
     }
 
-    let existing = null;
-    if (REASON_TYPES.has(reasonType)) {
-      existing = await CourierReturnedOrder.findOneAndUpdate(
-        { $or: [{ assignmentId: assignment._id }, unitFilter] },
-        { $set: { reasonType, assignmentId: assignment._id } },
-        { new: true },
-      ).lean();
-    } else {
-      existing = await CourierReturnedOrder.findOne({
-        $or: [{ assignmentId: assignment._id }, unitFilter],
-      }).lean();
+    const existingDoc = await CourierReturnedOrder.findOne({
+      $or: [{ assignmentId: assignment._id }, unitFilter],
+    });
+
+    if (existingDoc) {
+      if (REASON_TYPES.has(reasonType)) {
+        existingDoc.reasonType = reasonType;
+        existingDoc.assignmentId = assignment._id;
+      }
+      existingDoc.resolvedAt = null;
+      existingDoc.resolvedBy = "";
+      existingDoc.set("resolutionType", undefined);
+
+      if (reasonType === "return" && !existingDoc.stockReleased) {
+        const leanOrder = await Order.findOne({ id: assignment.orderId })
+          .select("items")
+          .lean();
+        const orderItem = Array.isArray(leanOrder?.items)
+          ? leanOrder.items[Number(assignment.itemIndex)]
+          : null;
+        const variant = normalizeVariant({
+          color: assignment.color || resolveOptionLabel(orderItem?.color),
+          size: assignment.size || resolveOptionLabel(orderItem?.size),
+          storage: assignment.storage || resolveOptionLabel(orderItem?.storage),
+          model: assignment.model || resolveOptionLabel(orderItem?.model),
+        });
+        await releaseReservedStockOnReturn(assignment.productId, 1, variant);
+        existingDoc.stockReleased = true;
+      }
+
+      await existingDoc.save();
+      return {
+        returned: toPublicReturnedOrder(existingDoc),
+        assignment: await mapAssignmentPublic(assignment),
+      };
     }
 
     return {
-      returned: existing ? toPublicReturnedOrder(existing) : null,
+      returned: null,
       assignment: await mapAssignmentPublic(assignment),
     };
   }
@@ -620,6 +615,13 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     ? order.items[Number(assignment.itemIndex)]
     : null;
 
+  const sellerId =
+    String(assignment.sellerId || "").trim() ||
+    String(orderItem?.sellerId || "").trim();
+  if (!sellerId) {
+    throw new HttpError(409, "Siller ID topilmadi", "SELLER_ID_MISSING");
+  }
+
   const variant = normalizeVariant({
     color: assignment.color || resolveOptionLabel(orderItem?.color),
     size: assignment.size || resolveOptionLabel(orderItem?.size),
@@ -629,12 +631,12 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
   const returnPayload = {
     assignmentId: assignment._id,
-    orderId: assignment.orderId,
-    itemIndex: assignment.itemIndex,
-    unitIndex: assignment.unitIndex,
+    orderId: unitFilter.orderId,
+    itemIndex: unitFilter.itemIndex,
+    unitIndex: unitFilter.unitIndex,
     productId: assignment.productId,
     productCode: String(assignment.productCode || ""),
-    sellerId: String(assignment.sellerId || ""),
+    sellerId,
     title: {
       uz: String(assignment.title?.uz || ""),
       ru: String(assignment.title?.ru || ""),
@@ -667,11 +669,11 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     monthKey: periodKeys.monthKey,
     orderPaymentStatus: String(order?.status || ""),
     isPaid: paid,
-    // no_answer: ombor ochilmaydi (mijozniki). return: ochiladi.
-    stockReleased: reasonType === "return",
+    // Qayta sikl: eski yechimni ochamiz. stockReleased keyinroq (haqiqiy release dan keyin).
+    resolvedAt: null,
+    resolvedBy: "",
   };
 
-  // Unique: orderId+itemIndex+unitIndex — avvalgi muvaffaqiyatsiz urinish qolgan bo‘lsa yangilanadi
   const existingReturned = await CourierReturnedOrder.findOne(unitFilter)
     .select("_id stockReleased")
     .lean();
@@ -679,25 +681,28 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   const alreadyReleased = Boolean(existingReturned?.stockReleased);
   const shouldReleaseStock = reasonType === "return" && !alreadyReleased;
 
+  // Avval tracking — enum xatosida stock/assignment o‘zgarmasin
+  await markOrderItemReturnedToSeller(assignment, returnedAt);
+
+  // Faqat «Qaytarish»: omborni ochamiz, KEYIN stockReleased=true
+  if (shouldReleaseStock) {
+    await releaseReservedStockOnReturn(assignment.productId, 1, variant);
+  }
+
+  const stockReleased =
+    reasonType === "return" ? true : alreadyReleased;
+
   const saved = await CourierReturnedOrder.findOneAndUpdate(
     unitFilter,
     {
       $set: {
         ...returnPayload,
-        stockReleased: reasonType === "return" ? true : alreadyReleased,
+        stockReleased,
       },
+      $unset: { resolutionType: 1 },
     },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
-
-  // Avval tracking — enum/validation xatosida stock va assignment o‘zgarmasin
-  await markOrderItemReturnedToSeller(assignment, returnedAt);
-
-  // Faqat oddiy «Qaytarish»: omborga qaytarish.
-  // «Javob bermadi» da rezerv saqlanadi — «Qayta aktiv qilish»da ochiladi.
-  if (shouldReleaseStock) {
-    await releaseReservedStockOnReturn(assignment.productId, 1, variant);
-  }
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;
@@ -759,7 +764,6 @@ module.exports = {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
-  healNoAnswerReturnedReasonTypes,
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
 };

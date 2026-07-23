@@ -216,8 +216,16 @@ async function returnOrderUnitByCourier(deliveryId, payload = {}) {
       itemIndex: Number(assignment.itemIndex),
       unitIndex: Number(assignment.unitIndex) || 0,
     },
-    { $set: returnPayload },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
+    {
+      $set: {
+        ...returnPayload,
+        stockReleased: reasonType === "return",
+        resolvedAt: null,
+        resolvedBy: "",
+      },
+      $unset: { resolutionType: 1 },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
 
   assignment.status = "cancelled";

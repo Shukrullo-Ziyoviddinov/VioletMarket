@@ -26,6 +26,14 @@ function isStockReleased(doc) {
   return Boolean(doc?.stockReleased);
 }
 
+function unitKeyFromReturned(doc) {
+  return {
+    orderId: Number(doc.orderId),
+    itemIndex: Number(doc.itemIndex),
+    unitIndex: Number(doc.unitIndex) || 0,
+  };
+}
+
 async function loadUnresolvedNoAnswer(returnedOrderId, sellerId = null) {
   const id = String(returnedOrderId || "").trim();
   if (!id) {
@@ -59,10 +67,19 @@ async function markResolved(doc, resolutionType, resolvedBy) {
   return toPublicReturnedOrder(doc);
 }
 
+/** assignmentId eskirgan bo‘lsa ham unit kaliti bilan o‘chiradi */
+async function deleteAssignmentForReturned(doc) {
+  const unitKey = unitKeyFromReturned(doc);
+  if (doc.assignmentId) {
+    await CourierOrderAssignment.deleteOne({ _id: doc.assignmentId });
+  }
+  await CourierOrderAssignment.deleteOne(unitKey);
+}
+
 /**
  * Qayta kuryerga topshirish.
- * Ombor hali ochilmagan bo‘lsa (mijoz rezervi) — qayta rezerv qilinmaydi.
- * Eski yozuvlarda ombor ochilgan bo‘lsa — yana rezerv.
+ * Ombor ochilgan bo‘lsa — yana rezerv + stockReleased=false.
+ * Ochilmagan bo‘lsa — checkout rezervi saqlangan, qayta rezerv yo‘q.
  */
 async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
@@ -70,6 +87,7 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
 
   if (isStockReleased(doc)) {
     await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+    doc.stockReleased = false;
   }
 
   const order = await Order.findOne({ id: doc.orderId });
@@ -88,9 +106,7 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   order.markModified("items");
   await order.save();
 
-  if (doc.assignmentId) {
-    await CourierOrderAssignment.deleteOne({ _id: doc.assignmentId });
-  }
+  await deleteAssignmentForReturned(doc);
 
   const publicRow = await markResolved(
     doc,
@@ -101,7 +117,7 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
 }
 
 /**
- * Qayta aktiv qilish — mahsulotni omborga qaytarish (mijoz rezervini ochish).
+ * Qayta aktiv qilish — omborga qaytarish + assignmentni tozalash.
  */
 async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
@@ -112,6 +128,8 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
     doc.stockReleased = true;
   }
 
+  await deleteAssignmentForReturned(doc);
+
   const publicRow = await markResolved(
     doc,
     "reactivated",
@@ -121,8 +139,7 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
 }
 
 /**
- * Mijozga topshirildi — kuryer Topshirdim kabi sotuv + delivered.
- * Ombor ochilgan bo‘lsa avval rezerv; ochilmagan bo‘lsa checkout rezervi saqlangan.
+ * Mijozga topshirildi — Topshirdim kabi sotuv + delivered.
  */
 async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
@@ -131,11 +148,16 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
 
   if (isStockReleased(doc)) {
     await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+    doc.stockReleased = false;
   }
 
   let assignment = doc.assignmentId
     ? await CourierOrderAssignment.findById(doc.assignmentId)
     : null;
+
+  if (!assignment) {
+    assignment = await CourierOrderAssignment.findOne(unitKeyFromReturned(doc));
+  }
 
   if (!assignment) {
     throw new HttpError(
@@ -182,10 +204,7 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     }
 
     const currentStatus = String(item.trackingStatus || "");
-    if (
-      allUnitsDelivered &&
-      currentStatus !== "delivered"
-    ) {
+    if (allUnitsDelivered && currentStatus !== "delivered") {
       item.trackingStatus = "delivered";
       if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
       item.trackingHistory.push({ status: "delivered", at: deliveredAt });

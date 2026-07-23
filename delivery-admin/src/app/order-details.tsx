@@ -403,7 +403,7 @@ export default function OrderDetailsScreen() {
       Alert.alert(
         'Qaytarildi',
         data.returned?.reasonType === 'no_answer'
-          ? 'Buyurtma «Javob bermadi» sifatida yozildi, ombor yangilandi.'
+          ? 'Buyurtma «Javob bermadi» sifatida yozildi. Ombor hali ochilmaydi — admin «Qayta aktiv qilish» bosganda ochiladi.'
           : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
         [{ text: 'OK', onPress: () => router.replace('/home') }],
       );
