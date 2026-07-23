@@ -4,6 +4,7 @@ const { CourierOrderAssignment } = require("../../models/courierOrderAssignment"
 const { HttpError } = require("../../utils/httpError");
 const {
   reserveStockUnitOnRehandoff,
+  releaseReservedStockOnReturn,
 } = require("../../productManagement/markProductsAsSold");
 const {
   recordSalesOnDelivery,
@@ -19,6 +20,10 @@ function variantFromReturned(doc) {
     storage: String(doc.storage || "").trim(),
     model: String(doc.model || "").trim(),
   };
+}
+
+function isStockReleased(doc) {
+  return Boolean(doc?.stockReleased);
 }
 
 async function loadUnresolvedNoAnswer(returnedOrderId, sellerId = null) {
@@ -55,13 +60,17 @@ async function markResolved(doc, resolutionType, resolvedBy) {
 }
 
 /**
- * Qayta kuryerga topshirish — ombor rezerv + handed_to_courier + assignment o‘chadi.
+ * Qayta kuryerga topshirish.
+ * Ombor hali ochilmagan bo‘lsa (mijoz rezervi) — qayta rezerv qilinmaydi.
+ * Eski yozuvlarda ombor ochilgan bo‘lsa — yana rezerv.
  */
 async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
   const variant = variantFromReturned(doc);
 
-  await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+  if (isStockReleased(doc)) {
+    await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+  }
 
   const order = await Order.findOne({ id: doc.orderId });
   if (!order) {
@@ -92,10 +101,17 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
 }
 
 /**
- * Qayta aktiv qilish — ombor allaqachon qaytarilgan; faqat ro‘yxatdan yopiladi.
+ * Qayta aktiv qilish — mahsulotni omborga qaytarish (mijoz rezervini ochish).
  */
 async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
+  const variant = variantFromReturned(doc);
+
+  if (!isStockReleased(doc)) {
+    await releaseReservedStockOnReturn(doc.productId, 1, variant);
+    doc.stockReleased = true;
+  }
+
   const publicRow = await markResolved(
     doc,
     "reactivated",
@@ -106,14 +122,16 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
 
 /**
  * Mijozga topshirildi — kuryer Topshirdim kabi sotuv + delivered.
+ * Ombor ochilgan bo‘lsa avval rezerv; ochilmagan bo‘lsa checkout rezervi saqlangan.
  */
 async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
   const variant = variantFromReturned(doc);
   const deliveredAt = new Date();
 
-  // Qaytarishda ombor ochilgan edi — sotish uchun yana rezerv
-  await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+  if (isStockReleased(doc)) {
+    await reserveStockUnitOnRehandoff(doc.productId, 1, variant);
+  }
 
   let assignment = doc.assignmentId
     ? await CourierOrderAssignment.findById(doc.assignmentId)

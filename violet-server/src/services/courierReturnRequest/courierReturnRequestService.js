@@ -77,8 +77,18 @@ async function resolveApprovedReturnReasonType(assignment) {
 /**
  * Avvalgi xatolik: no_answer bo‘lishi kerak edi, lekin reasonType=return saqlangan.
  * Admin/siller «Javob bermadi» ochganda o‘zini tuzatadi.
+ *
+ * Eski no_answer yozuvlari omborni Qaytardim da ochgan — stockReleased=true deb belgilaymiz.
  */
 async function healNoAnswerReturnedReasonTypes() {
+  await CourierReturnedOrder.updateMany(
+    {
+      reasonType: "no_answer",
+      stockReleased: { $exists: false },
+    },
+    { $set: { stockReleased: true } },
+  );
+
   const requests = await CourierReturnRequest.find({
     status: "approved",
     approvedReasonType: "no_answer",
@@ -657,24 +667,35 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     monthKey: periodKeys.monthKey,
     orderPaymentStatus: String(order?.status || ""),
     isPaid: paid,
+    // no_answer: ombor ochilmaydi (mijozniki). return: ochiladi.
+    stockReleased: reasonType === "return",
   };
 
   // Unique: orderId+itemIndex+unitIndex — avvalgi muvaffaqiyatsiz urinish qolgan bo‘lsa yangilanadi
   const existingReturned = await CourierReturnedOrder.findOne(unitFilter)
-    .select("_id")
+    .select("_id stockReleased")
     .lean();
+
+  const alreadyReleased = Boolean(existingReturned?.stockReleased);
+  const shouldReleaseStock = reasonType === "return" && !alreadyReleased;
 
   const saved = await CourierReturnedOrder.findOneAndUpdate(
     unitFilter,
-    { $set: returnPayload },
+    {
+      $set: {
+        ...returnPayload,
+        stockReleased: reasonType === "return" ? true : alreadyReleased,
+      },
+    },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 
   // Avval tracking — enum/validation xatosida stock va assignment o‘zgarmasin
   await markOrderItemReturnedToSeller(assignment, returnedAt);
 
-  // Avvalgi urinishda stock ochilgan bo‘lishi mumkin — ikki marta restore qilinmasin
-  if (!existingReturned) {
+  // Faqat oddiy «Qaytarish»: omborga qaytarish.
+  // «Javob bermadi» da rezerv saqlanadi — «Qayta aktiv qilish»da ochiladi.
+  if (shouldReleaseStock) {
     await releaseReservedStockOnReturn(assignment.productId, 1, variant);
   }
 

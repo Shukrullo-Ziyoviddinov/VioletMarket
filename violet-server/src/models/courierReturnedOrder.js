@@ -66,6 +66,12 @@ const courierReturnedOrderSchema = new mongoose.Schema(
     orderPaymentStatus: { type: String, default: "" },
     isPaid: { type: Boolean, default: false },
 
+    /**
+     * true = ombor ochilgan (quantity qaytgan).
+     * no_answer da kuryer qaytarganda false — faqat «Qayta aktiv qilish»da true bo‘ladi.
+     */
+    stockReleased: { type: Boolean, default: false, index: true },
+
     /** Admin/siller tugmalari: re_handoff | reactivated | delivered */
     resolutionType: {
       type: String,
