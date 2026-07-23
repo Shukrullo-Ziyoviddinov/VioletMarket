@@ -483,6 +483,22 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   if (String(assignment.deliveryId) !== String(deliveryId)) {
     throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
   }
+
+  // Oldingi urinishda assignment returned bo‘lib tracking saqlanmagan bo‘lishi mumkin
+  if (String(assignment.status) === "returned") {
+    await markOrderItemReturnedToSeller(
+      assignment,
+      assignment.returnedAt || new Date(),
+    );
+    const existing = await CourierReturnedOrder.findOne({
+      assignmentId: assignment._id,
+    }).lean();
+    return {
+      returned: existing ? toPublicReturnedOrder(existing) : null,
+      assignment: await mapAssignmentPublic(assignment),
+    };
+  }
+
   if (String(assignment.status) !== "arrived_return_at_seller") {
     throw new HttpError(
       409,
@@ -561,15 +577,15 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 
+  // Avval tracking — enum/validation xatosida stock va assignment o‘zgarmasin
+  await markOrderItemReturnedToSeller(assignment, returnedAt);
+
   await releaseReservedStockOnReturn(assignment.productId, 1, variant);
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;
   await applyCourierKmPayment(assignment, payload, returnedAt);
   await assignment.save();
-
-  // Order item tracking — handed_to_courier dan chiqarish (Buyurtmalar sahifasiga qaytmasin)
-  await markOrderItemReturnedToSeller(assignment, returnedAt);
 
   return {
     returned: toPublicReturnedOrder(saved),
