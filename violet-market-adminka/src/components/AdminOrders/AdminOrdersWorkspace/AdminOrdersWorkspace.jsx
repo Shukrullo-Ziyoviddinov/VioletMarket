@@ -9,6 +9,7 @@ import {
   reHandoffAdminNoAnswerOrder,
 } from '../../../api/adminOrdersApi';
 import { useAdminModal } from '../../../context/AdminModalContext';
+import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import AdminOrderCollectionList from '../AdminOrderCollectionList/AdminOrderCollectionList';
 import AdminOrderCourierList from '../AdminOrderCourierList/AdminOrderCourierList';
 import AdminOrderHandedList from '../AdminOrderHandedList/AdminOrderHandedList';
@@ -35,6 +36,7 @@ export default function AdminOrdersWorkspace({
   const [courierOrder, setCourierOrder] = useState(null);
   const [handingOff, setHandingOff] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const requestIdRef = useRef(0);
 
   const loadOrders = useCallback(async () => {
@@ -73,6 +75,7 @@ export default function AdminOrdersWorkspace({
   useEffect(() => {
     setOrders([]);
     setCourierOrder(null);
+    setCancelConfirmOpen(false);
   }, [filter]);
 
   const openOrderDetail = (order, mode) => {
@@ -120,6 +123,7 @@ export default function AdminOrdersWorkspace({
         courierOrder.sellerId,
       );
       message.success('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
+      setCancelConfirmOpen(false);
       setCourierOrder(null);
       await refreshAfterStatusChange();
     } catch (error) {
@@ -214,7 +218,20 @@ export default function AdminOrdersWorkspace({
           if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
-        onCancelOrder={handleCancelOrder}
+        onCancelOrder={() => {
+          if (!handingOff && !cancelling) setCancelConfirmOpen(true);
+        }}
+      />
+
+      <MiniGlobalModal
+        open={cancelConfirmOpen}
+        mode="confirm"
+        permissionKey="cancelOrder"
+        loading={cancelling}
+        onConfirm={handleCancelOrder}
+        onCancel={() => {
+          if (!cancelling) setCancelConfirmOpen(false);
+        }}
       />
     </div>
   );

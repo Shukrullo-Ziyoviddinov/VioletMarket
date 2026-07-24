@@ -40,6 +40,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [collecting, setCollecting] = useState(false);
   const [handingOff, setHandingOff] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState(null);
 
   const loadOrders = useCallback(async () => {
     if (!token) {
@@ -72,6 +73,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setOrders([]);
     setActiveOrder(null);
     setCourierOrder(null);
+    setCancelTarget(null);
   }, [filter]);
 
   const confirmationOrders = orders.filter(
@@ -143,14 +145,15 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     }
   };
 
-  const handleCancelOrder = async (targetOrder) => {
-    const order = targetOrder || activeOrder || courierOrder;
+  const handleCancelOrder = async () => {
+    const order = cancelTarget;
     if (!token || !order || cancelling) return;
 
     setCancelling(true);
     try {
       await cancelSellerOrderItem(token, order.orderId, order.itemIndex);
       message.success(t('orders.cancel.success'));
+      setCancelTarget(null);
       setActiveOrder(null);
       setCourierOrder(null);
       await loadOrders();
@@ -159,6 +162,11 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     } finally {
       setCancelling(false);
     }
+  };
+
+  const requestCancelOrder = (targetOrder) => {
+    if (!targetOrder || cancelling || handingOff) return;
+    setCancelTarget(targetOrder);
   };
 
   const handleNoAnswerReHandoff = async (order) => {
@@ -280,20 +288,29 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
             activeOrder?.trackingStatus === 'seller_confirmed')
         }
         cancelling={cancelling}
-        onCancelOrder={() => handleCancelOrder(activeOrder)}
+        onCancelOrder={() => requestCancelOrder(activeOrder)}
       />
 
       <MiniGlobalModal
         open={Boolean(courierOrder)}
         permissionKey="courierHandoff"
-        loading={handingOff || cancelling}
+        loading={handingOff}
         onClose={() => {
           if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
-        onCancelOrder={() => handleCancelOrder(courierOrder)}
-        cancelOrderLoading={cancelling}
+        onCancelOrder={() => requestCancelOrder(courierOrder)}
         cancelOrderText={t('orders.modal.cancelOrder')}
+      />
+
+      <MiniGlobalModal
+        open={Boolean(cancelTarget)}
+        permissionKey="cancelOrder"
+        loading={cancelling}
+        onClose={() => {
+          if (!cancelling) setCancelTarget(null);
+        }}
+        onConfirm={handleCancelOrder}
       />
     </div>
   );

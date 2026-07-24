@@ -6,6 +6,7 @@ import {
   confirmAdminOrderItem,
 } from '../../../api/adminOrdersApi';
 import { useAdminModal } from '../../../context/AdminModalContext';
+import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import AdminOrderDetailModalContent from '../AdminOrderDetailModalContent/AdminOrderDetailModalContent';
 import '../AdminOrderDetailModal/AdminOrderDetailModal.css';
 
@@ -18,6 +19,7 @@ export default function AdminOrderDetailSectionContent({
   const { closeAdminModal } = useAdminModal();
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   if (!visible || !order) return null;
 
@@ -63,6 +65,7 @@ export default function AdminOrderDetailSectionContent({
     setCancelling(true);
     try {
       await cancelAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+      setCancelConfirmOpen(false);
       finishSuccess('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
     } catch (error) {
       message.error(error?.message || 'Buyurtmani bekor qilib bo‘lmadi');
@@ -81,9 +84,9 @@ export default function AdminOrderDetailSectionContent({
               type="button"
               className="seller-order-detail-modal__cancel-order"
               disabled={actionsBusy}
-              onClick={handleCancelOrder}
+              onClick={() => setCancelConfirmOpen(true)}
             >
-              {cancelling ? 'Bekor qilinmoqda...' : 'Buyurtmani bekor qilish'}
+              Buyurtmani bekor qilish
             </button>
           ) : (
             <span />
@@ -110,6 +113,17 @@ export default function AdminOrderDetailSectionContent({
           ) : null}
         </div>
       ) : null}
+
+      <MiniGlobalModal
+        open={cancelConfirmOpen}
+        mode="confirm"
+        permissionKey="cancelOrder"
+        loading={cancelling}
+        onConfirm={handleCancelOrder}
+        onCancel={() => {
+          if (!cancelling) setCancelConfirmOpen(false);
+        }}
+      />
     </div>
   );
 }

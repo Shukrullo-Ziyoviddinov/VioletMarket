@@ -11,6 +11,13 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  cancelOrder: {
+    title: 'Buyurtmani bekor qilish',
+    getMessage: () =>
+      'Chindan ham buyurtmani bekor qilmoqchimisiz? (Mahsulot qayta omborga qaytariladi)',
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
 };
 
 export function resolveMiniGlobalModalPermission(permissionKey, itemName = '') {
