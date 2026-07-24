@@ -1,5 +1,6 @@
 .home-page {
   margin-top: 100px;
+  background: #fff;
 }
 
 .container {
@@ -234,22 +235,31 @@
   transform: none;
 }
 
-/* Kartochkalar */
+/* Kartochkalar — oq fon + padding faqat shu bo‘limlarda */
+.big-discount-section .product-card,
+.new-collection .product-card,
+.womens-collection .product-card,
+.mens-collection .product-card,
+.beauty-care-section .product-card,
+.active-lifestyle-section .product-card {
+  background: #fff;
+  padding: 5px;
+}
+
 .big-discount-section .product-card {
   padding: 8px;
-  border: none;
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .big-discount-section .product-card .img-box {
   height: 190px;
-  border-radius: 12px;
+  border-radius: 20px;
 }
 
 .big-discount-section .product-card .img-box img {
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 20px;
 }
 
 .big-discount-section .product-card .heart-icon {

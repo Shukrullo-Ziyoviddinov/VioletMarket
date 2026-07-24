@@ -1,7 +1,5 @@
 .product-card {
-  border: 1px solid #dddddd;
   border-radius: 12px;
-  padding: 5px;
   /* transition: transform 0.2s ease; */
   cursor: pointer;
   display: flex;
@@ -11,14 +9,10 @@
   max-width: 100%;
 }
 
-.product-card:not(.skeleton-pulse) {
-  background: white;
-}
-
 .img-box {
   position: relative;
   height: 250px;
-  border-radius: 8px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
