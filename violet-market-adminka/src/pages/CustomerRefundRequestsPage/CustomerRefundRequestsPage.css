@@ -6,8 +6,18 @@
 
 .customer-refund-requests-page__header {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customer-refund-requests-page__heading {
+  display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  flex: 1 1 280px;
 }
 
 .customer-refund-requests-page__title {
@@ -21,6 +31,7 @@
   margin: 0;
   color: #6b7280;
   font-size: 14px;
+  max-width: 560px;
 }
 
 .customer-refund-requests-page__toolbar {

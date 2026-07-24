@@ -7,6 +7,7 @@ import {
 import {
   CustomerRefundStatusFilter,
   CustomerRefundPeriodFilter,
+  CustomerRefundSearch,
   CustomerRefundList,
 } from '../../components/CustomerRefundRequests';
 import { formatRevenue } from '../../utils/productDisplay';
@@ -14,6 +15,7 @@ import './CustomerRefundRequestsPage.css';
 
 export default function CustomerRefundRequestsPage() {
   const isInitialLoadRef = useRef(true);
+  const searchTimerRef = useRef(null);
   const [filters, setFilters] = useState({ day: '', week: '', month: '' });
   const [filterOptions, setFilterOptions] = useState({
     days: [],
@@ -22,6 +24,8 @@ export default function CustomerRefundRequestsPage() {
   });
   const [activePeriod, setActivePeriod] = useState('day');
   const [status, setStatus] = useState('pending');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [openFilter, setOpenFilter] = useState(null);
   const [items, setItems] = useState([]);
   const [counts, setCounts] = useState({ pending: 0, refunded: 0 });
@@ -39,6 +43,7 @@ export default function CustomerRefundRequestsPage() {
         month: activeFilters.month,
         period: activeFilters.period || activePeriod,
         status: activeFilters.status || status,
+        search: activeFilters.search != null ? activeFilters.search : searchQuery,
       });
       setFilters(payload.filters);
       setFilterOptions(payload.filterOptions);
@@ -53,14 +58,33 @@ export default function CustomerRefundRequestsPage() {
     } finally {
       setLoading(false);
     }
-  }, [activePeriod, status]);
+  }, [activePeriod, searchQuery, status]);
 
   useEffect(() => {
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
-      load({ period: 'day', status: 'pending' });
+      load({ period: 'day', status: 'pending', search: '' });
+      return;
     }
-  }, [load]);
+    load({
+      day: filters.day,
+      week: filters.week,
+      month: filters.month,
+      period: activePeriod,
+      status,
+      search: searchQuery,
+    });
+    // faqat searchQuery o‘zgarganda (debounce dan keyin)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        window.clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleFilterChange = useCallback(
     (nextFilters) => {
@@ -73,9 +97,10 @@ export default function CustomerRefundRequestsPage() {
         month: nextFilters.month,
         period,
         status,
+        search: searchQuery,
       });
     },
-    [activePeriod, load, status],
+    [activePeriod, load, searchQuery, status],
   );
 
   const handleStatusChange = useCallback(
@@ -87,10 +112,29 @@ export default function CustomerRefundRequestsPage() {
         month: filters.month,
         period: activePeriod,
         status: nextStatus,
+        search: searchQuery,
       });
     },
-    [activePeriod, filters, load],
+    [activePeriod, filters, load, searchQuery],
   );
+
+  const handleSearchChange = (value) => {
+    setSearchInput(value);
+    if (searchTimerRef.current) {
+      window.clearTimeout(searchTimerRef.current);
+    }
+    searchTimerRef.current = window.setTimeout(() => {
+      setSearchQuery(String(value || '').trim());
+    }, 350);
+  };
+
+  const handleSearchSubmit = (value) => {
+    if (searchTimerRef.current) {
+      window.clearTimeout(searchTimerRef.current);
+    }
+    setSearchInput(value);
+    setSearchQuery(value);
+  };
 
   const handleConfirm = useCallback(
     (item) => {
@@ -109,6 +153,7 @@ export default function CustomerRefundRequestsPage() {
               month: filters.month,
               period: activePeriod,
               status,
+              search: searchQuery,
             });
           } catch (err) {
             setError(err.message || 'Tasdiqlashda xatolik');
@@ -118,19 +163,26 @@ export default function CustomerRefundRequestsPage() {
         },
       });
     },
-    [activePeriod, filters, load, status],
+    [activePeriod, filters, load, searchQuery, status],
   );
 
   return (
     <section className="customer-refund-requests-page">
       <header className="customer-refund-requests-page__header">
-        <h1 className="customer-refund-requests-page__title">
-          Mijozga pul qaytarish
-        </h1>
-        <p className="customer-refund-requests-page__subtitle">
-          To‘langan qaytarilgan / yaroqsiz mahsulotlar uchun mijozga summa qaytarish
-          so‘rovlari
-        </p>
+        <div className="customer-refund-requests-page__heading">
+          <h1 className="customer-refund-requests-page__title">
+            Mijozga pul qaytarish
+          </h1>
+          <p className="customer-refund-requests-page__subtitle">
+            To‘langan qaytarilgan / yaroqsiz mahsulotlar uchun mijozga summa qaytarish
+            so‘rovlari
+          </p>
+        </div>
+        <CustomerRefundSearch
+          value={searchInput}
+          onChange={handleSearchChange}
+          onSubmit={handleSearchSubmit}
+        />
       </header>
 
       <div className="customer-refund-requests-page__toolbar">

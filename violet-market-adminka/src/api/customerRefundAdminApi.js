@@ -57,6 +57,7 @@ export async function fetchAdminCustomerRefunds(filters = {}) {
   if (filters?.month) params.set('month', String(filters.month));
   if (filters?.period) params.set('period', String(filters.period));
   if (filters?.status) params.set('status', String(filters.status));
+  if (filters?.search) params.set('search', String(filters.search));
   if (filters?.page) params.set('page', String(filters.page));
   if (filters?.limit) params.set('limit', String(filters.limit));
 

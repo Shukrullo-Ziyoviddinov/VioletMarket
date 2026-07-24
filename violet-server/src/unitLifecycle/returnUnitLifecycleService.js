@@ -12,7 +12,7 @@ const { CourierReturnedOrder } = require("../models/courierReturnedOrder");
 const { CourierReturnRequest } = require("../models/courierReturnRequest");
 const { HttpError } = require("../utils/httpError");
 const {
-  applyReturnStockDisposition,
+  claimAndApplyReturnStockDisposition,
 } = require("./stockDisposition");
 const {
   notifyAdminReturnRequestSubmitted,
@@ -544,10 +544,11 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
       if (
         (reasonType === "return" && !existingDoc.stockReleased) ||
-        (reasonType === "defective" && !existingDoc.stockDiscarded)
+        (reasonType === "defective" && !existingDoc.stockDiscarded) ||
+        reasonType === "no_answer"
       ) {
         const leanOrder = await Order.findOne({ id: assignment.orderId })
-          .select("items")
+          .select("items status paidAt paymentMethod")
           .lean();
         const orderItem = Array.isArray(leanOrder?.items)
           ? leanOrder.items[Number(assignment.itemIndex)]
@@ -566,18 +567,30 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
             resolveOptionLabel(assignment.model) ||
             resolveOptionLabel(orderItem?.model),
         });
-        const flags = await applyReturnStockDisposition(
+
+        if (leanOrder) {
+          existingDoc.isPaid = isOrderPaid(leanOrder);
+          existingDoc.orderPaymentStatus = String(leanOrder.status || "");
+        }
+        await existingDoc.save();
+
+        const flags = await claimAndApplyReturnStockDisposition({
+          returnedOrderId: existingDoc._id,
           reasonType,
-          assignment.productId,
-          1,
+          productId: assignment.productId,
+          qty: 1,
           variant,
-          {
-            stockReleased: existingDoc.stockReleased,
-            stockDiscarded: existingDoc.stockDiscarded,
-          },
-        );
+        });
         existingDoc.stockReleased = flags.stockReleased;
         existingDoc.stockDiscarded = flags.stockDiscarded;
+      } else {
+        const leanOrder = await Order.findOne({ id: assignment.orderId })
+          .select("status paidAt paymentMethod")
+          .lean();
+        if (leanOrder) {
+          existingDoc.isPaid = isOrderPaid(leanOrder);
+          existingDoc.orderPaymentStatus = String(leanOrder.status || "");
+        }
       }
 
       await existingDoc.save();
@@ -678,36 +691,41 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     resolvedBy: "",
   };
 
-  const existingReturned = await CourierReturnedOrder.findOne(unitFilter)
-    .select("_id stockReleased stockDiscarded")
-    .lean();
-
   // Avval tracking — enum xatosida stock/assignment o‘zgarmasin
   await markOrderItemReturnedToSeller(assignment, returnedAt);
 
-  const stockFlags = await applyReturnStockDisposition(
-    reasonType,
-    assignment.productId,
-    1,
-    variant,
-    {
-      stockReleased: Boolean(existingReturned?.stockReleased),
-      stockDiscarded: Boolean(existingReturned?.stockDiscarded),
-    },
-  );
-
+  // 1) Avval returned yozuv (stock flaglarini o‘chirib yubormasdan)
   const saved = await CourierReturnedOrder.findOneAndUpdate(
     unitFilter,
     {
       $set: {
         ...returnPayload,
-        stockReleased: stockFlags.stockReleased,
-        stockDiscarded: stockFlags.stockDiscarded,
+      },
+      $setOnInsert: {
+        stockReleased: false,
+        stockDiscarded: false,
       },
       $unset: { resolutionType: 1 },
     },
     { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
+
+  // 2) Atomik claim → keyin ombor (qayta urinishda ikki marta emas)
+  const stockFlags = await claimAndApplyReturnStockDisposition({
+    returnedOrderId: saved._id,
+    reasonType,
+    productId: assignment.productId,
+    qty: 1,
+    variant,
+  });
+
+  if (
+    saved.stockReleased !== stockFlags.stockReleased ||
+    saved.stockDiscarded !== stockFlags.stockDiscarded
+  ) {
+    saved.stockReleased = stockFlags.stockReleased;
+    saved.stockDiscarded = stockFlags.stockDiscarded;
+  }
 
   assignment.status = "returned";
   assignment.returnedAt = returnedAt;

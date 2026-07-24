@@ -39,7 +39,7 @@ const {
   loadTakenAssignmentUnitKeys,
 } = require("./assignmentPoolRules");
 
-const { applyReturnStockDisposition } = require("./stockDisposition");
+const { applyReturnStockDisposition, claimAndApplyReturnStockDisposition } = require("./stockDisposition");
 
 module.exports = {
   createReturnRequestByCourier,
@@ -64,4 +64,5 @@ module.exports = {
   assignmentUnitKey,
   loadTakenAssignmentUnitKeys,
   applyReturnStockDisposition,
+  claimAndApplyReturnStockDisposition,
 };

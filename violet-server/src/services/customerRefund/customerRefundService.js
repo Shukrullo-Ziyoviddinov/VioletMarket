@@ -182,6 +182,43 @@ async function loadRefundSummaryByReturnedOrderIds(returnedOrderIds = []) {
   );
 }
 
+function escapeRegex(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildSearchMatch(searchRaw) {
+  const search = String(searchRaw || "").trim();
+  if (!search) return null;
+
+  const rx = new RegExp(escapeRegex(search), "i");
+  const phoneDigits = search.replace(/\D/g, "");
+  const or = [
+    { "customer.firstName": rx },
+    { "customer.lastName": rx },
+    { "customer.phone": rx },
+    { productCode: rx },
+  ];
+
+  if (phoneDigits.length >= 3) {
+    or.push({ "customer.phone": new RegExp(escapeRegex(phoneDigits), "i") });
+  }
+
+  // "Ism Familiya" birga
+  const parts = search.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    const first = new RegExp(escapeRegex(parts[0]), "i");
+    const last = new RegExp(escapeRegex(parts.slice(1).join(" ")), "i");
+    or.push({
+      $and: [{ "customer.firstName": first }, { "customer.lastName": last }],
+    });
+    or.push({
+      $and: [{ "customer.firstName": last }, { "customer.lastName": first }],
+    });
+  }
+
+  return { $or: or };
+}
+
 async function listAdminCustomerRefundRequests(query = {}) {
   const filterOptions = await buildReturnedProductsFilterOptions();
   const filters = resolveSelectedFilters(query, filterOptions);
@@ -189,6 +226,8 @@ async function listAdminCustomerRefundRequests(query = {}) {
 
   const statusRaw = String(query.status || "pending").trim().toLowerCase();
   const status = REFUND_STATUSES.has(statusRaw) ? statusRaw : "pending";
+  const search = String(query.search || query.q || "").trim();
+  const searchMatch = buildSearchMatch(search);
 
   const page = Math.max(1, Number(query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
@@ -200,6 +239,16 @@ async function listAdminCustomerRefundRequests(query = {}) {
   if (status !== "all") {
     findFilter.status = status;
   }
+  if (searchMatch) {
+    findFilter.$and = [...(findFilter.$and || []), searchMatch];
+  }
+
+  const countBase = {
+    [listPeriod.field]: listPeriod.value,
+  };
+  if (searchMatch) {
+    countBase.$and = [searchMatch];
+  }
 
   const [rows, total, pendingCount, refundedCount] = await Promise.all([
     CustomerRefundRequest.find(findFilter)
@@ -209,11 +258,11 @@ async function listAdminCustomerRefundRequests(query = {}) {
       .lean(),
     CustomerRefundRequest.countDocuments(findFilter),
     CustomerRefundRequest.countDocuments({
-      [listPeriod.field]: listPeriod.value,
+      ...countBase,
       status: "pending",
     }),
     CustomerRefundRequest.countDocuments({
-      [listPeriod.field]: listPeriod.value,
+      ...countBase,
       status: "refunded",
     }),
   ]);
@@ -234,6 +283,7 @@ async function listAdminCustomerRefundRequests(query = {}) {
     filterOptions,
     activePeriod: listPeriod.period,
     status,
+    search,
     page,
     limit,
     total,
