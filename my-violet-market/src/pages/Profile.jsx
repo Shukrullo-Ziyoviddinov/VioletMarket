@@ -1347,7 +1347,9 @@ const Profile = () => {
         </div>
       </div>
       <div className="container">
-        <TavsiyaEtamiz useScrollable={true} />
+        <div className="profile-page-recs-wrap">
+          <TavsiyaEtamiz useScrollable={true} />
+        </div>
       </div>
     </div>
   );
