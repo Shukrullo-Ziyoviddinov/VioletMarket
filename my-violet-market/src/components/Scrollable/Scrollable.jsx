@@ -380,16 +380,18 @@ const Scrollable = ({
     }
     
     // Boshqa interaktiv elementlar uchun
-    const isInteractiveElement = clickedElement.closest && (
-      clickedElement.closest('button') || 
-      clickedElement.closest('a') ||
-      clickedElement.closest('.add-to-cart-btn')
+    const interactiveEl = clickedElement.closest && (
+      clickedElement.closest('.add-to-cart-btn') ||
+      clickedElement.closest('button') ||
+      clickedElement.closest('a')
     );
     
-    if (isInteractiveElement) {
+    if (interactiveEl) {
       hasMovedRef.current = false;
-      touchTargetRef.current = clickedElement;
-      if (e.cancelable) e.preventDefault();
+      touchTargetRef.current = interactiveEl;
+      startXRef.current = e.touches[0].pageX;
+      startYRef.current = e.touches[0].pageY;
+      // preventDefault qilmaymiz — sahifa scroll ishlashi uchun
       return;
     }
     }
@@ -428,16 +430,31 @@ const Scrollable = ({
       return;
     }
     
-    // Boshqa interaktiv elementlar uchun
-    const isInteractiveElement = clickedElement.closest && (
-      clickedElement.closest('button') || 
+    // Interaktiv elementdan boshlangan touch — harakatni kuzatamiz (scroll vs tap)
+    const interactiveStartEl = touchTargetRef.current && (
+      (touchTargetRef.current.closest && (
+        touchTargetRef.current.closest('.add-to-cart-btn') ||
+        touchTargetRef.current.closest('button') ||
+        touchTargetRef.current.closest('a')
+      )) ||
+      (touchTargetRef.current.classList && (
+        touchTargetRef.current.classList.contains('add-to-cart-btn') ||
+        touchTargetRef.current.tagName === 'BUTTON' ||
+        touchTargetRef.current.tagName === 'A'
+      ))
+    );
+
+    if (interactiveStartEl || (clickedElement.closest && (
+      clickedElement.closest('button') ||
       clickedElement.closest('a') ||
       clickedElement.closest('.add-to-cart-btn')
-    );
-    
-    if (isInteractiveElement) {
-      hasMovedRef.current = false;
-      if (e.cancelable) e.preventDefault();
+    ))) {
+      const deltaX = Math.abs(e.touches[0].pageX - startXRef.current);
+      const deltaY = Math.abs(e.touches[0].pageY - startYRef.current);
+      if (deltaX > DIRECTION_LOCK_PX || deltaY > DIRECTION_LOCK_PX) {
+        hasMovedRef.current = true;
+      }
+      // preventDefault yo'q — scroll davom etsin
       return;
     }
     }
@@ -489,6 +506,13 @@ const Scrollable = ({
   const handleTouchEnd = (e) => {
     const wasDragging = hasMovedRef.current;
     const touchedElement = touchTargetRef.current;
+
+    // Scroll bo'lgan bo'lsa — keyingi native clickni bloklash (add-to-cart modal ochilmasin)
+    if (wasDragging) {
+      shouldBlockClickRef.current = true;
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    }
     
     if (scrollRef.current) {
       scrollRef.current.classList.remove('is-dragging');
@@ -545,32 +569,14 @@ const Scrollable = ({
       }
       
       // Boshqa interaktiv elementlar uchun (button, link, add-to-cart-btn)
+      // touchstart da preventDefault qilinmagan — native click ishlaydi.
+      // Scroll bo'lgan bo'lsa clickni bloklaymiz (modal ochilmasin).
       const buttonEl = touchedElement.closest && touchedElement.closest('button');
       const linkEl = touchedElement.closest && touchedElement.closest('a');
       const addToCartEl = touchedElement.closest && touchedElement.closest('.add-to-cart-btn');
       const isInteractiveElement = buttonEl || linkEl || addToCartEl;
-      // Button yoki link elementiga dispatch qilamiz (child emas) - loading paytida child o'zgarishi removeChild xatoligiga olib keladi
-      const targetEl = addToCartEl || buttonEl || linkEl || touchedElement;
-      
+
       if (isInteractiveElement) {
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
-        
-        setTimeout(() => {
-          if (targetEl && document.body.contains(targetEl)) {
-            try {
-              const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-              });
-              targetEl.dispatchEvent(clickEvent);
-            } catch (err) {
-              console.error('Error dispatching click event to interactive element:', err);
-            }
-          }
-        }, 10);
-        
         touchTargetRef.current = null;
         hasMovedRef.current = false;
         return;
@@ -647,10 +653,18 @@ const Scrollable = ({
       }, 50);
     }
     
-    setTimeout(() => {
-      hasMovedRef.current = false;
-      touchTargetRef.current = null;
-    }, 100);
+    if (wasDragging) {
+      setTimeout(() => {
+        hasMovedRef.current = false;
+        shouldBlockClickRef.current = false;
+        touchTargetRef.current = null;
+      }, 300);
+    } else {
+      setTimeout(() => {
+        hasMovedRef.current = false;
+        touchTargetRef.current = null;
+      }, 100);
+    }
   };
 
   // Scroll tugmalari

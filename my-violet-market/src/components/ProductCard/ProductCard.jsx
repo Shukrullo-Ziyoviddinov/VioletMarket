@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -9,6 +9,7 @@ import FlashSaleCountdown from '../FlashSaleCountdown/FlashSaleCountdown';
 import './ProductCard.css';
 
 const PRODUCT_DETAIL_HISTORY_KEY = 'productDetailViewedProducts';
+const TOUCH_MOVE_THRESHOLD_PX = 10;
 
 const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }) => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { getCommentsByProductId, comments, loadCommentsForProduct } = useComments();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const addToCartTouchStartRef = useRef(null);
+  const addToCartTouchMovedRef = useRef(false);
 
   useEffect(() => {
     if (product?.id != null) {
@@ -78,8 +81,36 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
     }
   };
 
+  const handleAddToCartTouchStart = (e) => {
+    const touch = e.touches?.[0];
+    if (!touch) return;
+    addToCartTouchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    addToCartTouchMovedRef.current = false;
+  };
+
+  const handleAddToCartTouchMove = (e) => {
+    const start = addToCartTouchStartRef.current;
+    const touch = e.touches?.[0];
+    if (!start || !touch) return;
+    const dx = Math.abs(touch.clientX - start.x);
+    const dy = Math.abs(touch.clientY - start.y);
+    if (dx > TOUCH_MOVE_THRESHOLD_PX || dy > TOUCH_MOVE_THRESHOLD_PX) {
+      addToCartTouchMovedRef.current = true;
+    }
+  };
+
+  const handleAddToCartTouchEnd = () => {
+    addToCartTouchStartRef.current = null;
+  };
+
   const handleAddToCart = (e) => {
     e.stopPropagation();
+    // Barmoq bilan scroll qilinganda modal ochilmasin
+    if (addToCartTouchMovedRef.current) {
+      addToCartTouchMovedRef.current = false;
+      e.preventDefault();
+      return;
+    }
     if (onAddToCart) {
       onAddToCart(product);
     } else {
@@ -179,7 +210,15 @@ const ProductCard = ({ product, onAddToCart, hideAddToCart, flashDurationHours }
         />
       )}
       {!hideAddToCart && (
-        <button className="add-to-cart-btn" type="button" onClick={handleAddToCart}>
+        <button
+          className="add-to-cart-btn"
+          type="button"
+          onClick={handleAddToCart}
+          onTouchStart={handleAddToCartTouchStart}
+          onTouchMove={handleAddToCartTouchMove}
+          onTouchEnd={handleAddToCartTouchEnd}
+          onTouchCancel={handleAddToCartTouchEnd}
+        >
           <span className="add-to-cart-btn__inner">
             <i className="fas fa-shopping-cart" aria-hidden="true" />
             <span>{i18n.t('productCard.addToCart')}</span>
