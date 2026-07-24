@@ -46,6 +46,7 @@
       "title": "Kategoriya statistikasi",
       "loading": "Yuklanmoqda...",
       "empty": "Tanlangan davr uchun kategoriya bo'yicha qaytarish topilmadi",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Kun",
         "week": "Hafta",
@@ -61,6 +62,7 @@
       "title": "Davlat statistikasi",
       "loading": "Yuklanmoqda...",
       "empty": "Tanlangan davr uchun davlat bo'yicha qaytarish topilmadi",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Kun",
         "week": "Hafta",
@@ -76,6 +78,7 @@
       "title": "Brend statistikasi",
       "loading": "Yuklanmoqda...",
       "empty": "Tanlangan davr uchun brend bo'yicha qaytarish topilmadi",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Kun",
         "week": "Hafta",

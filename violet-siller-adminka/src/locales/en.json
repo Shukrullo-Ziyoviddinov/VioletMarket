@@ -46,6 +46,7 @@
       "title": "Category statistics",
       "loading": "Loading...",
       "empty": "No returns by category for the selected period",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Day",
         "week": "Week",
@@ -61,6 +62,7 @@
       "title": "Country statistics",
       "loading": "Loading...",
       "empty": "No returns by country for the selected period",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Day",
         "week": "Week",
@@ -76,6 +78,7 @@
       "title": "Brand statistics",
       "loading": "Loading...",
       "empty": "No returns by brand for the selected period",
+      "filterLabel": "Filter: {{period}}",
       "period": {
         "day": "Day",
         "week": "Week",

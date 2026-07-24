@@ -1,6 +1,8 @@
 .seller-sales-statistics-charts-period-filter {
   position: relative;
   display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .seller-sales-statistics-charts-period-filter__button {
@@ -45,15 +47,17 @@
 .seller-sales-statistics-charts-period-filter__dropdown {
   position: absolute;
   top: calc(100% + 8px);
+  left: 0;
   right: 0;
   z-index: 20;
-  min-width: 140px;
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
   padding: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
-  box-sizing: border-box;
 }
 
 .seller-sales-statistics-charts-period-filter__dropdown-item {
