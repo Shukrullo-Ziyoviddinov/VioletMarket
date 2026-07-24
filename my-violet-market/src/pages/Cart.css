@@ -32,6 +32,8 @@
 .cart-page-recs-wrap {
   background: #fff;
   border-radius: 15px;
+  padding-top: 16px;
+  padding-bottom: 16px;
   padding-left: 0;
   padding-right: 0;
   margin-left: -10px;
