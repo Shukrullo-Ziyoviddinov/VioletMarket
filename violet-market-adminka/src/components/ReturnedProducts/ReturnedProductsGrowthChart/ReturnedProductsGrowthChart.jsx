@@ -39,7 +39,7 @@ export default function ReturnedProductsGrowthChart({ chart, loading = false }) 
     <section className="returned-products-growth-chart">
       <header className="returned-products-growth-chart__header">
         <div>
-          <h2 className="returned-products-growth-chart__title">Qaytarish dinamikasi</h2>
+          <h2 className="returned-products-growth-chart__title">Qaytarish Statistikasi</h2>
           <p className="returned-products-growth-chart__subtitle">
             Kun / hafta / oy bo‘yicha o‘sish va kamayish
           </p>

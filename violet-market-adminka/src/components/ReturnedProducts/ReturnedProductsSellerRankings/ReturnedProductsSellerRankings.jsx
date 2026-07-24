@@ -44,12 +44,12 @@ export default function ReturnedProductsSellerRankings({
   return (
     <section className="returned-products-seller-rankings">
       <RankingColumn
-        title="Ko‘p qaytarilgan sillerlar"
+        title="Ko'p qaytarilgan buyurtmalar sotuvchisi"
         rows={loading ? [] : returnRows}
         emptyText={loading ? 'Yuklanmoqda...' : 'Ma’lumot yo‘q'}
       />
       <RankingColumn
-        title="Ko‘p yaroqsiz sillerlar"
+        title="Ko'p yaroqsiz buyurtmalar sotuvchisi"
         rows={loading ? [] : defectiveRows}
         emptyText={loading ? 'Yuklanmoqda...' : 'Ma’lumot yo‘q'}
       />
