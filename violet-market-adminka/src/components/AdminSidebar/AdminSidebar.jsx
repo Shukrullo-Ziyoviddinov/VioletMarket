@@ -58,6 +58,12 @@ const menuItems = [
     label: 'Qaytarilgan buyumlar',
     route: '/returned-products',
   },
+  {
+    key: 'customer-refunds',
+    icon: <DollarOutlined />,
+    label: 'Mijozga pul qaytarish',
+    route: '/customer-refunds',
+  },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
   {
     key: 'flash-products',
@@ -104,6 +110,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/orders') return 'orders';
   if (pathname === '/return-requests') return 'return-requests';
   if (pathname === '/returned-products') return 'returned-products';
+  if (pathname === '/customer-refunds') return 'customer-refunds';
   if (pathname === '/products/paused') return 'products-paused';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';

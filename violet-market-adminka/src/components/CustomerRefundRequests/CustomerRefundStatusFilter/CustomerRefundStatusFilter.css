@@ -1,0 +1,42 @@
+.customer-refund-status-filter {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.customer-refund-status-filter__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid #d8dce8;
+  border-radius: 999px;
+  background: #fff;
+  color: #1f1630;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.customer-refund-status-filter__btn--active {
+  border-color: #7b49c8;
+  background: #f7f2fd;
+  color: #6d32c5;
+}
+
+.customer-refund-status-filter__count {
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #efe7fb;
+  color: #6d32c5;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.customer-refund-status-filter__btn--active .customer-refund-status-filter__count {
+  background: #6d32c5;
+  color: #fff;
+}

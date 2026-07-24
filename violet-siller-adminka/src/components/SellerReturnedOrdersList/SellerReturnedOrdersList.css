@@ -89,6 +89,13 @@
   letter-spacing: 0.02em;
 }
 
+.seller-returned-orders-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 .seller-returned-orders-card__badge {
   flex-shrink: 0;
   padding: 6px 12px;
@@ -114,6 +121,32 @@
   background: #fff7ed;
   color: #c2410c;
   border: 1px solid #fed7aa;
+}
+
+.seller-returned-orders-card__badge--refund-pending {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.seller-returned-orders-card__badge--refund-done {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.seller-returned-orders-card__refund {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.seller-returned-orders-card__refund-date {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .seller-returned-orders-card__label {

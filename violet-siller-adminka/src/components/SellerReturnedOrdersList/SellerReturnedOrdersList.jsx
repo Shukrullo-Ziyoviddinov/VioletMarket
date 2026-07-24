@@ -72,22 +72,52 @@ export default function SellerReturnedOrdersList({ orders = [], loading = false 
                   <p className="seller-returned-orders-card__code">{order.productCode}</p>
                 ) : null}
               </div>
-              <span
-                className={`seller-returned-orders-card__badge seller-returned-orders-card__badge--${
-                  order.reasonType === 'no_answer'
-                    ? 'no-answer'
+              <div className="seller-returned-orders-card__badges">
+                <span
+                  className={`seller-returned-orders-card__badge seller-returned-orders-card__badge--${
+                    order.reasonType === 'no_answer'
+                      ? 'no-answer'
+                      : order.reasonType === 'defective'
+                        ? 'defective'
+                        : 'return'
+                  }`}
+                >
+                  {order.reasonType === 'no_answer'
+                    ? t('returnedOrders.reason.noAnswer')
                     : order.reasonType === 'defective'
-                      ? 'defective'
-                      : 'return'
-                }`}
-              >
-                {order.reasonType === 'no_answer'
-                  ? t('returnedOrders.reason.noAnswer')
-                  : order.reasonType === 'defective'
-                    ? t('returnedOrders.reason.defective')
-                    : t('returnedOrders.reason.return')}
-              </span>
+                      ? t('returnedOrders.reason.defective')
+                      : t('returnedOrders.reason.return')}
+                </span>
+                {order.customerRefund ? (
+                  <span
+                    className={`seller-returned-orders-card__badge seller-returned-orders-card__badge--refund-${
+                      order.customerRefund.status === 'refunded' ? 'done' : 'pending'
+                    }`}
+                  >
+                    {order.customerRefund.status === 'refunded'
+                      ? t('returnedOrders.refund.refunded')
+                      : t('returnedOrders.refund.pending')}
+                  </span>
+                ) : null}
+              </div>
             </div>
+
+            {order.customerRefund ? (
+              <div className="seller-returned-orders-card__refund">
+                <span className="seller-returned-orders-card__label">
+                  {t('returnedOrders.refund.amount')}
+                </span>
+                <strong className="seller-returned-orders-card__value seller-returned-orders-card__value--price">
+                  {formatSellerRevenue(order.customerRefund.amount || order.amount)}
+                </strong>
+                {order.customerRefund.status === 'refunded' && order.customerRefund.refundedAt ? (
+                  <p className="seller-returned-orders-card__refund-date">
+                    {t('returnedOrders.refund.refundedAt')}:{' '}
+                    {formatDateTime(order.customerRefund.refundedAt)}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="seller-returned-orders-card__meta">
               <div className="seller-returned-orders-card__meta-item">

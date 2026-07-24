@@ -51,6 +51,14 @@ function normalizeReturnedOrder(row) {
     orderedAt: row?.orderedAt || null,
     returnedAt: row?.returnedAt || null,
     isPaid: Boolean(row?.isPaid),
+    customerRefund: row?.customerRefund
+      ? {
+          id: String(row.customerRefund.id || ''),
+          status: String(row.customerRefund.status || 'pending'),
+          amount: Number(row.customerRefund.amount) || 0,
+          refundedAt: row.customerRefund.refundedAt || null,
+        }
+      : null,
   };
 }
 

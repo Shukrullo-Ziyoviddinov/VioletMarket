@@ -58,6 +58,7 @@ const adminCourierRoutes = require("./adminCourier.routes");
 const adminOrdersRoutes = require("./adminOrders.routes");
 const adminReturnRequestRoutes = require("./adminReturnRequest.routes");
 const adminReturnedProductsRoutes = require("./adminReturnedProducts.routes");
+const adminCustomerRefundRoutes = require("./adminCustomerRefund.routes");
 const supportChatRoutes = require("./supportChat.routes");
 const deliveryOrdersRoutes = require("./deliveryOrders.routes");
 
@@ -122,6 +123,7 @@ router.use(adminCourierRoutes);
 router.use(adminOrdersRoutes);
 router.use(adminReturnRequestRoutes);
 router.use(adminReturnedProductsRoutes);
+router.use(adminCustomerRefundRoutes);
 router.use(supportChatRoutes);
 router.use(deliveryOrdersRoutes);
 

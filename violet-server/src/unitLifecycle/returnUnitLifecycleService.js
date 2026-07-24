@@ -35,6 +35,9 @@ const {
   RETURN_ADVANCE_ACTIONS,
 } = require("./constants");
 const { resolveOptionLabel } = require("./optionLabel");
+const {
+  createCustomerRefundRequestIfNeeded,
+} = require("../services/customerRefund/customerRefundService");
 
 
 /**
@@ -578,6 +581,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       }
 
       await existingDoc.save();
+      await createCustomerRefundRequestIfNeeded(existingDoc);
       return {
         returned: toPublicReturnedOrder(existingDoc),
         assignment: await mapAssignmentPublic(assignment),
@@ -709,6 +713,9 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   assignment.returnedAt = returnedAt;
   await applyCourierKmPayment(assignment, payload, returnedAt);
   await assignment.save();
+
+  // Pul zanjiri — inventardan keyin, alohida (faqat to‘langan return|defective)
+  await createCustomerRefundRequestIfNeeded(saved);
 
   return {
     returned: toPublicReturnedOrder(saved),

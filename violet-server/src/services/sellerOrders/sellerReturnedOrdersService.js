@@ -9,6 +9,9 @@ const {
   resolveReturnedListPeriod,
   resolveSelectedFilters,
 } = require("../returnedProducts/returnedProductsFilterService");
+const {
+  loadRefundSummaryByReturnedOrderIds,
+} = require("../customerRefund/customerRefundService");
 
 async function buildSellerReturnedFilterOptions(sellerId) {
   return buildReturnedProductsFilterOptions({
@@ -100,6 +103,10 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
       aggregateReturnedStats(shopId, { monthKey: filters.month, ...returnOnlyMatch }),
     ]);
 
+  const refundMap = await loadRefundSummaryByReturnedOrderIds(
+    rows.map((row) => row._id),
+  );
+
   return {
     filters,
     filterOptions,
@@ -115,7 +122,13 @@ async function listSellerReturnedOrders(sellerId, query = {}) {
       week: weekStats,
       month: monthStats,
     },
-    orders: rows.map(toPublicReturnedOrder),
+    orders: rows.map((row) => {
+      const publicRow = toPublicReturnedOrder(row);
+      return {
+        ...publicRow,
+        customerRefund: refundMap.get(String(row._id)) || null,
+      };
+    }),
   };
 }
 

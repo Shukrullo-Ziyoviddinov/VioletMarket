@@ -33,6 +33,12 @@
       "return": "Returned",
       "defective": "Defective"
     },
+    "refund": {
+      "pending": "Customer refund pending",
+      "refunded": "Refunded to customer",
+      "amount": "Refund amount",
+      "refundedAt": "Refunded at"
+    },
     "card": {
       "quantity": "Qty",
       "price": "Price",

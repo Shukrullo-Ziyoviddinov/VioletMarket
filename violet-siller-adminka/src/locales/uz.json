@@ -33,6 +33,12 @@
       "return": "Qaytarilgan",
       "defective": "Yaroqsiz"
     },
+    "refund": {
+      "pending": "Pul qaytarilishi kutilmoqda",
+      "refunded": "Mijozga summa qaytarildi",
+      "amount": "Qaytariladigan summa",
+      "refundedAt": "Qaytarilgan sana"
+    },
     "card": {
       "quantity": "Dona",
       "price": "Narx",

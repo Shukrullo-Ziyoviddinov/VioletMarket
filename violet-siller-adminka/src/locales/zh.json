@@ -33,6 +33,12 @@
       "return": "已退回",
       "defective": "不合格"
     },
+    "refund": {
+      "pending": "待退款给客户",
+      "refunded": "已退款给客户",
+      "amount": "退款金额",
+      "refundedAt": "退款时间"
+    },
     "card": {
       "quantity": "数量",
       "price": "价格",

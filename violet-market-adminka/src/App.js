@@ -13,6 +13,7 @@ import WithdrawalPage from './pages/WithdrawalPage/WithdrawalPage';
 import OrdersPage from './pages/OrdersPage/OrdersPage';
 import ReturnRequestsPage from './pages/ReturnRequestsPage/ReturnRequestsPage';
 import ReturnedProductsPage from './pages/ReturnedProductsPage/ReturnedProductsPage';
+import CustomerRefundRequestsPage from './pages/CustomerRefundRequestsPage/CustomerRefundRequestsPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -37,6 +38,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="return-requests" element={<ReturnRequestsPage />} />
           <Route path="returned-products" element={<ReturnedProductsPage />} />
+          <Route path="customer-refunds" element={<CustomerRefundRequestsPage />} />
           <Route path="couriers" element={<CouriersPage />} />
           <Route path="courier-chats" element={<CourierChatsPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
