@@ -23,13 +23,16 @@ function buildProductDetailSalesProgressMeta(product) {
     product?.effectiveQuantity ?? product?.quantity,
     0,
   );
-  // Checkout band qilgan, lekin hali topshirilmagan donalar.
-  // Ularni denominatorga qo‘shmasak, qoldiq kamayganda «sotildi %» noto‘g‘ri oshadi.
+  // Checkout bandi — sold % faqat Topshirdim da o‘zgaradi.
   const reservedQuantity = toNonNegativeInt(product?.reservedQuantity, 0);
   const total = soldCount + remainingQuantity + reservedQuantity;
 
   const soldPercent = total > 0 ? clampPercent((soldCount / total) * 100) : 0;
-  const remainingPercent = total > 0 ? clampPercent((remainingQuantity / total) * 100) : 100;
+  // Tone / «qolgan» foiz: ombor + rezerv (hali sotilmagan).
+  // Checkout quantity↓ reserved↑ — yig‘indi o‘zgarmaydi, rang o‘zgarmasligi kerak.
+  const unsoldQuantity = remainingQuantity + reservedQuantity;
+  const remainingPercent =
+    total > 0 ? clampPercent((unsoldQuantity / total) * 100) : 100;
 
   return {
     soldCount,

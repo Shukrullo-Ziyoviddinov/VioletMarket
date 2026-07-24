@@ -28,6 +28,8 @@ const ProductDetailSalesFooter = ({ meta, remainingQuantity = 0, soldCount = 0 }
     const safeSold = toNonNegativeInt(meta?.soldCount ?? soldCount);
     const safeReserved = toNonNegativeInt(meta?.reservedQuantity);
     const total = safeRemaining + safeSold + safeReserved;
+    // Checkoutda quantity↓ reserved↑ — yig‘indi (hali sotilmagan) o‘zgarmaydi.
+    const unsoldQuantity = safeRemaining + safeReserved;
 
     const soldPercent =
       meta?.soldPercent != null
@@ -39,7 +41,7 @@ const ProductDetailSalesFooter = ({ meta, remainingQuantity = 0, soldCount = 0 }
       meta?.remainingPercent != null
         ? clampPercent(meta.remainingPercent)
         : total > 0
-          ? clampPercent((safeRemaining / total) * 100)
+          ? clampPercent((unsoldQuantity / total) * 100)
           : 100;
     const tone = typeof meta?.tone === 'string' ? meta.tone : resolveTone(remainingPercent);
 
