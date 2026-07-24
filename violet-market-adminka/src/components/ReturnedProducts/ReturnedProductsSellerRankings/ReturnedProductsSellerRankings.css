@@ -1,0 +1,82 @@
+.returned-products-seller-rankings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.returned-products-seller-rankings__column {
+  padding: 16px;
+  border: 1px solid #e9e3f1;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.returned-products-seller-rankings__title {
+  margin: 0 0 12px;
+  color: #1f1630;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.returned-products-seller-rankings__empty {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.returned-products-seller-rankings__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.returned-products-seller-rankings__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.returned-products-seller-rankings__seller {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.returned-products-seller-rankings__seller img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f4f0f8;
+}
+
+.returned-products-seller-rankings__seller strong,
+.returned-products-seller-rankings__seller span {
+  display: block;
+}
+
+.returned-products-seller-rankings__seller strong {
+  color: #1f1630;
+  font-size: 13px;
+}
+
+.returned-products-seller-rankings__seller span {
+  color: #93899b;
+  font-size: 12px;
+}
+
+.returned-products-seller-rankings__count {
+  color: #6d32c5;
+  font-size: 16px;
+}
+
+@media (max-width: 900px) {
+  .returned-products-seller-rankings {
+    grid-template-columns: 1fr;
+  }
+}

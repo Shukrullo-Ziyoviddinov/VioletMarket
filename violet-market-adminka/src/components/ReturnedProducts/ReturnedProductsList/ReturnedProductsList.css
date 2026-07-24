@@ -1,0 +1,15 @@
+.returned-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.returned-products-list--empty {
+  padding: 28px 18px;
+  border: 1px dashed #d8dce8;
+  border-radius: 16px;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  background: #fafafa;
+}

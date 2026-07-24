@@ -1,0 +1,60 @@
+.returned-products-growth-chart {
+  padding: 16px;
+  border: 1px solid #e9e3f1;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.returned-products-growth-chart__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.returned-products-growth-chart__title {
+  margin: 0;
+  color: #1f1630;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.returned-products-growth-chart__subtitle {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.returned-products-growth-chart__growth {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.returned-products-growth-chart__growth--positive {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.returned-products-growth-chart__growth--negative {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.returned-products-growth-chart__growth--neutral {
+  background: #f5f3ff;
+  color: #6d32c5;
+}
+
+.returned-products-growth-chart__body {
+  min-height: 260px;
+}
+
+.returned-products-growth-chart__empty {
+  margin: 0;
+  padding: 80px 12px;
+  color: #6b7280;
+  text-align: center;
+}
