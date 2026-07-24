@@ -28,6 +28,26 @@
   margin: 5px 0;
 }
 
+/* Tavsiya etamiz — oq blok yonlarga yopishadi, ichki content paddingli */
+.cart-page-recs-wrap {
+  background: #fff;
+  border-radius: 15px;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: -10px;
+  margin-right: -10px;
+  width: calc(100% + 20px);
+  box-sizing: border-box;
+}
+
+.cart-page-recs-wrap .tavsiya-etamiz-section {
+  padding-left: 10px;
+  padding-right: 10px;
+  box-sizing: border-box;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .cart-page .tavsiya-etamiz-section .scrollable-section {
   margin: 0;
 }

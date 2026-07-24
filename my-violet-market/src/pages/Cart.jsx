@@ -83,7 +83,9 @@ const Cart = () => {
       <div className="cart-page cart-page--skeleton">
         <CartPageSkeleton />
         <div className="container">
-          <TavsiyaEtamiz useScrollable={true} />
+          <div className="cart-page-recs-wrap">
+            <TavsiyaEtamiz useScrollable={true} />
+          </div>
         </div>
       </div>
     );
@@ -98,7 +100,9 @@ const Cart = () => {
           <Link to="/">{i18n.t('cart.goHome')}</Link>
         </div>
         <div className="container">
-          <TavsiyaEtamiz useScrollable={true} />
+          <div className="cart-page-recs-wrap">
+            <TavsiyaEtamiz useScrollable={true} />
+          </div>
         </div>
       </div>
     );
@@ -254,7 +258,9 @@ const Cart = () => {
       </div>
 
       <div className="container">
-        <TavsiyaEtamiz useScrollable={true} />
+        <div className="cart-page-recs-wrap">
+          <TavsiyaEtamiz useScrollable={true} />
+        </div>
       </div>
 
       {/* Delivery Info Modal */}
