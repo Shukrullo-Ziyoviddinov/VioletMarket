@@ -6,7 +6,7 @@
   max-width: 100%;
 }
 
-/* Recommended + Tavsiya etamiz — bitta oq blok, yonlarga yopishgan */
+/* Recommended + Tavsiya etamiz — oq blok yonlarga yopishadi, ichki content paddingli */
 .product-detail-recs-wrap {
   background: #fff;
   border-radius: 15px;
@@ -15,6 +15,13 @@
   margin-left: -10px;
   margin-right: -10px;
   width: calc(100% + 20px);
+  box-sizing: border-box;
+}
+
+.product-detail-recs-wrap .recommended-section,
+.product-detail-recs-wrap .tavsiya-etamiz-section {
+  padding-left: 10px;
+  padding-right: 10px;
   box-sizing: border-box;
 }
 
