@@ -36,8 +36,24 @@
 .returned-products-seller-rankings__item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #faf8fc;
+}
+
+.returned-products-seller-rankings__rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #efe7fb;
+  color: #6d32c5;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .returned-products-seller-rankings__seller {
@@ -45,34 +61,42 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .returned-products-seller-rankings__seller img {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   object-fit: cover;
   background: #f4f0f8;
+  flex-shrink: 0;
 }
 
-.returned-products-seller-rankings__seller strong,
-.returned-products-seller-rankings__seller span {
+.returned-products-seller-rankings__info {
+  min-width: 0;
+}
+
+.returned-products-seller-rankings__name {
   display: block;
-}
-
-.returned-products-seller-rankings__seller strong {
   color: #1f1630;
   font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.returned-products-seller-rankings__seller span {
-  color: #93899b;
+.returned-products-seller-rankings__meta {
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: #6b7280;
   font-size: 12px;
 }
 
-.returned-products-seller-rankings__count {
-  color: #6d32c5;
-  font-size: 16px;
+.returned-products-seller-rankings__meta b {
+  color: #1f1630;
+  font-weight: 700;
 }
 
 @media (max-width: 900px) {
