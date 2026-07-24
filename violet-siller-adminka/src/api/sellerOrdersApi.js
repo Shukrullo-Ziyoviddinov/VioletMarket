@@ -132,6 +132,18 @@ export async function handoffSellerOrderItem(token, orderId, itemIndex) {
   return payload?.data || {};
 }
 
+export async function cancelSellerOrderItem(token, orderId, itemIndex) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/cancel`),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 async function postNoAnswerAction(token, returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

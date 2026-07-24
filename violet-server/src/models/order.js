@@ -8,6 +8,7 @@ const TRACKING_STATUSES = [
   "handed_to_courier",
   "delivered",
   "returned_to_seller",
+  "cancelled",
 ];
 
 const orderTrackingHistorySchema = new mongoose.Schema(

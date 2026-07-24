@@ -18,6 +18,9 @@ const UZB_SELLER_COUNTRY = "uzb";
 
 function normalizeOrderTrackingStatus(raw) {
   const status = String(raw || "").trim().toLowerCase();
+  if (status === "cancelled" || status === "returned_to_seller") {
+    return status;
+  }
   return UZB_ORDER_TRACKING_STEPS.includes(status) ? status : "accepted";
 }
 

@@ -17,6 +17,10 @@ router.patch(
   "/admin/orders/:orderId/items/:itemIndex/handoff",
   controller.handoffOrderItem,
 );
+router.patch(
+  "/admin/orders/:orderId/items/:itemIndex/cancel",
+  controller.cancelOrderItem,
+);
 router.post(
   "/admin/orders/no-answer/:returnedOrderId/re-handoff",
   controller.reHandoffNoAnswer,

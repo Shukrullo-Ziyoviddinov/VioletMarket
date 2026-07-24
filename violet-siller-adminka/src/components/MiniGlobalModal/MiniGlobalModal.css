@@ -100,6 +100,17 @@
   gap: 10px;
 }
 
+.mini-global-modal__actions--with-cancel-order {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mini-global-modal__actions-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
 .mini-global-modal__btn {
   min-width: 88px;
   padding: 8px 14px;
@@ -124,6 +135,16 @@
 .mini-global-modal__btn--ghost:hover:not(:disabled) {
   border-color: #7b49c8;
   color: #7b49c8;
+}
+
+.mini-global-modal__btn--cancel-order {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mini-global-modal__btn--cancel-order:hover:not(:disabled) {
+  background: #fee2e2;
 }
 
 .mini-global-modal__btn--danger {

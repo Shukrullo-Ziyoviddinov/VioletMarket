@@ -87,6 +87,10 @@
       "success": "商品备货已确认",
       "error": "无法确认商品备货"
     },
+    "cancel": {
+      "success": "订单已取消，商品已退回仓库",
+      "error": "无法取消订单"
+    },
     "card": {
       "barcode": "条码",
       "orderId": "订单编号",
@@ -122,7 +126,9 @@
       "confirm": "确认",
       "confirming": "确认中...",
       "confirmCollected": "确认商品已备好",
-      "collecting": "确认中..."
+      "collecting": "确认中...",
+      "cancelOrder": "取消订单",
+      "cancelling": "取消中..."
     }
   },
   "marketInfo": {

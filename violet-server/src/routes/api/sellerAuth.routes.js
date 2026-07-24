@@ -120,6 +120,11 @@ router.patch(
   sellerAuthMiddleware,
   sellerOrdersController.handoffOrderItem,
 );
+router.patch(
+  "/seller-auth/orders/:orderId/items/:itemIndex/cancel",
+  sellerAuthMiddleware,
+  sellerOrdersController.cancelOrderItem,
+);
 router.post(
   "/seller-auth/orders/no-answer/:returnedOrderId/re-handoff",
   sellerAuthMiddleware,

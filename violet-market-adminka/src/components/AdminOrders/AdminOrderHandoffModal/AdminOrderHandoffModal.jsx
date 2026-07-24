@@ -7,18 +7,21 @@ export default function AdminOrderHandoffModal({
   open,
   order,
   loading = false,
+  cancelling = false,
   onClose,
   onConfirm,
+  onCancelOrder,
 }) {
   const sellerName = getAdminOrderSellerName(order);
   const productCode = order?.productCode || '—';
+  const busy = loading || cancelling;
 
   return (
     <GlobalModal
       open={open}
       title="Kuryerga topshirish"
       onClose={() => {
-        if (!loading) onClose?.();
+        if (!busy) onClose?.();
       }}
     >
       <div className="admin-order-handoff-modal">
@@ -27,22 +30,36 @@ export default function AdminOrderHandoffModal({
           kuryerga topshirasizmi?
         </p>
         <div className="admin-order-handoff-modal__actions">
-          <button
-            type="button"
-            className="admin-order-handoff-modal__cancel"
-            disabled={loading}
-            onClick={onClose}
-          >
-            Bekor qilish
-          </button>
-          <button
-            type="button"
-            className="admin-order-handoff-modal__confirm"
-            disabled={loading}
-            onClick={onConfirm}
-          >
-            {loading ? 'Topshirilmoqda...' : 'Ha, topshirish'}
-          </button>
+          {onCancelOrder ? (
+            <button
+              type="button"
+              className="admin-order-handoff-modal__cancel-order"
+              disabled={busy}
+              onClick={onCancelOrder}
+            >
+              {cancelling ? 'Bekor qilinmoqda...' : 'Buyurtmani bekor qilish'}
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="admin-order-handoff-modal__actions-right">
+            <button
+              type="button"
+              className="admin-order-handoff-modal__cancel"
+              disabled={busy}
+              onClick={onClose}
+            >
+              Yopish
+            </button>
+            <button
+              type="button"
+              className="admin-order-handoff-modal__confirm"
+              disabled={busy}
+              onClick={onConfirm}
+            >
+              {loading ? 'Topshirilmoqda...' : 'Ha, topshirish'}
+            </button>
+          </div>
         </div>
       </div>
     </GlobalModal>

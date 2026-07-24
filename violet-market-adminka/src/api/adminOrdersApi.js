@@ -126,6 +126,10 @@ export function handoffAdminOrderItem(orderId, itemIndex, sellerId) {
   return patchOrderItem('handoff', orderId, itemIndex, sellerId);
 }
 
+export function cancelAdminOrderItem(orderId, itemIndex, sellerId) {
+  return patchOrderItem('cancel', orderId, itemIndex, sellerId);
+}
+
 async function postNoAnswerAction(returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

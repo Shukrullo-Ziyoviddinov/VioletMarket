@@ -13,18 +13,32 @@
 
 .admin-order-handoff-modal__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
+.admin-order-handoff-modal__actions-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
 .admin-order-handoff-modal__cancel,
-.admin-order-handoff-modal__confirm {
+.admin-order-handoff-modal__confirm,
+.admin-order-handoff-modal__cancel-order {
   min-height: 40px;
   padding: 0 16px;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.admin-order-handoff-modal__cancel-order {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .admin-order-handoff-modal__cancel {
@@ -40,7 +54,8 @@
 }
 
 .admin-order-handoff-modal__cancel:disabled,
-.admin-order-handoff-modal__confirm:disabled {
+.admin-order-handoff-modal__confirm:disabled,
+.admin-order-handoff-modal__cancel-order:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }

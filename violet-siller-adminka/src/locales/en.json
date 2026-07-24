@@ -87,6 +87,10 @@
       "success": "Product collection confirmed",
       "error": "Could not confirm product collection"
     },
+    "cancel": {
+      "success": "Order cancelled, product returned to warehouse",
+      "error": "Could not cancel the order"
+    },
     "card": {
       "barcode": "Barcode",
       "orderId": "Order ID",
@@ -122,7 +126,9 @@
       "confirm": "Confirm",
       "confirming": "Confirming...",
       "confirmCollected": "Confirm product collection",
-      "collecting": "Confirming..."
+      "collecting": "Confirming...",
+      "cancelOrder": "Cancel order",
+      "cancelling": "Cancelling..."
     }
   },
   "marketInfo": {

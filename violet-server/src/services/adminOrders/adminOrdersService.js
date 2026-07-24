@@ -289,10 +289,20 @@ async function handoffAdminOrderItem(payload = {}) {
   );
 }
 
+async function cancelAdminOrderItem(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return sellerOrderTrackingService.cancelSellerOrderItem(
+    sellerId,
+    payload.orderId,
+    payload.itemIndex,
+  );
+}
+
 module.exports = {
   listAdminOrders,
   getAdminOrderCounts,
   confirmAdminOrderItem,
   collectAdminOrderItem,
   handoffAdminOrderItem,
+  cancelAdminOrderItem,
 };

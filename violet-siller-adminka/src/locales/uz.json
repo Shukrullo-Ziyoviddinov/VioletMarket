@@ -87,6 +87,10 @@
       "success": "Mahsulot yig'ilgani tasdiqlandi",
       "error": "Mahsulot yig'ilganini tasdiqlashda xatolik"
     },
+    "cancel": {
+      "success": "Buyurtma bekor qilindi, mahsulot omborga qaytdi",
+      "error": "Buyurtmani bekor qilib bo‘lmadi"
+    },
     "card": {
       "barcode": "Shtrix kod",
       "orderId": "Buyurtma ID",
@@ -122,7 +126,9 @@
       "confirm": "Tasdiqlash",
       "confirming": "Tasdiqlanmoqda...",
       "confirmCollected": "Mahsulot yig'ilganligini tasdiqlash",
-      "collecting": "Tasdiqlanmoqda..."
+      "collecting": "Tasdiqlanmoqda...",
+      "cancelOrder": "Buyurtmani bekor qilish",
+      "cancelling": "Bekor qilinmoqda..."
     }
   },
   "marketInfo": {

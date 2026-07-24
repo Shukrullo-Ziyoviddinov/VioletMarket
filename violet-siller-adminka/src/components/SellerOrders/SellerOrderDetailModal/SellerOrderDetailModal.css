@@ -1,13 +1,37 @@
 .seller-order-detail-modal__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid #eee9f3;
 }
 
+.seller-order-detail-modal__cancel-order {
+  min-width: 128px;
+  padding: 10px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seller-order-detail-modal__cancel-order:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.seller-order-detail-modal__cancel-order:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .seller-order-detail-modal__confirm {
   min-width: 128px;
+  margin-left: auto;
   padding: 10px 20px;
   border: 0;
   border-radius: 9px;

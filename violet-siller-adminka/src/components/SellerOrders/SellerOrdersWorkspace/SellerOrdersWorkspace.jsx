@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
+  cancelSellerOrderItem,
   collectSellerOrderItem,
   confirmSellerOrderItem,
   deliverSellerNoAnswerOrder,
@@ -38,6 +39,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [confirming, setConfirming] = useState(false);
   const [collecting, setCollecting] = useState(false);
   const [handingOff, setHandingOff] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const loadOrders = useCallback(async () => {
     if (!token) {
@@ -138,6 +140,24 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
       throw error;
     } finally {
       setHandingOff(false);
+    }
+  };
+
+  const handleCancelOrder = async (targetOrder) => {
+    const order = targetOrder || activeOrder || courierOrder;
+    if (!token || !order || cancelling) return;
+
+    setCancelling(true);
+    try {
+      await cancelSellerOrderItem(token, order.orderId, order.itemIndex);
+      message.success(t('orders.cancel.success'));
+      setActiveOrder(null);
+      setCourierOrder(null);
+      await loadOrders();
+    } catch (error) {
+      message.error(error?.message || t('orders.cancel.error'));
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -254,16 +274,26 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         }
         collecting={collecting}
         onCollect={handleCollect}
+        showCancelOrder={
+          (filter === 'confirmation' && activeOrder?.trackingStatus === 'accepted') ||
+          (filter === 'collection' &&
+            activeOrder?.trackingStatus === 'seller_confirmed')
+        }
+        cancelling={cancelling}
+        onCancelOrder={() => handleCancelOrder(activeOrder)}
       />
 
       <MiniGlobalModal
         open={Boolean(courierOrder)}
         permissionKey="courierHandoff"
-        loading={handingOff}
+        loading={handingOff || cancelling}
         onClose={() => {
-          if (!handingOff) setCourierOrder(null);
+          if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
+        onCancelOrder={() => handleCancelOrder(courierOrder)}
+        cancelOrderLoading={cancelling}
+        cancelOrderText={t('orders.modal.cancelOrder')}
       />
     </div>
   );

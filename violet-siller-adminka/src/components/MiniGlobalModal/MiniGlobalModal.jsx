@@ -18,17 +18,21 @@ function MiniGlobalModalConfirm({
   loading,
   onConfirm,
   onCancel,
+  onCancelOrder,
+  cancelOrderLoading = false,
+  cancelOrderText = 'Buyurtmani bekor qilish',
 }) {
   const copy = useMemo(
     () => resolveMiniGlobalModalPermission(permissionKey, itemName),
     [permissionKey, itemName],
   );
+  const busy = loading || cancelOrderLoading;
 
   useEffect(() => {
     if (!open) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && !loading) {
+      if (event.key === 'Escape' && !busy) {
         onCancel?.();
       }
     };
@@ -40,7 +44,7 @@ function MiniGlobalModalConfirm({
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, loading, onCancel]);
+  }, [open, busy, onCancel]);
 
   if (!open) return null;
 
@@ -50,8 +54,8 @@ function MiniGlobalModalConfirm({
         type="button"
         className="mini-global-modal__backdrop"
         aria-label="Yopish"
-        onClick={loading ? undefined : onCancel}
-        disabled={loading}
+        onClick={busy ? undefined : onCancel}
+        disabled={busy}
       />
 
       <div className="mini-global-modal__center">
@@ -71,23 +75,39 @@ function MiniGlobalModalConfirm({
             </p>
           ) : null}
 
-          <div className="mini-global-modal__actions">
-            <button
-              type="button"
-              className="mini-global-modal__btn mini-global-modal__btn--ghost"
-              onClick={onCancel}
-              disabled={loading}
-            >
-              {copy.cancelText}
-            </button>
-            <button
-              type="button"
-              className="mini-global-modal__btn mini-global-modal__btn--danger"
-              onClick={onConfirm}
-              disabled={loading}
-            >
-              {loading ? "O'chirilmoqda..." : copy.confirmText}
-            </button>
+          <div
+            className={`mini-global-modal__actions${
+              onCancelOrder ? ' mini-global-modal__actions--with-cancel-order' : ''
+            }`}
+          >
+            {onCancelOrder ? (
+              <button
+                type="button"
+                className="mini-global-modal__btn mini-global-modal__btn--cancel-order"
+                onClick={onCancelOrder}
+                disabled={busy}
+              >
+                {cancelOrderLoading ? 'Bekor qilinmoqda...' : cancelOrderText}
+              </button>
+            ) : null}
+            <div className="mini-global-modal__actions-right">
+              <button
+                type="button"
+                className="mini-global-modal__btn mini-global-modal__btn--ghost"
+                onClick={onCancel}
+                disabled={busy}
+              >
+                {copy.cancelText}
+              </button>
+              <button
+                type="button"
+                className="mini-global-modal__btn mini-global-modal__btn--danger"
+                onClick={onConfirm}
+                disabled={busy}
+              >
+                {loading ? "O'chirilmoqda..." : copy.confirmText}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -168,6 +188,9 @@ export default function MiniGlobalModal({
   itemName = '',
   loading = false,
   onConfirm,
+  onCancelOrder,
+  cancelOrderLoading = false,
+  cancelOrderText,
 }) {
   const isConfirmMode = Boolean(permissionKey);
 
@@ -180,6 +203,9 @@ export default function MiniGlobalModal({
         loading={loading}
         onConfirm={onConfirm}
         onCancel={onClose}
+        onCancelOrder={onCancelOrder}
+        cancelOrderLoading={cancelOrderLoading}
+        cancelOrderText={cancelOrderText}
       />
     );
   }

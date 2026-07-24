@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { message } from 'antd';
 import {
+  cancelAdminOrderItem,
   collectAdminOrderItem,
   confirmAdminOrderItem,
 } from '../../../api/adminOrdersApi';
@@ -16,11 +17,14 @@ export default function AdminOrderDetailSectionContent({
 }) {
   const { closeAdminModal } = useAdminModal();
   const [busy, setBusy] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   if (!visible || !order) return null;
 
   const showConfirm = mode === 'confirm' && order.trackingStatus === 'accepted';
   const showCollect = mode === 'collect' && order.trackingStatus === 'seller_confirmed';
+  const showCancelOrder = showConfirm || showCollect;
+  const actionsBusy = busy || cancelling;
 
   const finishSuccess = (text) => {
     message.success(text);
@@ -29,7 +33,7 @@ export default function AdminOrderDetailSectionContent({
   };
 
   const handleConfirm = async () => {
-    if (busy) return;
+    if (actionsBusy) return;
     setBusy(true);
     try {
       await confirmAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
@@ -42,7 +46,7 @@ export default function AdminOrderDetailSectionContent({
   };
 
   const handleCollect = async () => {
-    if (busy) return;
+    if (actionsBusy) return;
     setBusy(true);
     try {
       await collectAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
@@ -54,31 +58,56 @@ export default function AdminOrderDetailSectionContent({
     }
   };
 
+  const handleCancelOrder = async () => {
+    if (actionsBusy) return;
+    setCancelling(true);
+    try {
+      await cancelAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+      finishSuccess('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
+    } catch (error) {
+      message.error(error?.message || 'Buyurtmani bekor qilib bo‘lmadi');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   return (
     <div>
       <AdminOrderDetailModalContent order={order} />
-      {showConfirm ? (
+      {showConfirm || showCollect ? (
         <div className="seller-order-detail-modal__actions">
-          <button
-            type="button"
-            className="seller-order-detail-modal__confirm"
-            disabled={busy}
-            onClick={handleConfirm}
-          >
-            {busy ? 'Tasdiqlanmoqda...' : 'Tasdiqlash'}
-          </button>
-        </div>
-      ) : null}
-      {showCollect ? (
-        <div className="seller-order-detail-modal__actions">
-          <button
-            type="button"
-            className="seller-order-detail-modal__confirm"
-            disabled={busy}
-            onClick={handleCollect}
-          >
-            {busy ? 'Tasdiqlanmoqda...' : "Mahsulot yig'ilganligini tasdiqlash"}
-          </button>
+          {showCancelOrder ? (
+            <button
+              type="button"
+              className="seller-order-detail-modal__cancel-order"
+              disabled={actionsBusy}
+              onClick={handleCancelOrder}
+            >
+              {cancelling ? 'Bekor qilinmoqda...' : 'Buyurtmani bekor qilish'}
+            </button>
+          ) : (
+            <span />
+          )}
+          {showConfirm ? (
+            <button
+              type="button"
+              className="seller-order-detail-modal__confirm"
+              disabled={actionsBusy}
+              onClick={handleConfirm}
+            >
+              {busy ? 'Tasdiqlanmoqda...' : 'Tasdiqlash'}
+            </button>
+          ) : null}
+          {showCollect ? (
+            <button
+              type="button"
+              className="seller-order-detail-modal__confirm"
+              disabled={actionsBusy}
+              onClick={handleCollect}
+            >
+              {busy ? 'Tasdiqlanmoqda...' : "Mahsulot yig'ilganligini tasdiqlash"}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>

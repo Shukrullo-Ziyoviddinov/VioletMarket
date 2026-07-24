@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import {
+  cancelAdminOrderItem,
   deliverAdminNoAnswerOrder,
   fetchAdminOrders,
   handoffAdminOrderItem,
@@ -33,6 +34,7 @@ export default function AdminOrdersWorkspace({
   const [loading, setLoading] = useState(true);
   const [courierOrder, setCourierOrder] = useState(null);
   const [handingOff, setHandingOff] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const requestIdRef = useRef(0);
 
   const loadOrders = useCallback(async () => {
@@ -86,7 +88,7 @@ export default function AdminOrdersWorkspace({
   };
 
   const handleCourierHandoff = async () => {
-    if (!courierOrder || handingOff) return;
+    if (!courierOrder || handingOff || cancelling) return;
 
     setHandingOff(true);
     try {
@@ -104,6 +106,26 @@ export default function AdminOrdersWorkspace({
       message.error(error?.message || "Kuryerga topshirib bo'lmadi");
     } finally {
       setHandingOff(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!courierOrder || handingOff || cancelling) return;
+
+    setCancelling(true);
+    try {
+      await cancelAdminOrderItem(
+        courierOrder.orderId,
+        courierOrder.itemIndex,
+        courierOrder.sellerId,
+      );
+      message.success('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
+      setCourierOrder(null);
+      await refreshAfterStatusChange();
+    } catch (error) {
+      message.error(error?.message || 'Buyurtmani bekor qilib bo‘lmadi');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -187,10 +209,12 @@ export default function AdminOrdersWorkspace({
         open={Boolean(courierOrder)}
         order={courierOrder}
         loading={handingOff}
+        cancelling={cancelling}
         onClose={() => {
-          if (!handingOff) setCourierOrder(null);
+          if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
+        onCancelOrder={handleCancelOrder}
       />
     </div>
   );
