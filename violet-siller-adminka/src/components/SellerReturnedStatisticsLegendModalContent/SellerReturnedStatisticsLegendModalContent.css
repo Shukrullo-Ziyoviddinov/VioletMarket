@@ -1,0 +1,19 @@
+.seller-returned-statistics-legend-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seller-returned-statistics-legend-modal__subtitle {
+  margin: 0;
+  color: #6b5f7d;
+  font-size: 13px;
+}
+
+.seller-returned-statistics-legend-modal__empty {
+  margin: 0;
+  padding: 24px 8px;
+  color: #6b5b7d;
+  font-size: 14px;
+  text-align: center;
+}

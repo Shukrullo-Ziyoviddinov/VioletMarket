@@ -41,6 +41,51 @@
       "customer": "客户",
       "courier": "快递员",
       "comment": "备注"
+    },
+    "categoryStats": {
+      "title": "分类统计",
+      "loading": "加载中...",
+      "empty": "所选时段没有分类退回数据",
+      "period": {
+        "day": "日",
+        "week": "周",
+        "month": "月"
+      },
+      "periodLabel": {
+        "day": "每日",
+        "week": "每周",
+        "month": "每月"
+      }
+    },
+    "countryStats": {
+      "title": "国家统计",
+      "loading": "加载中...",
+      "empty": "所选时段没有国家退回数据",
+      "period": {
+        "day": "日",
+        "week": "周",
+        "month": "月"
+      },
+      "periodLabel": {
+        "day": "每日",
+        "week": "每周",
+        "month": "每月"
+      }
+    },
+    "brandStats": {
+      "title": "品牌统计",
+      "loading": "加载中...",
+      "empty": "所选时段没有品牌退回数据",
+      "period": {
+        "day": "日",
+        "week": "周",
+        "month": "月"
+      },
+      "periodLabel": {
+        "day": "每日",
+        "week": "每周",
+        "month": "每月"
+      }
     }
   },
   "orders": {

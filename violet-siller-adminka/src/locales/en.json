@@ -41,6 +41,51 @@
       "customer": "Customer",
       "courier": "Courier",
       "comment": "Comment"
+    },
+    "categoryStats": {
+      "title": "Category statistics",
+      "loading": "Loading...",
+      "empty": "No returns by category for the selected period",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
+    },
+    "countryStats": {
+      "title": "Country statistics",
+      "loading": "Loading...",
+      "empty": "No returns by country for the selected period",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
+    },
+    "brandStats": {
+      "title": "Brand statistics",
+      "loading": "Loading...",
+      "empty": "No returns by brand for the selected period",
+      "period": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "periodLabel": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      }
     }
   },
   "orders": {

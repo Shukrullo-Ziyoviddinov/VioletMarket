@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { fetchSellerReturnedOrders } from '../../api/sellerReturnedOrdersApi';
 import SellerReturnedOrdersFilterBar from '../../components/SellerReturnedOrdersFilterBar/SellerReturnedOrdersFilterBar';
 import SellerReturnedOrdersStats from '../../components/SellerReturnedOrdersStats/SellerReturnedOrdersStats';
+import SellerReturnedCategoryStatistics from '../../components/SellerReturnedCategoryStatistics/SellerReturnedCategoryStatistics';
+import SellerReturnedCountryCategoryStatistics from '../../components/SellerReturnedCountryCategoryStatistics/SellerReturnedCountryCategoryStatistics';
+import SellerReturnedBrandCategoryStatistics from '../../components/SellerReturnedBrandCategoryStatistics/SellerReturnedBrandCategoryStatistics';
 import SellerReturnedOrdersList from '../../components/SellerReturnedOrdersList/SellerReturnedOrdersList';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import './SellerReturnedOrdersPage.css';
@@ -147,6 +150,12 @@ export default function SellerReturnedOrdersPage() {
           </div>
         ) : null}
         <SellerReturnedOrdersStats stats={stats} loading={loading} />
+      </div>
+
+      <div className="seller-returned-orders-page__stats-grid">
+        <SellerReturnedCategoryStatistics token={token} pageFilters={filters} />
+        <SellerReturnedCountryCategoryStatistics token={token} pageFilters={filters} />
+        <SellerReturnedBrandCategoryStatistics token={token} pageFilters={filters} />
       </div>
 
       <SellerReturnedOrdersList orders={orders} loading={loading} />

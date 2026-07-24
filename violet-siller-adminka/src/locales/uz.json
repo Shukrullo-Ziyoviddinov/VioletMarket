@@ -41,6 +41,51 @@
       "customer": "Mijoz",
       "courier": "Kuryer",
       "comment": "Izoh"
+    },
+    "categoryStats": {
+      "title": "Kategoriya statistikasi",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun kategoriya bo'yicha qaytarish topilmadi",
+      "period": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      },
+      "periodLabel": {
+        "day": "Kunlik",
+        "week": "Haftalik",
+        "month": "Oylik"
+      }
+    },
+    "countryStats": {
+      "title": "Davlat statistikasi",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun davlat bo'yicha qaytarish topilmadi",
+      "period": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      },
+      "periodLabel": {
+        "day": "Kunlik",
+        "week": "Haftalik",
+        "month": "Oylik"
+      }
+    },
+    "brandStats": {
+      "title": "Brend statistikasi",
+      "loading": "Yuklanmoqda...",
+      "empty": "Tanlangan davr uchun brend bo'yicha qaytarish topilmadi",
+      "period": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      },
+      "periodLabel": {
+        "day": "Kunlik",
+        "week": "Haftalik",
+        "month": "Oylik"
+      }
     }
   },
   "orders": {

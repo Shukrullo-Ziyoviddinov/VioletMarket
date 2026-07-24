@@ -100,3 +100,103 @@ export async function fetchSellerReturnedOrders(token, filters = {}) {
     orders: Array.isArray(data.orders) ? data.orders.map(normalizeReturnedOrder) : [],
   };
 }
+
+function buildReturnedStatsQuery(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.day) params.set('day', String(filters.day));
+  if (filters?.week) params.set('week', String(filters.week));
+  if (filters?.month) params.set('month', String(filters.month));
+  if (filters?.period) params.set('period', String(filters.period));
+  return params.toString();
+}
+
+function normalizeCategoryStat(row) {
+  const displayName =
+    row?.displayName && typeof row.displayName === 'object'
+      ? {
+          uz: String(row.displayName.uz || '').trim(),
+          en: String(row.displayName.en || '').trim(),
+          zh: String(row.displayName.zh || '').trim(),
+        }
+      : { uz: '', en: '', zh: '' };
+
+  return {
+    category: String(row?.category || ''),
+    displayName,
+    masterCategoryId: row?.masterCategoryId ?? null,
+    quantity: Number(row?.quantity) || 0,
+    percentage: Number(row?.percentage) || 0,
+    color: String(row?.color || '#3b82f6'),
+  };
+}
+
+function normalizeFilterCategoryStat(row) {
+  return {
+    filterValue: String(row?.filterValue || ''),
+    label: String(row?.label || row?.filterValue || ''),
+    quantity: Number(row?.quantity) || 0,
+    percentage: Number(row?.percentage) || 0,
+    color: String(row?.color || '#2563eb'),
+  };
+}
+
+async function fetchReturnedCategoryEndpoint(token, pathBase, filters = {}) {
+  const query = buildReturnedStatsQuery(filters);
+  const path = query ? `${pathBase}?${query}` : pathBase;
+  const res = await fetch(apiUrl(path), {
+    headers: authHeaders(token),
+  });
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+export async function fetchSellerReturnedCategoryStatistics(token, filters = {}) {
+  const data = await fetchReturnedCategoryEndpoint(
+    token,
+    '/api/seller-auth/returned-orders/category-statistics',
+    filters,
+  );
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    categories: Array.isArray(data?.categories)
+      ? data.categories.map(normalizeCategoryStat)
+      : [],
+  };
+}
+
+export async function fetchSellerReturnedCountryCategoryStatistics(token, filters = {}) {
+  const data = await fetchReturnedCategoryEndpoint(
+    token,
+    '/api/seller-auth/returned-orders/country-category-statistics',
+    filters,
+  );
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    countries: Array.isArray(data?.countries)
+      ? data.countries.map(normalizeFilterCategoryStat)
+      : [],
+  };
+}
+
+export async function fetchSellerReturnedBrandCategoryStatistics(token, filters = {}) {
+  const data = await fetchReturnedCategoryEndpoint(
+    token,
+    '/api/seller-auth/returned-orders/brand-category-statistics',
+    filters,
+  );
+  return {
+    period: String(data?.period || 'day'),
+    periodLabel: String(data?.periodLabel || ''),
+    scopeLabel: String(data?.scopeLabel || ''),
+    totalQuantity: Number(data?.totalQuantity) || 0,
+    brands: Array.isArray(data?.brands)
+      ? data.brands.map(normalizeFilterCategoryStat)
+      : [],
+  };
+}
