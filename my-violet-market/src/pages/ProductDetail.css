@@ -6,6 +6,28 @@
   max-width: 100%;
 }
 
+/* Recommended + Tavsiya etamiz — bitta oq blok, yonlarga yopishgan */
+.product-detail-recs-wrap {
+  background: #fff;
+  border-radius: 15px;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: -10px;
+  margin-right: -10px;
+  width: calc(100% + 20px);
+  box-sizing: border-box;
+}
+
+.product-detail-recs-wrap .recommended-section {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.product-detail-recs-wrap .tavsiya-etamiz-section {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
 .product-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

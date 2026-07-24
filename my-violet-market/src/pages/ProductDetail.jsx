@@ -2443,8 +2443,10 @@ const ProductDetail = () => {
           <StylingIdea currentProduct={productData} skeleton={showDetailSkeleton} />
         )}
 
-        <Recommended currentProduct={productData} skeleton={showDetailSkeleton} />
-        <TavsiyaEtamiz currentProduct={productData} />
+        <div className="product-detail-recs-wrap">
+          <Recommended currentProduct={productData} skeleton={showDetailSkeleton} />
+          <TavsiyaEtamiz currentProduct={productData} />
+        </div>
 
       </div>
 
