@@ -29,7 +29,11 @@ function resolveActiveLabel(pathname: string) {
 
 function isExactTabPath(pathname: string, href: string) {
   if (href === '/home') {
-    return pathname === '/home' || pathname.endsWith('/home');
+    return (
+      pathname === '/home' ||
+      pathname.endsWith('/home') ||
+      pathname.includes('/order-details')
+    );
   }
   return pathname === href || pathname.endsWith(href);
 }

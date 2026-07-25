@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import { SwipeConfirmButton } from '@/components/SwipeConfirmButton';
 import {
   canShowReturnActions,
   getPrimaryAction,
@@ -30,29 +31,17 @@ type DeliveryStepActionsProps = {
   onCompleteReturn?: () => void;
 };
 
-function actionIcon(kind: DeliveryPrimaryActionKind): keyof typeof Ionicons.glyphMap {
-  switch (kind) {
-    case 'go_to_seller':
-    case 'go_to_customer':
-    case 'go_return_to_seller':
-      return 'navigate-outline';
-    case 'arrive_seller':
-    case 'arrive_customer':
-    case 'arrive_return_seller':
-      return 'location-outline';
-    case 'pick_up':
-      return 'checkmark-circle-outline';
-    case 'deliver':
-    case 'complete_return':
-      return 'cube-outline';
-    case 'waiting_admin':
-      return 'time-outline';
-    case 'confirm_return_reason':
-    case 'start_return_to_seller':
-      return 'return-down-back-outline';
-    default:
-      return 'ellipse-outline';
+function primaryColors(kind: DeliveryPrimaryActionKind): {
+  color: string;
+  trackColor: string;
+} {
+  if (kind === 'deliver') {
+    return { color: '#15803D', trackColor: '#C6E6D0' };
   }
+  if (kind === 'complete_return') {
+    return { color: '#DC2626', trackColor: '#F5C4C4' };
+  }
+  return { color: '#6d32c5', trackColor: '#D9CCEF' };
 }
 
 export function DeliveryStepActions({
@@ -112,9 +101,96 @@ export function DeliveryStepActions({
   };
 
   const isWaiting = primary.kind === 'waiting_admin';
-  const isGreen =
-    primary.kind === 'deliver' || primary.kind === 'pick_up';
-  const isReturnFinal = primary.kind === 'complete_return';
+  const useClassicPress =
+    primary.kind === 'pick_up' ||
+    primary.kind === 'deliver' ||
+    primary.kind === 'complete_return';
+  const colors = primaryColors(primary.kind);
+
+  const classicPrimaryBtn = (
+    <Pressable
+      disabled={loading || isWaiting}
+      style={({ pressed }) => [
+        layout === 'footer' ? styles.footerBtn : styles.primaryCardBtn,
+        isWaiting
+          ? styles.waitingBtn
+          : primary.kind === 'complete_return'
+            ? styles.returnStartBtn
+            : useClassicPress
+              ? styles.primaryGreen
+              : styles.primaryPurple,
+        pressed && !isWaiting && styles.pressed,
+        (loading || isWaiting) && styles.disabled,
+        layout === 'footer'
+          ? showAjdaniya
+            ? styles.footerBtnFlex
+            : styles.footerBtnFull
+          : null,
+      ]}
+      onPress={handlePrimary}>
+      {loading ? (
+        <ActivityIndicator color="#FFFFFF" />
+      ) : (
+        <>
+          {layout === 'card' && !isWaiting ? (
+            <Ionicons
+              name={
+                primary.kind === 'deliver' || primary.kind === 'complete_return'
+                  ? 'cube-outline'
+                  : 'checkmark-circle-outline'
+              }
+              size={18}
+              color="#FFFFFF"
+            />
+          ) : null}
+          <Text
+            style={[
+              layout === 'footer'
+                ? styles.primaryFooterText
+                : styles.primaryCardText,
+              isWaiting && styles.waitingText,
+            ]}>
+            {primary.label}
+          </Text>
+        </>
+      )}
+    </Pressable>
+  );
+
+  const primaryControl = isWaiting ? (
+    layout === 'footer' ? (
+      <View
+        style={[
+          styles.footerBtn,
+          styles.waitingBtn,
+          showAjdaniya ? styles.footerBtnFlex : styles.footerBtnFull,
+        ]}>
+        <Text style={styles.waitingText}>{primary.label}</Text>
+      </View>
+    ) : (
+      <View style={[styles.waitingCardBtn, styles.waitingBtn]}>
+        <Text style={styles.waitingText}>{primary.label}</Text>
+      </View>
+    )
+  ) : useClassicPress ? (
+    classicPrimaryBtn
+  ) : (
+    <SwipeConfirmButton
+      label={primary.label}
+      onConfirm={handlePrimary}
+      loading={loading}
+      color={colors.color}
+      trackColor={colors.trackColor}
+      height={layout === 'footer' ? 48 : 52}
+      style={
+        layout === 'footer'
+          ? showAjdaniya
+            ? styles.footerSwipeFlex
+            : styles.footerSwipeFull
+          : undefined
+      }
+    />
+  );
 
   if (layout === 'footer') {
     return (
@@ -130,35 +206,7 @@ export function DeliveryStepActions({
             <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
           </Pressable>
         ) : null}
-        <Pressable
-          disabled={loading || isWaiting}
-          style={({ pressed }) => [
-            styles.footerBtn,
-            styles.primaryFooterBtn,
-            isWaiting
-              ? styles.waitingBtn
-              : isReturnFinal
-                ? styles.returnStartBtn
-                : isGreen
-                  ? styles.primaryGreen
-                  : styles.primaryPurple,
-            pressed && !isWaiting && styles.pressed,
-            (loading || isWaiting) && styles.disabled,
-            showAjdaniya ? styles.footerBtnFlex : styles.footerBtnFull,
-          ]}
-          onPress={handlePrimary}>
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text
-              style={[
-                styles.primaryFooterText,
-                isWaiting && styles.waitingText,
-              ]}>
-              {primary.label}
-            </Text>
-          )}
-        </Pressable>
+        {primaryControl}
       </View>
     );
   }
@@ -175,40 +223,7 @@ export function DeliveryStepActions({
           <Text style={styles.ajdaniyaText}>Ajdaniya</Text>
         </Pressable>
       ) : null}
-      <Pressable
-        disabled={loading || isWaiting}
-        style={({ pressed }) => [
-          styles.primaryCardBtn,
-          isWaiting
-            ? styles.waitingBtn
-            : isReturnFinal
-              ? styles.returnStartBtn
-              : isGreen
-                ? styles.primaryGreen
-                : styles.primaryPurple,
-          pressed && !isWaiting && styles.pressed,
-          (loading || isWaiting) && styles.disabled,
-        ]}
-        onPress={handlePrimary}>
-        {loading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Ionicons
-              name={actionIcon(primary.kind)}
-              size={18}
-              color={isWaiting ? '#92400E' : '#FFFFFF'}
-            />
-            <Text
-              style={[
-                styles.primaryCardText,
-                isWaiting && styles.waitingText,
-              ]}>
-              {primary.label}
-            </Text>
-          </>
-        )}
-      </Pressable>
+      {primaryControl}
     </View>
   );
 }
@@ -231,6 +246,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  waitingCardBtn: {
+    minHeight: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
   ajdaniyaCardBtn: {
     minHeight: 46,
     borderRadius: 14,
@@ -242,15 +264,18 @@ const styles = StyleSheet.create({
   },
   footerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
     flex: 1,
   },
   footerBtn: {
     minHeight: 48,
     borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 10,
+    gap: 8,
   },
   footerBtnFlex: {
     flex: 1.2,
@@ -258,8 +283,11 @@ const styles = StyleSheet.create({
   footerBtnFull: {
     flex: 1,
   },
-  primaryFooterBtn: {
-    flexDirection: 'row',
+  footerSwipeFlex: {
+    flex: 1.2,
+  },
+  footerSwipeFull: {
+    flex: 1,
   },
   primaryFooterText: {
     color: '#FFFFFF',
@@ -277,11 +305,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
   },
-  primaryPurple: {
-    backgroundColor: '#6d32c5',
-  },
   primaryGreen: {
     backgroundColor: '#15803D',
+  },
+  primaryPurple: {
+    backgroundColor: '#6d32c5',
   },
   returnStartBtn: {
     backgroundColor: '#DC2626',
@@ -293,6 +321,8 @@ const styles = StyleSheet.create({
   },
   waitingText: {
     color: '#92400E',
+    fontSize: 14,
+    fontWeight: '800',
   },
   pressed: {
     opacity: 0.9,

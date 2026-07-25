@@ -2,10 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Linking,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +17,11 @@ import { DeliveredSuccessModal } from '@/components/home/DeliveredSuccessModal';
 import { OrderReturnReasonModal } from '@/components/home/OrderReturnReasonModal';
 import { DeliveryStepActions } from '@/components/delivery-steps/DeliveryStepActions';
 import { DeliveryStepProgress } from '@/components/delivery-steps/DeliveryStepProgress';
+import {
+  BrandLoader,
+  usePageRefresh,
+  useRefreshState,
+} from '@/components/loading/PageRefresh';
 import { OrderPaymentNotice } from '@/components/payment/OrderPaymentNotice';
 import {
   CollectCashPaymentSheet,
@@ -47,6 +52,7 @@ import {
 } from '@/utils/deliveryOrderSteps';
 import { resolveOrderPaid } from '@/utils/orderPayment';
 
+const BRAND = '#6d32c5';
 function productTitle(order: DeliveryAcceptedOrder) {
   return (
     String(order.title?.uz || '').trim() ||
@@ -176,18 +182,21 @@ export default function OrderDetailsScreen() {
     setDeliverConfirmOpen(false);
   }, [assignmentId]);
 
-  const load = useCallback(async () => {
+  const loadOrder = useCallback(async () => {
     if (!token || !assignmentId) return;
-    setLoading(true);
+    const data = await fetchAcceptedDeliveryOrder(token, assignmentId);
+    setOrder(data);
+  }, [assignmentId, token]);
+
+  const { refreshing, onRefresh } = useRefreshState(async () => {
     try {
-      const data = await fetchAcceptedDeliveryOrder(token, assignmentId);
-      setOrder(data);
+      await loadOrder();
     } catch {
       setOrder(null);
-    } finally {
-      setLoading(false);
     }
-  }, [assignmentId, token]);
+  });
+
+  usePageRefresh(onRefresh);
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
@@ -195,8 +204,23 @@ export default function OrderDetailsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void load();
-    }, [load]),
+      let cancelled = false;
+      (async () => {
+        if (!token || !assignmentId) return;
+        setLoading(true);
+        try {
+          const data = await fetchAcceptedDeliveryOrder(token, assignmentId);
+          if (!cancelled) setOrder(data);
+        } catch {
+          if (!cancelled) setOrder(null);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [assignmentId, token]),
   );
 
   const requestDeliver = () => {
@@ -421,7 +445,7 @@ export default function OrderDetailsScreen() {
   if (isLoading || !delivery) {
     return (
       <SafeAreaView style={styles.safeLoading}>
-        <ActivityIndicator color="#6d32c5" />
+        <BrandLoader />
       </SafeAreaView>
     );
   }
@@ -442,9 +466,9 @@ export default function OrderDetailsScreen() {
       </View>
 
       <View style={styles.body}>
-        {loading ? (
+        {loading && !refreshing ? (
           <View style={styles.centered}>
-            <ActivityIndicator color="#6d32c5" />
+            <BrandLoader />
           </View>
         ) : !order ? (
           <View style={styles.centered}>
@@ -454,7 +478,18 @@ export default function OrderDetailsScreen() {
           <>
             <ScrollView
               contentContainerStyle={styles.content}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => {
+                    void onRefresh();
+                  }}
+                  tintColor={BRAND}
+                  colors={[BRAND]}
+                  progressBackgroundColor="#FFFFFF"
+                />
+              }>
               <DeliveryStepProgress order={order} withBadge />
 
               {isSellerPhase(order) ? (

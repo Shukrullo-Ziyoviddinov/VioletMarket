@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,7 +20,11 @@ import { ProfileCameraCapture } from '@/components/auth/ProfileCameraCapture';
 import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
-import { usePageRefresh, useRefreshState } from '@/components/loading/PageRefresh';
+import {
+  BrandLoader,
+  usePageRefresh,
+  useRefreshState,
+} from '@/components/loading/PageRefresh';
 import {
   formatIncomeAmount,
   incomeForSelection,
@@ -36,6 +41,7 @@ import {
 } from '@/services/support-chat-socket';
 import type { DeliveryTransport } from '@/types/delivery';
 
+const BRAND = '#6d32c5';
 const TRANSPORT_OPTIONS: Array<{
   value: DeliveryTransport;
   label: string;
@@ -192,7 +198,8 @@ export default function ProfileScreen() {
     }
   }, [token]);
 
-  const { onRefresh: onProfileRefresh } = useRefreshState(refreshProfile);
+  const { refreshing, onRefresh: onProfileRefresh } =
+    useRefreshState(refreshProfile);
   usePageRefresh(onProfileRefresh);
 
   useEffect(() => {
@@ -323,7 +330,7 @@ export default function ProfileScreen() {
   if (isLoading || !delivery) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color="#6d32c5" />
+        <BrandLoader />
       </View>
     );
   }
@@ -339,7 +346,18 @@ export default function ProfileScreen() {
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              void onProfileRefresh();
+            }}
+            tintColor={BRAND}
+            colors={[BRAND]}
+            progressBackgroundColor="#FFFFFF"
+          />
+        }>
         <View style={styles.profileCard}>
           <Pressable
             disabled={isUploadingPhoto}
