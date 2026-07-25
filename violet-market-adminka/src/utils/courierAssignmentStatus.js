@@ -1,5 +1,6 @@
 /**
  * Kuryer assignment status — asosiy admin UI.
+ * Server: violet-server/src/utils/courierAssignmentStatus.js bilan mos.
  */
 
 export const COURIER_ASSIGNMENT_STATUS_LABELS = {
@@ -11,6 +12,12 @@ export const COURIER_ASSIGNMENT_STATUS_LABELS = {
   arrived_at_customer: 'Topshirish',
   delivered: 'Topshirilgan',
   cancelled: 'Qaytarilgan',
+  return_request_pending: 'Qaytarish so‘rovi',
+  return_approved: 'Qaytarish tasdiqlandi',
+  return_to_seller: 'Sotuvchiga qaytarish',
+  en_route_return_to_seller: 'Sotuvchiga qaytarish yo‘lda',
+  arrived_return_at_seller: 'Sotuvchiga qaytarish',
+  returned: 'Qaytarildi',
 };
 
 export const COURIER_ASSIGNMENT_PROGRESS_STEPS = [
@@ -23,6 +30,18 @@ export const COURIER_ASSIGNMENT_PROGRESS_STEPS = [
   { key: 'delivered', label: 'Topshirdi' },
 ];
 
+const RETURN_FLOW_STATUSES = new Set([
+  'return_request_pending',
+  'return_approved',
+  'return_to_seller',
+  'en_route_return_to_seller',
+  'arrived_return_at_seller',
+  'returned',
+  'cancelled',
+]);
+
+const COMPLETE_STATUSES = new Set(['delivered', 'returned', 'cancelled']);
+
 const STATUS_STEP_INDEX = {
   accepted: 0,
   en_route_to_seller: 1,
@@ -31,7 +50,13 @@ const STATUS_STEP_INDEX = {
   en_route_to_customer: 4,
   arrived_at_customer: 5,
   delivered: 6,
-  cancelled: -1,
+  return_request_pending: 5,
+  return_approved: 5,
+  return_to_seller: 6,
+  en_route_return_to_seller: 6,
+  arrived_return_at_seller: 6,
+  returned: 6,
+  cancelled: 6,
 };
 
 export function normalizeCourierAssignmentStatus(status) {
@@ -52,7 +77,7 @@ export function getCourierAssignmentStatusLabel(status) {
 export function getCourierAssignmentStatusTone(status) {
   const normalized = normalizeCourierAssignmentStatus(status);
   if (normalized === 'delivered') return 'delivered';
-  if (normalized === 'cancelled') return 'cancelled';
+  if (RETURN_FLOW_STATUSES.has(normalized)) return 'returned';
   if (
     normalized === 'picked_up' ||
     normalized === 'en_route_to_customer' ||
@@ -66,13 +91,22 @@ export function getCourierAssignmentStatusTone(status) {
 export function getCourierAssignmentProgress(status) {
   const normalized = normalizeCourierAssignmentStatus(status);
   const currentIndex = STATUS_STEP_INDEX[normalized];
+  const isComplete = COMPLETE_STATUSES.has(normalized);
+  const isReturnedFlow = RETURN_FLOW_STATUSES.has(normalized);
+  const lastLabel = isReturnedFlow ? 'Qaytarilgan' : 'Topshirdi';
+
   return {
     status: normalized,
     currentIndex,
+    variant: isReturnedFlow ? 'returned' : 'delivery',
     steps: COURIER_ASSIGNMENT_PROGRESS_STEPS.map((step, index) => ({
       ...step,
+      label:
+        index === COURIER_ASSIGNMENT_PROGRESS_STEPS.length - 1
+          ? lastLabel
+          : step.label,
       done: currentIndex >= 0 && index <= currentIndex,
-      current: currentIndex >= 0 && index === currentIndex,
+      current: !isComplete && currentIndex >= 0 && index === currentIndex,
     })),
   };
 }

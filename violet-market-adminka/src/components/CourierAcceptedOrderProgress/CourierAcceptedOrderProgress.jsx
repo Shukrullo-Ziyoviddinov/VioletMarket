@@ -3,10 +3,16 @@ import { getCourierAssignmentProgress } from '../../utils/courierAssignmentStatu
 import './CourierAcceptedOrderProgress.css';
 
 export default function CourierAcceptedOrderProgress({ status }) {
-  const { steps } = getCourierAssignmentProgress(status);
+  const { steps, variant } = getCourierAssignmentProgress(status);
+  const isReturned = variant === 'returned';
 
   return (
-    <div className="courier-accepted-order-progress" aria-label="Kuryer pozitsiyasi">
+    <div
+      className={`courier-accepted-order-progress${
+        isReturned ? ' courier-accepted-order-progress--returned' : ''
+      }`}
+      aria-label="Kuryer pozitsiyasi"
+    >
       {steps.map((step, index) => (
         <React.Fragment key={step.key}>
           {index > 0 ? (

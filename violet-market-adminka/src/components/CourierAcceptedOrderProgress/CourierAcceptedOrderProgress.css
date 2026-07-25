@@ -9,6 +9,11 @@
   border: 1px solid #ede9fe;
 }
 
+.courier-accepted-order-progress--returned {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
 .courier-accepted-order-progress__step {
   flex: 1 0 auto;
   min-width: 52px;
@@ -64,4 +69,36 @@
 
 .courier-accepted-order-progress__line--done {
   background: #6d32c5;
+}
+
+/* Qaytarilgan — qizil tonal */
+.courier-accepted-order-progress--returned
+  .courier-accepted-order-progress__step--done
+  .courier-accepted-order-progress__dot {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.courier-accepted-order-progress--returned
+  .courier-accepted-order-progress__step--done
+  .courier-accepted-order-progress__label {
+  color: #b91c1c;
+}
+
+.courier-accepted-order-progress--returned
+  .courier-accepted-order-progress__step--current
+  .courier-accepted-order-progress__dot {
+  background: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
+}
+
+.courier-accepted-order-progress--returned
+  .courier-accepted-order-progress__step--current
+  .courier-accepted-order-progress__label {
+  color: #dc2626;
+}
+
+.courier-accepted-order-progress--returned .courier-accepted-order-progress__line--done {
+  background: #dc2626;
 }

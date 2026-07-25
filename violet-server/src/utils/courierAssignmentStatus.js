@@ -47,6 +47,24 @@ const PROGRESS_STEPS = [
   { key: "delivered", label: "Topshirdi" },
 ];
 
+const RETURN_FLOW_STATUSES = new Set([
+  "return_request_pending",
+  "return_approved",
+  "return_to_seller",
+  "en_route_return_to_seller",
+  "arrived_return_at_seller",
+  "returned",
+  "cancelled",
+]);
+
+const COMPLETE_STATUSES = new Set(["delivered", "returned", "cancelled"]);
+
+/**
+ * Progress index:
+ * - yetkazish zanjiri: 0..6
+ * - qaytarish boshlanganda: 5 (Yetdi)
+ * - sotuvchiga qaytarish / yakun: 6 (oxirgi amal)
+ */
 const STATUS_STEP_INDEX = {
   accepted: 0,
   en_route_to_seller: 1,
@@ -55,13 +73,13 @@ const STATUS_STEP_INDEX = {
   en_route_to_customer: 4,
   arrived_at_customer: 5,
   delivered: 6,
-  cancelled: -1,
   return_request_pending: 5,
   return_approved: 5,
-  return_to_seller: -1,
-  en_route_return_to_seller: -1,
-  arrived_return_at_seller: -1,
-  returned: -1,
+  return_to_seller: 6,
+  en_route_return_to_seller: 6,
+  arrived_return_at_seller: 6,
+  returned: 6,
+  cancelled: 6,
 };
 
 function normalizeCourierAssignmentStatus(status) {
@@ -74,16 +92,27 @@ function getCourierAssignmentStatusLabel(status) {
   return STATUS_LABELS_UZ[normalized] || STATUS_LABELS_UZ.accepted;
 }
 
+function isReturnProgressFlow(status) {
+  return RETURN_FLOW_STATUSES.has(normalizeCourierAssignmentStatus(status));
+}
+
 function getCourierAssignmentProgress(status) {
   const normalized = normalizeCourierAssignmentStatus(status);
   const currentIndex = STATUS_STEP_INDEX[normalized];
+  const isComplete = COMPLETE_STATUSES.has(normalized);
+  const isReturnedFlow = isReturnProgressFlow(normalized);
+  const lastLabel = isReturnedFlow ? "Qaytarilgan" : "Topshirdi";
+
   return {
     status: normalized,
     currentIndex,
+    variant: isReturnedFlow ? "returned" : "delivery",
     steps: PROGRESS_STEPS.map((step, index) => ({
       ...step,
+      label: index === PROGRESS_STEPS.length - 1 ? lastLabel : step.label,
       done: currentIndex >= 0 && index <= currentIndex,
-      current: currentIndex >= 0 && index === currentIndex,
+      // Yakuniy holatda oxirgi nuqta to‘liq "done" bo‘lsin (current emas)
+      current: !isComplete && currentIndex >= 0 && index === currentIndex,
     })),
   };
 }
@@ -110,5 +139,6 @@ module.exports = {
   normalizeCourierAssignmentStatus,
   getCourierAssignmentStatusLabel,
   getCourierAssignmentProgress,
+  isReturnProgressFlow,
   pickAssignmentTimestamps,
 };

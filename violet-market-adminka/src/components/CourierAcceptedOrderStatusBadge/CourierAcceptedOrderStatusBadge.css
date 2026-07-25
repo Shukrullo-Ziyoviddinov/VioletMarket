@@ -27,6 +27,12 @@
   border-color: #bbf7d0;
 }
 
+.courier-accepted-order-status-badge--returned {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
 .courier-accepted-order-status-badge--cancelled {
   color: #b45309;
   background: #fffbeb;
