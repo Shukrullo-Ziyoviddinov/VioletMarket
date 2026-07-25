@@ -14,8 +14,10 @@ const {
 } = require("../services/pendingReview/pendingReviewService");
 
 /**
- * Kuryer "Topshirdim" — sotuv/daromad + «sotildi» foizi + mijoz pending izoh.
- * options.assignmentId — faqat shu yangi topshirilgan dona uchun display/izoh (qayta hisoblanmasin).
+ * Sotuv/daromad + «sotildi» foizi + mijoz pending izoh.
+ * options.assignmentId — faqat shu dona uchun display/izoh (qayta hisoblanmasin).
+ * options.allowNonDeliveredAssignment — no_answer «sotildi»: kuryer returned qoladi,
+ *   lekin shu assignmentId bo‘yicha sotuv yoziladi (status filterisiz).
  */
 async function recordSalesOnDelivery(orderDoc, soldAt = new Date(), options = {}) {
   if (!orderDoc?.id) return null;
@@ -24,17 +26,20 @@ async function recordSalesOnDelivery(orderDoc, soldAt = new Date(), options = {}
     orderDoc.toObject ? orderDoc.toObject() : orderDoc,
   );
 
-  const assignments = await CourierOrderAssignment.find({
-    orderId: Number(order.id),
-    status: "delivered",
-  }).lean();
+  const focusId = String(options.assignmentId || "").trim();
+  const allowNonDelivered = Boolean(options.allowNonDeliveredAssignment);
+
+  const assignmentQuery = allowNonDelivered && focusId
+    ? { orderId: Number(order.id), _id: focusId }
+    : { orderId: Number(order.id), status: "delivered" };
+
+  const assignments = await CourierOrderAssignment.find(assignmentQuery).lean();
 
   if (!assignments.length) return null;
 
   const when = soldAt instanceof Date ? soldAt : new Date(soldAt);
   const periodKeys = getPeriodKeysFromPaidAt(when);
   const items = Array.isArray(order.items) ? order.items : [];
-  const focusId = String(options.assignmentId || "").trim();
 
   for (const assignment of assignments) {
     const itemIndex = Number(assignment.itemIndex);

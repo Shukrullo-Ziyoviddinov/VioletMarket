@@ -4,7 +4,7 @@
  *   returned (no_answer)
  *     → reHandoffNoAnswerOrder   — qayta kuryerga (kerak bo‘lsa reReserve)
  *     → reactivateNoAnswerOrder  — omborga releaseToWarehouse
- *     → markDeliveredNoAnswerOrder — mijozga topshirildi
+ *     → markDeliveredNoAnswerOrder — sotildi (kuryerga tegmaydi)
  *
  * Ombor faqat: src/inventory
  */
@@ -222,12 +222,16 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
 }
 
 /**
- * Mijozga topshirildi.
+ * Mijozga topshirildi (sotildi).
+ *
+ * Faqat order/item tracking + sotuv yozuvi.
+ * Kuryer assignmentga tegilmaydi: status returned qoladi, km to‘lovi saqlanadi.
+ * (Mijoz o‘zi olgan / boshqa yo‘l — kuryer «Topshirdi» emas.)
  */
 async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
   const variant = await resolveVariantForStockRestore(doc);
-  const deliveredAt = new Date();
+  const soldAt = new Date();
 
   if (isStockReleased(doc)) {
     await reReserveForCourier(doc.productId, 1, variant);
@@ -251,11 +255,13 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     );
   }
 
-  assignment.status = "delivered";
-  assignment.deliveredAt = deliveredAt;
-  assignment.courierPayment = 0;
-  assignment.courierPaymentUpdatedAt = deliveredAt;
-  await assignment.save();
+  if (String(assignment.status) !== "returned") {
+    throw new HttpError(
+      409,
+      "Mahsulot hali sotuvchiga qaytarilmagan",
+      "ASSIGNMENT_NOT_RETURNED",
+    );
+  }
 
   const order = await Order.findOne({ id: doc.orderId });
   if (!order) {
@@ -272,12 +278,24 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
       .select("unitIndex status")
       .lean();
 
-    const deliveredUnits = new Set(
-      unitRows
+    // Kuryer orqali topshirilgan + sotuvchi «sotildi» deb yopgan no_answer donalar
+    const soldViaNoAnswer = await CourierReturnedOrder.find({
+      orderId: doc.orderId,
+      itemIndex: doc.itemIndex,
+      reasonType: "no_answer",
+      resolutionType: "delivered",
+      resolvedAt: { $ne: null },
+    })
+      .select("unitIndex")
+      .lean();
+
+    const deliveredUnits = new Set([
+      ...unitRows
         .filter((row) => String(row.status) === "delivered")
         .map((row) => Number(row.unitIndex) || 0),
-    );
-    deliveredUnits.add(Number(doc.unitIndex) || 0);
+      ...soldViaNoAnswer.map((row) => Number(row.unitIndex) || 0),
+      Number(doc.unitIndex) || 0,
+    ]);
 
     let allUnitsDelivered = true;
     for (let i = 0; i < unitCount; i += 1) {
@@ -291,7 +309,7 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     if (allUnitsDelivered && currentStatus !== "delivered") {
       item.trackingStatus = "delivered";
       if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-      item.trackingHistory.push({ status: "delivered", at: deliveredAt });
+      item.trackingHistory.push({ status: "delivered", at: soldAt });
     }
 
     const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
@@ -305,8 +323,10 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     await order.save();
   }
 
-  await recordSalesOnDelivery(order, deliveredAt, {
+  // Sotuv yozuvi — assignment status «delivered» bo‘lmasa ham (kuryer returned qoladi)
+  await recordSalesOnDelivery(order, soldAt, {
     assignmentId: String(assignment._id),
+    allowNonDeliveredAssignment: true,
   });
 
   const publicRow = await markResolved(

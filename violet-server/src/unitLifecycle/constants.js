@@ -13,7 +13,7 @@
  * returned + reasonType=no_answer (Javob bermadi):
  *     → re_handoff   (qayta kuryerga)
  *     → reactivated  (omborga +1)
- *     → delivered    (mijozga topshirildi)
+ *     → delivered    (sotildi: order tracking + sotuv; kuryer assignment returned qoladi)
  *
  * returned + reasonType=defective (Yaroqsiz):
  *     ombor/algoritmga tegmaydi — discardReserved; siller «Qaytarilgan»da badge
