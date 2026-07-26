@@ -653,7 +653,8 @@
         ]
       }
     ],
-    "thumbnails": []
+    "thumbnails": [],
+    "sellerId": "vilianora-market"
   },
   {
     "id": 2364,
@@ -789,7 +790,8 @@
       "XXL": {
         "quantity": 1
       }
-    }
+    },
+    "sellerId": "vilianora-market"
   },
   {
     "id": 3465,
@@ -859,13 +861,6 @@
       "img/grey-keyim-2.jpg",
       "img/grey-keyim-3.jfif"
     ],
-
-
-
-
-
-
-    
     "sizeStock": {
       "S": {
         "quantity": 1
@@ -884,16 +879,6 @@
       }
     }
   },
-
-
-
-
-
-
-
-
-
-
   {
     "id": 455,
     "categoryName": "products",
@@ -1020,11 +1005,9 @@
       "XXL": {
         "quantity": 1
       }
-    }
+    },
+    "sellerId": "vilianora-market"
   },
-
-
-  
   {
     "id": 5577,
     "categoryName": "products",
@@ -1147,7 +1130,8 @@
         "originalPrice": "50 000UZS",
         "quantity": 1
       }
-    ]
+    ],
+    "sellerId": "vilianora-market"
   },
   {
     "id": 6578,
@@ -1210,7 +1194,8 @@
       "img/oqkeyim-2.jfif",
       "img/oqkeyim-3.webp"
     ],
-    "quantity": 5
+    "quantity": 5,
+    "sellerId": "vilianora-market"
   },
   {
     "id": 757,
@@ -1276,7 +1261,8 @@
       "XXL": {
         "quantity": 1
       }
-    }
+    },
+    "sellerId": "vilianora-market"
   },
   {
     "id": 85667,
@@ -1332,7 +1318,8 @@
       "XXL": {
         "quantity": 1
       }
-    }
+    },
+    "sellerId": "vilianora-market"
   },
   {
     "id": 9675,
