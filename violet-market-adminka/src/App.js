@@ -6,6 +6,7 @@ import FlashPage from './pages/FlashPage/FlashPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellersPage from './pages/SellersPage/SellersPage';
 import CouriersPage from './pages/CouriersPage/CouriersPage';
+import LogisticaPage from './pages/LogisticaPage/LogisticaPage';
 import CourierChatsPage from './pages/CourierChatsPage/CourierChatsPage';
 import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
 import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
@@ -40,6 +41,7 @@ function App() {
           <Route path="returned-products" element={<ReturnedProductsPage />} />
           <Route path="customer-refunds" element={<CustomerRefundRequestsPage />} />
           <Route path="couriers" element={<CouriersPage />} />
+          <Route path="logistica" element={<LogisticaPage />} />
           <Route path="courier-chats" element={<CourierChatsPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="withdrawals" element={<WithdrawalPage />} />

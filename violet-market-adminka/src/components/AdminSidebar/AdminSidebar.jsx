@@ -23,6 +23,7 @@ import {
   TeamOutlined,
   TrademarkOutlined,
   VideoCameraOutlined,
+  TruckOutlined,
   UndoOutlined,
   RollbackOutlined,
 } from '@ant-design/icons';
@@ -90,6 +91,12 @@ const menuItems = [
   { key: 'sellers', icon: <TeamOutlined />, label: 'Sotuvchilar', route: '/sellers' },
   { key: 'couriers', icon: <CarOutlined />, label: "Kuryer ma'lumotlari", route: '/couriers' },
   {
+    key: 'logistica-accounts',
+    icon: <TruckOutlined />,
+    label: "Logistica ma'lumotlari",
+    route: '/logistica',
+  },
+  {
     key: 'courier-chats',
     icon: <MessageOutlined />,
     label: 'Kuryer bilan chat',
@@ -116,6 +123,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/products') return 'products';
   if (pathname === '/sellers') return 'sellers';
   if (pathname === '/couriers') return 'couriers';
+  if (pathname === '/logistica') return 'logistica-accounts';
   if (pathname === '/courier-chats') return 'courier-chats';
   if (pathname === '/payment-requests') return 'payment-requests';
   if (pathname === '/withdrawals') return 'withdrawals';
