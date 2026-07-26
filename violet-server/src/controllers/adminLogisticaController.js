@@ -16,8 +16,14 @@ const rejectLogistica = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const deleteLogistica = asyncHandler(async (req, res) => {
+  const data = await adminLogisticaService.deleteLogistica(req.params.id);
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listLogistica,
   approveLogistica,
   rejectLogistica,
+  deleteLogistica,
 };

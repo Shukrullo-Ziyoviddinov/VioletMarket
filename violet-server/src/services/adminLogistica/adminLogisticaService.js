@@ -75,8 +75,27 @@ async function rejectLogistica(id) {
   return { deleted: true, id };
 }
 
+async function deleteLogistica(id) {
+  const profile = await LogisticaProfile.findById(id);
+  if (!profile) {
+    throw new HttpError(404, "Logistica topilmadi", "LOGISTICA_NOT_FOUND");
+  }
+  if (profile.status !== "active") {
+    throw new HttpError(
+      400,
+      "Faqat tasdiqlangan logistica akkauntini o‘chirish mumkin",
+      "INVALID_STATUS",
+    );
+  }
+
+  await LogisticaAuthCode.deleteMany({ email: profile.email });
+  await LogisticaProfile.deleteOne({ _id: profile._id });
+  return { deleted: true, id };
+}
+
 module.exports = {
   listLogistica,
   approveLogistica,
   rejectLogistica,
+  deleteLogistica,
 };

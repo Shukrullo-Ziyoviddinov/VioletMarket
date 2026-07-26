@@ -39,3 +39,12 @@ export async function rejectLogistica(id) {
   const payload = await parseJson(res);
   return payload?.data;
 }
+
+export async function deleteLogistica(id) {
+  const res = await fetch(apiUrl(`/api/admin/logistica/${encodeURIComponent(id)}`), {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const payload = await parseJson(res);
+  return payload?.data;
+}

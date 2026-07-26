@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Empty, Table, Typography } from 'antd';
+import { deleteLogistica } from '../../api/logisticaAdminApi';
+import { useAdminToast } from '../../context/AdminToastContext';
+import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
+import LogisticaActionsMenu from './LogisticaActionsMenu';
 import './LogisticaInfo.css';
 
 const { Title, Text } = Typography;
@@ -11,7 +15,38 @@ function formatDate(value) {
   return date.toLocaleString('uz-UZ');
 }
 
-export default function LogisticaApproved({ profiles, loading }) {
+export default function LogisticaApproved({ profiles, loading, onChanged }) {
+  const { openMiniGlobalModal } = useMiniGlobalModal();
+  const { showToast } = useAdminToast();
+  const [openMenuId, setOpenMenuId] = useState('');
+  const [deletingId, setDeletingId] = useState('');
+
+  const handleDelete = (profile) => {
+    const name = profile.companyName || profile.name || profile.email || 'Logistica';
+
+    openMiniGlobalModal({
+      permissionKey: 'deleteLogistica',
+      itemName: name,
+      onConfirm: async () => {
+        setDeletingId(profile.id);
+        try {
+          await deleteLogistica(profile.id);
+          showToast({ type: 'success', message: 'Logistica akkaunti o‘chirildi' });
+          setOpenMenuId('');
+          onChanged?.();
+        } catch (err) {
+          showToast({
+            type: 'error',
+            message: err.message || 'Logisticani o‘chirib bo‘lmadi',
+          });
+          throw err;
+        } finally {
+          setDeletingId('');
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: 'Kompaniya nomi',
@@ -44,6 +79,25 @@ export default function LogisticaApproved({ profiles, loading }) {
       width: 180,
       render: (value) => formatDate(value),
     },
+    {
+      title: '',
+      key: 'actions',
+      width: 56,
+      fixed: 'right',
+      align: 'center',
+      render: (_, record) => {
+        const isOpen = openMenuId === record.id;
+        return (
+          <LogisticaActionsMenu
+            isOpen={isOpen}
+            deleting={deletingId === record.id}
+            onToggle={() => setOpenMenuId(isOpen ? '' : record.id)}
+            onClose={() => setOpenMenuId('')}
+            onDelete={() => handleDelete(record)}
+          />
+        );
+      },
+    },
   ];
 
   return (
@@ -61,7 +115,7 @@ export default function LogisticaApproved({ profiles, loading }) {
         dataSource={profiles}
         loading={loading}
         pagination={false}
-        scroll={{ x: 900 }}
+        scroll={{ x: 960 }}
         locale={{
           emptyText: (
             <Empty description="Hozircha tasdiqlangan logistica yo‘q" />

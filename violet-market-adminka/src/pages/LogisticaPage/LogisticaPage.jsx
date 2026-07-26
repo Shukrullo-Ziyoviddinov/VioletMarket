@@ -65,7 +65,11 @@ export default function LogisticaPage() {
         onChanged={() => loadProfiles()}
       />
 
-      <LogisticaApproved profiles={approved} loading={loading} />
+      <LogisticaApproved
+        profiles={approved}
+        loading={loading}
+        onChanged={() => loadProfiles()}
+      />
     </section>
   );
 }
