@@ -5,7 +5,6 @@ const { sendOtpEmail } = require("../login/brevoMailService");
 const { HttpError } = require("../../utils/httpError");
 
 const MAX_ATTEMPTS = 5;
-const RESEND_COOLDOWN_MS = 45 * 1000;
 
 function hashCode(code) {
   const secret =
@@ -24,25 +23,6 @@ function codesMatch(code, hash) {
 
 async function createAndSendLogisticaOtp(email, purpose) {
   const now = new Date();
-  const existing = await LogisticaAuthCode.findOne({ email, purpose }).lean();
-
-  if (
-    existing &&
-    now.getTime() - new Date(existing.sentAt).getTime() < RESEND_COOLDOWN_MS
-  ) {
-    const retryAfterSeconds = Math.ceil(
-      (RESEND_COOLDOWN_MS -
-        (now.getTime() - new Date(existing.sentAt).getTime())) /
-        1000,
-    );
-    throw new HttpError(
-      429,
-      `Yangi kodni ${retryAfterSeconds} soniyadan keyin so'rang`,
-      "OTP_COOLDOWN",
-      { retryAfterSeconds },
-    );
-  }
-
   const code = String(crypto.randomInt(100000, 1000000));
   const expiresAt = new Date(now.getTime() + authConfig.otpExpiryMs);
 
@@ -68,7 +48,7 @@ async function createAndSendLogisticaOtp(email, purpose) {
 
   return {
     expiresInSeconds: Math.floor(authConfig.otpExpiryMs / 1000),
-    resendAfterSeconds: Math.floor(RESEND_COOLDOWN_MS / 1000),
+    resendAfterSeconds: 0,
   };
 }
 

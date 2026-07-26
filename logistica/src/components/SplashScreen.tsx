@@ -18,7 +18,7 @@ const SPLASH_HOLD_MS = 400;
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isLoading, token, profile, hasRegistered } = useAuth();
+  const { isLoading, token, profile } = useAuth();
   const { width } = useWindowDimensions();
   const truckWidth = Math.min(width * TRUCK_WIDTH_RATIO, 420);
   const truckHeight = truckWidth * (369 / 677);
@@ -57,15 +57,11 @@ export default function SplashScreen() {
         router.replace('/asosiy');
         return;
       }
-      if (hasRegistered) {
-        router.replace('/auth');
-        return;
-      }
       router.replace('/register');
     }, 1800 + SPLASH_HOLD_MS);
 
     return () => clearTimeout(timer);
-  }, [hasRegistered, isLoading, profile, router, token]);
+  }, [isLoading, profile, router, token]);
 
   return (
     <View style={styles.container}>

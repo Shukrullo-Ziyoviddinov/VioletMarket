@@ -1,6 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -12,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '@/providers/AuthProvider';
 import {
@@ -49,18 +49,14 @@ export default function OtpScreen() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldown, setCooldown] = useState(45);
+  const [isResending, setIsResending] = useState(false);
 
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((value) => Math.max(0, value - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
-
-  async function verifyCode(verificationCode: string) {
-    if (isSubmitting || verificationCode.length !== 6) return;
+  async function verifyCode() {
+    const verificationCode = code.replace(/\D/g, '');
+    if (isSubmitting || verificationCode.length !== 6) {
+      setError('6 xonali kodni kiriting');
+      return;
+    }
     setError('');
     setIsSubmitting(true);
     try {
@@ -90,35 +86,29 @@ export default function OtpScreen() {
           ? requestError.message
           : 'Kod tasdiqlanmadi',
       );
-      setTimeout(() => inputRef.current?.focus(), 100);
     } finally {
       setIsSubmitting(false);
     }
   }
 
   function updateCode(value: string) {
-    const nextCode = value.replace(/\D/g, '').slice(0, 6);
-    setCode(nextCode);
+    setCode(value.replace(/\D/g, '').slice(0, 6));
     setError('');
-    if (nextCode.length === 6) {
-      setTimeout(() => void verifyCode(nextCode), 0);
-    }
   }
 
   async function resendCode() {
-    if (cooldown > 0 || isSubmitting) return;
+    if (isResending || isSubmitting) return;
     setError('');
+    setIsResending(true);
     try {
       if (mode === 'register') {
-        const result = await sendRegistrationCode({
+        await sendRegistrationCode({
           email,
           companyName,
           logisticaCountry,
         });
-        setCooldown(result.resendAfterSeconds);
       } else {
-        const result = await sendLoginCode(email);
-        setCooldown(result.resendAfterSeconds);
+        await sendLoginCode(email);
       }
     } catch (requestError) {
       setError(
@@ -126,6 +116,8 @@ export default function OtpScreen() {
           ? requestError.message
           : 'Kod qayta yuborilmadi',
       );
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -139,66 +131,57 @@ export default function OtpScreen() {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </Pressable>
 
-        <View style={styles.card}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="shield-checkmark" size={35} color={ACCENT} />
-          </View>
-          <Text style={styles.title}>Tasdiqlash kodi</Text>
-          <Text style={styles.description}>
-            <Text style={styles.email}>{email}</Text> manziliga yuborilgan 6
-            xonali kodni kiriting.
-          </Text>
-
-          <Pressable
-            style={styles.otpRow}
-            onPress={() => inputRef.current?.focus()}
-          >
-            {Array.from({ length: 6 }, (_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.otpBox,
-                  code.length === index && styles.otpBoxActive,
-                  error ? styles.otpBoxError : null,
-                ]}
-              >
-                <Text style={styles.otpDigit}>{code[index] || ''}</Text>
-              </View>
-            ))}
-          </Pressable>
-
-          <TextInput
-            ref={inputRef}
-            value={code}
-            onChangeText={updateCode}
-            keyboardType="number-pad"
-            maxLength={6}
-            style={styles.hiddenInput}
-            autoFocus
-          />
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          {isSubmitting ? (
-            <ActivityIndicator color={ACCENT} style={{ marginTop: 12 }} />
-          ) : null}
-
-          <Pressable
-            disabled={cooldown > 0}
-            style={styles.resendBtn}
-            onPress={resendCode}
-          >
-            <Text
-              style={[
-                styles.resendText,
-                cooldown > 0 && styles.resendDisabled,
-              ]}
-            >
-              {cooldown > 0
-                ? `Qayta yuborish (${cooldown}s)`
-                : 'Kodni qayta yuborish'}
+        <View style={styles.centerWrap}>
+          <View style={styles.card}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="shield-checkmark" size={35} color={ACCENT} />
+            </View>
+            <Text style={styles.title}>Tasdiqlash kodi</Text>
+            <Text style={styles.description}>
+              <Text style={styles.email}>{email}</Text> manziliga yuborilgan 6
+              xonali kodni kiriting.
             </Text>
-          </Pressable>
+
+            <TextInput
+              ref={inputRef}
+              value={code}
+              onChangeText={updateCode}
+              keyboardType="number-pad"
+              maxLength={6}
+              style={[styles.codeInput, error ? styles.codeInputError : null]}
+              placeholder="______"
+              placeholderTextColor="#9CA3AF"
+              textAlign="center"
+            />
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            <Pressable
+              disabled={isSubmitting || code.length !== 6}
+              style={({ pressed }) => [
+                styles.verifyBtn,
+                pressed && styles.pressed,
+                (isSubmitting || code.length !== 6) && styles.disabled,
+              ]}
+              onPress={verifyCode}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.verifyText}>Tasdiqlash</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              disabled={isResending}
+              style={styles.resendBtn}
+              onPress={resendCode}
+            >
+              <Text style={[styles.resendText, isResending && styles.resendDisabled]}>
+                {isResending ? 'Yuborilmoqda...' : 'Kodni qayta yuborish'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -210,16 +193,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 12,
   },
   backButton: {
     width: 40,
     height: 40,
+    marginTop: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  centerWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: 40,
+  },
   card: {
-    marginTop: 24,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 24,
@@ -249,37 +236,22 @@ const styles = StyleSheet.create({
     color: ACCENT,
     fontWeight: '700',
   },
-  otpRow: {
+  codeInput: {
     marginTop: 22,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  otpBox: {
-    width: 42,
-    height: 50,
-    borderRadius: 10,
+    width: '100%',
+    minHeight: 56,
     borderWidth: 1.5,
     borderColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 14,
     backgroundColor: '#F9FAFB',
-  },
-  otpBoxActive: {
-    borderColor: ACCENT,
-  },
-  otpBoxError: {
-    borderColor: '#DC2626',
-  },
-  otpDigit: {
-    fontSize: 20,
-    fontWeight: '700',
     color: '#111827',
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: 10,
+    paddingHorizontal: 16,
   },
-  hiddenInput: {
-    position: 'absolute',
-    opacity: 0,
-    height: 1,
-    width: 1,
+  codeInputError: {
+    borderColor: '#DC2626',
   },
   error: {
     marginTop: 12,
@@ -287,8 +259,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  resendBtn: {
+  verifyBtn: {
     marginTop: 18,
+    alignSelf: 'stretch',
+    backgroundColor: ACCENT,
+    borderRadius: 14,
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  verifyText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  pressed: { opacity: 0.9 },
+  disabled: { opacity: 0.55 },
+  resendBtn: {
+    marginTop: 16,
   },
   resendText: {
     color: ACCENT,

@@ -90,7 +90,7 @@ export default function PendingApprovalScreen() {
               styles.secondaryButton,
               pressed && styles.pressed,
             ]}
-            onPress={() => router.replace('/auth')}
+            onPress={() => router.replace('/register')}
           >
             <Text style={styles.secondaryButtonText}>Kirish sahifasiga</Text>
           </Pressable>
