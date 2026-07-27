@@ -9,14 +9,22 @@ import AdminOrderSellerBadge from '../AdminOrderSellerBadge/AdminOrderSellerBadg
 import AdminOrderStatusBadge from '../AdminOrderStatusBadge/AdminOrderStatusBadge';
 import './AdminOrderCourierCard.css';
 
-export default function AdminOrderCourierCard({ order, onOpen }) {
+export default function AdminOrderCourierCard({
+  order,
+  onOpen,
+  showSellerCountry = false,
+}) {
   return (
     <button
       type="button"
       className="seller-order-courier-card"
       onClick={() => onOpen?.(order)}
     >
-      <AdminOrderSellerBadge order={order} className="admin-order-seller-badge--block" />
+      <AdminOrderSellerBadge
+        order={order}
+        className="admin-order-seller-badge--block"
+        showCountry={showSellerCountry}
+      />
       <AdminOrderProductMeta order={order} compact />
       <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
       <div className="seller-order-courier-card__row">

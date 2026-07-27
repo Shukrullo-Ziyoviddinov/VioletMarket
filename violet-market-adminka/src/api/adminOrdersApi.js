@@ -84,6 +84,9 @@ export async function fetchAdminOrders(filters = {}) {
   if (filters?.trackingStatus) {
     params.set('trackingStatus', String(filters.trackingStatus));
   }
+  if (filters?.pipeline) {
+    params.set('pipeline', String(filters.pipeline));
+  }
 
   const query = params.toString();
   const path = query ? `/api/admin/orders?${query}` : '/api/admin/orders';
@@ -153,8 +156,17 @@ export function deliverAdminNoAnswerOrder(returnedOrderId) {
   return postNoAnswerAction(returnedOrderId, 'deliver');
 }
 
-export async function fetchAdminOrderCounts() {
-  const res = await fetch(apiUrl('/api/admin/orders/counts'));
+export async function fetchAdminOrderCounts(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters?.pipeline) {
+    params.set('pipeline', String(filters.pipeline));
+  }
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/orders/counts?${query}`
+    : '/api/admin/orders/counts';
+
+  const res = await fetch(apiUrl(path));
   const payload = await parseJson(res);
   const data = payload?.data || {};
   return {

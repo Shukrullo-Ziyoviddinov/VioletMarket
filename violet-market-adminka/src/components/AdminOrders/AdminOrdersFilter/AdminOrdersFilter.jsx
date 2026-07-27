@@ -1,7 +1,7 @@
 import React from 'react';
 import './AdminOrdersFilter.css';
 
-const FILTERS = [
+export const LOCAL_ORDER_FILTERS = [
   { key: 'confirmation', label: 'Tasdiqlash' },
   { key: 'collection', label: "Mahsulotni yig'ish" },
   { key: 'courier', label: 'Kuryerga topshirish' },
@@ -9,10 +9,21 @@ const FILTERS = [
   { key: 'noAnswer', label: 'Javob bermadi' },
 ];
 
-export default function AdminOrdersFilter({ value, onChange, counts = {} }) {
+export const FOREIGN_UZB_ORDER_FILTERS = [
+  { key: 'courier', label: 'Kuryerga topshirish' },
+  { key: 'handed', label: 'Kuryerga topshirilgan' },
+  { key: 'noAnswer', label: 'Javob bermadi' },
+];
+
+export default function AdminOrdersFilter({
+  value,
+  onChange,
+  counts = {},
+  filters = LOCAL_ORDER_FILTERS,
+}) {
   return (
     <div className="seller-orders-filter" role="tablist" aria-label="Buyurtmalar filtri">
-      {FILTERS.map((filter) => {
+      {filters.map((filter) => {
         const count = Number(counts?.[filter.key]);
         const hasCount = Number.isFinite(count);
         return (

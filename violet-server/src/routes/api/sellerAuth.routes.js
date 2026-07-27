@@ -137,6 +137,11 @@ router.patch(
   sellerOrdersController.handoffOrderItem,
 );
 router.patch(
+  "/seller-auth/orders/:orderId/items/:itemIndex/submit-to-cargo",
+  sellerAuthMiddleware,
+  sellerOrdersController.submitToCargo,
+);
+router.patch(
   "/seller-auth/orders/:orderId/items/:itemIndex/cancel",
   sellerAuthMiddleware,
   sellerOrdersController.cancelOrderItem,

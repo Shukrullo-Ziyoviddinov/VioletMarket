@@ -106,13 +106,20 @@
       "collection": "备货",
       "courier": "交给快递员",
       "handed": "已交给快递员",
-      "noAnswer": "未接听"
+      "noAnswer": "未接听",
+      "cargo": "发给物流",
+      "cargoHanded": "已交给物流"
     },
     "collection": {
       "empty": "暂无待备货商品"
     },
     "courier": {
       "empty": "暂无待交给快递员的商品"
+    },
+    "cargo": {
+      "empty": "暂无待发给物流的商品",
+      "success": "商品已发给物流",
+      "error": "发给物流失败"
     },
     "handed": {
       "empty": "暂无已交给快递员的商品",
@@ -121,6 +128,15 @@
       "courierPhone": "快递员电话",
       "handedAt": "交接时间",
       "acceptedAt": "快递员接单时间"
+    },
+    "cargoHanded": {
+      "empty": "暂无已交给物流的商品",
+      "waitingCargo": "物流尚未接单 — 接单后状态会更新",
+      "requestCode": "申请编号",
+      "submittedAt": "提交时间",
+      "acceptedAt": "接单时间",
+      "status": "状态",
+      "accepted": "物流已接单"
     },
     "noAnswer": {
       "empty": "暂无未接听订单",

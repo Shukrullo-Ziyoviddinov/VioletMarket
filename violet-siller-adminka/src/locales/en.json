@@ -106,13 +106,20 @@
       "collection": "Collect product",
       "courier": "Hand over to courier",
       "handed": "Handed to courier",
-      "noAnswer": "No answer"
+      "noAnswer": "No answer",
+      "cargo": "Send to cargo",
+      "cargoHanded": "Handed to cargo"
     },
     "collection": {
       "empty": "No products to collect"
     },
     "courier": {
       "empty": "No products to hand over to the courier"
+    },
+    "cargo": {
+      "empty": "No products to send to cargo",
+      "success": "Product sent to cargo",
+      "error": "Could not send to cargo"
     },
     "handed": {
       "empty": "No products handed to courier yet",
@@ -121,6 +128,15 @@
       "courierPhone": "Courier phone",
       "handedAt": "Handed over at",
       "acceptedAt": "Courier accepted at"
+    },
+    "cargoHanded": {
+      "empty": "No products handed to cargo yet",
+      "waitingCargo": "Logistics has not accepted yet — status updates after accept",
+      "requestCode": "Request code",
+      "submittedAt": "Submitted at",
+      "acceptedAt": "Accepted at",
+      "status": "Status",
+      "accepted": "Accepted by logistics"
     },
     "noAnswer": {
       "empty": "No unanswered orders",

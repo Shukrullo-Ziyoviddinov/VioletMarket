@@ -16,6 +16,10 @@ const {
 const {
   listSellerNoAnswerOrders,
 } = require("../services/sellerOrders/sellerReturnedOrdersService");
+const {
+  listCargoShipmentsByOrderItems,
+  shipmentLookupKey,
+} = require("../services/cargoShipments/cargoShipmentSellerService");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -147,6 +151,14 @@ function buildSellerOrderItemCards(order, user, sellerId) {
           item.trackingHistory.find(
             (entry) => String(entry?.status || "") === "handed_to_courier",
           )?.at || null,
+        readyForCargoAt:
+          item.trackingHistory.find(
+            (entry) => String(entry?.status || "") === "ready_for_cargo",
+          )?.at || null,
+        handedToCargoAt:
+          item.trackingHistory.find(
+            (entry) => String(entry?.status || "") === "handed_to_cargo",
+          )?.at || null,
         unitIndex,
       });
     }
@@ -261,6 +273,48 @@ async function listSellerOrders(sellerId, query = {}) {
         courier: assignment.courier,
         acceptedAt: assignment.acceptedAt,
         assignmentId: assignment.id,
+      };
+    });
+  }
+
+  // Cargo so‘rovlari — ready_for_cargo / handed_to_cargo filterlari
+  if (
+    (requestedTrackingStatus === "ready_for_cargo" ||
+      requestedTrackingStatus === "handed_to_cargo") &&
+    orders.length
+  ) {
+    const shipments = await listCargoShipmentsByOrderItems(
+      orders.map((card) => ({
+        orderId: card.orderId,
+        itemIndex: card.itemIndex,
+      })),
+    );
+    const byKey = new Map(
+      shipments.map((row) => [
+        shipmentLookupKey(row.orderId, row.itemIndex),
+        row,
+      ]),
+    );
+
+    orders = orders.map((card) => {
+      const shipment = byKey.get(
+        shipmentLookupKey(card.orderId, card.itemIndex),
+      );
+      if (!shipment) {
+        return {
+          ...card,
+          cargoSubmitted: false,
+          cargoAccepted: false,
+          cargoShipment: null,
+        };
+      }
+      return {
+        ...card,
+        cargoSubmitted: true,
+        cargoAccepted: String(shipment.status) === "accepted",
+        cargoShipment: shipment,
+        readyForCargoAt: shipment.submittedAt || null,
+        handedToCargoAt: shipment.acceptedAt || null,
       };
     });
   }

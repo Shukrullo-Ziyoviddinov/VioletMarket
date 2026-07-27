@@ -1,15 +1,10 @@
 const mongoose = require("mongoose");
 const { assignAutoNumberId } = require("./autoIncrement");
+const {
+  ALL_ORDER_TRACKING_STATUSES,
+} = require("../productManagement/orderTracking");
 
-const TRACKING_STATUSES = [
-  "accepted",
-  "seller_confirmed",
-  "collected",
-  "handed_to_courier",
-  "delivered",
-  "returned_to_seller",
-  "cancelled",
-];
+const TRACKING_STATUSES = ALL_ORDER_TRACKING_STATUSES;
 
 const orderTrackingHistorySchema = new mongoose.Schema(
   {

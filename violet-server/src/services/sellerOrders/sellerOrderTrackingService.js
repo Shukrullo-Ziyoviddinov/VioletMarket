@@ -1,6 +1,10 @@
 const { Order } = require("../../models/order");
+const { SellerAccount } = require("../../models/sellerAccount");
 const { HttpError } = require("../../utils/httpError");
-const { normalizeOrderTrackingStatus } = require("../../productManagement/orderTracking");
+const {
+  normalizeOrderTrackingStatus,
+  resolveSellerPipelineMode,
+} = require("../../productManagement/orderTracking");
 const { releaseToWarehouse } = require("../../inventory");
 const { normalizeVariant } = require("../../productManagement/variantStockAdjust");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
@@ -31,6 +35,13 @@ function variantFromOrderItem(item) {
     storage: resolveOptionLabel(item?.storage),
     model: resolveOptionLabel(item?.model),
   });
+}
+
+async function resolveSellerPipelineModeBySellerId(sellerId) {
+  const account = await SellerAccount.findOne({ id: sellerId })
+    .select({ sellerCountry: 1 })
+    .lean();
+  return resolveSellerPipelineMode(account?.sellerCountry);
 }
 
 async function confirmSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
@@ -131,6 +142,15 @@ async function handoffSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   const normalizedSellerId = cleanSellerId(sellerId);
   if (!normalizedSellerId) {
     throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const pipelineMode = await resolveSellerPipelineModeBySellerId(normalizedSellerId);
+  if (pipelineMode === "foreign") {
+    throw new HttpError(
+      409,
+      "Xorij sillerlari kuryerga topshira olmaydi — cargoga yuborish kerak",
+      "FOREIGN_SELLER_COURIER_HANDOFF_FORBIDDEN",
+    );
   }
 
   const orderId = parsePositiveInteger(orderIdRaw, "orderId");

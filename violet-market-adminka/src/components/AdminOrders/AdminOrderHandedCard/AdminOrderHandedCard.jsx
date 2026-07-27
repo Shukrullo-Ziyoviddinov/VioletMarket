@@ -26,13 +26,17 @@ function getCourierName(courier) {
   return [courier.firstName, courier.lastName].filter(Boolean).join(' ').trim();
 }
 
-export default function AdminOrderHandedCard({ order }) {
+export default function AdminOrderHandedCard({ order, showSellerCountry = false }) {
   const courierAccepted = Boolean(order?.courierAccepted && order?.courier);
   const courierName = getCourierName(order?.courier);
 
   return (
     <div className="seller-order-handed-card">
-      <AdminOrderSellerBadge order={order} className="admin-order-seller-badge--block" />
+      <AdminOrderSellerBadge
+        order={order}
+        className="admin-order-seller-badge--block"
+        showCountry={showSellerCountry}
+      />
       <AdminOrderProductMeta order={order} compact />
       <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
       <div className="seller-order-handed-card__row">

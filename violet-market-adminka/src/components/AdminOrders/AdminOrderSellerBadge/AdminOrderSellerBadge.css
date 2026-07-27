@@ -39,6 +39,18 @@
   white-space: nowrap;
 }
 
+.admin-order-seller-badge__country {
+  overflow: hidden;
+  color: #6b5a82;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
 .admin-order-seller-badge--block {
   max-width: none;
   width: 100%;

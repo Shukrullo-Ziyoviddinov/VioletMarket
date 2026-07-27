@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminOrdersFilter from '../../components/AdminOrders/AdminOrdersFilter/AdminOrdersFilter';
 import AdminOrdersWorkspace from '../../components/AdminOrders/AdminOrdersWorkspace/AdminOrdersWorkspace';
 import { fetchAdminOrderCounts } from '../../api/adminOrdersApi';
@@ -12,14 +12,25 @@ const EMPTY_COUNTS = {
   noAnswer: 0,
 };
 
+const LOCAL_STAGE_FILTERS = new Set(['courier', 'handed', 'noAnswer']);
+
 export default function OrdersPage() {
   const [filter, setFilter] = useState('confirmation');
   const [counts, setCounts] = useState(EMPTY_COUNTS);
 
   const loadCounts = useCallback(async () => {
     try {
-      const data = await fetchAdminOrderCounts();
-      setCounts(data);
+      const [allCounts, localCounts] = await Promise.all([
+        fetchAdminOrderCounts(),
+        fetchAdminOrderCounts({ pipeline: 'local' }),
+      ]);
+      setCounts({
+        confirmation: allCounts.confirmation,
+        collection: allCounts.collection,
+        courier: localCounts.courier,
+        handed: localCounts.handed,
+        noAnswer: localCounts.noAnswer,
+      });
     } catch {
       /* list xatosi workspace da ko'rsatiladi */
     }
@@ -29,16 +40,26 @@ export default function OrdersPage() {
     loadCounts();
   }, [loadCounts]);
 
+  const pipeline = useMemo(
+    () => (LOCAL_STAGE_FILTERS.has(filter) ? 'local' : undefined),
+    [filter],
+  );
+
   return (
     <section className="admin-orders-page">
       <div className="admin-orders-page__header">
         <h1 className="admin-orders-page__title">Buyurtmalar</h1>
         <p className="admin-orders-page__subtitle">
-          Barcha sillerlar buyurtmalari — holatni ko'rish va o'zgartirish
+          UZB (local) sillerlar buyurtmalari — holatni ko&apos;rish va o&apos;zgartirish.
+          Xorij sillerlar uchun «Xorij → UZB» sahifasiga o&apos;ting.
         </p>
       </div>
       <AdminOrdersFilter value={filter} onChange={setFilter} counts={counts} />
-      <AdminOrdersWorkspace filter={filter} onStatusChanged={loadCounts} />
+      <AdminOrdersWorkspace
+        filter={filter}
+        pipeline={pipeline}
+        onStatusChanged={loadCounts}
+      />
     </section>
   );
 }

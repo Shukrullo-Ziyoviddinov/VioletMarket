@@ -29,6 +29,9 @@ const FILTER_STATUS = {
 export default function AdminOrdersWorkspace({
   filter = 'confirmation',
   onStatusChanged,
+  pipeline,
+  allowHandoff = true,
+  showSellerCountry = false,
 }) {
   const { openAdminModal } = useAdminModal();
   const [orders, setOrders] = useState([]);
@@ -49,6 +52,7 @@ export default function AdminOrdersWorkspace({
         page: 1,
         limit: 100,
         trackingStatus,
+        ...(pipeline ? { pipeline } : {}),
       });
       if (requestIdRef.current !== requestId) return;
       setOrders(Array.isArray(data?.orders) ? data.orders : []);
@@ -61,7 +65,7 @@ export default function AdminOrdersWorkspace({
         setLoading(false);
       }
     }
-  }, [filter]);
+  }, [filter, pipeline]);
 
   const refreshAfterStatusChange = useCallback(async () => {
     await loadOrders();
@@ -76,7 +80,7 @@ export default function AdminOrdersWorkspace({
     setOrders([]);
     setCourierOrder(null);
     setCancelConfirmOpen(false);
-  }, [filter]);
+  }, [filter, pipeline]);
 
   const openOrderDetail = (order, mode) => {
     openAdminModal({
@@ -91,7 +95,7 @@ export default function AdminOrdersWorkspace({
   };
 
   const handleCourierHandoff = async () => {
-    if (!courierOrder || handingOff || cancelling) return;
+    if (!allowHandoff || !courierOrder || handingOff || cancelling) return;
 
     setHandingOff(true);
     try {
@@ -189,15 +193,28 @@ export default function AdminOrdersWorkspace({
         orders={orders}
         loading={loading}
         onOpenOrder={setCourierOrder}
+        showSellerCountry={showSellerCountry}
+        emptyDescription={
+          pipeline === 'foreign'
+            ? 'Xorij mahsulotlari UZB omborga kelgach shu yerda chiqadi'
+            : undefined
+        }
       />
     );
   } else if (filter === 'handed') {
-    listNode = <AdminOrderHandedList orders={orders} loading={loading} />;
+    listNode = (
+      <AdminOrderHandedList
+        orders={orders}
+        loading={loading}
+        showSellerCountry={showSellerCountry}
+      />
+    );
   } else if (filter === 'noAnswer') {
     listNode = (
       <AdminOrderNoAnswerList
         orders={orders}
         loading={loading}
+        showSellerCountry={showSellerCountry}
         onReHandoff={handleNoAnswerReHandoff}
         onReactivate={handleNoAnswerReactivate}
         onDeliver={handleNoAnswerDeliver}
@@ -214,13 +231,18 @@ export default function AdminOrdersWorkspace({
         order={courierOrder}
         loading={handingOff}
         cancelling={cancelling}
+        allowHandoff={allowHandoff}
         onClose={() => {
           if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
-        onCancelOrder={() => {
-          if (!handingOff && !cancelling) setCancelConfirmOpen(true);
-        }}
+        onCancelOrder={
+          allowHandoff
+            ? () => {
+                if (!handingOff && !cancelling) setCancelConfirmOpen(true);
+              }
+            : undefined
+        }
       />
 
       <MiniGlobalModal

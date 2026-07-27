@@ -11,6 +11,12 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  cargoHandoff: {
+    title: 'Tasdiqlash',
+    getMessage: () => 'Mahsulotni cargoga yuborishni tasdiqlaysizmi?',
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
   cancelOrder: {
     title: 'Buyurtmani bekor qilish',
     getMessage: () =>

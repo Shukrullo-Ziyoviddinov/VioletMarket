@@ -51,6 +51,8 @@ function normalizeOrder(row) {
     trackingStatus: String(row?.trackingStatus || 'accepted'),
     confirmedAt: row?.confirmedAt || null,
     handedToCourierAt: row?.handedToCourierAt || null,
+    readyForCargoAt: row?.readyForCargoAt || null,
+    handedToCargoAt: row?.handedToCargoAt || null,
     unitIndex: Number(row?.unitIndex) || 0,
     courierAccepted: Boolean(row?.courierAccepted),
     courier: row?.courier
@@ -63,6 +65,9 @@ function normalizeOrder(row) {
       : null,
     acceptedAt: row?.acceptedAt || null,
     assignmentId: row?.assignmentId ? String(row.assignmentId) : null,
+    cargoSubmitted: Boolean(row?.cargoSubmitted),
+    cargoAccepted: Boolean(row?.cargoAccepted),
+    cargoShipment: row?.cargoShipment || null,
     reasonType: String(row?.reasonType || ''),
     comment: String(row?.comment || ''),
     returnedAt: row?.returnedAt || null,
@@ -126,6 +131,24 @@ export async function handoffSellerOrderItem(token, orderId, itemIndex) {
     {
       method: 'PATCH',
       headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+export async function submitSellerOrderItemToCargo(token, orderId, itemIndex, body = {}) {
+  const res = await fetch(
+    apiUrl(
+      `/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/submit-to-cargo`,
+    ),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body || {}),
     },
   );
   const payload = await parseJson(res);

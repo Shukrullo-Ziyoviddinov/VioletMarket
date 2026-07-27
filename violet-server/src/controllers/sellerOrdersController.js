@@ -5,6 +5,7 @@ const {
   listSellerReturnedOrders,
 } = require("../services/sellerOrders/sellerReturnedOrdersService");
 const noAnswerOrderActionsService = require("../services/noAnswerOrders/noAnswerOrderActionsService");
+const cargoShipmentSellerService = require("../services/cargoShipments/cargoShipmentSellerService");
 
 const listOrders = asyncHandler(async (req, res) => {
   const data = await listSellerOrders(req.sellerShopId, req.query || {});
@@ -76,6 +77,16 @@ const deliverNoAnswer = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const submitToCargo = asyncHandler(async (req, res) => {
+  const data = await cargoShipmentSellerService.submitSellerOrderItemToCargo(
+    req.sellerShopId,
+    req.params.orderId,
+    req.params.itemIndex,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listOrders,
   listReturnedOrders,
@@ -86,4 +97,5 @@ module.exports = {
   reHandoffNoAnswer,
   reactivateNoAnswer,
   deliverNoAnswer,
+  submitToCargo,
 };

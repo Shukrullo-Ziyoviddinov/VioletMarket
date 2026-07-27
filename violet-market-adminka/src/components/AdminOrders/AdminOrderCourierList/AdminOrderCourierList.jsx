@@ -7,6 +7,8 @@ export default function AdminOrderCourierList({
   orders = [],
   loading = false,
   onOpenOrder,
+  showSellerCountry = false,
+  emptyDescription,
 }) {
   if (loading) {
     return (
@@ -19,7 +21,11 @@ export default function AdminOrderCourierList({
   if (!orders.length) {
     return (
       <div className="seller-order-courier-list__state">
-        <Empty description="Kuryerga topshiriladigan mahsulotlar yo'q" />
+        <Empty
+          description={
+            emptyDescription || "Kuryerga topshiriladigan mahsulotlar yo'q"
+          }
+        />
       </div>
     );
   }
@@ -27,7 +33,12 @@ export default function AdminOrderCourierList({
   return (
     <div className="seller-order-courier-list">
       {orders.map((order) => (
-        <AdminOrderCourierCard key={order.id} order={order} onOpen={onOpenOrder} />
+        <AdminOrderCourierCard
+          key={order.id}
+          order={order}
+          onOpen={onOpenOrder}
+          showSellerCountry={showSellerCountry}
+        />
       ))}
     </div>
   );

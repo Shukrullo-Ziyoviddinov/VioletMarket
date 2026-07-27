@@ -6,6 +6,7 @@ import './AdminOrderNoAnswerList.css';
 export default function AdminOrderNoAnswerList({
   orders = [],
   loading = false,
+  showSellerCountry = false,
   onReHandoff,
   onReactivate,
   onDeliver,
@@ -37,6 +38,7 @@ export default function AdminOrderNoAnswerList({
         <AdminOrderNoAnswerCard
           key={order.id}
           order={order}
+          showSellerCountry={showSellerCountry}
           onReHandoff={onReHandoff}
           onReactivate={onReactivate}
           onDeliver={onDeliver}

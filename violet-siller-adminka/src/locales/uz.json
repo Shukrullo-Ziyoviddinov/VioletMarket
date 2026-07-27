@@ -106,13 +106,20 @@
       "collection": "Mahsulotni yig'ish",
       "courier": "Kuryerga topshirish",
       "handed": "Kuryerga topshirilgan",
-      "noAnswer": "Javob bermadi"
+      "noAnswer": "Javob bermadi",
+      "cargo": "Cargoga yuborish",
+      "cargoHanded": "Cargoga topshirilgan"
     },
     "collection": {
       "empty": "Yig'ish uchun mahsulotlar yo'q"
     },
     "courier": {
       "empty": "Kuryerga topshiriladigan mahsulotlar yo'q"
+    },
+    "cargo": {
+      "empty": "Cargoga yuboriladigan mahsulotlar yo'q",
+      "success": "Mahsulot cargoga yuborildi",
+      "error": "Cargoga yuborib bo‘lmadi"
     },
     "handed": {
       "empty": "Kuryerga topshirilgan mahsulotlar yo'q",
@@ -121,6 +128,15 @@
       "courierPhone": "Kuryer telefoni",
       "handedAt": "Topshirilgan vaqt",
       "acceptedAt": "Kuryer qabul qilgan vaqt"
+    },
+    "cargoHanded": {
+      "empty": "Cargoga topshirilgan mahsulotlar yo'q",
+      "waitingCargo": "Logistica hali qabul qilmagan — qabul qilinganda holat yangilanadi",
+      "requestCode": "So‘rov kodi",
+      "submittedAt": "Yuborilgan vaqt",
+      "acceptedAt": "Qabul qilingan vaqt",
+      "status": "Holat",
+      "accepted": "Logistica qabul qildi"
     },
     "noAnswer": {
       "empty": "Javob bermagan buyurtmalar yo'q",

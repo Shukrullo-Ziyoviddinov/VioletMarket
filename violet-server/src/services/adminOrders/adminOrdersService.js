@@ -13,8 +13,25 @@ const {
 } = require("../deliveryOrders/courierOrderAssignmentService");
 const { toPublicReturnedOrder } = require("../deliveryOrders/courierReturnOrderService");
 const sellerOrderTrackingService = require("../sellerOrders/sellerOrderTrackingService");
+const {
+  resolveSellerPipelineMode,
+} = require("../../productManagement/sellerPipelineMode");
 
 const DEFAULT_PAGE_SIZE = 100;
+
+function normalizePipeline(value) {
+  const mode = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (mode === "foreign" || mode === "local") return mode;
+  return "";
+}
+
+function cardMatchesPipeline(card, pipeline) {
+  if (!pipeline) return true;
+  const country = card?.seller?.sellerCountry || "";
+  return resolveSellerPipelineMode(country) === pipeline;
+}
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -67,31 +84,18 @@ function attachSeller(card, sellerMap) {
 async function listAdminNoAnswerOrders(query = {}) {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
-  const skip = (page - 1) * limit;
+  const pipeline = normalizePipeline(query.pipeline);
 
-  const [rows, total] = await Promise.all([
-    CourierReturnedOrder.find({
-      reasonType: "no_answer",
-      $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
-    })
-      .sort({ returnedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
-    CourierReturnedOrder.countDocuments({
-      reasonType: "no_answer",
-      $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
-    }),
-  ]);
+  const rows = await CourierReturnedOrder.find({
+    reasonType: "no_answer",
+    $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
+  })
+    .sort({ returnedAt: -1, createdAt: -1 })
+    .lean();
 
   const sellerMap = await loadSellerMap(rows.map((row) => row.sellerId));
-
-  return {
-    page,
-    limit,
-    total,
-    totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    orders: rows.map((row) => {
+  const orders = rows
+    .map((row) => {
       const publicRow = toPublicReturnedOrder(row);
       return attachSeller(
         {
@@ -106,7 +110,18 @@ async function listAdminNoAnswerOrders(query = {}) {
         },
         sellerMap,
       );
-    }),
+    })
+    .filter((card) => cardMatchesPipeline(card, pipeline));
+
+  const total = orders.length;
+  const start = (page - 1) * limit;
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit) || 1),
+    orders: orders.slice(start, start + limit),
   };
 }
 
@@ -147,16 +162,42 @@ async function buildAllAdminOrderCards() {
 }
 
 /**
- * Har bir jarayon (filter) bo‘yicha barcha sillerlar buyurtma soni.
+ * Har bir jarayon (filter) bo‘yicha buyurtma soni.
+ * query.pipeline = foreign | local | (bo‘sh = hammasi)
  */
-async function getAdminOrderCounts() {
-  const [allCards, noAnswerTotal] = await Promise.all([
+async function getAdminOrderCounts(query = {}) {
+  const pipeline = normalizePipeline(query.pipeline);
+
+  const [rawCards, noAnswerRows] = await Promise.all([
     buildAllAdminOrderCards(),
-    CourierReturnedOrder.countDocuments({
+    CourierReturnedOrder.find({
       reasonType: "no_answer",
       $or: [{ resolvedAt: null }, { resolvedAt: { $exists: false } }],
-    }),
+    })
+      .select({ sellerId: 1 })
+      .lean(),
   ]);
+
+  const sellerIds = [
+    ...new Set([
+      ...rawCards.map((card) => cleanSellerId(card.sellerId)),
+      ...noAnswerRows.map((row) => cleanSellerId(row.sellerId)),
+    ].filter(Boolean)),
+  ];
+  const sellerMap = await loadSellerMap(sellerIds);
+
+  const allCards = rawCards
+    .map((card) => attachSeller(card, sellerMap))
+    .filter((card) => cardMatchesPipeline(card, pipeline));
+
+  const noAnswerTotal = noAnswerRows
+    .map((row) =>
+      attachSeller(
+        { sellerId: cleanSellerId(row.sellerId) },
+        sellerMap,
+      ),
+    )
+    .filter((card) => cardMatchesPipeline(card, pipeline)).length;
 
   const counts = {
     accepted: 0,
@@ -180,11 +221,12 @@ async function getAdminOrderCounts() {
     handed: counts.handed_to_courier,
     noAnswer: counts.no_answer,
     byStatus: counts,
+    pipeline: pipeline || "all",
   };
 }
 
 /**
- * Asosiy admin — barcha sillerlar buyurtmalari (tracking filter bilan).
+ * Asosiy admin — sillerlar buyurtmalari (tracking + pipeline filter bilan).
  */
 async function listAdminOrders(query = {}) {
   const requestedTrackingStatus = String(query.trackingStatus || "").trim();
@@ -194,19 +236,24 @@ async function listAdminOrders(query = {}) {
 
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
+  const pipeline = normalizePipeline(query.pipeline);
 
   const allCards = await buildAllAdminOrderCards();
+  const sellerMapForFilter = await loadSellerMap(
+    allCards.map((card) => card.sellerId),
+  );
+  const withSeller = allCards.map((card) => attachSeller(card, sellerMapForFilter));
 
-  const filteredCards = requestedTrackingStatus
-    ? allCards.filter((card) => card.trackingStatus === requestedTrackingStatus)
-    : allCards;
+  const filteredCards = withSeller.filter((card) => {
+    if (requestedTrackingStatus && card.trackingStatus !== requestedTrackingStatus) {
+      return false;
+    }
+    return cardMatchesPipeline(card, pipeline);
+  });
 
   const total = filteredCards.length;
   const start = (page - 1) * limit;
   let orders = filteredCards.slice(start, start + limit);
-
-  const sellerMap = await loadSellerMap(orders.map((card) => card.sellerId));
-  orders = orders.map((card) => attachSeller(card, sellerMap));
 
   if (requestedTrackingStatus === "handed_to_courier" && orders.length) {
     const assignments = await listAssignmentsByKeys(

@@ -8,12 +8,14 @@ export default function AdminOrderHandoffModal({
   order,
   loading = false,
   cancelling = false,
+  allowHandoff = true,
   onClose,
   onConfirm,
   onCancelOrder,
 }) {
   const sellerName = getAdminOrderSellerName(order);
   const productCode = order?.productCode || '—';
+  const country = String(order?.seller?.sellerCountry || '').trim().toUpperCase();
   const busy = loading || cancelling;
 
   return (
@@ -25,12 +27,23 @@ export default function AdminOrderHandoffModal({
       }}
     >
       <div className="admin-order-handoff-modal">
-        <p className="admin-order-handoff-modal__text">
-          <strong>{sellerName}</strong> sillerining <strong>{productCode}</strong> mahsulotini
-          kuryerga topshirasizmi?
-        </p>
+        {allowHandoff ? (
+          <p className="admin-order-handoff-modal__text">
+            <strong>{sellerName}</strong>
+            {country ? ` (${country})` : ''} sillerining{' '}
+            <strong>{productCode}</strong> mahsulotini kuryerga topshirasizmi?
+          </p>
+        ) : (
+          <p className="admin-order-handoff-modal__text">
+            <strong>{sellerName}</strong>
+            {country ? ` (${country})` : ''} · <strong>{productCode}</strong>
+            <br />
+            Xorij mahsulotini UZB kuryerga topshirish hozircha yopiq. Cargo logistica
+            orqali UZB omborga kelgach ochiladi.
+          </p>
+        )}
         <div className="admin-order-handoff-modal__actions">
-          {onCancelOrder ? (
+          {allowHandoff && onCancelOrder ? (
             <button
               type="button"
               className="admin-order-handoff-modal__cancel-order"
@@ -51,14 +64,16 @@ export default function AdminOrderHandoffModal({
             >
               Yopish
             </button>
-            <button
-              type="button"
-              className="admin-order-handoff-modal__confirm"
-              disabled={busy}
-              onClick={onConfirm}
-            >
-              {loading ? 'Topshirilmoqda...' : 'Ha, topshirish'}
-            </button>
+            {allowHandoff ? (
+              <button
+                type="button"
+                className="admin-order-handoff-modal__confirm"
+                disabled={busy}
+                onClick={onConfirm}
+              >
+                {loading ? 'Topshirilmoqda...' : 'Ha, topshirish'}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

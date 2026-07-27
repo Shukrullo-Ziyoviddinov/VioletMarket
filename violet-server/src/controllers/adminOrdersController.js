@@ -7,8 +7,8 @@ const listOrders = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
-const getOrderCounts = asyncHandler(async (_req, res) => {
-  const data = await adminOrdersService.getAdminOrderCounts();
+const getOrderCounts = asyncHandler(async (req, res) => {
+  const data = await adminOrdersService.getAdminOrderCounts(req.query || {});
   res.json({ ok: true, data });
 });
 

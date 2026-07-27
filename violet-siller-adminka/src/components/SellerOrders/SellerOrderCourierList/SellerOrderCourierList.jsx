@@ -8,6 +8,7 @@ export default function SellerOrderCourierList({
   orders = [],
   loading = false,
   onOpenOrder,
+  emptyKey = 'orders.courier.empty',
 }) {
   const { t } = useTranslation();
 
@@ -22,7 +23,7 @@ export default function SellerOrderCourierList({
   if (!orders.length) {
     return (
       <div className="seller-order-courier-list__state">
-        <Empty description={t('orders.courier.empty')} />
+        <Empty description={t(emptyKey)} />
       </div>
     );
   }

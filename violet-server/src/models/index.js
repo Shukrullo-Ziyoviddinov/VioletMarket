@@ -32,6 +32,7 @@ const { SellerSale } = require("./sellerSale");
 const { SellerProductSale } = require("./sellerProductSale");
 const { SellerSoldItem } = require("./sellerSoldItem");
 const { SellerPaymentRequest } = require("./sellerPaymentRequest");
+const { CargoShipment } = require("./cargoShipment");
 
 module.exports = {
   Product,
@@ -68,4 +69,5 @@ module.exports = {
   SellerProductSale,
   SellerSoldItem,
   SellerPaymentRequest,
+  CargoShipment,
 };

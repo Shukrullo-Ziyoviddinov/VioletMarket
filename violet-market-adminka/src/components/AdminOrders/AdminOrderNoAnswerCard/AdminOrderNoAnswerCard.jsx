@@ -20,6 +20,7 @@ function personName(person) {
 export default function AdminOrderNoAnswerCard({
   order,
   actionLoading = false,
+  showSellerCountry = false,
   onReHandoff,
   onReactivate,
   onDeliver,
@@ -46,7 +47,11 @@ export default function AdminOrderNoAnswerCard({
         <span className="seller-order-no-answer-card__badge">Javob bermadi</span>
       </div>
 
-      <AdminOrderSellerBadge order={order} className="admin-order-seller-badge--block" />
+      <AdminOrderSellerBadge
+        order={order}
+        className="admin-order-seller-badge--block"
+        showCountry={showSellerCountry}
+      />
 
       <div className="seller-order-no-answer-card__rows">
         <div className="seller-order-no-answer-card__row">

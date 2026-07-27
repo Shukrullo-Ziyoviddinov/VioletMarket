@@ -10,9 +10,11 @@ import {
   handoffSellerOrderItem,
   reactivateSellerNoAnswerOrder,
   reHandoffSellerNoAnswerOrder,
+  submitSellerOrderItemToCargo,
 } from '../../../api/sellerOrdersApi';
 import { useSellerAuth } from '../../../context/SellerAuthContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
+import SellerOrderCargoHandedList from '../SellerOrderCargoHandedList/SellerOrderCargoHandedList';
 import SellerOrderCollectionList from '../SellerOrderCollectionList/SellerOrderCollectionList';
 import SellerOrderCourierList from '../SellerOrderCourierList/SellerOrderCourierList';
 import SellerOrderHandedList from '../SellerOrderHandedList/SellerOrderHandedList';
@@ -27,7 +29,45 @@ const FILTER_STATUS = {
   courier: 'collected',
   handed: 'handed_to_courier',
   noAnswer: 'no_answer',
+  cargo: 'collected',
+  cargoHanded: 'ready_for_cargo',
 };
+
+async function fetchOrdersForFilter(token, filter) {
+  if (filter === 'cargoHanded') {
+    const [ready, handed] = await Promise.all([
+      fetchSellerOrders(token, {
+        page: 1,
+        limit: 100,
+        trackingStatus: 'ready_for_cargo',
+      }),
+      fetchSellerOrders(token, {
+        page: 1,
+        limit: 100,
+        trackingStatus: 'handed_to_cargo',
+      }),
+    ]);
+    const merged = [
+      ...(Array.isArray(ready?.orders) ? ready.orders : []),
+      ...(Array.isArray(handed?.orders) ? handed.orders : []),
+    ];
+    const seen = new Set();
+    return merged.filter((row) => {
+      const key = String(row?.id || '');
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  const trackingStatus = FILTER_STATUS[filter] || 'accepted';
+  const data = await fetchSellerOrders(token, {
+    page: 1,
+    limit: 100,
+    trackingStatus,
+  });
+  return Array.isArray(data?.orders) ? data.orders : [];
+}
 
 export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const { t } = useTranslation();
@@ -36,9 +76,11 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [loading, setLoading] = useState(true);
   const [activeOrder, setActiveOrder] = useState(null);
   const [courierOrder, setCourierOrder] = useState(null);
+  const [cargoOrder, setCargoOrder] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [collecting, setCollecting] = useState(false);
   const [handingOff, setHandingOff] = useState(false);
+  const [submittingCargo, setSubmittingCargo] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null);
 
@@ -51,13 +93,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
 
     setLoading(true);
     try {
-      const trackingStatus = FILTER_STATUS[filter] || 'accepted';
-      const data = await fetchSellerOrders(token, {
-        page: 1,
-        limit: 100,
-        trackingStatus,
-      });
-      setOrders(Array.isArray(data?.orders) ? data.orders : []);
+      setOrders(await fetchOrdersForFilter(token, filter));
     } catch {
       setOrders([]);
     } finally {
@@ -73,6 +109,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setOrders([]);
     setActiveOrder(null);
     setCourierOrder(null);
+    setCargoOrder(null);
     setCancelTarget(null);
   }, [filter]);
 
@@ -87,6 +124,14 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   );
   const handedOrders = orders.filter(
     (order) => order.trackingStatus === 'handed_to_courier',
+  );
+  const cargoReadyOrders = orders.filter(
+    (order) => order.trackingStatus === 'collected',
+  );
+  const cargoHandedOrders = orders.filter(
+    (order) =>
+      order.trackingStatus === 'ready_for_cargo' ||
+      order.trackingStatus === 'handed_to_cargo',
   );
   const noAnswerOrders =
     filter === 'noAnswer'
@@ -131,7 +176,9 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setHandingOff(true);
     try {
       await handoffSellerOrderItem(token, courierOrder.orderId, courierOrder.itemIndex);
-      message.success(t('orders.courier.success', { defaultValue: 'Mahsulot kuryerga topshirildi' }));
+      message.success(
+        t('orders.courier.success', { defaultValue: 'Mahsulot kuryerga topshirildi' }),
+      );
       setCourierOrder(null);
       await loadOrders();
     } catch (error) {
@@ -142,6 +189,34 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
       throw error;
     } finally {
       setHandingOff(false);
+    }
+  };
+
+  const handleCargoSubmit = async () => {
+    if (!token || !cargoOrder || submittingCargo) return;
+
+    setSubmittingCargo(true);
+    try {
+      await submitSellerOrderItemToCargo(
+        token,
+        cargoOrder.orderId,
+        cargoOrder.itemIndex,
+      );
+      message.success(
+        t('orders.cargo.success', {
+          defaultValue: 'Mahsulot cargoga yuborildi',
+        }),
+      );
+      setCargoOrder(null);
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.cargo.error', { defaultValue: 'Cargoga yuborib bo‘lmadi' }),
+      );
+      throw error;
+    } finally {
+      setSubmittingCargo(false);
     }
   };
 
@@ -156,6 +231,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
       setCancelTarget(null);
       setActiveOrder(null);
       setCourierOrder(null);
+      setCargoOrder(null);
       await loadOrders();
     } catch (error) {
       message.error(error?.message || t('orders.cancel.error'));
@@ -165,7 +241,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   };
 
   const requestCancelOrder = (targetOrder) => {
-    if (!targetOrder || cancelling || handingOff) return;
+    if (!targetOrder || cancelling || handingOff || submittingCargo) return;
     setCancelTarget(targetOrder);
   };
 
@@ -248,9 +324,22 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         onOpenOrder={setCourierOrder}
       />
     );
+  } else if (filter === 'cargo') {
+    listNode = (
+      <SellerOrderCourierList
+        orders={cargoReadyOrders}
+        loading={loading}
+        onOpenOrder={setCargoOrder}
+        emptyKey="orders.cargo.empty"
+      />
+    );
   } else if (filter === 'handed') {
     listNode = (
       <SellerOrderHandedList orders={handedOrders} loading={loading} />
+    );
+  } else if (filter === 'cargoHanded') {
+    listNode = (
+      <SellerOrderCargoHandedList orders={cargoHandedOrders} loading={loading} />
     );
   } else if (filter === 'noAnswer') {
     listNode = (
@@ -278,7 +367,8 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         confirming={confirming}
         onConfirm={handleConfirm}
         showCollect={
-          filter === 'collection' && activeOrder?.trackingStatus === 'seller_confirmed'
+          filter === 'collection' &&
+          activeOrder?.trackingStatus === 'seller_confirmed'
         }
         collecting={collecting}
         onCollect={handleCollect}
@@ -300,6 +390,18 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         }}
         onConfirm={handleCourierHandoff}
         onCancelOrder={() => requestCancelOrder(courierOrder)}
+        cancelOrderText={t('orders.modal.cancelOrder')}
+      />
+
+      <MiniGlobalModal
+        open={Boolean(cargoOrder)}
+        permissionKey="cargoHandoff"
+        loading={submittingCargo}
+        onClose={() => {
+          if (!submittingCargo && !cancelling) setCargoOrder(null);
+        }}
+        onConfirm={handleCargoSubmit}
+        onCancelOrder={() => requestCancelOrder(cargoOrder)}
         cancelOrderText={t('orders.modal.cancelOrder')}
       />
 
