@@ -23,6 +23,9 @@ const {
 const {
   createCargoReturnRequestForLogistica,
 } = require("./cargoReturnRequestService");
+const {
+  recordHandedOverHistory,
+} = require("./cargoLogisticaHistoryService");
 
 const DEFAULT_PAGE_SIZE = 20;
 const PROCESS_STEP_SET = new Set(LOGISTICA_PROCESS_STEPS);
@@ -492,6 +495,7 @@ async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
   }
 
   if (shipment.paidAt) {
+    await recordHandedOverHistory(shipment, shipment.paidAt);
     return {
       shipment: toLogisticaShipmentDetail(shipment.toObject()),
       alreadyPaid: true,
@@ -500,6 +504,7 @@ async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
 
   shipment.paidAt = new Date();
   await shipment.save();
+  await recordHandedOverHistory(shipment, shipment.paidAt);
 
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),

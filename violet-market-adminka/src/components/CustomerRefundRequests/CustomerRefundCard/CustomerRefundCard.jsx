@@ -88,6 +88,26 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
           </div>
         </div>
 
+        {item?.source === 'cargo' ? (
+          <div className="customer-refund-card__cargo">
+            <div>
+              <span className="customer-refund-card__label">Manba</span>
+              <strong>Cargo (xorij)</strong>
+            </div>
+            <div>
+              <span className="customer-refund-card__label">Cargo davlati</span>
+              <strong>{item?.cargoCountryLabel || item?.cargoCountry || '—'}</strong>
+            </div>
+          </div>
+        ) : (
+          <div className="customer-refund-card__meta customer-refund-card__meta--courier">
+            <div>
+              <span className="customer-refund-card__label">Kuryer</span>
+              <strong>{personName(item?.courier)}</strong>
+            </div>
+          </div>
+        )}
+
         <div className="customer-refund-card__meta">
           <div>
             <span className="customer-refund-card__label">Summa</span>

@@ -1,7 +1,9 @@
 /**
  * Mijozga pul qaytarish — inventar/qaytarish lifecycle dan alohida.
  *
- * Yaratiladi: kuryer sotuvchiga topshirgach (return|defective + isPaid).
+ * Yaratiladi:
+ *   - kuryer sotuvchiga topshirgach (return|defective + isPaid)
+ *   - cargo logistica «Ha» (defective + isPaid)
  * Tasdiqlanadi: asosiy admin «Mijozga summa qaytarildi».
  */
 
@@ -16,6 +18,10 @@ const {
   resolveReturnedListPeriod,
   resolveSelectedFilters,
 } = require("../returnedProducts/returnedProductsFilterService");
+const {
+  normalizeCargoCountry,
+  cargoCountryDisplayLabel,
+} = require("../../utils/cargoCountryNormalize");
 
 const REFUND_STATUSES = new Set(["pending", "refunded", "all"]);
 const REFUNDABLE_REASON_TYPES = new Set(SELLER_RETURNED_LIST_REASON_TYPES);
@@ -29,10 +35,16 @@ function pickSellerName(account) {
 function toPublicRefundRequest(doc, seller = null) {
   if (!doc) return null;
   const row = doc.toObject ? doc.toObject() : doc;
+  const source = String(row.source || "courier").trim().toLowerCase() || "courier";
+  const cargoCountry = normalizeCargoCountry(row.cargoCountry);
   return {
     id: String(row._id),
     returnedOrderId: String(row.returnedOrderId || ""),
     assignmentId: String(row.assignmentId || ""),
+    shipmentId: row.shipmentId ? String(row.shipmentId) : null,
+    source,
+    cargoCountry,
+    cargoCountryLabel: source === "cargo" ? cargoCountryDisplayLabel(cargoCountry) : "",
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
     unitIndex: Number(row.unitIndex) || 0,
@@ -82,7 +94,8 @@ function toPublicRefundSummary(doc) {
 }
 
 /**
- * completeReturn dan keyin chaqiriladi — inventarga tegmaydi.
+ * completeReturn / cargo confirm dan keyin — inventarga tegmaydi.
+ * return|defective + isPaid bo‘lsa pending refund ochadi (idempotent upsert).
  */
 async function createCustomerRefundRequestIfNeeded(returnedDoc) {
   if (!returnedDoc) return null;
@@ -98,9 +111,17 @@ async function createCustomerRefundRequestIfNeeded(returnedDoc) {
   const returnedOrderId = row._id;
   if (!returnedOrderId) return null;
 
+  const source =
+    String(row.source || "courier").trim().toLowerCase() === "cargo"
+      ? "cargo"
+      : "courier";
+
   const payload = {
     returnedOrderId,
     assignmentId: row.assignmentId || null,
+    shipmentId: row.shipmentId || null,
+    source,
+    cargoCountry: normalizeCargoCountry(row.cargoCountry),
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
     unitIndex: Number(row.unitIndex) || 0,

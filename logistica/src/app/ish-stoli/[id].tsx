@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GlobalConfirmModal } from '@/components/GlobalConfirmModal';
+import { ShipmentActionButtons } from '@/components/shipment-detail/ShipmentActionButtons';
 import { ShipmentDetailSummary } from '@/components/shipment-detail/ShipmentDetailSummary';
 import { ShipmentProductsList } from '@/components/shipment-detail/ShipmentProductsList';
 import { ShipmentRequestInfo } from '@/components/shipment-detail/ShipmentRequestInfo';
@@ -22,6 +23,7 @@ import { ApiError } from '@/services/api';
 import {
   fetchShipmentDetail,
   markShipmentPaid,
+  returnShipmentToSeller,
   saveShipmentProcessStep,
 } from '@/services/logistica-shipments';
 import type { ProcessStepKey, ShipmentDetail } from '@/types/shipment';
@@ -43,6 +45,7 @@ export default function IshStoliScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [paidModalOpen, setPaidModalOpen] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -77,6 +80,8 @@ export default function IshStoliScreen() {
   const isPaid = Boolean(detail?.paidAt);
   const showProcessButtons = isAccepted && !isToshkent && !isPaid;
   const showPaidButton = isAccepted && isToshkent && !isPaid;
+  /** Accepted + to‘lanmagan — admin ga qaytarish so‘rovi (Asosiydagi bilan bir xil zanjir) */
+  const showReturnRequest = isAccepted && !isPaid;
   const productCode = useMemo(() => {
     const first = detail?.products?.[0];
     if (!first?.productId) return detail?.requestCode || '—';
@@ -123,6 +128,27 @@ export default function IshStoliScreen() {
       Alert.alert(
         'Xato',
         err instanceof ApiError ? err.message : 'Belgilab bo‘lmadi',
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmReturnRequest = async () => {
+    if (!token || !id || actionLoading) return;
+    setActionLoading(true);
+    try {
+      await returnShipmentToSeller(token, id);
+      setReturnModalOpen(false);
+      Alert.alert(
+        'So‘rov yuborildi',
+        'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
+      );
+      router.replace(isToshkent ? '/uzbda' : '/yuklarim');
+    } catch (err) {
+      Alert.alert(
+        'Xato',
+        err instanceof ApiError ? err.message : 'So‘rov yuborib bo‘lmadi',
       );
     } finally {
       setActionLoading(false);
@@ -264,6 +290,16 @@ export default function IshStoliScreen() {
                 To‘lov belgilangan — asosiy admin «Xorij → UZB» da ko‘rinadi.
               </Text>
             ) : null}
+
+            {showReturnRequest ? (
+              <View style={styles.returnWrap}>
+                <ShipmentActionButtons
+                  onReturnToSeller={() => {
+                    if (!actionLoading) setReturnModalOpen(true);
+                  }}
+                />
+              </View>
+            ) : null}
           </View>
         </ScrollView>
       )}
@@ -280,6 +316,21 @@ export default function IshStoliScreen() {
         }}
         onConfirm={() => {
           void handleConfirmPaid();
+        }}
+      />
+
+      <GlobalConfirmModal
+        open={returnModalOpen}
+        title="Sotuvchiga qaytarish"
+        message="Asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz."
+        confirmText="Yuborish"
+        cancelText="Bekor"
+        loading={actionLoading}
+        onCancel={() => {
+          if (!actionLoading) setReturnModalOpen(false);
+        }}
+        onConfirm={() => {
+          void handleConfirmReturnRequest();
         }}
       />
     </View>
@@ -421,6 +472,9 @@ const styles = StyleSheet.create({
     color: '#16A34A',
     fontWeight: '600',
     lineHeight: 18,
+  },
+  returnWrap: {
+    marginTop: 4,
   },
   pressed: {
     opacity: 0.9,

@@ -9,10 +9,12 @@ const { CargoShipment, toPublicCargoShipment } = require("../../models/cargoShip
 const { CourierReturnedOrder } = require("../../models/courierReturnedOrder");
 const { LogisticaProfile } = require("../../models/logisticaProfile");
 const { Order } = require("../../models/order");
+const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
   normalizeCargoCountry,
   cargoCountriesMatch,
+  cargoCountryDisplayLabel,
 } = require("../../utils/cargoCountryNormalize");
 const {
   notifyAdminReturnRequestSubmitted,
@@ -23,24 +25,20 @@ const {
   toPublicReturnedOrder,
 } = require("../deliveryOrders/courierReturnOrderService");
 const {
+  createCustomerRefundRequestIfNeeded,
+} = require("../customerRefund/customerRefundService");
+const {
+  recordReturnedHistory,
+} = require("./cargoLogisticaHistoryService");
+const {
   claimAndApplyReturnStockDisposition,
 } = require("../../unitLifecycle/stockDisposition");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
 const { normalizeVariant } = require("../../productManagement/variantStockAdjust");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 
-const CARGO_COUNTRY_LABELS = {
-  china: "Xitoy",
-  korea: "Koreya",
-  turkiya: "Turkiya",
-  turkey: "Turkiya",
-  usa: "AQSH",
-  japan: "Yaponiya",
-};
-
 function cargoCountryLabel(value) {
-  const key = normalizeCargoCountry(value);
-  return CARGO_COUNTRY_LABELS[key] || key || "—";
+  return cargoCountryDisplayLabel(value);
 }
 
 function resolveProductTitleParts(title) {
@@ -451,32 +449,55 @@ async function rejectCargoReturnRequest(requestId, payload = {}) {
   };
 }
 
-async function listApprovedCargoReturnsForLogistica(logisticaId, query = {}) {
+/**
+ * Qaytarish board: Admin kutmoqda + Tasdiqlangan (har bo‘lim pagination).
+ */
+async function listCargoReturnsBoardForLogistica(logisticaId, query = {}) {
   await loadActiveLogistica(logisticaId);
-  const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
-  const limit = Math.min(100, Math.max(1, Math.floor(toNumber(query.limit, 50))));
 
-  const filter = {
+  const limit = Math.min(100, Math.max(1, Math.floor(toNumber(query.limit, 30))));
+  const pendingPage = Math.max(1, Math.floor(toNumber(query.pendingPage, 1)));
+  const approvedPage = Math.max(1, Math.floor(toNumber(query.approvedPage, 1)));
+
+  const pendingFilter = { logisticaId, status: "pending" };
+  const approvedFilter = {
     logisticaId,
     status: "approved",
     completedAt: null,
   };
 
-  const [total, rows] = await Promise.all([
-    CargoReturnRequest.countDocuments(filter),
-    CargoReturnRequest.find(filter)
-      .sort({ reviewedAt: -1, createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  const [pendingTotal, pendingRows, approvedTotal, approvedRows] =
+    await Promise.all([
+      CargoReturnRequest.countDocuments(pendingFilter),
+      CargoReturnRequest.find(pendingFilter)
+        .sort({ createdAt: -1 })
+        .skip((pendingPage - 1) * limit)
+        .limit(limit)
+        .lean(),
+      CargoReturnRequest.countDocuments(approvedFilter),
+      CargoReturnRequest.find(approvedFilter)
+        .sort({ reviewedAt: -1, createdAt: -1 })
+        .skip((approvedPage - 1) * limit)
+        .limit(limit)
+        .lean(),
+    ]);
 
   return {
-    page,
     limit,
-    total,
-    totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    items: rows.map(toLogisticaReturnCard),
+    pending: {
+      page: pendingPage,
+      limit,
+      total: pendingTotal,
+      totalPages: Math.max(1, Math.ceil(pendingTotal / limit) || 1),
+      items: pendingRows.map(toLogisticaReturnCard),
+    },
+    approved: {
+      page: approvedPage,
+      limit,
+      total: approvedTotal,
+      totalPages: Math.max(1, Math.ceil(approvedTotal / limit) || 1),
+      items: approvedRows.map(toLogisticaReturnCard),
+    },
   };
 }
 
@@ -503,8 +524,255 @@ async function markOrderItemReturnedToSellerFromCargo(orderId, itemIndex, seller
   await order.save();
 }
 
+function isDuplicateKeyError(err) {
+  return Boolean(err && (err.code === 11000 || err.code === 11001));
+}
+
+async function resolveOrderCustomer(order) {
+  if (!order?.userId) {
+    return { firstName: "", lastName: "", phone: "" };
+  }
+  const user = await User.findById(order.userId)
+    .select("firstName lastName phone")
+    .lean();
+  if (!user) {
+    return { firstName: "", lastName: "", phone: "" };
+  }
+  return {
+    firstName: String(user.firstName || "").trim(),
+    lastName: String(user.lastName || "").trim(),
+    phone: String(user.phone || "").trim(),
+  };
+}
+
+/**
+ * Shu cargo so‘roviga tegishli CourierReturnedOrder (yarim yoki to‘liq).
+ * Boshqa manba (kuryer) birlikni egallagan bo‘lsa — conflict.
+ */
+async function findCargoReturnedOrderForResume(request) {
+  const unitFilter = {
+    orderId: Number(request.orderId),
+    itemIndex: Number(request.itemIndex),
+    unitIndex: Number(request.unitIndex) || 0,
+  };
+
+  if (request.returnedOrderId) {
+    const byLink = await CourierReturnedOrder.findById(request.returnedOrderId);
+    if (byLink) return { doc: byLink, conflict: false };
+  }
+
+  const byRequest = await CourierReturnedOrder.findOne({
+    cargoReturnRequestId: request._id,
+  });
+  if (byRequest) return { doc: byRequest, conflict: false };
+
+  const byUnit = await CourierReturnedOrder.findOne(unitFilter);
+  if (!byUnit) return { doc: null, conflict: false };
+
+  const sameCargo =
+    String(byUnit.source || "") === "cargo" &&
+    (String(byUnit.cargoReturnRequestId || "") === String(request._id) ||
+      String(byUnit.shipmentId || "") === String(request.shipmentId));
+
+  if (sameCargo) return { doc: byUnit, conflict: false };
+  return { doc: byUnit, conflict: true };
+}
+
+function buildCargoReturnedOrderPayload({
+  request,
+  shipment,
+  profile,
+  order,
+  customer,
+  qty,
+  variant,
+  returnedAt,
+  periodKeys,
+}) {
+  const cargoCountry = normalizeCargoCountry(request.cargoCountry);
+  return {
+    source: "cargo",
+    shipmentId: shipment._id,
+    cargoReturnRequestId: request._id,
+    cargoCountry,
+    orderId: Number(request.orderId),
+    itemIndex: Number(request.itemIndex) || 0,
+    unitIndex: Number(request.unitIndex) || 0,
+    productId: Number(request.productId),
+    productCode: String(request.productCode || ""),
+    sellerId: String(request.sellerId || "").trim(),
+    title: {
+      uz: String(request.title?.uz || ""),
+      ru: String(request.title?.ru || ""),
+    },
+    amount: Math.max(0, Number(request.amount) || 0),
+    quantity: qty,
+    imageUrl: String(request.imageUrl || ""),
+    color: variant.color,
+    size: variant.size,
+    storage: variant.storage,
+    model: variant.model,
+    courier: {
+      firstName: String(profile.companyName || "Cargo"),
+      lastName: cargoCountryLabel(cargoCountry),
+      phone: "",
+      email: "",
+    },
+    customer: {
+      firstName: String(customer?.firstName || ""),
+      lastName: String(customer?.lastName || ""),
+      phone: String(customer?.phone || ""),
+    },
+    reasonType: "defective",
+    comment: String(request.comment || ""),
+    orderedAt: request.orderedAt || order?.createdAt || null,
+    returnedAt,
+    dateKey: periodKeys.dateKey,
+    weekKey: periodKeys.weekKey,
+    monthKey: periodKeys.monthKey,
+    orderPaymentStatus: String(order?.status || request.orderPaymentStatus || ""),
+    isPaid: isOrderPaid(order) || Boolean(request.isPaid),
+    stockReleased: false,
+    stockDiscarded: false,
+  };
+}
+
+/**
+ * Yangi yoki mavjud (resume) CourierReturnedOrder.
+ */
+async function ensureCargoReturnedOrderDoc(ctx) {
+  const { request } = ctx;
+  const cargoCountry = normalizeCargoCountry(request.cargoCountry);
+  const found = await findCargoReturnedOrderForResume(request);
+  if (found.conflict) {
+    throw new HttpError(
+      409,
+      "Bu mahsulot allaqachon qaytarilganlar ro‘yxatida",
+      "RETURNED_ORDER_EXISTS",
+    );
+  }
+
+  if (found.doc) {
+    const doc = found.doc;
+    doc.source = "cargo";
+    doc.shipmentId = ctx.shipment._id;
+    doc.cargoReturnRequestId = request._id;
+    doc.cargoCountry = cargoCountry;
+    doc.reasonType = "defective";
+    doc.productId = Number(request.productId) || doc.productId;
+    doc.sellerId = String(request.sellerId || doc.sellerId || "").trim();
+    doc.quantity = ctx.qty;
+    doc.color = ctx.variant.color;
+    doc.size = ctx.variant.size;
+    doc.storage = ctx.variant.storage;
+    doc.model = ctx.variant.model;
+    if (ctx.customer) {
+      doc.customer = {
+        firstName: String(ctx.customer.firstName || ""),
+        lastName: String(ctx.customer.lastName || ""),
+        phone: String(ctx.customer.phone || ""),
+      };
+    }
+    if (ctx.order) {
+      doc.isPaid = isOrderPaid(ctx.order) || Boolean(request.isPaid);
+      doc.orderPaymentStatus = String(ctx.order.status || "");
+    }
+    await doc.save();
+    return { doc, created: false };
+  }
+
+  try {
+    const created = await CourierReturnedOrder.create(
+      buildCargoReturnedOrderPayload(ctx),
+    );
+    return { doc: created, created: true };
+  } catch (err) {
+    if (!isDuplicateKeyError(err)) throw err;
+    const again = await findCargoReturnedOrderForResume(request);
+    if (again.conflict || !again.doc) throw err;
+    again.doc.source = "cargo";
+    again.doc.shipmentId = ctx.shipment._id;
+    again.doc.cargoReturnRequestId = request._id;
+    again.doc.cargoCountry = cargoCountry;
+    again.doc.reasonType = "defective";
+    if (ctx.customer) {
+      again.doc.customer = {
+        firstName: String(ctx.customer.firstName || ""),
+        lastName: String(ctx.customer.lastName || ""),
+        phone: String(ctx.customer.phone || ""),
+      };
+    }
+    await again.doc.save();
+    return { doc: again.doc, created: false };
+  }
+}
+
+/**
+ * Ombor + tracking + shipment + request + (paid bo‘lsa) mijoz refund.
+ * Qayta chaqirilsa xavfsiz.
+ */
+async function finishCargoDefectiveConfirmSteps({
+  request,
+  shipment,
+  returnedDoc,
+  qty,
+  variant,
+  returnedAt,
+}) {
+  await claimAndApplyReturnStockDisposition({
+    returnedOrderId: returnedDoc._id,
+    reasonType: "defective",
+    productId: request.productId,
+    qty,
+    variant,
+  });
+
+  await markOrderItemReturnedToSellerFromCargo(
+    request.orderId,
+    request.itemIndex,
+    request.sellerId,
+    returnedAt,
+  );
+
+  if (String(shipment.status) !== "returned_to_seller") {
+    shipment.status = "returned_to_seller";
+    shipment.returnedAt = shipment.returnedAt || returnedAt;
+    await shipment.save();
+  }
+
+  // Online to‘lov — asosiy admin «Mijozga pul qaytarish» (naqd emas)
+  const freshForRefund = await CourierReturnedOrder.findById(returnedDoc._id);
+  if (freshForRefund) {
+    await createCustomerRefundRequestIfNeeded(freshForRefund);
+  }
+
+  /**
+   * Tarix completed dan oldin — yiqilsa request approved qoladi, qayta «Ha» resume.
+   * Xato yutilmaydi (throw).
+   */
+  await recordReturnedHistory(shipment, {
+    at: returnedAt,
+    amount: Number(request.amount) || 0,
+    cargoReturnRequestId: request._id,
+  });
+
+  if (String(request.status) !== "completed") {
+    request.status = "completed";
+    request.completedAt = returnedAt;
+    request.returnedOrderId = returnedDoc._id;
+    await request.save();
+  } else if (
+    !request.returnedOrderId ||
+    String(request.returnedOrderId) !== String(returnedDoc._id)
+  ) {
+    request.returnedOrderId = returnedDoc._id;
+    await request.save();
+  }
+}
+
 /**
  * Logistica Ha — Yaroqsiz: ombordan olib tashlash, siller «Qaytarilgan»ga.
+ * Qayta urinish (resume): yarim yozuvni topib qolgan qadamlarni tugatadi.
  */
 async function confirmCargoReturnByLogistica(logisticaId, requestIdRaw) {
   const profile = await loadActiveLogistica(logisticaId);
@@ -521,11 +789,23 @@ async function confirmCargoReturnByLogistica(logisticaId, requestIdRaw) {
     throw new HttpError(403, "Bu so‘rov sizniki emas", "RETURN_FORBIDDEN");
   }
 
-  if (String(request.status) === "completed" && request.returnedOrderId) {
-    const existing = await CourierReturnedOrder.findById(request.returnedOrderId).lean();
+  if (String(request.status) === "completed") {
+    const existing = request.returnedOrderId
+      ? await CourierReturnedOrder.findById(request.returnedOrderId).lean()
+      : null;
+    const shipment = await CargoShipment.findById(request.shipmentId);
+    // Oldingi urinishda Tarix yozilmagan bo‘lsa — idempotent to‘ldirish
+    if (shipment) {
+      await recordReturnedHistory(shipment, {
+        at: request.completedAt || shipment.returnedAt || new Date(),
+        amount: Number(request.amount) || Number(existing?.amount) || 0,
+        cargoReturnRequestId: request._id,
+      });
+    }
     return {
       request: toPublicCargoReturnRequest(request),
       returned: toPublicReturnedOrder(existing),
+      shipment: shipment ? toPublicCargoShipment(shipment) : null,
       alreadyCompleted: true,
     };
   }
@@ -552,7 +832,7 @@ async function confirmCargoReturnByLogistica(logisticaId, requestIdRaw) {
   }
 
   const order = await Order.findOne({ id: request.orderId })
-    .select("status paidAt createdAt items paymentMethod")
+    .select("status paidAt createdAt items paymentMethod userId")
     .lean();
 
   const returnedAt = new Date();
@@ -564,88 +844,28 @@ async function confirmCargoReturnByLogistica(logisticaId, requestIdRaw) {
     storage: request.storage,
     model: request.model,
   });
+  const customer = await resolveOrderCustomer(order);
 
-  const existingUnit = await CourierReturnedOrder.findOne({
-    orderId: Number(request.orderId),
-    itemIndex: Number(request.itemIndex),
-    unitIndex: Number(request.unitIndex) || 0,
-  });
-  if (existingUnit) {
-    throw new HttpError(
-      409,
-      "Bu mahsulot allaqachon qaytarilganlar ro‘yxatida",
-      "RETURNED_ORDER_EXISTS",
-    );
-  }
-
-  const returnedDoc = await CourierReturnedOrder.create({
-    source: "cargo",
-    shipmentId: shipment._id,
-    cargoReturnRequestId: request._id,
-    orderId: Number(request.orderId),
-    itemIndex: Number(request.itemIndex) || 0,
-    unitIndex: Number(request.unitIndex) || 0,
-    productId: Number(request.productId),
-    productCode: String(request.productCode || ""),
-    sellerId: String(request.sellerId || "").trim(),
-    title: {
-      uz: String(request.title?.uz || ""),
-      ru: String(request.title?.ru || ""),
-    },
-    amount: Math.max(0, Number(request.amount) || 0),
-    quantity: qty,
-    imageUrl: String(request.imageUrl || ""),
-    color: variant.color,
-    size: variant.size,
-    storage: variant.storage,
-    model: variant.model,
-    courier: {
-      firstName: String(profile.companyName || "Cargo"),
-      lastName: cargoCountryLabel(request.cargoCountry),
-      phone: "",
-      email: "",
-    },
-    customer: {
-      firstName: "",
-      lastName: "",
-      phone: "",
-    },
-    reasonType: "defective",
-    comment: String(request.comment || ""),
-    orderedAt: request.orderedAt || order?.createdAt || null,
-    returnedAt,
-    dateKey: periodKeys.dateKey,
-    weekKey: periodKeys.weekKey,
-    monthKey: periodKeys.monthKey,
-    orderPaymentStatus: String(order?.status || request.orderPaymentStatus || ""),
-    isPaid: isOrderPaid(order) || Boolean(request.isPaid),
-    stockReleased: false,
-    stockDiscarded: false,
-  });
-
-  await claimAndApplyReturnStockDisposition({
-    returnedOrderId: returnedDoc._id,
-    reasonType: "defective",
-    productId: request.productId,
+  const { doc: returnedDoc, created } = await ensureCargoReturnedOrderDoc({
+    request,
+    shipment,
+    profile,
+    order,
+    customer,
     qty,
     variant,
+    returnedAt,
+    periodKeys,
   });
 
-  await markOrderItemReturnedToSellerFromCargo(
-    request.orderId,
-    request.itemIndex,
-    request.sellerId,
+  await finishCargoDefectiveConfirmSteps({
+    request,
+    shipment,
+    returnedDoc,
+    qty,
+    variant,
     returnedAt,
-  );
-
-  shipment.status = "returned_to_seller";
-  shipment.returnedAt = returnedAt;
-  await shipment.save();
-
-  request.status = "completed";
-  request.completedAt = returnedAt;
-  request.returnedOrderId = returnedDoc._id;
-  await request.save();
+  });
 
   const freshReturned = await CourierReturnedOrder.findById(returnedDoc._id).lean();
 
@@ -654,6 +874,7 @@ async function confirmCargoReturnByLogistica(logisticaId, requestIdRaw) {
     returned: toPublicReturnedOrder(freshReturned),
     shipment: toPublicCargoShipment(shipment),
     alreadyCompleted: false,
+    resumed: !created,
   };
 }
 
@@ -667,7 +888,7 @@ module.exports = {
   listCargoReturnRequestsForAdmin,
   approveCargoReturnRequest,
   rejectCargoReturnRequest,
-  listApprovedCargoReturnsForLogistica,
+  listCargoReturnsBoardForLogistica,
   confirmCargoReturnByLogistica,
   findCargoReturnRequestById,
   toPublicCargoReturnRequest,

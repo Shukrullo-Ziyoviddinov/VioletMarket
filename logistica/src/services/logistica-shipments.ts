@@ -158,24 +158,16 @@ export async function returnShipmentToSeller(token: string, shipmentId: string) 
   };
 }
 
-export async function fetchApprovedCargoReturns(
-  token: string,
-  page = 1,
-  limit = 50,
-) {
-  const data = await apiRequest<{
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    items: Array<Record<string, unknown>>;
-  }>(
-    `/api/logistica-auth/shipments/return-approved?page=${page}&limit=${limit}`,
-    { method: 'GET' },
-    token,
-  );
+type ReturnListPage = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  items: ReturnItem[];
+};
 
-  const items = (Array.isArray(data?.items) ? data.items : []).map((row) => ({
+function mapReturnCard(row: Record<string, unknown>) {
+  return {
     id: String(row.id || ''),
     shipmentId: String(row.shipmentId || ''),
     requestCode: String(row.requestCode || ''),
@@ -192,6 +184,86 @@ export async function fetchApprovedCargoReturns(
       : null,
     reviewedAt: row.reviewedAt ?? null,
     status: String(row.status || ''),
+  };
+}
+
+type ReturnItem = ReturnType<typeof mapReturnCard>;
+
+function mapReturnPage(
+  section: Partial<ReturnListPage> & { items?: Array<Record<string, unknown>> },
+  fallbackPage: number,
+  fallbackLimit: number,
+): ReturnListPage {
+  const items = (Array.isArray(section?.items) ? section.items : []).map(
+    mapReturnCard,
+  );
+  return {
+    page: Number(section?.page) || fallbackPage,
+    limit: Number(section?.limit) || fallbackLimit,
+    total: Number(section?.total) || items.length,
+    totalPages: Number(section?.totalPages) || 1,
+    items,
+  };
+}
+
+export async function fetchCargoReturnsBoard(
+  token: string,
+  options: {
+    pendingPage?: number;
+    approvedPage?: number;
+    limit?: number;
+  } = {},
+) {
+  const pendingPage = Math.max(1, Number(options.pendingPage) || 1);
+  const approvedPage = Math.max(1, Number(options.approvedPage) || 1);
+  const limit = Math.min(100, Math.max(1, Number(options.limit) || 30));
+  const params = new URLSearchParams({
+    pendingPage: String(pendingPage),
+    approvedPage: String(approvedPage),
+    limit: String(limit),
+  });
+
+  const data = await apiRequest<{
+    limit?: number;
+    pending?: Partial<ReturnListPage> & { items?: Array<Record<string, unknown>> };
+    approved?: Partial<ReturnListPage> & { items?: Array<Record<string, unknown>> };
+  }>(`/api/logistica-auth/cargo-returns?${params.toString()}`, { method: 'GET' }, token);
+
+  return {
+    limit: Number(data?.limit) || limit,
+    pending: mapReturnPage(data?.pending || {}, pendingPage, limit),
+    approved: mapReturnPage(data?.approved || {}, approvedPage, limit),
+  };
+}
+
+export async function fetchCargoHistory(token: string, page = 1, limit = 30) {
+  const data = await apiRequest<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    items: Array<Record<string, unknown>>;
+  }>(
+    `/api/logistica-auth/history?page=${page}&limit=${limit}`,
+    { method: 'GET' },
+    token,
+  );
+
+  const items = (Array.isArray(data?.items) ? data.items : []).map((row) => ({
+    id: String(row.id || ''),
+    shipmentId: String(row.shipmentId || ''),
+    kind: String(row.kind || '') === 'returned' ? 'returned' : 'handed_over',
+    kindLabel: String(row.kindLabel || ''),
+    requestCode: String(row.requestCode || ''),
+    storeName: String(row.storeName || ''),
+    sellerId: String(row.sellerId || ''),
+    orderId: Number(row.orderId) || 0,
+    productTitle: String(row.productTitle || 'Mahsulot'),
+    productCode: String(row.productCode || ''),
+    amount: Math.max(0, Number(row.amount) || 0),
+    cargoCountry: String(row.cargoCountry || ''),
+    cargoCountryLabel: String(row.cargoCountryLabel || ''),
+    at: (row.at as string | null | undefined) ?? null,
   }));
 
   return {

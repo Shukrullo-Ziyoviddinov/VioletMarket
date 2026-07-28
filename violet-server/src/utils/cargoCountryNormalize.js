@@ -43,9 +43,25 @@ function cargoCountriesMatch(a, b) {
   return Boolean(left) && left === right;
 }
 
+const CARGO_COUNTRY_LABELS = {
+  china: "Xitoy",
+  korea: "Koreya",
+  turkiya: "Turkiya",
+  turkey: "Turkiya",
+  usa: "AQSH",
+  japan: "Yaponiya",
+};
+
+function cargoCountryDisplayLabel(value) {
+  const key = normalizeCargoCountry(value);
+  return CARGO_COUNTRY_LABELS[key] || key || "—";
+}
+
 module.exports = {
   CARGO_COUNTRY_ALIASES,
+  CARGO_COUNTRY_LABELS,
   normalizeCargoCountry,
   cargoCountryMatchValues,
   cargoCountriesMatch,
+  cargoCountryDisplayLabel,
 };

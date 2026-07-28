@@ -1,0 +1,359 @@
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import { ScreenShell } from '@/components/ScreenShell';
+import { useAuth } from '@/providers/AuthProvider';
+import { ApiError } from '@/services/api';
+import { fetchCargoHistory } from '@/services/logistica-shipments';
+
+const ACCENT = '#7c3aed';
+const GREEN = '#16A34A';
+const RED = '#DC2626';
+const PAGE_SIZE = 30;
+
+type HistoryItem = {
+  id: string;
+  kind: 'handed_over' | 'returned';
+  kindLabel: string;
+  requestCode: string;
+  storeName: string;
+  productTitle: string;
+  productCode: string;
+  orderId: number;
+  amount: number;
+  cargoCountryLabel: string;
+  at: string | null;
+};
+
+function formatWhen(value: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('uz-UZ', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatMoney(value: number) {
+  return `${Math.max(0, value || 0).toLocaleString('uz-UZ')} so'm`;
+}
+
+function mergeUnique(prev: HistoryItem[], next: HistoryItem[]) {
+  const map = new Map<string, HistoryItem>();
+  for (const row of prev) map.set(row.id, row);
+  for (const row of next) map.set(row.id, row);
+  return [...map.values()];
+}
+
+export default function TarixScreen() {
+  const { token } = useAuth();
+  const [items, setItems] = useState<HistoryItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState('');
+
+  const load = useCallback(
+    async (mode: 'initial' | 'refresh' = 'initial') => {
+      if (!token) {
+        setItems([]);
+        setLoading(false);
+        setError('Avtorizatsiya talab qilinadi');
+        return;
+      }
+
+      if (mode === 'initial') setLoading(true);
+      if (mode === 'refresh') setRefreshing(true);
+      setError('');
+
+      try {
+        const data = await fetchCargoHistory(token, 1, PAGE_SIZE);
+        setItems(data.items as HistoryItem[]);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+      } catch (err) {
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : 'Tarixni yuklab bo‘lmadi',
+        );
+        if (mode === 'initial') setItems([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [token],
+  );
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const loadMore = async () => {
+    if (!token || loadingMore || page >= totalPages) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const data = await fetchCargoHistory(token, nextPage, PAGE_SIZE);
+      setItems((prev) => mergeUnique(prev, data.items as HistoryItem[]));
+      setPage(data.page);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : 'Yana yuklab bo‘lmadi',
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  return (
+    <ScreenShell title="Tarix">
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator color={ACCENT} size="large" />
+        </View>
+      ) : error && items.length === 0 ? (
+        <View style={styles.centered}>
+          <Text style={styles.errorTitle}>Yuklanmadi</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable
+            style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
+            onPress={() => {
+              void load();
+            }}
+          >
+            <Text style={styles.retryText}>Qayta urinish</Text>
+          </Pressable>
+        </View>
+      ) : items.length === 0 ? (
+        <View style={styles.centered}>
+          <Text style={styles.emptyTitle}>Tarix bo‘sh</Text>
+          <Text style={styles.emptyText}>
+            «To‘landi» (topshirilgan) va sillerga qaytarilganlar shu yerda
+            saqlanadi.
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                void load('refresh');
+              }}
+              tintColor={ACCENT}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {error ? <Text style={styles.inlineError}>{error}</Text> : null}
+          {items.map((item) => {
+            const isReturned = item.kind === 'returned';
+            return (
+              <View
+                key={item.id}
+                style={[
+                  styles.card,
+                  isReturned ? styles.cardReturned : styles.cardHanded,
+                ]}
+              >
+                <View style={styles.cardTop}>
+                  <Text style={styles.code} numberOfLines={1}>
+                    {item.requestCode || item.productCode || '—'}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.badge,
+                      isReturned ? styles.badgeReturned : styles.badgeHanded,
+                    ]}
+                  >
+                    {isReturned ? 'Qaytarilgan' : 'Topshirilgan'}
+                  </Text>
+                </View>
+                <Text style={styles.title} numberOfLines={2}>
+                  {item.productTitle}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.storeName || 'Siller'} · #{item.orderId}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.cargoCountryLabel || 'Cargo'}
+                  {item.amount > 0 ? ` · ${formatMoney(item.amount)}` : ''}
+                </Text>
+                <Text style={styles.when}>{formatWhen(item.at)}</Text>
+              </View>
+            );
+          })}
+          {page < totalPages ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.moreBtn,
+                pressed && !loadingMore && styles.pressed,
+              ]}
+              disabled={loadingMore}
+              onPress={() => {
+                void loadMore();
+              }}
+            >
+              {loadingMore ? (
+                <ActivityIndicator color={ACCENT} />
+              ) : (
+                <Text style={styles.moreText}>Yana yuklash</Text>
+              )}
+            </Pressable>
+          ) : null}
+        </ScrollView>
+      )}
+    </ScreenShell>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { flex: 1 },
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    gap: 10,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  errorTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  inlineError: {
+    color: '#B91C1C',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  retryBtn: {
+    marginTop: 8,
+    backgroundColor: ACCENT,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  moreBtn: {
+    minHeight: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F3FF',
+    marginTop: 4,
+  },
+  moreText: {
+    color: ACCENT,
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  card: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    gap: 4,
+  },
+  cardHanded: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0',
+  },
+  cardReturned: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  cardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  code: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  badge: {
+    fontSize: 11,
+    fontWeight: '800',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  badgeHanded: {
+    backgroundColor: '#DCFCE7',
+    color: GREEN,
+  },
+  badgeReturned: {
+    backgroundColor: '#FEE2E2',
+    color: RED,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  meta: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  when: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  pressed: {
+    opacity: 0.88,
+  },
+});

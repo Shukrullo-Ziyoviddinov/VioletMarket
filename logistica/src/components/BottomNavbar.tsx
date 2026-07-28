@@ -27,6 +27,12 @@ const items = [
     href: '/qaytarish',
   },
   {
+    label: 'Tarix',
+    icon: 'time-outline',
+    activeIcon: 'time',
+    href: '/tarix',
+  },
+  {
     label: 'Profil',
     icon: 'person-outline',
     activeIcon: 'person',
@@ -56,7 +62,7 @@ export function BottomNavbar() {
           >
             <Ionicons
               name={active ? item.activeIcon : item.icon}
-              size={24}
+              size={22}
               color={active ? ACCENT : MUTED}
             />
             <Text style={[styles.label, active && styles.activeLabel]}>
@@ -87,7 +93,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: MUTED,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
   },
   activeLabel: {

@@ -25,9 +25,15 @@ router.get(
 );
 
 router.get(
-  "/logistica-auth/shipments/return-approved",
+  "/logistica-auth/cargo-returns",
   logisticaAuthMiddleware,
-  controller.listApprovedCargoReturns,
+  controller.listCargoReturnsBoard,
+);
+
+router.get(
+  "/logistica-auth/history",
+  logisticaAuthMiddleware,
+  controller.listCargoHistory,
 );
 
 router.get(

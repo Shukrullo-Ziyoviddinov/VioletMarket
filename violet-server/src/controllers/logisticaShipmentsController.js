@@ -64,13 +64,22 @@ const returnShipmentToSeller = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
-const listApprovedCargoReturns = asyncHandler(async (req, res) => {
+const listCargoReturnsBoard = asyncHandler(async (req, res) => {
   const cargoReturnRequestService = require("../services/cargoShipments/cargoReturnRequestService");
   const data =
-    await cargoReturnRequestService.listApprovedCargoReturnsForLogistica(
+    await cargoReturnRequestService.listCargoReturnsBoardForLogistica(
       req.logisticaId,
       req.query || {},
     );
+  res.json({ ok: true, data });
+});
+
+const listCargoHistory = asyncHandler(async (req, res) => {
+  const cargoLogisticaHistoryService = require("../services/cargoShipments/cargoLogisticaHistoryService");
+  const data = await cargoLogisticaHistoryService.listHistoryForLogistica(
+    req.logisticaId,
+    req.query || {},
+  );
   res.json({ ok: true, data });
 });
 
@@ -95,7 +104,8 @@ module.exports = {
   listPendingShipments,
   listAcceptedShipments,
   listUzWarehouseShipments,
-  listApprovedCargoReturns,
+  listCargoReturnsBoard,
+  listCargoHistory,
   getShipmentDetail,
   acceptShipment,
   updateProcessStep,

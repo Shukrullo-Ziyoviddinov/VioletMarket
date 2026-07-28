@@ -35,6 +35,8 @@ const courierReturnedOrderSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    /** Xorij cargo qaytarish — china/korea/… */
+    cargoCountry: { type: String, default: "", trim: true, lowercase: true },
     orderId: { type: Number, required: true, index: true },
     itemIndex: { type: Number, required: true },
     unitIndex: { type: Number, required: true, default: 0 },

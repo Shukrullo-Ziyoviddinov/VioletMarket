@@ -106,6 +106,20 @@
   background: #fff;
 }
 
+.customer-refund-card__cargo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8f5fc;
+  border: 1px solid #ebe4f5;
+}
+
+.customer-refund-card__meta--courier {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .customer-refund-card__label {
   display: block;
   margin-bottom: 4px;

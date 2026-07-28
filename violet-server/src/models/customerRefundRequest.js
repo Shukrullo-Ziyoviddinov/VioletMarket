@@ -49,6 +49,23 @@ const customerRefundRequestSchema = new mongoose.Schema(
       phone: { type: String, default: "" },
       email: { type: String, default: "" },
     },
+    /**
+     * courier — UZB kuryer Ajdaniya.
+     * cargo — xorij logistica sillerga qaytargan.
+     */
+    source: {
+      type: String,
+      enum: ["courier", "cargo"],
+      default: "courier",
+      index: true,
+    },
+    cargoCountry: { type: String, default: "", trim: true, lowercase: true },
+    shipmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CargoShipment",
+      default: null,
+      index: true,
+    },
     status: {
       type: String,
       enum: ["pending", "refunded"],
