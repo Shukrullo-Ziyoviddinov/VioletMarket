@@ -102,25 +102,28 @@ export default function ShipmentDetailScreen() {
     if (!token || !id || busy) return;
     Alert.alert(
       'Sotuvchiga qaytarish',
-      'So‘rov sotuvchiga qaytarilsinmi?',
+      'Asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz.',
       [
         { text: 'Bekor', style: 'cancel' },
         {
-          text: 'Qaytarish',
+          text: 'Yuborish',
           style: 'destructive',
           onPress: () => {
             void (async () => {
               setActionLoading(true);
               try {
                 await returnShipmentToSeller(token, id);
-                Alert.alert('Qaytarildi', 'So‘rov sotuvchiga qaytarildi');
+                Alert.alert(
+                  'So‘rov yuborildi',
+                  'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
+                );
                 router.back();
               } catch (err) {
                 Alert.alert(
                   'Xato',
                   err instanceof ApiError
                     ? err.message
-                    : 'Qaytarib bo‘lmadi',
+                    : 'So‘rov yuborib bo‘lmadi',
                 );
               } finally {
                 setActionLoading(false);

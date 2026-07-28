@@ -20,6 +20,9 @@ const {
   cargoCountryMatchValues,
   normalizeCargoCountry,
 } = require("../../utils/cargoCountryNormalize");
+const {
+  createCargoReturnRequestForLogistica,
+} = require("./cargoReturnRequestService");
 
 const DEFAULT_PAGE_SIZE = 20;
 const PROCESS_STEP_SET = new Set(LOGISTICA_PROCESS_STEPS);
@@ -285,7 +288,11 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
     return { shipment: toLogisticaShipmentDetail(row) };
   }
 
-  if (status === "returned_to_seller") {
+  if (
+    status === "returned_to_seller" ||
+    status === "return_request_pending" ||
+    status === "return_approved"
+  ) {
     return { shipment: toLogisticaShipmentDetail(row) };
   }
 
@@ -371,53 +378,20 @@ async function updateShipmentProcessStepForLogistica(
 }
 
 /**
- * Sotuvchiga qaytarish: pending|accepted → returned_to_seller; item → collected.
+ * Sotuvchiga qaytarish so‘rovi — asosiy admin tasdiqlamaguncha yakunlanmaydi.
+ * Yakunlash: cargoReturnRequestService.confirmCargoReturnByLogistica
  */
-async function returnShipmentToSellerForLogistica(logisticaId, shipmentIdRaw) {
-  const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
-  const status = String(shipment.status || "");
-
-  if (status === "returned_to_seller") {
-    return {
-      shipment: toLogisticaShipmentDetail(shipment.toObject()),
-      alreadyReturned: true,
-    };
-  }
-
-  if (status !== "pending" && status !== "accepted") {
-    throw new HttpError(
-      409,
-      "Bu so‘rovni qaytarib bo‘lmaydi",
-      "SHIPMENT_STATUS_CONFLICT",
-    );
-  }
-
-  if (
-    status === "accepted" &&
-    shipment.logisticaId &&
-    String(shipment.logisticaId) !== String(logisticaId)
-  ) {
-    throw new HttpError(403, "Bu so‘rov sizniki emas", "SHIPMENT_FORBIDDEN");
-  }
-
-  const returnedAt = new Date();
-  await revertOrderItemToCollected(
-    shipment.orderId,
-    shipment.itemIndex,
-    shipment.sellerId,
-    returnedAt,
+async function returnShipmentToSellerForLogistica(logisticaId, shipmentIdRaw, payload = {}) {
+  const result = await createCargoReturnRequestForLogistica(
+    logisticaId,
+    shipmentIdRaw,
+    payload,
   );
-
-  shipment.status = "returned_to_seller";
-  shipment.returnedAt = returnedAt;
-  if (!shipment.logisticaId) {
-    shipment.logisticaId = logisticaId;
-  }
-  await shipment.save();
-
+  const lean = await CargoShipment.findById(result.shipment.id).lean();
   return {
-    shipment: toLogisticaShipmentDetail(shipment.toObject()),
-    alreadyReturned: false,
+    request: result.request,
+    shipment: toLogisticaShipmentDetail(lean),
+    alreadyRequested: Boolean(result.alreadyRequested),
   };
 }
 

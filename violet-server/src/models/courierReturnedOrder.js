@@ -6,11 +6,33 @@ const mongoose = require("mongoose");
  */
 const courierReturnedOrderSchema = new mongoose.Schema(
   {
+    /**
+     * Kuryer qaytarishi — majburiy.
+     * Cargo (logistica) qaytarishi — bo‘sh (source=cargo).
+     */
     assignmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CourierOrderAssignment",
-      required: true,
-      unique: true,
+      required: false,
+      default: undefined,
+      index: true,
+    },
+    source: {
+      type: String,
+      enum: ["courier", "cargo"],
+      default: "courier",
+      index: true,
+    },
+    shipmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CargoShipment",
+      default: null,
+      index: true,
+    },
+    cargoReturnRequestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CargoReturnRequest",
+      default: null,
       index: true,
     },
     orderId: { type: Number, required: true, index: true },
@@ -34,7 +56,8 @@ const courierReturnedOrderSchema = new mongoose.Schema(
     deliveryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DeliveryAccount",
-      required: true,
+      required: false,
+      default: undefined,
       index: true,
     },
     courier: {
@@ -100,6 +123,15 @@ courierReturnedOrderSchema.index({ sellerId: 1, weekKey: 1 });
 courierReturnedOrderSchema.index({ sellerId: 1, monthKey: 1 });
 courierReturnedOrderSchema.index({ sellerId: 1, reasonType: 1, resolvedAt: 1 });
 courierReturnedOrderSchema.index({ reasonType: 1, resolvedAt: 1 });
+courierReturnedOrderSchema.index(
+  { assignmentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      assignmentId: { $type: "objectId" },
+    },
+  },
+);
 courierReturnedOrderSchema.index(
   { orderId: 1, itemIndex: 1, unitIndex: 1 },
   { unique: true },

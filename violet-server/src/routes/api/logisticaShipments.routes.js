@@ -25,6 +25,12 @@ router.get(
 );
 
 router.get(
+  "/logistica-auth/shipments/return-approved",
+  logisticaAuthMiddleware,
+  controller.listApprovedCargoReturns,
+);
+
+router.get(
   "/logistica-auth/shipments/:shipmentId",
   logisticaAuthMiddleware,
   controller.getShipmentDetail,
@@ -46,6 +52,12 @@ router.post(
   "/logistica-auth/shipments/:shipmentId/return-to-seller",
   logisticaAuthMiddleware,
   controller.returnShipmentToSeller,
+);
+
+router.post(
+  "/logistica-auth/cargo-returns/:requestId/confirm",
+  logisticaAuthMiddleware,
+  controller.confirmCargoReturn,
 );
 
 router.post(

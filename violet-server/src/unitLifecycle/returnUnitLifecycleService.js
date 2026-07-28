@@ -269,19 +269,45 @@ async function listReturnRequestsForAdmin(query = {}) {
     filter.productCode = { $regex: barcode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
   }
 
-  const rows = await CourierReturnRequest.find(filter)
-    .sort({ createdAt: -1 })
-    .limit(200)
-    .lean();
+  const {
+    listCargoReturnRequestsForAdmin,
+  } = require("../services/cargoShipments/cargoReturnRequestService");
+
+  const [courierRows, cargoItems] = await Promise.all([
+    CourierReturnRequest.find(filter).sort({ createdAt: -1 }).limit(200).lean(),
+    listCargoReturnRequestsForAdmin(query),
+  ]);
+
+  const courierItems = courierRows.map((row) => ({
+    ...toPublicReturnRequest(row),
+    source: "courier",
+    allowedReasonTypes: ["return", "no_answer", "defective"],
+  }));
+
+  const items = [...courierItems, ...cargoItems].sort((a, b) => {
+    const ta = new Date(a.createdAt || 0).getTime();
+    const tb = new Date(b.createdAt || 0).getTime();
+    return tb - ta;
+  });
 
   return {
-    total: rows.length,
-    items: rows.map(toPublicReturnRequest),
+    total: items.length,
+    items: items.slice(0, 200),
   };
 }
 
 async function approveReturnRequest(requestId, payload = {}) {
   const id = String(requestId || "").trim();
+  const {
+    findCargoReturnRequestById,
+    approveCargoReturnRequest,
+  } = require("../services/cargoShipments/cargoReturnRequestService");
+
+  const cargoDoc = await findCargoReturnRequestById(id);
+  if (cargoDoc) {
+    return approveCargoReturnRequest(id, payload);
+  }
+
   const reasonType = String(payload.reasonType || payload.approvedReasonType || "")
     .trim()
     .toLowerCase();
@@ -335,6 +361,16 @@ async function approveReturnRequest(requestId, payload = {}) {
 
 async function rejectReturnRequest(requestId, payload = {}) {
   const id = String(requestId || "").trim();
+  const {
+    findCargoReturnRequestById,
+    rejectCargoReturnRequest,
+  } = require("../services/cargoShipments/cargoReturnRequestService");
+
+  const cargoDoc = await findCargoReturnRequestById(id);
+  if (cargoDoc) {
+    return rejectCargoReturnRequest(id, payload);
+  }
+
   const rejectReason = String(payload.rejectReason || payload.reason || "").trim();
   const reviewedBy = String(payload.reviewedBy || "admin").trim();
 

@@ -8,6 +8,10 @@ const mongoose = require("mongoose");
 const CARGO_SHIPMENT_STATUSES = [
   "pending",
   "accepted",
+  /** Logistica so‘rov yuborgan — asosiy admin kutadi */
+  "return_request_pending",
+  /** Admin Yaroqsiz tasdiqlagan — logistica «Qaytarish» sahifasida */
+  "return_approved",
   "returned_to_seller",
   "cancelled",
 ];

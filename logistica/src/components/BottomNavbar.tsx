@@ -21,6 +21,12 @@ const items = [
     href: '/uzbda',
   },
   {
+    label: 'Qaytarish',
+    icon: 'return-down-back-outline',
+    activeIcon: 'return-down-back',
+    href: '/qaytarish',
+  },
+  {
     label: 'Profil',
     icon: 'person-outline',
     activeIcon: 'person',
@@ -81,7 +87,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: MUTED,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
   },
   activeLabel: {

@@ -144,6 +144,8 @@ export async function acceptShipment(token: string, shipmentId: string) {
 export async function returnShipmentToSeller(token: string, shipmentId: string) {
   const data = await apiRequest<{
     shipment: ShipmentDetail;
+    request?: Record<string, unknown>;
+    alreadyRequested?: boolean;
     alreadyReturned?: boolean;
   }>(
     `/api/logistica-auth/shipments/${encodeURIComponent(shipmentId)}/return-to-seller`,
@@ -152,7 +154,66 @@ export async function returnShipmentToSeller(token: string, shipmentId: string) 
   );
   return {
     shipment: mapDetail(data?.shipment || {}),
-    alreadyReturned: Boolean(data?.alreadyReturned),
+    alreadyRequested: Boolean(data?.alreadyRequested || data?.alreadyReturned),
+  };
+}
+
+export async function fetchApprovedCargoReturns(
+  token: string,
+  page = 1,
+  limit = 50,
+) {
+  const data = await apiRequest<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    items: Array<Record<string, unknown>>;
+  }>(
+    `/api/logistica-auth/shipments/return-approved?page=${page}&limit=${limit}`,
+    { method: 'GET' },
+    token,
+  );
+
+  const items = (Array.isArray(data?.items) ? data.items : []).map((row) => ({
+    id: String(row.id || ''),
+    shipmentId: String(row.shipmentId || ''),
+    requestCode: String(row.requestCode || ''),
+    storeName: String(row.storeName || ''),
+    productTitle: String(row.productTitle || 'Mahsulot'),
+    productCode: String(row.productCode || ''),
+    orderId: Number(row.orderId) || 0,
+    amount: Math.max(0, Number(row.amount) || 0),
+    quantity: Math.max(1, Number(row.quantity) || 1),
+    cargoCountry: String(row.cargoCountry || ''),
+    cargoCountryLabel: String(row.cargoCountryLabel || ''),
+    approvedReasonType: row.approvedReasonType
+      ? String(row.approvedReasonType)
+      : null,
+    reviewedAt: row.reviewedAt ?? null,
+    status: String(row.status || ''),
+  }));
+
+  return {
+    page: Number(data?.page) || page,
+    limit: Number(data?.limit) || limit,
+    total: Number(data?.total) || items.length,
+    totalPages: Number(data?.totalPages) || 1,
+    items,
+  };
+}
+
+export async function confirmCargoReturn(token: string, requestId: string) {
+  const data = await apiRequest<{
+    request?: Record<string, unknown>;
+    alreadyCompleted?: boolean;
+  }>(
+    `/api/logistica-auth/cargo-returns/${encodeURIComponent(requestId)}/confirm`,
+    { method: 'POST' },
+    token,
+  );
+  return {
+    alreadyCompleted: Boolean(data?.alreadyCompleted),
   };
 }
 

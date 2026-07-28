@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Radio, Space, message } from 'antd';
 import { approveReturnRequest } from '../../api/returnRequestAdminApi';
 import './ReturnRequestApproveModal.css';
@@ -9,8 +9,15 @@ export default function ReturnRequestApproveModal({
   onClose,
   onSuccess,
 }) {
-  const [reasonType, setReasonType] = useState('return');
+  const isCargo = item?.source === 'cargo';
+  const [reasonType, setReasonType] = useState(isCargo ? 'defective' : 'return');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setReasonType(isCargo ? 'defective' : 'return');
+    }
+  }, [open, isCargo, item?.id]);
 
   const handleOk = async () => {
     if (!item?.id) return;
@@ -21,7 +28,11 @@ export default function ReturnRequestApproveModal({
     setSubmitting(true);
     try {
       await approveReturnRequest(item.id, reasonType);
-      message.success('So‘rov tasdiqlandi');
+      message.success(
+        isCargo
+          ? 'Tasdiqlandi — cargo «Qaytarish» sahifasiga o‘tadi'
+          : 'So‘rov tasdiqlandi',
+      );
       onSuccess?.();
       onClose?.();
     } catch (err) {
@@ -43,23 +54,44 @@ export default function ReturnRequestApproveModal({
       destroyOnClose
       className="return-request-approve-modal"
     >
-      <p className="return-request-approve-modal__hint">
-        Kuryerda qaysi tugma ishlashini belgilang:
-      </p>
-      <Radio.Group
-        value={reasonType}
-        onChange={(e) => setReasonType(e.target.value)}
-      >
-        <Space direction="vertical">
-          <Radio value="return">Qaytarish (omborga qaytadi)</Radio>
-          <Radio value="no_answer" disabled={!item?.isPaid}>
-            Javob bermadi {!item?.isPaid ? '(faqat to‘langan)' : ''}
-          </Radio>
-          <Radio value="defective">
-            Yaroqsiz (omborga kirmaydi, sotilmagan)
-          </Radio>
-        </Space>
-      </Radio.Group>
+      {isCargo ? (
+        <>
+          <p className="return-request-approve-modal__hint">
+            Cargo qaytarish (hozircha faqat Yaroqsiz). Tasdiqlangach logistica
+            «Qaytarish» sahifasida yakunlaydi — mahsulot omborga qaytmaydi.
+          </p>
+          <Radio.Group value={reasonType} onChange={(e) => setReasonType(e.target.value)}>
+            <Space direction="vertical">
+              <Radio value="defective">
+                Yaroqsiz (omborga kirmaydi, sotilmagan)
+              </Radio>
+              <Radio value="impossible" disabled>
+                Imkonsiz (tez orada)
+              </Radio>
+            </Space>
+          </Radio.Group>
+        </>
+      ) : (
+        <>
+          <p className="return-request-approve-modal__hint">
+            Kuryerda qaysi tugma ishlashini belgilang:
+          </p>
+          <Radio.Group
+            value={reasonType}
+            onChange={(e) => setReasonType(e.target.value)}
+          >
+            <Space direction="vertical">
+              <Radio value="return">Qaytarish (omborga qaytadi)</Radio>
+              <Radio value="no_answer" disabled={!item?.isPaid}>
+                Javob bermadi {!item?.isPaid ? '(faqat to‘langan)' : ''}
+              </Radio>
+              <Radio value="defective">
+                Yaroqsiz (omborga kirmaydi, sotilmagan)
+              </Radio>
+            </Space>
+          </Radio.Group>
+        </>
+      )}
     </Modal>
   );
 }

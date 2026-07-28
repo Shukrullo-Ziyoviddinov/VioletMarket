@@ -13,7 +13,7 @@ function formatMoney(value) {
 }
 
 function statusLabel(status) {
-  if (status === 'approved') return 'Tasdiqlangan';
+  if (status === 'approved' || status === 'completed') return 'Tasdiqlangan';
   if (status === 'rejected') return 'Rad etilgan';
   return 'Kutilmoqda';
 }
@@ -24,48 +24,66 @@ export default function ReturnRequestCard({
   onReject,
 }) {
   if (!item) return null;
+  const isCargo = item.source === 'cargo';
   const courierName = [item.courier?.firstName, item.courier?.lastName]
     .filter(Boolean)
     .join(' ')
-    .trim() || 'Kuryer';
+    .trim() || (isCargo ? 'Cargo' : 'Kuryer');
   const customerName = [item.customer?.firstName, item.customer?.lastName]
     .filter(Boolean)
     .join(' ')
-    .trim() || 'Mijoz';
+    .trim();
   const isPending = item.status === 'pending';
+  const badgeStatus =
+    item.status === 'completed' ? 'approved' : item.status;
 
   return (
     <article className="return-request-card">
-      <div className="return-request-card__media">
-        <img
-          src={item.imageUrl || '/img/no-image.png'}
-          alt={formatTitle(item.title)}
-          onError={(e) => {
-            e.currentTarget.src = '/img/no-image.png';
-          }}
-        />
-      </div>
+      {!isCargo ? (
+        <div className="return-request-card__media">
+          <img
+            src={item.imageUrl || '/img/no-image.png'}
+            alt={formatTitle(item.title)}
+            onError={(e) => {
+              e.currentTarget.src = '/img/no-image.png';
+            }}
+          />
+        </div>
+      ) : null}
       <div className="return-request-card__body">
         <div className="return-request-card__top">
           <h3 className="return-request-card__title" title={formatTitle(item.title)}>
             {formatTitle(item.title)}
           </h3>
-          <span className={`return-request-card__badge return-request-card__badge--${item.status}`}>
+          <span className={`return-request-card__badge return-request-card__badge--${badgeStatus}`}>
             {statusLabel(item.status)}
           </span>
         </div>
+        {isCargo ? (
+          <p className="return-request-card__meta">
+            Cargo · {item.cargoCountryLabel || item.cargoCountry || '—'}
+            {item.storeName ? ` · ${item.storeName}` : ''}
+          </p>
+        ) : null}
         <p className="return-request-card__meta">
           Buyurtma #{item.orderId} · Kod: {item.productCode || '—'}
+          {item.requestCode ? ` · ${item.requestCode}` : ''}
         </p>
         <p className="return-request-card__meta">
           {formatMoney(item.amount)} · {item.isPaid ? 'To‘langan' : 'Naqd'}
         </p>
         <p className="return-request-card__meta">
-          Kuryer: {courierName} · {item.courier?.phone || '—'}
+          {isCargo ? 'Cargo' : 'Kuryer'}: {courierName}
+          {!isCargo && item.courier?.phone ? ` · ${item.courier.phone}` : ''}
         </p>
-        <p className="return-request-card__meta">
-          Mijoz: {customerName} · {item.customer?.phone || '—'}
-        </p>
+        {!isCargo && customerName ? (
+          <p className="return-request-card__meta">
+            Mijoz: {customerName} · {item.customer?.phone || '—'}
+          </p>
+        ) : null}
+        {isCargo && item.sellerId ? (
+          <p className="return-request-card__meta">Siller: {item.sellerId}</p>
+        ) : null}
         {item.comment ? (
           <p className="return-request-card__comment">Izoh: {item.comment}</p>
         ) : null}

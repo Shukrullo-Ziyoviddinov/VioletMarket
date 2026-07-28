@@ -54,11 +54,32 @@ const updateProcessStep = asyncHandler(async (req, res) => {
 });
 
 const returnShipmentToSeller = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
   const data =
     await cargoShipmentLogisticaService.returnShipmentToSellerForLogistica(
       req.logisticaId,
       req.params.shipmentId,
+      body,
     );
+  res.json({ ok: true, data });
+});
+
+const listApprovedCargoReturns = asyncHandler(async (req, res) => {
+  const cargoReturnRequestService = require("../services/cargoShipments/cargoReturnRequestService");
+  const data =
+    await cargoReturnRequestService.listApprovedCargoReturnsForLogistica(
+      req.logisticaId,
+      req.query || {},
+    );
+  res.json({ ok: true, data });
+});
+
+const confirmCargoReturn = asyncHandler(async (req, res) => {
+  const cargoReturnRequestService = require("../services/cargoShipments/cargoReturnRequestService");
+  const data = await cargoReturnRequestService.confirmCargoReturnByLogistica(
+    req.logisticaId,
+    req.params.requestId,
+  );
   res.json({ ok: true, data });
 });
 
@@ -74,9 +95,11 @@ module.exports = {
   listPendingShipments,
   listAcceptedShipments,
   listUzWarehouseShipments,
+  listApprovedCargoReturns,
   getShipmentDetail,
   acceptShipment,
   updateProcessStep,
   returnShipmentToSeller,
+  confirmCargoReturn,
   markShipmentPaid,
 };
