@@ -54,6 +54,12 @@ const menuItems = [
     route: '/foreign-orders',
   },
   {
+    key: 'logistica-shipments',
+    icon: <TruckOutlined />,
+    label: 'Logistica',
+    route: '/logistica-shipments',
+  },
+  {
     key: 'return-requests',
     icon: <UndoOutlined />,
     label: 'Qaytarish so‘rovlari',
@@ -122,6 +128,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/sales/statistics') return 'sales-statistics';
   if (pathname === '/orders') return 'orders';
   if (pathname === '/foreign-orders') return 'foreign-orders';
+  if (pathname === '/logistica-shipments') return 'logistica-shipments';
   if (pathname === '/return-requests') return 'return-requests';
   if (pathname === '/returned-products') return 'returned-products';
   if (pathname === '/customer-refunds') return 'customer-refunds';

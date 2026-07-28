@@ -1,0 +1,136 @@
+.logistica-shipment-detail-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.logistica-shipment-detail-modal__loading {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logistica-shipment-detail-modal__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.logistica-shipment-detail-modal__meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.logistica-shipment-detail-modal__meta span {
+  color: #8b7aa3;
+  font-size: 12px;
+}
+
+.logistica-shipment-detail-modal__meta strong {
+  color: #2a1842;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logistica-shipment-detail-modal__timeline h4,
+.logistica-shipment-detail-modal__edit h4 {
+  margin: 0 0 10px;
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.logistica-shipment-detail-modal__timeline ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logistica-shipment-detail-modal__timeline li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #9ca3af;
+}
+
+.logistica-shipment-detail-modal__step--done {
+  color: #6d28d9;
+}
+
+.logistica-shipment-detail-modal__dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.logistica-shipment-detail-modal__step--done .logistica-shipment-detail-modal__dot {
+  background: #6d28d9;
+}
+
+.logistica-shipment-detail-modal__timeline strong {
+  display: block;
+  font-size: 13px;
+}
+
+.logistica-shipment-detail-modal__timeline small {
+  color: #8b7aa3;
+  font-size: 11px;
+}
+
+.logistica-shipment-detail-modal__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.logistica-shipment-detail-modal__step-btn {
+  border: 1px solid #e6dff2;
+  background: #fff;
+  color: #4a3a62;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logistica-shipment-detail-modal__step-btn--active {
+  background: #6d28d9;
+  border-color: #6d28d9;
+  color: #fff;
+}
+
+.logistica-shipment-detail-modal__confirm {
+  width: 100%;
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: #6d28d9;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.logistica-shipment-detail-modal__confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .logistica-shipment-detail-modal__meta {
+    grid-template-columns: 1fr;
+  }
+}

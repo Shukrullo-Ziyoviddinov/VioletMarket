@@ -1,0 +1,72 @@
+.logistica-shipment-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #ece8f4;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.logistica-shipment-card:hover {
+  border-color: #cbb8ec;
+  box-shadow: 0 6px 18px rgba(74, 40, 120, 0.08);
+}
+
+.logistica-shipment-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.logistica-shipment-card__code {
+  color: #2a1842;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.logistica-shipment-card__country {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
+.logistica-shipment-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.logistica-shipment-card__row span {
+  color: #8b7aa3;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.logistica-shipment-card__row strong {
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+
+.logistica-shipment-card__status {
+  color: #6d28d9 !important;
+  white-space: normal !important;
+}

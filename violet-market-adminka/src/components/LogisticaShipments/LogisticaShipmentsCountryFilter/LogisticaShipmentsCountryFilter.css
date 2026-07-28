@@ -1,0 +1,55 @@
+.logistica-shipments-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.logistica-shipments-filter--empty {
+  color: #7a6b8c;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.logistica-shipments-filter__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e6dff2;
+  background: #fff;
+  color: #4a3a62;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.logistica-shipments-filter__button:hover {
+  border-color: #cbb8ec;
+  background: #faf7ff;
+}
+
+.logistica-shipments-filter__button--active {
+  background: #6d28d9;
+  border-color: #6d28d9;
+  color: #fff;
+}
+
+.logistica-shipments-filter__count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(109, 40, 217, 0.12);
+  color: inherit;
+}
+
+.logistica-shipments-filter__button--active .logistica-shipments-filter__count {
+  background: rgba(255, 255, 255, 0.22);
+}
