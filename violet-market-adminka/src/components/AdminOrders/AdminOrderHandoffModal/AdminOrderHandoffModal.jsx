@@ -31,15 +31,14 @@ export default function AdminOrderHandoffModal({
           <p className="admin-order-handoff-modal__text">
             <strong>{sellerName}</strong>
             {country ? ` (${country})` : ''} sillerining{' '}
-            <strong>{productCode}</strong> mahsulotini kuryerga topshirasizmi?
+            <strong>{productCode}</strong> mahsulotini UZB kuryerga topshirasizmi?
           </p>
         ) : (
           <p className="admin-order-handoff-modal__text">
             <strong>{sellerName}</strong>
             {country ? ` (${country})` : ''} · <strong>{productCode}</strong>
             <br />
-            Xorij mahsulotini UZB kuryerga topshirish hozircha yopiq. Cargo logistica
-            orqali UZB omborga kelgach ochiladi.
+            Xorij mahsulotini UZB kuryerga topshirish hozircha yopiq.
           </p>
         )}
         <div className="admin-order-handoff-modal__actions">

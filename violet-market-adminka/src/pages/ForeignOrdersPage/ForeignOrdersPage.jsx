@@ -47,8 +47,9 @@ export default function ForeignOrdersPage() {
       <div className="admin-orders-page__header">
         <h1 className="admin-orders-page__title">Xorij → UZB</h1>
         <p className="admin-orders-page__subtitle">
-          Xorij sillerlar buyurtmalari — UZB kuryer, topshirilgan va javob bermadi.
-          Har bir kartada qaysi siller va davlat ko‘rinadi.
+          Xorij sillerlar — logistica «To‘landi» dan keyin Toshkent omboridan UZB
+          kuryerga topshirish, topshirilgan va javob bermadi. Har kartada siller
+          va davlat ko‘rinadi.
         </p>
       </div>
       <AdminOrdersFilter
@@ -60,7 +61,7 @@ export default function ForeignOrdersPage() {
       <AdminOrdersWorkspace
         filter={filter}
         pipeline="foreign"
-        allowHandoff={false}
+        allowHandoff
         showSellerCountry
         onStatusChanged={loadCounts}
       />

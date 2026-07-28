@@ -24,8 +24,7 @@ const FOREIGN_ONLY_TRACKING_STATUSES = [
 ];
 
 /**
- * Logistica app process steplari (keyingi bullaklar).
- * Hozir faqat konstanta — order enum ga qo‘shilmaydi.
+ * Logistica app process steplari — order.item.trackingStatus emas.
  */
 const LOGISTICA_PROCESS_STEPS = [
   "xitoy_omborida",
@@ -33,6 +32,9 @@ const LOGISTICA_PROCESS_STEPS = [
   "bojxonada",
   "toshkent_omborida",
 ];
+
+/** Toshkent omborida + To‘landi = asosiy admin Xorij→UZB ga chiqadi */
+const UZ_WAREHOUSE_READY_PROCESS_STEP = "toshkent_omborida";
 
 function isForeignTrackingStatus(status) {
   const value = String(status || "")
@@ -48,10 +50,20 @@ function isForeignOnlyTrackingStatus(status) {
   return FOREIGN_ONLY_TRACKING_STATUSES.includes(value);
 }
 
+function isUzWarehouseReadyProcessStep(step) {
+  return (
+    String(step || "")
+      .trim()
+      .toLowerCase() === UZ_WAREHOUSE_READY_PROCESS_STEP
+  );
+}
+
 module.exports = {
   FOREIGN_ORDER_TRACKING_STEPS,
   FOREIGN_ONLY_TRACKING_STATUSES,
   LOGISTICA_PROCESS_STEPS,
+  UZ_WAREHOUSE_READY_PROCESS_STEP,
   isForeignTrackingStatus,
   isForeignOnlyTrackingStatus,
+  isUzWarehouseReadyProcessStep,
 };

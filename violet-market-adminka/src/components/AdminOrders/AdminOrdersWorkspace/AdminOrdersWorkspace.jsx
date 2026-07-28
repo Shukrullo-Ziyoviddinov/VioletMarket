@@ -26,6 +26,13 @@ const FILTER_STATUS = {
   noAnswer: 'no_answer',
 };
 
+/** Xorij → UZB: kuryer tab = Toshkent omboridagi handed_to_cargo */
+const FOREIGN_FILTER_STATUS = {
+  courier: 'handed_to_cargo',
+  handed: 'handed_to_courier',
+  noAnswer: 'no_answer',
+};
+
 export default function AdminOrdersWorkspace({
   filter = 'confirmation',
   onStatusChanged,
@@ -47,12 +54,17 @@ export default function AdminOrdersWorkspace({
     requestIdRef.current = requestId;
     setLoading(true);
     try {
-      const trackingStatus = FILTER_STATUS[filter] || 'accepted';
+      const statusMap =
+        pipeline === 'foreign' ? FOREIGN_FILTER_STATUS : FILTER_STATUS;
+      const trackingStatus = statusMap[filter] || FILTER_STATUS[filter] || 'accepted';
       const data = await fetchAdminOrders({
         page: 1,
         limit: 100,
         trackingStatus,
         ...(pipeline ? { pipeline } : {}),
+        ...(pipeline === 'foreign' && filter === 'courier'
+          ? { uzWarehouseReady: true }
+          : {}),
       });
       if (requestIdRef.current !== requestId) return;
       setOrders(Array.isArray(data?.orders) ? data.orders : []);
@@ -196,7 +208,7 @@ export default function AdminOrdersWorkspace({
         showSellerCountry={showSellerCountry}
         emptyDescription={
           pipeline === 'foreign'
-            ? 'Xorij mahsulotlari UZB omborga kelgach shu yerda chiqadi'
+            ? 'To‘langan (Toshkent ombori) xorij mahsulotlari yo‘q'
             : undefined
         }
       />

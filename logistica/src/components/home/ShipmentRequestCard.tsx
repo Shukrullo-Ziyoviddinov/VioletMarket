@@ -16,9 +16,13 @@ const CARDBOARD = '#C4A484';
 
 type Props = {
   item: ShipmentRequest;
+  hrefBase?: '/shipment/[id]' | '/ish-stoli/[id]';
 };
 
-export function ShipmentRequestCard({ item }: Props) {
+export function ShipmentRequestCard({
+  item,
+  hrefBase = '/shipment/[id]',
+}: Props) {
   const router = useRouter();
 
   return (
@@ -26,7 +30,7 @@ export function ShipmentRequestCard({ item }: Props) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       onPress={() =>
         router.push({
-          pathname: '/shipment/[id]',
+          pathname: hrefBase,
           params: { id: item.id },
         })
       }

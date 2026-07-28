@@ -16,6 +16,7 @@ const {
   normalizeOrderTrackingStatus,
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
+const { normalizeCargoCountry } = require("../../utils/cargoCountryNormalize");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -202,7 +203,10 @@ async function submitSellerOrderItemToCargo(
     shipment = await CargoShipment.create({
       requestCode,
       sellerId: normalizedSellerId,
-      sellerCountry: String(account.sellerCountry || "").toLowerCase(),
+      sellerCountry: normalizeCargoCountry(account.sellerCountry) ||
+        String(account.sellerCountry || "")
+          .trim()
+          .toLowerCase(),
       storeName: resolveStoreName(account),
       orderId,
       itemIndex,

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,12 +14,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ShipmentActionButtons } from '@/components/shipment-detail/ShipmentActionButtons';
 import { ShipmentDetailSummary } from '@/components/shipment-detail/ShipmentDetailSummary';
-import { ShipmentProcessStatus } from '@/components/shipment-detail/ShipmentProcessStatus';
 import { ShipmentProductsList } from '@/components/shipment-detail/ShipmentProductsList';
 import { ShipmentRequestInfo } from '@/components/shipment-detail/ShipmentRequestInfo';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
-import { fetchShipmentDetail } from '@/services/logistica-shipments';
+import {
+  acceptShipment,
+  fetchShipmentDetail,
+  returnShipmentToSeller,
+} from '@/services/logistica-shipments';
 import type { ShipmentDetail } from '@/types/shipment';
 
 const ACCENT = '#7c3aed';
@@ -27,6 +31,7 @@ function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
 }
 
+/** Asosiy — faqat pending qabul / qaytarish */
 export default function ShipmentDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -36,6 +41,7 @@ export default function ShipmentDetailScreen() {
 
   const [detail, setDetail] = useState<ShipmentDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -51,6 +57,12 @@ export default function ShipmentDetailScreen() {
     try {
       const data = await fetchShipmentDetail(token, id);
       setDetail(data);
+      if (data.status === 'accepted') {
+        router.replace({
+          pathname: '/ish-stoli/[id]',
+          params: { id: data.id },
+        });
+      }
     } catch (err) {
       setDetail(null);
       setError(
@@ -59,11 +71,66 @@ export default function ShipmentDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id, token]);
+  }, [id, router, token]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const isPending = detail?.status === 'pending';
+  const busy = actionLoading || loading;
+
+  const handleAccept = async () => {
+    if (!token || !id || busy) return;
+    setActionLoading(true);
+    try {
+      const result = await acceptShipment(token, id);
+      Alert.alert('Qabul qilindi', 'So‘rov Yuklarim sahifasiga o‘tdi');
+      router.replace('/yuklarim');
+      return result;
+    } catch (err) {
+      Alert.alert(
+        'Xato',
+        err instanceof ApiError ? err.message : 'Qabul qilib bo‘lmadi',
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReturn = () => {
+    if (!token || !id || busy) return;
+    Alert.alert(
+      'Sotuvchiga qaytarish',
+      'So‘rov sotuvchiga qaytarilsinmi?',
+      [
+        { text: 'Bekor', style: 'cancel' },
+        {
+          text: 'Qaytarish',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              setActionLoading(true);
+              try {
+                await returnShipmentToSeller(token, id);
+                Alert.alert('Qaytarildi', 'So‘rov sotuvchiga qaytarildi');
+                router.back();
+              } catch (err) {
+                Alert.alert(
+                  'Xato',
+                  err instanceof ApiError
+                    ? err.message
+                    : 'Qaytarib bo‘lmadi',
+                );
+              } finally {
+                setActionLoading(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <View style={styles.root}>
@@ -95,49 +162,36 @@ export default function ShipmentDetailScreen() {
           </Pressable>
         </View>
       ) : (
-        <>
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-          >
-            <ShipmentDetailSummary
-              storeName={detail.storeName}
-              dateTime={detail.dateTime}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 40 + Math.max(insets.bottom, 12) },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <ShipmentDetailSummary
+            storeName={detail.storeName}
+            dateTime={detail.dateTime}
+          />
+
+          <ShipmentRequestInfo
+            productCount={detail.productCount}
+            weightLabel={detail.weightLabel}
+            weightKg={detail.weightKg}
+            warehouseAddress={detail.warehouseAddress}
+            note={detail.note}
+          />
+
+          <ShipmentProductsList products={detail.products} />
+
+          {isPending ? (
+            <ShipmentActionButtons
+              onAccept={!busy ? () => void handleAccept() : undefined}
+              onReturnToSeller={!busy ? handleReturn : undefined}
             />
-
-            <ShipmentRequestInfo
-              productCount={detail.productCount}
-              weightLabel={detail.weightLabel}
-              weightKg={detail.weightKg}
-              warehouseAddress={detail.warehouseAddress}
-              note={detail.note}
-            />
-
-            <ShipmentProductsList products={detail.products} />
-
-            <ShipmentProcessStatus activeStep={detail.activeProcessStep} />
-
-            {/* G bullak: qabul / qaytarish — hozircha no-op */}
-            <ShipmentActionButtons />
-
-            <View style={{ height: 110 + Math.max(insets.bottom, 12) }} />
-          </ScrollView>
-
-          <View
-            style={[
-              styles.footer,
-              { paddingBottom: Math.max(insets.bottom, 12) },
-            ]}
-          >
-            {/* G bullak: holatni saqlash — hozircha no-op */}
-            <Pressable
-              style={({ pressed }) => [styles.saveBtn, pressed && styles.pressed]}
-            >
-              <Text style={styles.saveText}>Holatni saqlash</Text>
-            </Pressable>
-          </View>
-        </>
+          ) : null}
+        </ScrollView>
       )}
     </View>
   );
@@ -206,29 +260,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 14,
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    backgroundColor: '#F8FAFC',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  saveBtn: {
-    backgroundColor: ACCENT,
-    borderRadius: 14,
-    minHeight: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   pressed: {
     opacity: 0.9,

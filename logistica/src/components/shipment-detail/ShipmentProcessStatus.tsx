@@ -1,36 +1,50 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  PROCESS_STEPS,
-  type ProcessStepKey,
-} from '@/constants/shipmentProcess';
+import { PROCESS_STEPS } from '@/constants/shipmentProcess';
+import type { ProcessStepKey } from '@/types/shipment';
 
 const ACCENT = '#7c3aed';
 
 type Props = {
   activeStep: ProcessStepKey | null;
+  selectedStep?: ProcessStepKey | null;
+  selectable?: boolean;
+  onSelectStep?: (step: ProcessStepKey) => void;
 };
 
-export function ShipmentProcessStatus({ activeStep }: Props) {
-  const activeIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStep);
+export function ShipmentProcessStatus({
+  activeStep,
+  selectedStep = null,
+  selectable = false,
+  onSelectStep,
+}: Props) {
+  const highlightStep = selectedStep || activeStep;
+  const activeIndex = PROCESS_STEPS.findIndex((step) => step.key === highlightStep);
+  const savedIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStep);
 
   return (
     <View style={styles.section}>
       <Text style={styles.title}>Jarayon holati</Text>
+      {selectable ? (
+        <Text style={styles.hint}>Bosqichni tanlang, keyin «Holatni saqlash»</Text>
+      ) : null}
       <View style={styles.card}>
         <View style={styles.row}>
           {PROCESS_STEPS.map((step, index) => {
             const done = activeIndex >= 0 && index <= activeIndex;
+            const saved = savedIndex >= 0 && index <= savedIndex;
             const isLast = index === PROCESS_STEPS.length - 1;
+            const isSelected = selectedStep === step.key;
 
-            return (
-              <View key={step.key} style={styles.stepWrap}>
+            const content = (
+              <>
                 <View style={styles.stepTop}>
                   <View
                     style={[
                       styles.circle,
                       done ? styles.circleActive : styles.circleIdle,
+                      isSelected ? styles.circleSelected : null,
                     ]}
                   >
                     <Ionicons
@@ -43,7 +57,7 @@ export function ShipmentProcessStatus({ activeStep }: Props) {
                     <View
                       style={[
                         styles.line,
-                        done && index < activeIndex ? styles.lineActive : null,
+                        saved && index < savedIndex ? styles.lineActive : null,
                       ]}
                     />
                   ) : null}
@@ -54,7 +68,28 @@ export function ShipmentProcessStatus({ activeStep }: Props) {
                 >
                   {step.label}
                 </Text>
-              </View>
+              </>
+            );
+
+            if (!selectable) {
+              return (
+                <View key={step.key} style={styles.stepWrap}>
+                  {content}
+                </View>
+              );
+            }
+
+            return (
+              <Pressable
+                key={step.key}
+                style={({ pressed }) => [
+                  styles.stepWrap,
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => onSelectStep?.(step.key)}
+              >
+                {content}
+              </Pressable>
             );
           })}
         </View>
@@ -71,6 +106,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#111827',
+  },
+  hint: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -108,6 +148,10 @@ const styles = StyleSheet.create({
   circleIdle: {
     backgroundColor: '#F3F4F6',
   },
+  circleSelected: {
+    borderWidth: 2,
+    borderColor: '#111827',
+  },
   line: {
     position: 'absolute',
     left: '50%',
@@ -129,5 +173,8 @@ const styles = StyleSheet.create({
   },
   stepLabelActive: {
     color: ACCENT,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

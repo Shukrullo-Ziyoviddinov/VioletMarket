@@ -1,10 +1,23 @@
-import { AsosiyShipmentsList } from '@/components/home/AsosiyShipmentsList';
+import { useCallback } from 'react';
+
+import { ShipmentsListPanel } from '@/components/home/ShipmentsListPanel';
 import { ScreenShell } from '@/components/ScreenShell';
+import { fetchPendingShipments } from '@/services/logistica-shipments';
 
 export default function AsosiyScreen() {
+  const loadShipments = useCallback(
+    (token: string) => fetchPendingShipments(token),
+    [],
+  );
+
   return (
     <ScreenShell title="Asosiy">
-      <AsosiyShipmentsList />
+      <ShipmentsListPanel
+        loadShipments={loadShipments}
+        hrefBase="/shipment/[id]"
+        emptyTitle="Hozircha so‘rov yo‘q"
+        emptyText="Xorij sillerlari cargoga yuborgan yuklar shu yerda chiqadi."
+      />
     </ScreenShell>
   );
 }

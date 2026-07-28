@@ -16,6 +16,11 @@ const sellerOrderTrackingService = require("../sellerOrders/sellerOrderTrackingS
 const {
   resolveSellerPipelineMode,
 } = require("../../productManagement/sellerPipelineMode");
+const {
+  listCargoShipmentsByOrderItems,
+  shipmentLookupKey,
+} = require("../cargoShipments/cargoShipmentSellerService");
+const foreignUzCourierBridgeService = require("../cargoShipments/foreignUzCourierBridgeService");
 
 const DEFAULT_PAGE_SIZE = 100;
 
@@ -25,6 +30,13 @@ function normalizePipeline(value) {
     .toLowerCase();
   if (mode === "foreign" || mode === "local") return mode;
   return "";
+}
+
+function isTruthyQuery(value) {
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes";
 }
 
 function cardMatchesPipeline(card, pipeline) {
@@ -164,6 +176,7 @@ async function buildAllAdminOrderCards() {
 /**
  * Har bir jarayon (filter) bo‘yicha buyurtma soni.
  * query.pipeline = foreign | local | (bo‘sh = hammasi)
+ * Foreign courier count = Toshkent omborida (handed_to_cargo + ready).
  */
 async function getAdminOrderCounts(query = {}) {
   const pipeline = normalizePipeline(query.pipeline);
@@ -204,6 +217,7 @@ async function getAdminOrderCounts(query = {}) {
     seller_confirmed: 0,
     collected: 0,
     handed_to_courier: 0,
+    handed_to_cargo: 0,
     no_answer: noAnswerTotal,
   };
 
@@ -214,10 +228,35 @@ async function getAdminOrderCounts(query = {}) {
     }
   }
 
+  let courierCount = counts.collected;
+  if (pipeline === "foreign") {
+    const cargoCandidates = allCards.filter(
+      (card) => String(card.trackingStatus || "") === "handed_to_cargo",
+    );
+    if (cargoCandidates.length) {
+      const shipments = await listCargoShipmentsByOrderItems(
+        cargoCandidates.map((card) => ({
+          orderId: card.orderId,
+          itemIndex: card.itemIndex,
+        })),
+      );
+      const readyKeys = new Set(
+        shipments
+          .filter((row) => foreignUzCourierBridgeService.isShipmentReadyForUzCourier(row))
+          .map((row) => shipmentLookupKey(row.orderId, row.itemIndex)),
+      );
+      courierCount = cargoCandidates.filter((card) =>
+        readyKeys.has(shipmentLookupKey(card.orderId, card.itemIndex)),
+      ).length;
+    } else {
+      courierCount = 0;
+    }
+  }
+
   return {
     confirmation: counts.accepted,
     collection: counts.seller_confirmed,
-    courier: counts.collected,
+    courier: courierCount,
     handed: counts.handed_to_courier,
     noAnswer: counts.no_answer,
     byStatus: counts,
@@ -227,6 +266,7 @@ async function getAdminOrderCounts(query = {}) {
 
 /**
  * Asosiy admin — sillerlar buyurtmalari (tracking + pipeline filter bilan).
+ * uzWarehouseReady=1 + handed_to_cargo → faqat Toshkent omboridagilar (Xorij→UZB courier).
  */
 async function listAdminOrders(query = {}) {
   const requestedTrackingStatus = String(query.trackingStatus || "").trim();
@@ -237,19 +277,46 @@ async function listAdminOrders(query = {}) {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
   const pipeline = normalizePipeline(query.pipeline);
+  const uzWarehouseReady = isTruthyQuery(query.uzWarehouseReady);
 
   const allCards = await buildAllAdminOrderCards();
   const sellerMapForFilter = await loadSellerMap(
     allCards.map((card) => card.sellerId),
   );
-  const withSeller = allCards.map((card) => attachSeller(card, sellerMapForFilter));
+  let filteredCards = allCards
+    .map((card) => attachSeller(card, sellerMapForFilter))
+    .filter((card) => {
+      if (requestedTrackingStatus && card.trackingStatus !== requestedTrackingStatus) {
+        return false;
+      }
+      return cardMatchesPipeline(card, pipeline);
+    });
 
-  const filteredCards = withSeller.filter((card) => {
-    if (requestedTrackingStatus && card.trackingStatus !== requestedTrackingStatus) {
-      return false;
-    }
-    return cardMatchesPipeline(card, pipeline);
-  });
+  if (uzWarehouseReady && requestedTrackingStatus === "handed_to_cargo") {
+    const shipments = await listCargoShipmentsByOrderItems(
+      filteredCards.map((card) => ({
+        orderId: card.orderId,
+        itemIndex: card.itemIndex,
+      })),
+    );
+    const byKey = new Map(
+      shipments.map((row) => [shipmentLookupKey(row.orderId, row.itemIndex), row]),
+    );
+    filteredCards = filteredCards
+      .map((card) => {
+        const shipment = byKey.get(
+          shipmentLookupKey(card.orderId, card.itemIndex),
+        );
+        return {
+          ...card,
+          cargoShipment: shipment || null,
+          uzWarehouseReady: foreignUzCourierBridgeService.isShipmentReadyForUzCourier(
+            shipment,
+          ),
+        };
+      })
+      .filter((card) => card.uzWarehouseReady);
+  }
 
   const total = filteredCards.length;
   const start = (page - 1) * limit;
@@ -329,6 +396,19 @@ async function collectAdminOrderItem(payload = {}) {
 
 async function handoffAdminOrderItem(payload = {}) {
   const sellerId = cleanSellerId(payload.sellerId);
+  const account = await SellerAccount.findOne({ id: sellerId })
+    .select({ sellerCountry: 1 })
+    .lean();
+  const pipelineMode = resolveSellerPipelineMode(account?.sellerCountry);
+
+  if (pipelineMode === "foreign") {
+    return foreignUzCourierBridgeService.handoffForeignItemToUzCourier(
+      sellerId,
+      payload.orderId,
+      payload.itemIndex,
+    );
+  }
+
   return sellerOrderTrackingService.handoffSellerOrderItem(
     sellerId,
     payload.orderId,

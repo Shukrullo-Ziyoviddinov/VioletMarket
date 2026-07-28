@@ -15,6 +15,12 @@ const items = [
     href: '/yuklarim',
   },
   {
+    label: 'UZBda',
+    icon: 'business-outline',
+    activeIcon: 'business',
+    href: '/uzbda',
+  },
+  {
     label: 'Profil',
     icon: 'person-outline',
     activeIcon: 'person',

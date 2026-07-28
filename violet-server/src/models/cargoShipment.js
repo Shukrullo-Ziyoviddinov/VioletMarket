@@ -73,6 +73,8 @@ const cargoShipmentSchema = new mongoose.Schema(
     submittedAt: { type: Date, default: Date.now },
     acceptedAt: { type: Date, default: null },
     returnedAt: { type: Date, default: null },
+    /** Logistica «To‘landi» — shundan keyin asosiy admin Xorij→UZB ga chiqadi */
+    paidAt: { type: Date, default: null },
   },
   {
     collection: "cargo_shipments",
@@ -86,6 +88,7 @@ cargoShipmentSchema.index(
   { unique: true },
 );
 cargoShipmentSchema.index({ status: 1, sellerCountry: 1, submittedAt: -1 });
+cargoShipmentSchema.index({ status: 1, processStep: 1, paidAt: 1, logisticaId: 1 });
 
 function toPublicCargoShipment(doc) {
   if (!doc) return null;
@@ -110,6 +113,7 @@ function toPublicCargoShipment(doc) {
     submittedAt: row.submittedAt || row.createdAt || null,
     acceptedAt: row.acceptedAt || null,
     returnedAt: row.returnedAt || null,
+    paidAt: row.paidAt || null,
     createdAt: row.createdAt || null,
     updatedAt: row.updatedAt || null,
   };

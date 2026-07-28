@@ -7,31 +7,37 @@ type Props = {
 };
 
 export function ShipmentActionButtons({ onAccept, onReturnToSeller }: Props) {
+  if (!onAccept && !onReturnToSeller) return null;
+
   return (
     <View style={styles.row}>
-      <Pressable
-        style={({ pressed }) => [
-          styles.btn,
-          styles.accept,
-          pressed && styles.pressed,
-        ]}
-        onPress={onAccept}
-      >
-        <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
-        <Text style={[styles.text, styles.acceptText]}>Qabul qilish</Text>
-      </Pressable>
+      {onAccept ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.btn,
+            styles.accept,
+            pressed && styles.pressed,
+          ]}
+          onPress={onAccept}
+        >
+          <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
+          <Text style={[styles.text, styles.acceptText]}>Qabul qilish</Text>
+        </Pressable>
+      ) : null}
 
-      <Pressable
-        style={({ pressed }) => [
-          styles.btn,
-          styles.returnBtn,
-          pressed && styles.pressed,
-        ]}
-        onPress={onReturnToSeller}
-      >
-        <Ionicons name="person-outline" size={18} color="#7c3aed" />
-        <Text style={[styles.text, styles.returnText]}>Sotuvchiga qaytarish</Text>
-      </Pressable>
+      {onReturnToSeller ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.btn,
+            styles.returnBtn,
+            pressed && styles.pressed,
+          ]}
+          onPress={onReturnToSeller}
+        >
+          <Ionicons name="person-outline" size={18} color="#7c3aed" />
+          <Text style={[styles.text, styles.returnText]}>Sotuvchiga qaytarish</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

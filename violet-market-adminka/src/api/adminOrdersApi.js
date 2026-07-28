@@ -87,6 +87,9 @@ export async function fetchAdminOrders(filters = {}) {
   if (filters?.pipeline) {
     params.set('pipeline', String(filters.pipeline));
   }
+  if (filters?.uzWarehouseReady) {
+    params.set('uzWarehouseReady', '1');
+  }
 
   const query = params.toString();
   const path = query ? `/api/admin/orders?${query}` : '/api/admin/orders';

@@ -31,6 +31,8 @@ export type ShipmentListItem = {
   weightLabel: WeightLabel;
   status?: string;
   sellerCountry?: string;
+  processStep?: string | null;
+  paidAt?: string | null;
   submittedAt?: string | null;
 };
 
@@ -53,6 +55,8 @@ export type ShipmentDetail = {
   itemIndex?: number;
   submittedAt?: string | null;
   acceptedAt?: string | null;
+  returnedAt?: string | null;
+  paidAt?: string | null;
 };
 
 export type PendingShipmentsResponse = {
