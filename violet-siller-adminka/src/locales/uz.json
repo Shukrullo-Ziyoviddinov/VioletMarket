@@ -119,7 +119,25 @@
     "cargo": {
       "empty": "Cargoga yuboriladigan mahsulotlar yo'q",
       "success": "Mahsulot cargoga yuborildi",
-      "error": "Cargoga yuborib bo‘lmadi"
+      "error": "Cargoga yuborib bo‘lmadi",
+      "warehouseContacts": {
+        "loading": "Manzillar yuklanmoqda...",
+        "loadError": "Cargo manzillarini yuklab bo‘lmadi",
+        "empty": "Logistica manzili hali kiritilmagan.",
+        "emptyForCountry": "{{country}} bo‘yicha logistica manzili hali kiritilmagan.",
+        "hint": "Mahsulotni quyidagi cargo manziliga yuboring",
+        "address": "Manzil",
+        "phone": "Telefon",
+        "description": "Tavsif",
+        "countries": {
+          "china": "Xitoy",
+          "korea": "Koreya",
+          "turkiya": "Turkiya",
+          "turkey": "Turkiya",
+          "usa": "AQSH",
+          "japan": "Yaponiya"
+        }
+      }
     },
     "handed": {
       "empty": "Kuryerga topshirilgan mahsulotlar yo'q",
@@ -455,6 +473,41 @@
       "submittedAt": "📅 So'rov yuborilgan sana:",
       "withdrawnAt": "✅ Yechilgan sana:",
       "amount": "💰 Yechilgan summa:"
+    }
+  },
+  "miniGlobalModal": {
+    "close": "Yopish",
+    "confirming": "Kutilmoqda...",
+    "sellerPausedTitle": "Hisob to'xtatilgan",
+    "default": {
+      "title": "Tasdiqlash",
+      "message": "Davom etishga aminmisiz?",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
+    },
+    "deleteProduct": {
+      "title": "O'chirishni tasdiqlash",
+      "message": "Chindan ham bu mahsulotni o'chirishga aminmisiz?",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
+    },
+    "courierHandoff": {
+      "title": "Tasdiqlash",
+      "message": "Mahsulotni kuryerga topshirishni tasdiqlaysizmi?",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
+    },
+    "cargoHandoff": {
+      "title": "Tasdiqlash",
+      "message": "Mahsulotni cargoga yuborishni tasdiqlaysizmi?",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
+    },
+    "cancelOrder": {
+      "title": "Buyurtmani bekor qilish",
+      "message": "Chindan ham buyurtmani bekor qilmoqchimisiz? (Mahsulot qayta omborga qaytariladi)",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
     }
   }
 }

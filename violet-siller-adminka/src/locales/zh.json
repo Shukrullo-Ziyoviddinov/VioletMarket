@@ -119,7 +119,25 @@
     "cargo": {
       "empty": "暂无待发给物流的商品",
       "success": "商品已发给物流",
-      "error": "发给物流失败"
+      "error": "发给物流失败",
+      "warehouseContacts": {
+        "loading": "正在加载地址...",
+        "loadError": "无法加载物流地址",
+        "empty": "物流地址尚未填写。",
+        "emptyForCountry": "尚未填写{{country}}的物流地址。",
+        "hint": "请将商品发送到以下物流地址",
+        "address": "地址",
+        "phone": "电话",
+        "description": "说明",
+        "countries": {
+          "china": "中国",
+          "korea": "韩国",
+          "turkiya": "土耳其",
+          "turkey": "土耳其",
+          "usa": "美国",
+          "japan": "日本"
+        }
+      }
     },
     "handed": {
       "empty": "暂无已交给快递员的商品",
@@ -455,6 +473,41 @@
       "submittedAt": "📅 申请提交时间：",
       "withdrawnAt": "✅ 提现时间：",
       "amount": "💰 提现金额："
+    }
+  },
+  "miniGlobalModal": {
+    "close": "关闭",
+    "confirming": "请稍候...",
+    "sellerPausedTitle": "账户已暂停",
+    "default": {
+      "title": "确认",
+      "message": "确定要继续吗？",
+      "confirm": "是",
+      "cancel": "否"
+    },
+    "deleteProduct": {
+      "title": "确认删除",
+      "message": "确定要删除该商品吗？",
+      "confirm": "是",
+      "cancel": "否"
+    },
+    "courierHandoff": {
+      "title": "确认",
+      "message": "确定将该商品交给快递员吗？",
+      "confirm": "是",
+      "cancel": "否"
+    },
+    "cargoHandoff": {
+      "title": "确认",
+      "message": "确定将该商品发给物流吗？",
+      "confirm": "是",
+      "cancel": "否"
+    },
+    "cancelOrder": {
+      "title": "取消订单",
+      "message": "确定要取消订单吗？（商品将退回库存）",
+      "confirm": "是",
+      "cancel": "否"
     }
   }
 }

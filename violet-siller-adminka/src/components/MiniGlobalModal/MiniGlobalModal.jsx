@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import SellerAccountPausedNotice from '../SellerAccountPausedNotice/SellerAccountPausedNotice';
-import { resolveMiniGlobalModalPermission } from './miniGlobalModalTexts';
 import './MiniGlobalModal.css';
 
 const VARIANT_META = {
   'seller-paused': {
-    title: "Hisob to'xtatilgan",
+    titleKey: 'miniGlobalModal.sellerPausedTitle',
     Content: SellerAccountPausedNotice,
   },
 };
@@ -20,14 +20,33 @@ function MiniGlobalModalConfirm({
   onCancel,
   onCancelOrder,
   cancelOrderLoading = false,
-  cancelOrderText = 'Buyurtmani bekor qilish',
+  cancelOrderText,
   extraContent = null,
 }) {
+  const { t } = useTranslation();
+  const permissionPath = [
+    'deleteProduct',
+    'courierHandoff',
+    'cargoHandoff',
+    'cancelOrder',
+  ].includes(permissionKey)
+    ? permissionKey
+    : 'default';
+
   const copy = useMemo(
-    () => resolveMiniGlobalModalPermission(permissionKey, itemName),
-    [permissionKey, itemName],
+    () => ({
+      title: t(`miniGlobalModal.${permissionPath}.title`),
+      message: t(`miniGlobalModal.${permissionPath}.message`, {
+        itemName: itemName || '',
+      }),
+      confirmText: t(`miniGlobalModal.${permissionPath}.confirm`),
+      cancelText: t(`miniGlobalModal.${permissionPath}.cancel`),
+    }),
+    [itemName, permissionPath, t],
   );
   const busy = loading || cancelOrderLoading;
+  const resolvedCancelOrderText =
+    cancelOrderText || t('orders.modal.cancelOrder');
 
   useEffect(() => {
     if (!open) return undefined;
@@ -54,7 +73,7 @@ function MiniGlobalModalConfirm({
       <button
         type="button"
         className="mini-global-modal__backdrop"
-        aria-label="Yopish"
+        aria-label={t('miniGlobalModal.close')}
         onClick={busy ? undefined : onCancel}
         disabled={busy}
       />
@@ -92,7 +111,9 @@ function MiniGlobalModalConfirm({
                 onClick={onCancelOrder}
                 disabled={busy}
               >
-                {cancelOrderLoading ? 'Bekor qilinmoqda...' : cancelOrderText}
+                {cancelOrderLoading
+                  ? t('orders.modal.cancelling')
+                  : resolvedCancelOrderText}
               </button>
             ) : null}
             <div className="mini-global-modal__actions-right">
@@ -110,7 +131,7 @@ function MiniGlobalModalConfirm({
                 onClick={onConfirm}
                 disabled={busy}
               >
-                {loading ? "O'chirilmoqda..." : copy.confirmText}
+                {loading ? t('miniGlobalModal.confirming') : copy.confirmText}
               </button>
             </div>
           </div>
@@ -122,6 +143,7 @@ function MiniGlobalModalConfirm({
 }
 
 function MiniGlobalModalVariant({ open, onClose, variant }) {
+  const { t } = useTranslation();
   const meta = VARIANT_META[variant] || VARIANT_META['seller-paused'];
   const Content = meta.Content;
 
@@ -150,7 +172,7 @@ function MiniGlobalModalVariant({ open, onClose, variant }) {
       <button
         type="button"
         className="mini-global-modal__backdrop"
-        aria-label="Yopish"
+        aria-label={t('miniGlobalModal.close')}
         onClick={onClose}
       />
 
@@ -163,13 +185,13 @@ function MiniGlobalModalVariant({ open, onClose, variant }) {
         >
           <header className="mini-global-modal__header">
             <h2 id="mini-global-modal-title" className="mini-global-modal__title">
-              {meta.title}
+              {t(meta.titleKey)}
             </h2>
             <button
               type="button"
               className="mini-global-modal__close"
               onClick={onClose}
-              aria-label="Yopish"
+              aria-label={t('miniGlobalModal.close')}
             >
               ×
             </button>

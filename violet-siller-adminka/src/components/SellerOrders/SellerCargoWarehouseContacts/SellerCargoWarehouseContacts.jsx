@@ -1,16 +1,24 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './SellerCargoWarehouseContacts.css';
 
 export default function SellerCargoWarehouseContacts({
   loading = false,
   error = '',
-  sellerCountryLabel = '',
+  sellerCountry = '',
   contacts = [],
 }) {
+  const { t } = useTranslation();
+  const countryLabel = sellerCountry
+    ? t(`orders.cargo.warehouseContacts.countries.${sellerCountry}`, {
+        defaultValue: sellerCountry.toUpperCase(),
+      })
+    : '';
+
   if (loading) {
     return (
       <div className="seller-cargo-warehouse-contacts seller-cargo-warehouse-contacts--state">
-        Manzillar yuklanmoqda...
+        {t('orders.cargo.warehouseContacts.loading')}
       </div>
     );
   }
@@ -26,9 +34,11 @@ export default function SellerCargoWarehouseContacts({
   if (!contacts.length) {
     return (
       <div className="seller-cargo-warehouse-contacts seller-cargo-warehouse-contacts--state">
-        {sellerCountryLabel
-          ? `${sellerCountryLabel} bo‘yicha logistica manzili hali kiritilmagan.`
-          : 'Logistica manzili hali kiritilmagan.'}
+        {countryLabel
+          ? t('orders.cargo.warehouseContacts.emptyForCountry', {
+              country: countryLabel,
+            })
+          : t('orders.cargo.warehouseContacts.empty')}
       </div>
     );
   }
@@ -36,8 +46,8 @@ export default function SellerCargoWarehouseContacts({
   return (
     <div className="seller-cargo-warehouse-contacts">
       <p className="seller-cargo-warehouse-contacts__hint">
-        Mahsulotni quyidagi cargo manziliga yuboring
-        {sellerCountryLabel ? ` (${sellerCountryLabel})` : ''}:
+        {t('orders.cargo.warehouseContacts.hint')}
+        {countryLabel ? ` (${countryLabel})` : ''}:
       </p>
       <div className="seller-cargo-warehouse-contacts__list">
         {contacts.map((item) => (
@@ -47,19 +57,19 @@ export default function SellerCargoWarehouseContacts({
             </strong>
             {item.chinaAddress ? (
               <p>
-                <span>Manzil</span>
+                <span>{t('orders.cargo.warehouseContacts.address')}</span>
                 {item.chinaAddress}
               </p>
             ) : null}
             {item.chinaPhone ? (
               <p>
-                <span>Telefon</span>
+                <span>{t('orders.cargo.warehouseContacts.phone')}</span>
                 {item.chinaPhone}
               </p>
             ) : null}
             {item.profileDescription ? (
               <p>
-                <span>Tavsif</span>
+                <span>{t('orders.cargo.warehouseContacts.description')}</span>
                 {item.profileDescription}
               </p>
             ) : null}

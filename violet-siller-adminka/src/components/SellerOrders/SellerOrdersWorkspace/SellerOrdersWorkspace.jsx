@@ -88,7 +88,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [cargoContactsLoading, setCargoContactsLoading] = useState(false);
   const [cargoContactsError, setCargoContactsError] = useState('');
   const [cargoContacts, setCargoContacts] = useState([]);
-  const [cargoCountryLabel, setCargoCountryLabel] = useState('');
+  const [cargoCountry, setCargoCountry] = useState('');
 
   const loadOrders = useCallback(async () => {
     if (!token) {
@@ -119,14 +119,14 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setCancelTarget(null);
     setCargoContacts([]);
     setCargoContactsError('');
-    setCargoCountryLabel('');
+    setCargoCountry('');
   }, [filter]);
 
   useEffect(() => {
     if (!token || !cargoOrder) {
       setCargoContacts([]);
       setCargoContactsError('');
-      setCargoCountryLabel('');
+      setCargoCountry('');
       setCargoContactsLoading(false);
       return undefined;
     }
@@ -139,13 +139,13 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
       .then((data) => {
         if (!active) return;
         setCargoContacts(data.contacts || []);
-        setCargoCountryLabel(data.sellerCountryLabel || '');
+        setCargoCountry(data.sellerCountry || '');
       })
-      .catch((error) => {
+      .catch(() => {
         if (!active) return;
         setCargoContacts([]);
         setCargoContactsError(
-          error?.message || 'Cargo manzillarini yuklab bo‘lmadi',
+          t('orders.cargo.warehouseContacts.loadError'),
         );
       })
       .finally(() => {
@@ -155,7 +155,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     return () => {
       active = false;
     };
-  }, [cargoOrder, token]);
+  }, [cargoOrder, t, token]);
 
   const confirmationOrders = orders.filter(
     (order) => order.trackingStatus === 'accepted',
@@ -451,7 +451,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
           <SellerCargoWarehouseContacts
             loading={cargoContactsLoading}
             error={cargoContactsError}
-            sellerCountryLabel={cargoCountryLabel}
+            sellerCountry={cargoCountry}
             contacts={cargoContacts}
           />
         }
