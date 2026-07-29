@@ -15,6 +15,7 @@ export default function YuklarimScreen() {
       <ShipmentsListPanel
         loadShipments={loadShipments}
         hrefBase="/ish-stoli/[id]"
+        emptyIcon="cube-outline"
         emptyTitle="Qabul qilingan yuk yo‘q"
         emptyText="Asosiydan qabul qilingan so‘rovlar shu yerda chiqadi."
       />

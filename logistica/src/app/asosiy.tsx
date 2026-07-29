@@ -15,6 +15,7 @@ export default function AsosiyScreen() {
       <ShipmentsListPanel
         loadShipments={loadShipments}
         hrefBase="/shipment/[id]"
+        emptyIcon="file-tray-full-outline"
         emptyTitle="Hozircha so‘rov yo‘q"
         emptyText="Xorij sillerlari cargoga yuborgan yuklar shu yerda chiqadi."
       />

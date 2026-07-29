@@ -111,7 +111,7 @@ const menuItems = [
   {
     key: 'logistica-accounts',
     icon: <TruckOutlined />,
-    label: "Logistica ma'lumotlari",
+    label: 'Logistica hisob va so‘rovlar',
     route: '/logistica',
   },
   {
@@ -119,6 +119,12 @@ const menuItems = [
     icon: <MessageOutlined />,
     label: 'Kuryer bilan chat',
     route: '/courier-chats',
+  },
+  {
+    key: 'logistica-chats',
+    icon: <MessageOutlined />,
+    label: 'Logistica bilan chat',
+    route: '/logistica-chats',
   },
   { key: 'payment-requests', icon: <DollarOutlined />, label: "To'lov so'rovlari", route: '/payment-requests' },
   { key: 'withdrawals', icon: <HistoryOutlined />, label: 'Yechilgan summalar tarixi', route: '/withdrawals' },
@@ -146,6 +152,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/couriers') return 'couriers';
   if (pathname === '/logistica') return 'logistica-accounts';
   if (pathname === '/courier-chats') return 'courier-chats';
+  if (pathname === '/logistica-chats') return 'logistica-chats';
   if (pathname === '/payment-requests') return 'payment-requests';
   if (pathname === '/withdrawals') return 'withdrawals';
   return 'dashboard';

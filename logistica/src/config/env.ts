@@ -11,3 +11,9 @@ if (!apiUrl.startsWith('http')) {
 export const env = {
   apiUrl,
 } as const;
+
+export function resolveMediaUrl(path: string) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path) || path.startsWith('data:')) return path;
+  return `${env.apiUrl}${path.startsWith('/') ? path : `/${path}`}`;
+}

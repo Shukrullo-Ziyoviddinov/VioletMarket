@@ -21,6 +21,10 @@ function authenticateMessageChatSocket(handshake) {
       return { kind: "courier", deliveryId: String(payload.sub).trim() };
     }
 
+    if (payload?.role === "logistica" && payload?.sub) {
+      return { kind: "logistica", logisticaId: String(payload.sub).trim() };
+    }
+
     if (payload?.purpose === "seller-registration") {
       return null;
     }

@@ -8,6 +8,10 @@ const {
   getCourierRoom,
   getAdminRoom,
 } = require("./supportChatSocketEmitter");
+const {
+  getLogisticaRoom,
+  getLogisticaAdminRoom,
+} = require("./logisticaChatSocketEmitter");
 
 function initMessageChatSocket(httpServer) {
   const io = new Server(httpServer, {
@@ -46,8 +50,11 @@ function initMessageChatSocket(httpServer) {
       registerMessageChatPresenceOnSocket(socket, io);
     } else if (identity.kind === "courier") {
       socket.join(getCourierRoom(identity.deliveryId));
+    } else if (identity.kind === "logistica") {
+      socket.join(getLogisticaRoom(identity.logisticaId));
     } else if (identity.kind === "admin") {
       socket.join(getAdminRoom());
+      socket.join(getLogisticaAdminRoom());
     }
   });
 

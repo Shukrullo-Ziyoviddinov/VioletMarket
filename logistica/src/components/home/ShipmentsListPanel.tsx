@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import {
   ShipmentRequestCard,
@@ -24,6 +25,7 @@ type Props = {
   hrefBase?: '/shipment/[id]' | '/ish-stoli/[id]';
   emptyTitle: string;
   emptyText: string;
+  emptyIcon?: keyof typeof Ionicons.glyphMap;
   showCargoPaymentStatus?: boolean;
   filterItems?: (item: ShipmentRequest) => boolean;
 };
@@ -33,6 +35,7 @@ export function ShipmentsListPanel({
   hrefBase = '/shipment/[id]',
   emptyTitle,
   emptyText,
+  emptyIcon = 'cube-outline',
   showCargoPaymentStatus = false,
   filterItems,
 }: Props) {
@@ -140,6 +143,15 @@ export function ShipmentsListPanel({
     >
       {visibleItems.length === 0 ? (
         <View style={styles.empty}>
+          <View style={styles.emptyIconWrap}>
+            <Ionicons
+              name={
+                items.length === 0 ? emptyIcon : 'options-outline'
+              }
+              size={58}
+              color="#C4B5FD"
+            />
+          </View>
           <Text style={styles.emptyTitle}>
             {items.length === 0 ? emptyTitle : 'Bu filter bo‘yicha yuk yo‘q'}
           </Text>
@@ -191,11 +203,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F3FF',
+    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: '#111827',
+    textAlign: 'center',
   },
   emptyText: {
     fontSize: 13,

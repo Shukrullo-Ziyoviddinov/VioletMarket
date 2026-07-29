@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Pressable,
@@ -15,6 +16,7 @@ import { ScreenShell } from '@/components/ScreenShell';
 import type { LogisticaProfile } from '@/types/logistica';
 
 export default function ProfilScreen() {
+  const router = useRouter();
   const { profile, token } = useAuth();
   const [displayProfile, setDisplayProfile] =
     useState<LogisticaProfile | null>(profile);
@@ -114,6 +116,25 @@ export default function ProfilScreen() {
               {hasInfo
                 ? displayProfile?.chinaAddress
                 : 'Xitoydagi manzil va telefonni kiriting'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/yordam')}
+          style={({ pressed }) => [
+            styles.myInfoButton,
+            pressed && styles.myInfoButtonPressed,
+          ]}
+        >
+          <View style={[styles.myInfoIcon, styles.helpIcon]}>
+            <Ionicons name="chatbubbles-outline" size={22} color="#2563EB" />
+          </View>
+          <View style={styles.myInfoText}>
+            <Text style={styles.myInfoTitle}>Yordam</Text>
+            <Text style={styles.myInfoSubtitle} numberOfLines={1}>
+              Asosiy admin bilan yozishma
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
@@ -278,6 +299,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F3E8FF',
+  },
+  helpIcon: {
+    backgroundColor: '#DBEAFE',
   },
   myInfoText: {
     flex: 1,

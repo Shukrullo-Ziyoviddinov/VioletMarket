@@ -6,6 +6,9 @@ const { HttpError } = require("../../utils/httpError");
 const {
   COUNTRY_LABELS,
 } = require("../logisticaAuth/logisticaAuthService");
+const {
+  deleteMessagesForLogistica,
+} = require("../logisticaChat/logisticaChatService");
 
 function toAdminLogisticaJSON(profile) {
   if (!profile) return null;
@@ -88,6 +91,7 @@ async function deleteLogistica(id) {
     );
   }
 
+  await deleteMessagesForLogistica(profile._id.toString());
   await LogisticaAuthCode.deleteMany({ email: profile.email });
   await LogisticaProfile.deleteOne({ _id: profile._id });
   return { deleted: true, id };

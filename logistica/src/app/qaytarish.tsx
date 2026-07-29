@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { GlobalConfirmModal } from '@/components/GlobalConfirmModal';
 import { ScreenShell } from '@/components/ScreenShell';
@@ -244,6 +245,9 @@ export default function QaytarishScreen() {
         </View>
       ) : empty ? (
         <View style={styles.centered}>
+          <View style={styles.emptyIconWrap}>
+            <Ionicons name="return-down-back-outline" size={58} color="#C4B5FD" />
+          </View>
           <Text style={styles.emptyTitle}>Qaytarish yo‘q</Text>
           <Text style={styles.emptyText}>
             So‘rov yuborilganda «Admin kutmoqda»da, tasdiqdan keyin yakunlash
@@ -394,6 +398,15 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F3FF',
+    marginBottom: 2,
   },
   errorTitle: {
     fontSize: 17,

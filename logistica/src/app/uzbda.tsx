@@ -39,6 +39,7 @@ export default function UzbdaScreen() {
         <ShipmentsListPanel
           loadShipments={loadShipments}
           hrefBase="/ish-stoli/[id]"
+          emptyIcon="business-outline"
           emptyTitle="Toshkent omborida yuk yo‘q"
           emptyText="«Toshkent omborida» belgilangan mahsulotlar shu yerda chiqadi. To‘landidan keyin asosiy adminga o‘tadi."
           showCargoPaymentStatus
