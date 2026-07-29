@@ -457,7 +457,7 @@
   "orderHistory": {
     "title": "Mening buyurtmalarim",
     "loading": "Buyurtmalar yuklanmoqda...",
-    "empty": "Hozircha O'zbekiston sotuvchilaridan buyurtmalar yo'q.",
+    "empty": "Hozircha buyurtmalar yo'q.",
     "deliveredEmpty": "Hozircha yetkazib berilgan buyurtmalar yo'q.",
     "tracking": "Buyurtma holati",
     "trackingCode": "Trek kodi",
@@ -487,6 +487,34 @@
       "collected": {
         "title": "Mahsulot yig'ildi",
         "description": "Mahsulot yetkazishga tayyorlandi"
+      },
+      "ready_for_cargo": {
+        "title": "Cargoga tayyor",
+        "description": "Mahsulot logisticaga yuborishga tayyor"
+      },
+      "handed_to_cargo": {
+        "title": "Logisticaga topshirildi",
+        "description": "Mahsulot logistica kompaniyasiga topshirildi"
+      },
+      "xitoy_omborida": {
+        "title": "Xorij omborida",
+        "description": "Mahsulot xorij omboriga qabul qilindi"
+      },
+      "yolda": {
+        "title": "Yo'lda",
+        "description": "Mahsulot Toshkentga yo'lda"
+      },
+      "bojxonada": {
+        "title": "Bojxonada",
+        "description": "Mahsulot bojxona jarayonida"
+      },
+      "toshkent_omborida": {
+        "title": "Toshkent omborida",
+        "description": "Mahsulot Toshkent omboriga yetib keldi"
+      },
+      "topshirildi": {
+        "title": "Topshirildi",
+        "description": "Mahsulot Toshkent omboridan topshirildi"
       },
       "handed_to_courier": {
         "title": "Mahsulot kuryerda",

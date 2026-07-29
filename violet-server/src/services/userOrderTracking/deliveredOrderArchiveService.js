@@ -5,8 +5,12 @@ function cleanSellerId(value) {
   return String(value || "").trim();
 }
 
-function buildTrackingCode(orderId, itemIndex) {
-  return `UZB-${String(Number(orderId) || 0).padStart(6, "0")}-${String(
+function buildTrackingCode(orderId, itemIndex, sellerCountry = "uzb") {
+  const country = String(sellerCountry || "uzb")
+    .trim()
+    .toUpperCase()
+    .slice(0, 3) || "UZB";
+  return `${country}-${String(Number(orderId) || 0).padStart(6, "0")}-${String(
     itemIndex + 1,
   ).padStart(2, "0")}`;
 }
@@ -35,8 +39,11 @@ async function archiveDeliveredOrderItems(userId, orders, sellerById) {
 
       const sellerId = cleanSellerId(item.sellerId);
       const seller = sellerById.get(sellerId);
-      if (!seller || String(seller.sellerCountry || "").toLowerCase() !== "uzb") return;
+      if (!seller) return;
 
+      const sellerCountry = String(seller.sellerCountry || "uzb")
+        .trim()
+        .toLowerCase() || "uzb";
       const quantity = Math.max(1, Number(item.quantity) || 1);
       const price = Number(item.price) || 0;
       writes.push({
@@ -51,10 +58,10 @@ async function archiveDeliveredOrderItems(userId, orders, sellerById) {
               userId,
               sourceOrderId: Number(order.id) || 0,
               sourceItemIndex: itemIndex,
-              trackingCode: buildTrackingCode(order.id, itemIndex),
+              trackingCode: buildTrackingCode(order.id, itemIndex, sellerCountry),
               productId: Number(item.productId) || 0,
               sellerId,
-              sellerCountry: "uzb",
+              sellerCountry,
               title: item.title || "",
               imageUrl: resolvePublicAssetUrl(item.image || "/img/no-image.png"),
               price,

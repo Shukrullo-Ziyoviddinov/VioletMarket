@@ -5,6 +5,12 @@ const { authMiddleware } = require("../../middleware/authMiddleware");
 const router = express.Router();
 
 router.get(
+  "/orders/my",
+  authMiddleware,
+  userOrderTrackingController.listMyOrders,
+);
+
+router.get(
   "/orders/my/uzb",
   authMiddleware,
   userOrderTrackingController.listMyUzbOrders,

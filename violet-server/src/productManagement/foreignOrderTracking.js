@@ -7,6 +7,8 @@
  *
  * Logistica ichki holatlar (shipment process) — alohida;
  * order.item.trackingStatus emas (B/C bosqichlarda shipment modeliga).
+ *
+ * Mijoz timeline (process + topshirildi): foreignCustomerOrderTracking.js
  */
 
 const FOREIGN_ORDER_TRACKING_STEPS = [

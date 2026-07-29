@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchMyUzbOrderTracking } from '../api/orderTrackingApi';
+import { fetchMyOrderTracking } from '../api/orderTrackingApi';
 import UserDeliveredOrdersList from '../components/UserOrderTracking/UserDeliveredOrdersList/UserDeliveredOrdersList';
 import UserOrderHistoryFilter from '../components/UserOrderTracking/UserOrderHistoryFilter/UserOrderHistoryFilter';
 import UserOrderTrackingList from '../components/UserOrderTracking/UserOrderTrackingList/UserOrderTrackingList';
@@ -24,7 +24,7 @@ const OrderHistory = () => {
 
     let cancelled = false;
     setLoading(true);
-    fetchMyUzbOrderTracking(authToken)
+    fetchMyOrderTracking(authToken)
       .then((data) => {
         if (cancelled) return;
         setInProgressOrders(data.inProgressItems);

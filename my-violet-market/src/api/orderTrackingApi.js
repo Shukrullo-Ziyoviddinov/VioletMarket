@@ -40,6 +40,7 @@ function normalizeOrderItem(row) {
       name: row?.seller?.name || { uz: '', ru: '' },
       country: String(row?.seller?.country || ''),
     },
+    pipelineMode: String(row?.pipelineMode || 'local') === 'foreign' ? 'foreign' : 'local',
     paymentMethod: String(row?.paymentMethod || ''),
     orderedAt: row?.orderedAt || '',
     trackingStatus: String(row?.trackingStatus || 'accepted'),
@@ -67,6 +68,29 @@ function normalizeDeliveredOrderItem(row) {
   };
 }
 
+export async function fetchMyOrderTracking(token) {
+  const res = await fetch(apiUrl('/api/orders/my'), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const payload = await parseJsonResponse(res);
+  const inProgressItems = Array.isArray(payload?.data?.inProgressItems)
+    ? payload.data.inProgressItems
+    : Array.isArray(payload?.data?.items)
+      ? payload.data.items
+      : [];
+  const deliveredItems = Array.isArray(payload?.data?.deliveredItems)
+    ? payload.data.deliveredItems
+    : [];
+
+  return {
+    inProgressItems: inProgressItems.map(normalizeOrderItem),
+    deliveredItems: deliveredItems.map(normalizeDeliveredOrderItem),
+  };
+}
+
+/** @deprecated Prefer fetchMyOrderTracking — UZB + foreign */
 export async function fetchMyUzbOrderTracking(token) {
   const res = await fetch(apiUrl('/api/orders/my/uzb'), {
     headers: {

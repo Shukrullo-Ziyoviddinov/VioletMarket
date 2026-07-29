@@ -6,6 +6,13 @@ const STEP_ICONS = {
   accepted: 'bx bx-clipboard',
   seller_confirmed: 'bx bx-check-shield',
   collected: 'bx bx-package',
+  ready_for_cargo: 'bx bx-box',
+  handed_to_cargo: 'bx bx-transfer-alt',
+  xitoy_omborida: 'bx bx-buildings',
+  yolda: 'bx bx-trip',
+  bojxonada: 'bx bx-file',
+  toshkent_omborida: 'bx bx-home-alt',
+  topshirildi: 'bx bx-badge-check',
   handed_to_courier: 'bx bx-cycling',
   delivered: 'bx bx-check-circle',
 };
