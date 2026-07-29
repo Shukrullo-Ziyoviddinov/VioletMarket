@@ -230,6 +230,17 @@ async function createCargoReturnRequestForLogistica(
     );
   }
 
+  const processStep = String(shipment.processStep || "")
+    .trim()
+    .toLowerCase();
+  if (processStep === "bojxonada" || processStep === "toshkent_omborida") {
+    throw new HttpError(
+      409,
+      "UZBda bosqichida sotuvchiga qaytarish mumkin emas",
+      "UZ_WAREHOUSE_RETURN_FORBIDDEN",
+    );
+  }
+
   if (
     status === "accepted" &&
     shipment.logisticaId &&

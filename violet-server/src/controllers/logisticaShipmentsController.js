@@ -100,6 +100,17 @@ const markShipmentPaid = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const arriveUzWarehouse = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data =
+    await cargoShipmentLogisticaService.arriveShipmentAtUzWarehouseForLogistica(
+      req.logisticaId,
+      req.params.shipmentId,
+      body,
+    );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listPendingShipments,
   listAcceptedShipments,
@@ -109,6 +120,7 @@ module.exports = {
   getShipmentDetail,
   acceptShipment,
   updateProcessStep,
+  arriveUzWarehouse,
   returnShipmentToSeller,
   confirmCargoReturn,
   markShipmentPaid,

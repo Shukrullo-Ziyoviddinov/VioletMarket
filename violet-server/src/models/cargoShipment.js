@@ -68,6 +68,11 @@ const cargoShipmentSchema = new mongoose.Schema(
       default: null,
       trim: true,
     },
+    /** UZB kelish: og‘irlik uchun cargo yetkazish summasi (so‘m) */
+    cargoDeliveryFee: { type: Number, default: 0, min: 0 },
+    uzArrivalPhotoUrl: { type: String, default: "", trim: true },
+    uzArrivalComment: { type: String, default: "", trim: true },
+    uzArrivedAt: { type: Date, default: null },
     logisticaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "LogisticaProfile",
@@ -113,6 +118,10 @@ function toPublicCargoShipment(doc) {
     note: String(row.note || ""),
     status: String(row.status || "pending"),
     processStep: row.processStep || null,
+    cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
+    uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
+    uzArrivalComment: String(row.uzArrivalComment || ""),
+    uzArrivedAt: row.uzArrivedAt || null,
     logisticaId: row.logisticaId ? String(row.logisticaId) : null,
     submittedAt: row.submittedAt || row.createdAt || null,
     acceptedAt: row.acceptedAt || null,

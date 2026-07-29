@@ -10,9 +10,6 @@ const { Order } = require("../../models/order");
 const { HttpError } = require("../../utils/httpError");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const {
-  LOGISTICA_PROCESS_STEPS,
-} = require("../../productManagement/foreignOrderTracking");
-const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
 const {
@@ -26,9 +23,17 @@ const {
 const {
   recordHandedOverHistory,
 } = require("./cargoLogisticaHistoryService");
+const {
+  parseOptionalArrivalPhoto,
+} = require("./cargoUzArrivalPhotoStorage");
 
 const DEFAULT_PAGE_SIZE = 20;
-const PROCESS_STEP_SET = new Set(LOGISTICA_PROCESS_STEPS);
+/** Yuklarim jarayon tugmalari — Toshkent UZB ish stolida */
+const YUKLARIM_PROCESS_STEPS = ["xitoy_omborida", "yolda", "bojxonada"];
+const YUKLARIM_PROCESS_STEP_SET = new Set(YUKLARIM_PROCESS_STEPS);
+/** UZBda sahifasi: bojxonada (kutish) + toshkent (To‘landi kutish) */
+const UZB_WAREHOUSE_LIST_STEPS = ["bojxonada", "toshkent_omborida"];
+const UZB_WAREHOUSE_LIST_STEP_SET = new Set(UZB_WAREHOUSE_LIST_STEPS);
 
 function assertActiveLogistica(profile) {
   if (!profile) {
@@ -147,6 +152,10 @@ function toLogisticaShipmentDetail(doc) {
     sellerCountry: String(row.sellerCountry || ""),
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
+    cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
+    uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
+    uzArrivalComment: String(row.uzArrivalComment || ""),
+    uzArrivedAt: row.uzArrivedAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
     acceptedAt: row.acceptedAt || null,
     returnedAt: row.returnedAt || null,
@@ -347,7 +356,8 @@ async function acceptShipmentForLogistica(logisticaId, shipmentIdRaw) {
 }
 
 /**
- * Jarayon stepi — faqat accepted + shu logistica.
+ * Jarayon stepi — faqat Yuklarim bosqichlari (xitoy → yolda → bojxona).
+ * Toshkent: arriveShipmentAtUzWarehouseForLogistica (Clientga yuborish).
  */
 async function updateShipmentProcessStepForLogistica(
   logisticaId,
@@ -365,11 +375,32 @@ async function updateShipmentProcessStepForLogistica(
     );
   }
 
+  if (shipment.paidAt) {
+    throw new HttpError(409, "To‘langan yuk holatini o‘zgartirib bo‘lmaydi", "SHIPMENT_ALREADY_PAID");
+  }
+
   const processStep = String(processStepRaw || "")
     .trim()
     .toLowerCase();
-  if (!PROCESS_STEP_SET.has(processStep)) {
+
+  if (processStep === "toshkent_omborida") {
+    throw new HttpError(
+      409,
+      "Toshkent omboriga «Clientga yuborish» orqali o‘ting",
+      "USE_UZ_ARRIVAL",
+    );
+  }
+
+  if (!YUKLARIM_PROCESS_STEP_SET.has(processStep)) {
     throw new HttpError(400, "Jarayon holati noto‘g‘ri", "INVALID_PROCESS_STEP");
+  }
+
+  if (UZB_WAREHOUSE_LIST_STEP_SET.has(String(shipment.processStep || ""))) {
+    throw new HttpError(
+      409,
+      "Bu yuk allaqachon UZBda — Yuklarim holatini o‘zgartirib bo‘lmaydi",
+      "ALREADY_IN_UZ_WAREHOUSE_FLOW",
+    );
   }
 
   shipment.processStep = processStep;
@@ -377,6 +408,76 @@ async function updateShipmentProcessStepForLogistica(
 
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
+  };
+}
+
+/**
+ * UZB ish stoli — Clientga yuborish:
+ * og‘irlik + summa → processStep = toshkent_omborida.
+ * Mijozga so‘rov yuborish — keyingi qadam.
+ */
+async function arriveShipmentAtUzWarehouseForLogistica(
+  logisticaId,
+  shipmentIdRaw,
+  payload = {},
+) {
+  const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
+  const status = String(shipment.status || "");
+
+  if (status !== "accepted" || String(shipment.logisticaId) !== String(logisticaId)) {
+    throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
+  }
+
+  if (shipment.paidAt) {
+    throw new HttpError(409, "To‘langan yukni qayta yuborib bo‘lmaydi", "SHIPMENT_ALREADY_PAID");
+  }
+
+  if (
+    String(shipment.processStep || "") === "toshkent_omborida" &&
+    shipment.uzArrivedAt
+  ) {
+    return {
+      shipment: toLogisticaShipmentDetail(shipment.toObject()),
+      alreadyArrived: true,
+    };
+  }
+
+  if (String(shipment.processStep || "") !== "bojxonada") {
+    throw new HttpError(
+      409,
+      "Avval «Bojxonada» holatini belgilang",
+      "NOT_IN_CUSTOMS",
+    );
+  }
+
+  const weightKg = Number(payload.weightKg);
+  if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    throw new HttpError(400, "Og‘irlikni to‘g‘ri kiriting", "INVALID_WEIGHT");
+  }
+
+  const cargoDeliveryFee = Number(payload.cargoDeliveryFee);
+  if (!Number.isFinite(cargoDeliveryFee) || cargoDeliveryFee < 0) {
+    throw new HttpError(400, "Og‘irlik summasini to‘g‘ri kiriting", "INVALID_FEE");
+  }
+
+  const comment = String(payload.comment || payload.uzArrivalComment || "").trim();
+  const photoUrl = parseOptionalArrivalPhoto(payload.photoBase64 || payload.imageBase64);
+
+  const arrivedAt = new Date();
+  shipment.weightKg = Math.round(weightKg * 1000) / 1000;
+  shipment.weightLabel = "Og'irlik";
+  shipment.cargoDeliveryFee = Math.round(cargoDeliveryFee);
+  shipment.uzArrivalComment = comment;
+  if (photoUrl) {
+    shipment.uzArrivalPhotoUrl = photoUrl;
+  }
+  shipment.uzArrivedAt = arrivedAt;
+  shipment.processStep = "toshkent_omborida";
+  await shipment.save();
+
+  return {
+    shipment: toLogisticaShipmentDetail(shipment.toObject()),
+    alreadyArrived: false,
   };
 }
 
@@ -408,7 +509,7 @@ function paginateQuery(query = {}) {
 }
 
 /**
- * Yuklarim — qabul qilingan, hali Toshkent omboriga yetmagan (to‘lanmagan).
+ * Yuklarim — qabul qilingan, hali UZB oqimiga (bojxona+) o‘tmagan.
  */
 async function listAcceptedShipmentsForLogistica(logisticaId, query = {}) {
   await loadActiveLogistica(logisticaId);
@@ -421,7 +522,7 @@ async function listAcceptedShipmentsForLogistica(logisticaId, query = {}) {
     $or: [
       { processStep: null },
       { processStep: { $exists: false } },
-      { processStep: { $ne: "toshkent_omborida" } },
+      { processStep: { $nin: UZB_WAREHOUSE_LIST_STEPS } },
     ],
   };
 
@@ -444,7 +545,7 @@ async function listAcceptedShipmentsForLogistica(logisticaId, query = {}) {
 }
 
 /**
- * UZBda — Toshkent omborida, hali To‘landi bosilmagan.
+ * UZBda — bojxonada (kelish kutilmoqda) yoki toshkent (To‘landi kutilmoqda).
  */
 async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
   await loadActiveLogistica(logisticaId);
@@ -453,7 +554,7 @@ async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
   const filter = {
     status: "accepted",
     logisticaId,
-    processStep: "toshkent_omborida",
+    processStep: { $in: UZB_WAREHOUSE_LIST_STEPS },
     paidAt: null,
   };
 
@@ -489,7 +590,7 @@ async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
   if (String(shipment.processStep || "") !== "toshkent_omborida") {
     throw new HttpError(
       409,
-      "Avval «Toshkent omborida» holatini belgilang",
+      "Avval «Clientga yuborish» orqali Toshkent omboriga o‘ting",
       "NOT_IN_UZ_WAREHOUSE",
     );
   }
@@ -519,9 +620,12 @@ module.exports = {
   getShipmentDetailForLogistica,
   acceptShipmentForLogistica,
   updateShipmentProcessStepForLogistica,
+  arriveShipmentAtUzWarehouseForLogistica,
   returnShipmentToSellerForLogistica,
   markShipmentPaidForLogistica,
   toLogisticaShipmentCard,
   toLogisticaShipmentDetail,
   toPublicCargoShipment,
+  YUKLARIM_PROCESS_STEPS,
+  UZB_WAREHOUSE_LIST_STEPS,
 };

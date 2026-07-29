@@ -53,6 +53,10 @@ export type ShipmentDetail = {
   sellerCountry?: string;
   orderId?: number;
   itemIndex?: number;
+  cargoDeliveryFee?: number;
+  uzArrivalPhotoUrl?: string;
+  uzArrivalComment?: string;
+  uzArrivedAt?: string | null;
   submittedAt?: string | null;
   acceptedAt?: string | null;
   returnedAt?: string | null;

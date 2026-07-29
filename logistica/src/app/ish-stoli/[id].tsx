@@ -17,10 +17,15 @@ import { ShipmentActionButtons } from '@/components/shipment-detail/ShipmentActi
 import { ShipmentDetailSummary } from '@/components/shipment-detail/ShipmentDetailSummary';
 import { ShipmentProductsList } from '@/components/shipment-detail/ShipmentProductsList';
 import { ShipmentRequestInfo } from '@/components/shipment-detail/ShipmentRequestInfo';
-import { PROCESS_STEPS } from '@/constants/shipmentProcess';
+import { UzWarehouseArrivalForm } from '@/components/shipment-detail/UzWarehouseArrivalForm';
+import {
+  YUKLARIM_PROCESS_STEPS,
+  isUzWarehouseFlowStep,
+} from '@/constants/shipmentProcess';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import {
+  arriveShipmentAtUzWarehouse,
   fetchShipmentDetail,
   markShipmentPaid,
   returnShipmentToSeller,
@@ -32,6 +37,10 @@ const ACCENT = '#7c3aed';
 
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
+}
+
+function formatMoney(value: number) {
+  return `${Math.max(0, Math.round(value)).toLocaleString('uz-UZ')} so‘m`;
 }
 
 export default function IshStoliScreen() {
@@ -76,26 +85,38 @@ export default function IshStoliScreen() {
   }, [load]);
 
   const isAccepted = detail?.status === 'accepted';
-  const isToshkent = detail?.activeProcessStep === 'toshkent_omborida';
+  const step = detail?.activeProcessStep || null;
+  const isBojxonada = step === 'bojxonada';
+  const isToshkent = step === 'toshkent_omborida';
+  const isUzFlow = isUzWarehouseFlowStep(step);
   const isPaid = Boolean(detail?.paidAt);
-  const showProcessButtons = isAccepted && !isToshkent && !isPaid;
-  const showPaidButton = isAccepted && isToshkent && !isPaid;
-  /** Accepted + to‘lanmagan — admin ga qaytarish so‘rovi (Asosiydagi bilan bir xil zanjir) */
-  const showReturnRequest = isAccepted && !isPaid;
+  const canMarkPaid = isAccepted && isToshkent && !isPaid;
+
+  /** Yuklarim jarayon tugmalari — UZB oqimidan oldin */
+  const showYuklarimProcessButtons = isAccepted && !isUzFlow && !isPaid;
+  /** UZB: og‘irlik formasi — faqat bojxonada */
+  const showUzArrivalForm = isAccepted && isBojxonada && !isPaid;
+  /** To‘landi — doim UZB da ko‘rinadi; toshkent+arrive qilinmaguncha disabled */
+  const showPaidButton = isAccepted && isUzFlow && !isPaid;
+  /** Sotuvchiga qaytarish — faqat Yuklarim (UZBda yo‘q) */
+  const showReturnRequest = isAccepted && !isUzFlow && !isPaid;
+
   const productCode = useMemo(() => {
     const first = detail?.products?.[0];
     if (!first?.productId) return detail?.requestCode || '—';
     return `#${String(first.productId).padStart(4, '0')}`;
   }, [detail]);
 
-  const handleProcessStep = async (step: ProcessStepKey) => {
+  const handleProcessStep = async (nextStep: ProcessStepKey) => {
     if (!token || !id || actionLoading) return;
+    if (nextStep === 'toshkent_omborida') return;
+
     setActionLoading(true);
     try {
-      const shipment = await saveShipmentProcessStep(token, id, step);
+      const shipment = await saveShipmentProcessStep(token, id, nextStep);
       setDetail(shipment);
-      if (step === 'toshkent_omborida') {
-        Alert.alert('Toshkent omborida', 'Mahsulot UZBda sahifasiga o‘tdi');
+      if (nextStep === 'bojxonada') {
+        Alert.alert('Bojxonada', 'Mahsulot UZBda sahifasiga o‘tdi');
         router.replace('/uzbda');
         return;
       }
@@ -110,8 +131,35 @@ export default function IshStoliScreen() {
     }
   };
 
-  const handleConfirmPaid = async () => {
+  const handleUzArrival = async (payload: {
+    weightKg: number;
+    cargoDeliveryFee: number;
+    comment: string;
+    photoBase64: string | null;
+  }) => {
     if (!token || !id || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const result = await arriveShipmentAtUzWarehouse(token, id, payload);
+      setDetail(result.shipment);
+      Alert.alert(
+        'Toshkent omborida',
+        result.alreadyArrived
+          ? 'Allaqachon belgilangan'
+          : 'Holat yangilandi. Endi «To‘landi» ni bosishingiz mumkin.',
+      );
+    } catch (err) {
+      Alert.alert(
+        'Xato',
+        err instanceof ApiError ? err.message : 'Yuborib bo‘lmadi',
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmPaid = async () => {
+    if (!token || !id || actionLoading || !canMarkPaid) return;
     setActionLoading(true);
     try {
       const result = await markShipmentPaid(token, id);
@@ -144,7 +192,7 @@ export default function IshStoliScreen() {
         'So‘rov yuborildi',
         'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
       );
-      router.replace(isToshkent ? '/uzbda' : '/yuklarim');
+      router.replace('/yuklarim');
     } catch (err) {
       Alert.alert(
         'Xato',
@@ -192,6 +240,7 @@ export default function IshStoliScreen() {
             { paddingBottom: 40 + Math.max(insets.bottom, 12) },
           ]}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <ShipmentDetailSummary
             storeName={detail.storeName}
@@ -207,6 +256,31 @@ export default function IshStoliScreen() {
           />
 
           <ShipmentProductsList products={detail.products} />
+
+          {isToshkent && detail.uzArrivedAt ? (
+            <View style={styles.arrivalSummary}>
+              <Text style={styles.arrivalTitle}>Toshkent omborida</Text>
+              <Text style={styles.arrivalLine}>
+                Og‘irlik: {detail.weightKg} kg
+              </Text>
+              <Text style={styles.arrivalLine}>
+                Summa: {formatMoney(detail.cargoDeliveryFee || 0)}
+              </Text>
+              {detail.uzArrivalComment ? (
+                <Text style={styles.arrivalLine}>
+                  Izoh: {detail.uzArrivalComment}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          {showUzArrivalForm ? (
+            <UzWarehouseArrivalForm
+              loading={actionLoading}
+              initialWeightKg={detail.weightKg}
+              onSubmit={handleUzArrival}
+            />
+          ) : null}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Tasdiqlash</Text>
@@ -227,18 +301,20 @@ export default function IshStoliScreen() {
               </Text>
             </View>
 
-            {showProcessButtons ? (
+            {showYuklarimProcessButtons ? (
               <View style={styles.steps}>
-                {PROCESS_STEPS.map((step) => {
+                {YUKLARIM_PROCESS_STEPS.map((row) => {
                   const done =
                     detail.activeProcessStep != null &&
-                    PROCESS_STEPS.findIndex(
-                      (row) => row.key === detail.activeProcessStep,
+                    YUKLARIM_PROCESS_STEPS.findIndex(
+                      (item) => item.key === detail.activeProcessStep,
                     ) >=
-                      PROCESS_STEPS.findIndex((row) => row.key === step.key);
+                      YUKLARIM_PROCESS_STEPS.findIndex(
+                        (item) => item.key === row.key,
+                      );
                   return (
                     <Pressable
-                      key={step.key}
+                      key={row.key}
                       style={({ pressed }) => [
                         styles.stepBtn,
                         done && styles.stepBtnDone,
@@ -246,11 +322,11 @@ export default function IshStoliScreen() {
                       ]}
                       disabled={actionLoading}
                       onPress={() => {
-                        void handleProcessStep(step.key);
+                        void handleProcessStep(row.key);
                       }}
                     >
                       <Ionicons
-                        name={step.icon}
+                        name={row.icon}
                         size={18}
                         color={done ? '#FFFFFF' : ACCENT}
                       />
@@ -260,7 +336,7 @@ export default function IshStoliScreen() {
                           done && styles.stepBtnTextDone,
                         ]}
                       >
-                        {step.label}
+                        {row.label}
                       </Text>
                     </Pressable>
                   );
@@ -272,17 +348,34 @@ export default function IshStoliScreen() {
               <Pressable
                 style={({ pressed }) => [
                   styles.paidBtn,
-                  pressed && !actionLoading && styles.pressed,
+                  !canMarkPaid && styles.paidBtnDisabled,
+                  pressed && canMarkPaid && !actionLoading && styles.pressed,
                 ]}
-                disabled={actionLoading}
-                onPress={() => setPaidModalOpen(true)}
+                disabled={actionLoading || !canMarkPaid}
+                onPress={() => {
+                  if (canMarkPaid) setPaidModalOpen(true);
+                }}
               >
-                {actionLoading ? (
+                {actionLoading && canMarkPaid ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.paidBtnText}>To‘landi</Text>
+                  <Text
+                    style={[
+                      styles.paidBtnText,
+                      !canMarkPaid && styles.paidBtnTextDisabled,
+                    ]}
+                  >
+                    To‘landi
+                  </Text>
                 )}
               </Pressable>
+            ) : null}
+
+            {showPaidButton && !canMarkPaid ? (
+              <Text style={styles.paidHintMuted}>
+                Avval yuqorida og‘irlik/summani kiriting va «Clientga yuborish»
+                ni bosing.
+              </Text>
             ) : null}
 
             {isPaid ? (
@@ -401,6 +494,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
+  arrivalSummary: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    padding: 14,
+    gap: 4,
+  },
+  arrivalTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#065F46',
+    marginBottom: 4,
+  },
+  arrivalLine: {
+    fontSize: 13,
+    color: '#047857',
+    fontWeight: '600',
+  },
   section: {
     gap: 12,
     backgroundColor: '#FFFFFF',
@@ -462,14 +574,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  paidBtnDisabled: {
+    backgroundColor: '#E5E7EB',
+  },
   paidBtnText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',
   },
+  paidBtnTextDisabled: {
+    color: '#9CA3AF',
+  },
   paidHint: {
     fontSize: 13,
     color: '#16A34A',
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  paidHintMuted: {
+    fontSize: 13,
+    color: '#6B7280',
     fontWeight: '600',
     lineHeight: 18,
   },

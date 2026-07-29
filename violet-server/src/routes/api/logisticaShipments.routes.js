@@ -55,6 +55,12 @@ router.patch(
 );
 
 router.post(
+  "/logistica-auth/shipments/:shipmentId/uz-arrival",
+  logisticaAuthMiddleware,
+  controller.arriveUzWarehouse,
+);
+
+router.post(
   "/logistica-auth/shipments/:shipmentId/return-to-seller",
   logisticaAuthMiddleware,
   controller.returnShipmentToSeller,

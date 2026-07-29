@@ -66,6 +66,10 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
     sellerCountry: row.sellerCountry ? String(row.sellerCountry) : undefined,
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
+    cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
+    uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ''),
+    uzArrivalComment: String(row.uzArrivalComment || ''),
+    uzArrivedAt: (row.uzArrivedAt as string | null | undefined) ?? null,
     submittedAt: (row.submittedAt as string | null | undefined) ?? null,
     acceptedAt: (row.acceptedAt as string | null | undefined) ?? null,
     returnedAt: (row.returnedAt as string | null | undefined) ?? null,
@@ -303,6 +307,38 @@ export async function saveShipmentProcessStep(
     token,
   );
   return mapDetail(data?.shipment || {});
+}
+
+export async function arriveShipmentAtUzWarehouse(
+  token: string,
+  shipmentId: string,
+  payload: {
+    weightKg: number;
+    cargoDeliveryFee: number;
+    comment?: string;
+    photoBase64?: string | null;
+  },
+) {
+  const data = await apiRequest<{
+    shipment: ShipmentDetail;
+    alreadyArrived?: boolean;
+  }>(
+    `/api/logistica-auth/shipments/${encodeURIComponent(shipmentId)}/uz-arrival`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        weightKg: payload.weightKg,
+        cargoDeliveryFee: payload.cargoDeliveryFee,
+        comment: payload.comment || '',
+        photoBase64: payload.photoBase64 || undefined,
+      }),
+    },
+    token,
+  );
+  return {
+    shipment: mapDetail(data?.shipment || {}),
+    alreadyArrived: Boolean(data?.alreadyArrived),
+  };
 }
 
 export async function markShipmentPaid(token: string, shipmentId: string) {
