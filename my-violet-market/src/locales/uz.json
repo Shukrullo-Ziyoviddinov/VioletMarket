@@ -475,6 +475,14 @@
       "in_progress": "Jarayonda",
       "all": "Barchasi"
     },
+    "countries": {
+      "china": "Xitoy",
+      "korea": "Koreya",
+      "turkiya": "Turkiya",
+      "usa": "AQSH",
+      "japan": "Yaponiya",
+      "foreign": "Xorij"
+    },
     "steps": {
       "accepted": {
         "title": "Qabul qilindi",
@@ -489,7 +497,7 @@
         "description": "Mahsulot yetkazishga tayyorlandi"
       },
       "ready_for_cargo": {
-        "title": "Cargoga tayyor",
+        "title": "Logisticaga tayyor",
         "description": "Mahsulot logisticaga yuborishga tayyor"
       },
       "handed_to_cargo": {
@@ -497,8 +505,8 @@
         "description": "Mahsulot logistica kompaniyasiga topshirildi"
       },
       "xitoy_omborida": {
-        "title": "Xorij omborida",
-        "description": "Mahsulot xorij omboriga qabul qilindi"
+        "title": "{{country}} omborida",
+        "description": "Mahsulot {{country}} omboriga qabul qilindi"
       },
       "yolda": {
         "title": "Yo'lda",

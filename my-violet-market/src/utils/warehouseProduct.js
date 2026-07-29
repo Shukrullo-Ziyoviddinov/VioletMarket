@@ -12,6 +12,7 @@ const COUNTRY_CODE_ALIASES = {
   aqsh: 'usa',
   us: 'usa',
   koreya: 'korea',
+  turkey: 'turkiya',
 };
 
 /** Turli yozilgan davlat kodlarini bitta standart kodga o'tkazish */

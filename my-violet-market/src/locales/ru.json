@@ -475,6 +475,14 @@
       "in_progress": "В процессе",
       "all": "Все"
     },
+    "countries": {
+      "china": "Китай",
+      "korea": "Корея",
+      "turkiya": "Турция",
+      "usa": "США",
+      "japan": "Япония",
+      "foreign": "Зарубежье"
+    },
     "steps": {
       "accepted": {
         "title": "Принят",
@@ -489,7 +497,7 @@
         "description": "Товар подготовлен к доставке"
       },
       "ready_for_cargo": {
-        "title": "Готов к карго",
+        "title": "Готов к логистике",
         "description": "Товар готов к передаче в логистику"
       },
       "handed_to_cargo": {
@@ -497,8 +505,8 @@
         "description": "Товар передан логистической компании"
       },
       "xitoy_omborida": {
-        "title": "На зарубежном складе",
-        "description": "Товар принят на зарубежном складе"
+        "title": "На складе ({{country}})",
+        "description": "Товар принят на складе в стране {{country}}"
       },
       "yolda": {
         "title": "В пути",

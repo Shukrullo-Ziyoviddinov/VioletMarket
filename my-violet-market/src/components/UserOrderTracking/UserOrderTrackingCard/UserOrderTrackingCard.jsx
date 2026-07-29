@@ -45,7 +45,10 @@ export default function UserOrderTrackingCard({ order }) {
       </div>
 
       <div className="user-order-tracking-card__tracking">
-        <UserOrderTrackingTimeline steps={order.steps} />
+        <UserOrderTrackingTimeline
+          steps={order.steps}
+          sellerCountry={order.seller?.country || ''}
+        />
       </div>
     </article>
   );
