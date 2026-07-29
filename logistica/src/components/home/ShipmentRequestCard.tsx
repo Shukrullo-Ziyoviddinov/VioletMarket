@@ -49,9 +49,11 @@ export function ShipmentRequestCard({
       </View>
 
       <View style={styles.middle}>
-        <Text style={styles.requestCode} numberOfLines={1}>
-          {item.requestCode}
-        </Text>
+        <View style={styles.codeRow}>
+          <Text style={styles.requestCode} numberOfLines={1}>
+            {item.requestCode}
+          </Text>
+        </View>
         <Text style={styles.storeName} numberOfLines={1}>
           {item.storeName}
         </Text>
@@ -63,7 +65,12 @@ export function ShipmentRequestCard({
         </View>
       </View>
 
-      <View style={styles.right}>
+      <View
+        style={[
+          styles.right,
+          !showPaymentBadge ? styles.rightWithoutPayment : null,
+        ]}
+      >
         {showPaymentBadge ? (
           <View
             style={[
@@ -127,7 +134,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minWidth: 0,
   },
+  codeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   requestCode: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '800',
     color: '#1E3A5F',
@@ -157,14 +170,17 @@ const styles = StyleSheet.create({
   right: {
     width: 100,
     alignItems: 'flex-end',
-    justifyContent: 'center',
+    alignSelf: 'stretch',
+    justifyContent: 'flex-start',
     gap: 4,
+  },
+  rightWithoutPayment: {
+    justifyContent: 'center',
   },
   paymentBadge: {
     borderRadius: 7,
     paddingHorizontal: 9,
     paddingVertical: 4,
-    marginBottom: 2,
   },
   paymentBadgePaid: {
     backgroundColor: '#DCFCE7',

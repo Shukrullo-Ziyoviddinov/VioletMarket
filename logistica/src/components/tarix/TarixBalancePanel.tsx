@@ -109,26 +109,28 @@ export function TarixBalancePanel({ refreshKey = 0 }: Props) {
 
   return (
     <View style={styles.panel}>
-      <TarixBalanceModeFilter value={mode} onChange={handleModeChange} />
+      <View style={styles.filterArea}>
+        <TarixBalanceModeFilter value={mode} onChange={handleModeChange} />
 
-      {dropdownOpen ? (
-        <View style={styles.dropdownRow}>
-          {mode === 'week' ? <View style={styles.dropdownSpacer} /> : null}
-          <View style={styles.dropdownSlot}>
-            <TarixBalancePeriodDropdown
-              open
-              options={mode === 'month' ? monthOptions : weekOptions}
-              selectedKey={mode === 'month' ? monthKey : weekKey}
-              onSelect={(key) => {
-                if (mode === 'month') setMonthKey(key);
-                else setWeekKey(key);
-                setDropdownOpen(false);
-              }}
-            />
+        {dropdownOpen ? (
+          <View style={styles.dropdownRow}>
+            {mode === 'week' ? <View style={styles.dropdownSpacer} /> : null}
+            <View style={styles.dropdownSlot}>
+              <TarixBalancePeriodDropdown
+                open
+                options={mode === 'month' ? monthOptions : weekOptions}
+                selectedKey={mode === 'month' ? monthKey : weekKey}
+                onSelect={(key) => {
+                  if (mode === 'month') setMonthKey(key);
+                  else setWeekKey(key);
+                  setDropdownOpen(false);
+                }}
+              />
+            </View>
+            {mode === 'month' ? <View style={styles.dropdownSpacer} /> : null}
           </View>
-          {mode === 'month' ? <View style={styles.dropdownSpacer} /> : null}
-        </View>
-      ) : null}
+        ) : null}
+      </View>
 
       <TarixBalanceSummary
         balance={data?.balance || 0}
@@ -149,10 +151,20 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 4,
   },
+  filterArea: {
+    position: 'relative',
+    zIndex: 30,
+  },
   dropdownRow: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     gap: 6,
     alignItems: 'flex-start',
+    zIndex: 40,
+    elevation: 12,
   },
   dropdownSlot: {
     flex: 1,
