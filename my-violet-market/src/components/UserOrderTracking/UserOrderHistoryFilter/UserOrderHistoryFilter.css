@@ -1,7 +1,10 @@
 .user-order-history-filter {
-  display: inline-flex;
-  align-items: center;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 6px;
+  width: 100%;
+  max-width: 360px;
   margin-bottom: 22px;
   padding: 5px;
   border: 1px solid #ebe6f1;
@@ -9,9 +12,26 @@
   background: #fff;
 }
 
+.user-order-history-filter__slide {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 16px) / 2);
+  border-radius: 9px;
+  background: #6d32c5;
+  box-shadow: 0 4px 12px rgba(109, 50, 197, 0.2);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
 .user-order-history-filter__button {
-  min-width: 112px;
-  padding: 9px 18px;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 9px 14px;
   border: 0;
   border-radius: 9px;
   background: transparent;
@@ -19,24 +39,20 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: color 0.22s ease;
 }
 
 .user-order-history-filter__button--active {
-  background: #6d32c5;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(109, 50, 197, 0.2);
 }
 
 @media (max-width: 450px) {
   .user-order-history-filter {
-    display: flex;
-    width: 100%;
+    max-width: none;
     margin-bottom: 14px;
   }
 
   .user-order-history-filter__button {
-    flex: 1;
-    min-width: 0;
     padding: 9px 10px;
   }
 }

@@ -45,18 +45,29 @@ const OrderHistory = () => {
     };
   }, [authLoading, authToken]);
 
+  const panelIndex = filter === 'all' ? 1 : 0;
+
   return (
     <div className="order-history-page">
       <div className="order-history-container">
         <UserOrderHistoryFilter value={filter} onChange={setFilter} />
 
-        {loading || authLoading ? (
-          <UserOrderTrackingList orders={[]} loading />
-        ) : filter === 'in_progress' ? (
-          <UserOrderTrackingList orders={inProgressOrders} />
-        ) : (
-          <UserDeliveredOrdersList orders={deliveredOrders} />
-        )}
+        <div className="order-history-panels">
+          <div
+            className="order-history-panels__track"
+            style={{ transform: `translateX(-${panelIndex * 50}%)` }}
+          >
+            <div className="order-history-panels__panel" aria-hidden={panelIndex !== 0}>
+              <UserOrderTrackingList
+                orders={inProgressOrders}
+                loading={loading || authLoading}
+              />
+            </div>
+            <div className="order-history-panels__panel" aria-hidden={panelIndex !== 1}>
+              <UserDeliveredOrdersList orders={deliveredOrders} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

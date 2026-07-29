@@ -10,8 +10,41 @@
   margin: 0 auto;
 }
 
+.order-history-panels {
+  overflow: hidden;
+  width: 100%;
+}
+
+.order-history-panels__track {
+  display: flex;
+  width: 200%;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.order-history-panels__panel {
+  width: 50%;
+  flex-shrink: 0;
+  min-width: 0;
+  padding-right: 0;
+}
+
+.order-history-panels__panel:first-child {
+  padding-right: 10px;
+}
+
+.order-history-panels__panel:last-child {
+  padding-left: 10px;
+}
+
 @media (max-width: 450px) {
   .order-history-page {
     padding: 10px;
+  }
+
+  .order-history-panels__panel:first-child,
+  .order-history-panels__panel:last-child {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
