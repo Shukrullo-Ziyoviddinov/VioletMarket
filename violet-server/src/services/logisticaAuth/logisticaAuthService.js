@@ -180,6 +180,52 @@ async function getProfile(logisticaId) {
   return profile.toPublicJSON();
 }
 
+function normalizeRequiredProfileText(value, label, maxLength) {
+  const text = String(value || "").trim().replace(/\s+/g, " ");
+  if (!text) {
+    throw new HttpError(400, `${label}ni kiriting`, "VALIDATION_ERROR");
+  }
+  if (text.length > maxLength) {
+    throw new HttpError(
+      400,
+      `${label} ${maxLength} ta belgidan oshmasligi kerak`,
+      "VALIDATION_ERROR",
+    );
+  }
+  return text;
+}
+
+async function updateProfileDetails(logisticaId, payload = {}) {
+  const profile = await LogisticaProfile.findById(logisticaId);
+  assertActiveProfile(profile);
+
+  const chinaAddress = normalizeRequiredProfileText(
+    payload.chinaAddress,
+    "Xitoydagi manzil",
+    300,
+  );
+  const chinaPhone = normalizeRequiredProfileText(
+    payload.chinaPhone,
+    "Xitoydagi telefon raqami",
+    40,
+  );
+  const profileDescription = String(payload.profileDescription || "").trim();
+  if (profileDescription.length > 500) {
+    throw new HttpError(
+      400,
+      "Qisqacha tavsif 500 ta belgidan oshmasligi kerak",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  profile.chinaAddress = chinaAddress;
+  profile.chinaPhone = chinaPhone;
+  profile.profileDescription = profileDescription;
+  await profile.save();
+
+  return profile.toPublicJSON();
+}
+
 module.exports = {
   sendRegistrationCode,
   completeRegistration,
@@ -187,6 +233,7 @@ module.exports = {
   verifyLogin,
   getApprovalStatus,
   getProfile,
+  updateProfileDetails,
   COUNTRY_LABELS,
   LOGISTICA_COUNTRIES,
 };

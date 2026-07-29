@@ -13,6 +13,9 @@ export type LogisticaProfile = {
   logisticaCountry: LogisticaCountry;
   status: 'pending' | 'active' | 'blocked';
   reviewedAt: string | null;
+  chinaAddress: string;
+  chinaPhone: string;
+  profileDescription: string;
   createdAt: string | null;
 };
 

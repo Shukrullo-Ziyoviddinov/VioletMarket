@@ -25,5 +25,10 @@ router.get(
   logisticaAuthMiddleware,
   controller.getProfile,
 );
+router.patch(
+  "/logistica-auth/me/details",
+  logisticaAuthMiddleware,
+  controller.updateProfileDetails,
+);
 
 module.exports = router;

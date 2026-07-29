@@ -26,6 +26,10 @@ const logisticaProfileSchema = new mongoose.Schema(
       index: true,
     },
     reviewedAt: { type: Date, default: null },
+    /** Logistica xorijdagi aloqa/ombor ma’lumotlari */
+    chinaAddress: { type: String, default: "", trim: true },
+    chinaPhone: { type: String, default: "", trim: true },
+    profileDescription: { type: String, default: "", trim: true },
   },
   {
     collection: "logistica_profile",
@@ -43,6 +47,9 @@ logisticaProfileSchema.methods.toPublicJSON = function toPublicJSON() {
     logisticaCountry: this.logisticaCountry,
     status: this.status,
     reviewedAt: this.reviewedAt || null,
+    chinaAddress: this.chinaAddress || "",
+    chinaPhone: this.chinaPhone || "",
+    profileDescription: this.profileDescription || "",
     createdAt: this.createdAt || null,
   };
 };

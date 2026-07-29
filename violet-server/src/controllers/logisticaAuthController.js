@@ -31,6 +31,14 @@ const getProfile = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateProfileDetails = asyncHandler(async (req, res) => {
+  const data = await logisticaAuthService.updateProfileDetails(
+    req.logisticaId,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   sendRegistrationCode,
   completeRegistration,
@@ -38,4 +46,5 @@ module.exports = {
   verifyLogin,
   getApprovalStatus,
   getProfile,
+  updateProfileDetails,
 };

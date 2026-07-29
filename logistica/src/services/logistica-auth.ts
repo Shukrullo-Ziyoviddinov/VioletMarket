@@ -64,3 +64,21 @@ export function getLogisticaProfile(token: string) {
     token,
   );
 }
+
+export function updateLogisticaProfileDetails(
+  token: string,
+  payload: {
+    chinaAddress: string;
+    chinaPhone: string;
+    profileDescription: string;
+  },
+) {
+  return apiRequest<LogisticaProfile>(
+    '/api/logistica-auth/me/details',
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
