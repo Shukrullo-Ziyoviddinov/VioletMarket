@@ -47,6 +47,24 @@ const OrderHistory = () => {
 
   const panelIndex = filter === 'all' ? 1 : 0;
 
+  const handleCargoFeePaid = (orderId, result) => {
+    const payment = result?.detail?.payment;
+    if (!payment) return;
+    setInProgressOrders((prev) =>
+      prev.map((row) =>
+        row.id === orderId
+          ? {
+              ...row,
+              cargoFeePayment: {
+                ...(row.cargoFeePayment || {}),
+                ...payment,
+              },
+            }
+          : row,
+      ),
+    );
+  };
+
   return (
     <div className="order-history-page">
       <div className="order-history-container">
@@ -61,6 +79,7 @@ const OrderHistory = () => {
               <UserOrderTrackingList
                 orders={inProgressOrders}
                 loading={loading || authLoading}
+                onCargoFeePaid={handleCargoFeePaid}
               />
             </div>
             <div className="order-history-panels__panel" aria-hidden={panelIndex !== 1}>

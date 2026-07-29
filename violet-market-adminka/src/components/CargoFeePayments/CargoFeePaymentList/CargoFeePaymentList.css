@@ -1,0 +1,11 @@
+.cargo-fee-payment-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.cargo-fee-payment-list__state {
+  padding: 28px 12px;
+  color: #8b7aa3;
+  text-align: center;
+}

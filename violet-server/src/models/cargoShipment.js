@@ -73,6 +73,23 @@ const cargoShipmentSchema = new mongoose.Schema(
     uzArrivalPhotoUrl: { type: String, default: "", trim: true },
     uzArrivalComment: { type: String, default: "", trim: true },
     uzArrivedAt: { type: Date, default: null },
+    /**
+     * Mijoz cargo yetkazish summasini marketga to‘ladi (Payme/Click).
+     * Logistica To‘landi (paidAt) dan alohida.
+     */
+    customerCargoFeePaidAt: { type: Date, default: null },
+    customerCargoFeePaymentMethod: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    /** Asosiy admin mijoz to‘lovini logistica uchun tasdiqladi */
+    adminCargoFeeConfirmedAt: { type: Date, default: null },
+    /**
+     * true = yangi oqim (mijoz to‘lovi + admin tasdiq majburiy).
+     * false/yo‘q = legacy eski Toshkent yuklari (To‘landi ochiq).
+     */
+    cargoFeePaymentRequired: { type: Boolean, default: false, index: true },
     logisticaId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "LogisticaProfile",
@@ -98,6 +115,12 @@ cargoShipmentSchema.index(
 );
 cargoShipmentSchema.index({ status: 1, sellerCountry: 1, submittedAt: -1 });
 cargoShipmentSchema.index({ status: 1, processStep: 1, paidAt: 1, logisticaId: 1 });
+cargoShipmentSchema.index({
+  status: 1,
+  processStep: 1,
+  uzArrivedAt: 1,
+  adminCargoFeeConfirmedAt: 1,
+});
 
 function toPublicCargoShipment(doc) {
   if (!doc) return null;
@@ -122,6 +145,10 @@ function toPublicCargoShipment(doc) {
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
     uzArrivedAt: row.uzArrivedAt || null,
+    customerCargoFeePaidAt: row.customerCargoFeePaidAt || null,
+    customerCargoFeePaymentMethod: row.customerCargoFeePaymentMethod || null,
+    adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt || null,
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
     logisticaId: row.logisticaId ? String(row.logisticaId) : null,
     submittedAt: row.submittedAt || row.createdAt || null,
     acceptedAt: row.acceptedAt || null,

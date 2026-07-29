@@ -1,0 +1,15 @@
+.cargo-fee-filter-paid {
+  min-width: 110px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #81758e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cargo-fee-filter-paid--active {
+  color: #fff;
+}

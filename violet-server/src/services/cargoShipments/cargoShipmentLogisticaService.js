@@ -23,6 +23,7 @@ const {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  canLogisticaMarkPaid,
 } = require("./cargoShipmentProcessActions");
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -148,10 +149,14 @@ function toLogisticaShipmentDetail(doc) {
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
     uzArrivedAt: row.uzArrivedAt || null,
+    customerCargoFeePaidAt: row.customerCargoFeePaidAt || null,
+    customerCargoFeePaymentMethod: row.customerCargoFeePaymentMethod || null,
+    adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
     acceptedAt: row.acceptedAt || null,
     returnedAt: row.returnedAt || null,
     paidAt: row.paidAt || null,
+    canMarkPaid: canLogisticaMarkPaid(row),
   };
 }
 

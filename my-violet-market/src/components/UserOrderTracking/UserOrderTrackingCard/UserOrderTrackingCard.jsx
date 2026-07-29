@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPrice, getLocalizedText, normalizeImagePath } from '../../../utils/utils';
 import UserOrderTrackingTimeline from '../UserOrderTrackingTimeline/UserOrderTrackingTimeline';
+import UserCargoFeePaymentModal from '../UserCargoFeePaymentModal/UserCargoFeePaymentModal';
 import './UserOrderTrackingCard.css';
 
 function buildVariantText(order, t) {
@@ -15,17 +16,30 @@ function buildVariantText(order, t) {
     .join(' · ');
 }
 
-export default function UserOrderTrackingCard({ order }) {
+export default function UserOrderTrackingCard({ order, onCargoFeePaid }) {
   const { t, i18n } = useTranslation();
+  const [feeModalOpen, setFeeModalOpen] = useState(false);
   const lang = i18n.language || 'uz';
   const title = getLocalizedText(order.title, lang) || t('orderHistory.productFallback');
   const variantText = buildVariantText(order, t);
+  const showCargoFeeButton = Boolean(order?.cargoFeePayment?.ready);
 
   return (
     <article className="user-order-tracking-card">
       <header className="user-order-tracking-card__header">
-        <span>{t('orderHistory.orderNumber')}</span>
-        <strong>{order.orderCode}</strong>
+        <div className="user-order-tracking-card__header-main">
+          <span>{t('orderHistory.orderNumber')}</span>
+          <strong>{order.orderCode}</strong>
+        </div>
+        {showCargoFeeButton ? (
+          <button
+            type="button"
+            className="user-order-tracking-card__fee-btn"
+            onClick={() => setFeeModalOpen(true)}
+          >
+            {t('orderHistory.cargoFee.openButton')}
+          </button>
+        ) : null}
       </header>
 
       <div className="user-order-tracking-card__product">
@@ -50,6 +64,16 @@ export default function UserOrderTrackingCard({ order }) {
           sellerCountry={order.seller?.country || ''}
         />
       </div>
+
+      <UserCargoFeePaymentModal
+        open={feeModalOpen}
+        order={order}
+        onClose={() => setFeeModalOpen(false)}
+        onPaid={(result) => {
+          onCargoFeePaid?.(order.id, result);
+          setFeeModalOpen(false);
+        }}
+      />
     </article>
   );
 }

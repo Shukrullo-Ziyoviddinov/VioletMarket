@@ -1,0 +1,74 @@
+.cargo-fee-confirm-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cargo-fee-confirm-modal__question {
+  margin: 0;
+  color: var(--admin-color-text, #2a1842);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cargo-fee-confirm-modal__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--admin-color-primary-soft, #f5f0ff);
+}
+
+.cargo-fee-confirm-modal__meta strong {
+  color: var(--admin-color-text, #2a1842);
+  font-size: 14px;
+}
+
+.cargo-fee-confirm-modal__meta span {
+  color: #7a6b8c;
+  font-size: 12px;
+}
+
+.cargo-fee-confirm-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cargo-fee-confirm-modal__btn {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cargo-fee-confirm-modal__btn--ghost {
+  border: 1px solid var(--admin-color-border, #e6dff2);
+  background: #fff;
+  color: #4a3a62;
+}
+
+.cargo-fee-confirm-modal__btn--primary {
+  border: 0;
+  background: var(--admin-color-primary, #764ba2);
+  color: #fff;
+}
+
+.cargo-fee-confirm-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cargo-fee-confirm-modal__error {
+  margin: 0;
+  color: var(--admin-color-danger, #dc2626);
+  font-size: 13px;
+}
+
+.cargo-fee-confirm-modal__hint {
+  margin: 0;
+  color: #8b7aa3;
+  font-size: 12px;
+}

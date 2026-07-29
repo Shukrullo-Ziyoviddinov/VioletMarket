@@ -45,6 +45,22 @@ function normalizeOrderItem(row) {
     orderedAt: row?.orderedAt || '',
     trackingStatus: String(row?.trackingStatus || 'accepted'),
     steps: Array.isArray(row?.steps) ? row.steps.map(normalizeStep) : [],
+    cargoShipmentId: row?.cargoShipmentId ? String(row.cargoShipmentId) : null,
+    cargoFeePayment: row?.cargoFeePayment
+      ? {
+          ready: Boolean(row.cargoFeePayment.ready),
+          weightKg: Number(row.cargoFeePayment.weightKg) || 0,
+          cargoDeliveryFee: Number(row.cargoFeePayment.cargoDeliveryFee) || 0,
+          uzArrivalPhotoUrl: String(row.cargoFeePayment.uzArrivalPhotoUrl || ''),
+          uzArrivalComment: String(row.cargoFeePayment.uzArrivalComment || ''),
+          uzArrivedAt: row.cargoFeePayment.uzArrivedAt || null,
+          customerPaidAt: row.cargoFeePayment.customerPaidAt || null,
+          customerPaymentMethod: row.cargoFeePayment.customerPaymentMethod || null,
+          adminConfirmedAt: row.cargoFeePayment.adminConfirmedAt || null,
+          logisticaPaidAt: row.cargoFeePayment.logisticaPaidAt || null,
+          canCustomerPay: Boolean(row.cargoFeePayment.canCustomerPay),
+        }
+      : null,
   };
 }
 
@@ -110,5 +126,24 @@ export async function fetchMyUzbOrderTracking(token) {
   return {
     inProgressItems: inProgressItems.map(normalizeOrderItem),
     deliveredItems: deliveredItems.map(normalizeDeliveredOrderItem),
+  };
+}
+
+export async function payMyCargoFee(token, shipmentId, paymentMethod) {
+  const res = await fetch(
+    apiUrl(`/api/orders/my/cargo-fee/${encodeURIComponent(shipmentId)}/pay`),
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentMethod }),
+    },
+  );
+  const payload = await parseJsonResponse(res);
+  return {
+    alreadyPaid: Boolean(payload?.data?.alreadyPaid),
+    detail: payload?.data?.detail || null,
   };
 }

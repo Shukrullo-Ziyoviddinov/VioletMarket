@@ -1,0 +1,144 @@
+.user-cargo-fee-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.user-cargo-fee-modal__product {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.user-cargo-fee-modal__image {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f3f0f7;
+}
+
+.user-cargo-fee-modal__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.user-cargo-fee-modal__info strong {
+  color: #2d2433;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.user-cargo-fee-modal__info span {
+  color: #7a7283;
+  font-size: 12px;
+}
+
+.user-cargo-fee-modal__logistics {
+  padding: 14px;
+  border: 1px solid #ece8f1;
+  border-radius: 14px;
+  background: #fdfcff;
+}
+
+.user-cargo-fee-modal__logistics h3 {
+  margin: 0 0 10px;
+  color: #3d2a50;
+  font-size: 14px;
+}
+
+.user-cargo-fee-modal__photo {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: #f3f0f7;
+}
+
+.user-cargo-fee-modal__logistics p {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 6px;
+  color: #6b6473;
+  font-size: 13px;
+}
+
+.user-cargo-fee-modal__logistics p:last-child {
+  margin-bottom: 0;
+}
+
+.user-cargo-fee-modal__logistics strong {
+  color: #2d2433;
+  text-align: right;
+}
+
+.user-cargo-fee-modal__comment {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.user-cargo-fee-modal__methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.user-cargo-fee-modal__method {
+  min-height: 64px;
+  border: 1.5px solid #e5dfec;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+}
+
+.user-cargo-fee-modal__method img {
+  max-width: 100%;
+  max-height: 36px;
+  object-fit: contain;
+}
+
+.user-cargo-fee-modal__method--active {
+  border-color: #6d32c5;
+  box-shadow: 0 0 0 3px rgba(109, 50, 197, 0.12);
+}
+
+.user-cargo-fee-modal__pay {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: #6d32c5;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.user-cargo-fee-modal__pay:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.user-cargo-fee-modal__error,
+.user-cargo-fee-modal__paid {
+  margin: 0;
+  font-size: 13px;
+}
+
+.user-cargo-fee-modal__error {
+  color: #dc2626;
+}
+
+.user-cargo-fee-modal__paid {
+  color: #15803d;
+  font-weight: 600;
+}

@@ -89,7 +89,7 @@ export default function LogisticaShipmentDetailModal({
   const showYuklarimEdit = Boolean(detail) && !isUzFlow && !isPaid;
   const showUzArrivalAction = Boolean(detail) && isBojxonada && !isPaid;
   const showPaidAction = Boolean(detail) && isUzFlow && !isPaid;
-  const canMarkPaid = isToshkent && !isPaid;
+  const canMarkPaid = Boolean(detail?.canMarkPaid);
 
   const processSteps = useMemo(
     () => (Array.isArray(detail?.processSteps) ? detail.processSteps : []),
@@ -338,7 +338,9 @@ export default function LogisticaShipmentDetailModal({
                 </button>
                 {!canMarkPaid ? (
                   <p className="logistica-shipment-detail-modal__hint">
-                    Avval «Clientga yuborish» orqali Toshkentga o‘ting.
+                    {isToshkent
+                      ? 'Avval «Cargo to‘lovlari» da mijoz to‘lovini tasdiqlang.'
+                      : 'Avval «Clientga yuborish» orqali Toshkentga o‘ting.'}
                   </p>
                 ) : null}
               </div>

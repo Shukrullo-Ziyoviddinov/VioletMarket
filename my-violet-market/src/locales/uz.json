@@ -528,6 +528,18 @@
         "title": "Mahsulot yetkazib berildi",
         "description": "Buyurtma manzilga yetkazildi"
       }
+    },
+    "cargoFee": {
+      "openButton": "Yuk ma'lumoti va to'lov",
+      "modalTitle": "Yuk ma'lumoti va to'lov",
+      "logisticsInfo": "Logistica ma'lumoti",
+      "weight": "Og'irlik",
+      "fee": "Yetkazish summasi",
+      "comment": "Izoh",
+      "pay": "To'lash",
+      "paying": "To'lanmoqda...",
+      "payError": "To'lovni bajarib bo'lmadi",
+      "alreadyPaid": "To'lov qabul qilindi. Admin tasdiqini kuting."
     }
   },
   "uzWarehouse": {

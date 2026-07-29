@@ -61,6 +61,9 @@ export type ShipmentDetail = {
   acceptedAt?: string | null;
   returnedAt?: string | null;
   paidAt?: string | null;
+  adminCargoFeeConfirmedAt?: string | null;
+  customerCargoFeePaidAt?: string | null;
+  canMarkPaid?: boolean;
 };
 
 export type PendingShipmentsResponse = {

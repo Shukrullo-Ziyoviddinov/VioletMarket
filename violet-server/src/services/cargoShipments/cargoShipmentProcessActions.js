@@ -20,6 +20,10 @@ const {
 const {
   recordHandedOverHistory,
 } = require("./cargoLogisticaHistoryService");
+const {
+  assertAdminCargoFeeConfirmedForMarkPaid,
+  canLogisticaMarkPaid,
+} = require("../../productManagement/foreignCargoFeePayment");
 
 const YUKLARIM_PROCESS_STEPS = ["xitoy_omborida", "yolda", "bojxonada"];
 const YUKLARIM_PROCESS_STEP_SET = new Set(YUKLARIM_PROCESS_STEPS);
@@ -291,6 +295,7 @@ async function applyUzWarehouseArrival(shipment, payload = {}) {
   }
   shipment.uzArrivedAt = arrivedAt;
   shipment.processStep = "toshkent_omborida";
+  shipment.cargoFeePaymentRequired = true;
   await shipment.save();
   return { alreadyArrived: false };
 }
@@ -321,6 +326,8 @@ async function applyMarkShipmentPaid(shipment) {
     );
   }
 
+  assertAdminCargoFeeConfirmedForMarkPaid(shipment);
+
   if (shipment.paidAt) {
     await recordHandedOverHistory(shipment, shipment.paidAt);
     return { alreadyPaid: true };
@@ -340,4 +347,5 @@ module.exports = {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  canLogisticaMarkPaid,
 };

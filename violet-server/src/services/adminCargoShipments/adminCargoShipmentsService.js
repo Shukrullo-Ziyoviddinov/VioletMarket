@@ -20,6 +20,7 @@ const {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  canLogisticaMarkPaid,
 } = require("../cargoShipments/cargoShipmentProcessActions");
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -100,6 +101,9 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
     paidAt: row.paidAt || null,
     uzArrivedAt: row.uzArrivedAt || null,
     uzArrivalComment: String(row.uzArrivalComment || ""),
+    customerCargoFeePaidAt: row.customerCargoFeePaidAt || null,
+    adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt || null,
+    canMarkPaid: canLogisticaMarkPaid(row),
     acceptedAt: row.acceptedAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
     logisticaId: logisticaId || null,

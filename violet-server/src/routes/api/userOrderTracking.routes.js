@@ -16,4 +16,16 @@ router.get(
   userOrderTrackingController.listMyUzbOrders,
 );
 
+router.get(
+  "/orders/my/cargo-fee/:shipmentId",
+  authMiddleware,
+  userOrderTrackingController.getMyCargoFeePayment,
+);
+
+router.post(
+  "/orders/my/cargo-fee/:shipmentId/pay",
+  authMiddleware,
+  userOrderTrackingController.payMyCargoFee,
+);
+
 module.exports = router;

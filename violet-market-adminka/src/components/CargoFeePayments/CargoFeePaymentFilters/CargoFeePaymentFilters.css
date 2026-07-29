@@ -1,0 +1,31 @@
+.cargo-fee-payment-filters {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 18px;
+  padding: 5px;
+  border: 1px solid var(--admin-color-border, #e6dff2);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cargo-fee-payment-filters__slide {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  border-radius: 9px;
+  background: var(--admin-color-primary, #764ba2);
+  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.2);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cargo-fee-payment-filters > button {
+  position: relative;
+  z-index: 1;
+}

@@ -90,7 +90,9 @@ export default function IshStoliScreen() {
   const isToshkent = step === 'toshkent_omborida';
   const isUzFlow = isUzWarehouseFlowStep(step);
   const isPaid = Boolean(detail?.paidAt);
-  const canMarkPaid = isAccepted && isToshkent && !isPaid;
+  const canMarkPaid = Boolean(detail?.canMarkPaid);
+  const waitingAdminFeeConfirm =
+    isAccepted && isToshkent && !isPaid && !canMarkPaid;
 
   /** Yuklarim jarayon tugmalari — UZB oqimidan oldin */
   const showYuklarimProcessButtons = isAccepted && !isUzFlow && !isPaid;
@@ -373,8 +375,9 @@ export default function IshStoliScreen() {
 
             {showPaidButton && !canMarkPaid ? (
               <Text style={styles.paidHintMuted}>
-                Avval yuqorida og‘irlik/summani kiriting va «Clientga yuborish»
-                ni bosing.
+                {waitingAdminFeeConfirm
+                  ? 'Mijoz to‘lovi va asosiy admin tasdiqini kuting.'
+                  : 'Avval yuqorida og‘irlik/summani kiriting va «Clientga yuborish» ni bosing.'}
               </Text>
             ) : null}
 

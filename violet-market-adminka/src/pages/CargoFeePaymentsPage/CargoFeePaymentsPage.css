@@ -1,0 +1,19 @@
+.cargo-fee-payments-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cargo-fee-payments-page__header h1 {
+  margin: 0 0 6px;
+  color: var(--admin-color-text, #2a1842);
+  font-size: 22px;
+}
+
+.cargo-fee-payments-page__header p {
+  margin: 0 0 10px;
+  color: #8b7aa3;
+  font-size: 13px;
+  line-height: 1.45;
+  max-width: 720px;
+}

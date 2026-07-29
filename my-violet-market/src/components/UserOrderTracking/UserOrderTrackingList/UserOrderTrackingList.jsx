@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import UserOrderTrackingCard from '../UserOrderTrackingCard/UserOrderTrackingCard';
 import './UserOrderTrackingList.css';
 
-export default function UserOrderTrackingList({ orders = [], loading = false }) {
+export default function UserOrderTrackingList({
+  orders = [],
+  loading = false,
+  onCargoFeePaid,
+}) {
   const { t } = useTranslation();
 
   if (loading) {
@@ -17,7 +21,11 @@ export default function UserOrderTrackingList({ orders = [], loading = false }) 
   return (
     <div className="user-order-tracking-list">
       {orders.map((order) => (
-        <UserOrderTrackingCard key={order.id} order={order} />
+        <UserOrderTrackingCard
+          key={order.id}
+          order={order}
+          onCargoFeePaid={onCargoFeePaid}
+        />
       ))}
     </div>
   );

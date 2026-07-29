@@ -14,6 +14,9 @@ const {
   resolveForeignCustomerTrackingStatus,
 } = require("../../productManagement/foreignCustomerOrderTracking");
 const {
+  toCargoFeePaymentView,
+} = require("../../productManagement/foreignCargoFeePayment");
+const {
   archiveDeliveredOrderItems,
   listDeliveredOrderItems,
 } = require("./deliveredOrderArchiveService");
@@ -103,11 +106,14 @@ function mapUzbOrderItem(order, item, itemIndex, seller) {
 function mapForeignOrderItem(order, item, itemIndex, seller, shipment) {
   const base = mapOrderItemBase(order, item, itemIndex, seller);
   const trackingStatus = resolveForeignCustomerTrackingStatus(item, shipment);
+  const cargoFeePayment = shipment ? toCargoFeePaymentView(shipment) : null;
 
   return {
     ...base,
     trackingStatus,
     steps: buildForeignCustomerOrderTrackingSteps(item, base.orderedAt, shipment),
+    cargoShipmentId: shipment?._id ? String(shipment._id) : null,
+    cargoFeePayment,
   };
 }
 
@@ -125,10 +131,19 @@ async function loadShipmentsByKeys(pairs) {
       sellerId: 1,
       processStep: 1,
       uzArrivedAt: 1,
+      weightKg: 1,
+      cargoDeliveryFee: 1,
+      uzArrivalPhotoUrl: 1,
+      uzArrivalComment: 1,
+      customerCargoFeePaidAt: 1,
+      customerCargoFeePaymentMethod: 1,
+      adminCargoFeeConfirmedAt: 1,
+      cargoFeePaymentRequired: 1,
+      paidAt: 1,
+      status: 1,
       submittedAt: 1,
       acceptedAt: 1,
       updatedAt: 1,
-      status: 1,
     })
     .lean();
 

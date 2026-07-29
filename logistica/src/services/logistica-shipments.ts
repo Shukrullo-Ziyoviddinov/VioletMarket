@@ -74,6 +74,11 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
     acceptedAt: (row.acceptedAt as string | null | undefined) ?? null,
     returnedAt: (row.returnedAt as string | null | undefined) ?? null,
     paidAt: (row.paidAt as string | null | undefined) ?? null,
+    adminCargoFeeConfirmedAt:
+      (row.adminCargoFeeConfirmedAt as string | null | undefined) ?? null,
+    customerCargoFeePaidAt:
+      (row.customerCargoFeePaidAt as string | null | undefined) ?? null,
+    canMarkPaid: Boolean(row.canMarkPaid),
   };
 }
 

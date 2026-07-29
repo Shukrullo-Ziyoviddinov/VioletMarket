@@ -8,6 +8,7 @@ import SellersPage from './pages/SellersPage/SellersPage';
 import CouriersPage from './pages/CouriersPage/CouriersPage';
 import LogisticaPage from './pages/LogisticaPage/LogisticaPage';
 import LogisticaShipmentsPage from './pages/LogisticaShipmentsPage/LogisticaShipmentsPage';
+import CargoFeePaymentsPage from './pages/CargoFeePaymentsPage/CargoFeePaymentsPage';
 import CourierChatsPage from './pages/CourierChatsPage/CourierChatsPage';
 import SalesStatisticsPage from './pages/SalesStatisticsPage/SalesStatisticsPage';
 import PaymentRequestsPage from './pages/PaymentRequestsPage/PaymentRequestsPage';
@@ -46,6 +47,7 @@ function App() {
           <Route path="couriers" element={<CouriersPage />} />
           <Route path="logistica" element={<LogisticaPage />} />
           <Route path="logistica-shipments" element={<LogisticaShipmentsPage />} />
+          <Route path="cargo-fee-payments" element={<CargoFeePaymentsPage />} />
           <Route path="courier-chats" element={<CourierChatsPage />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="withdrawals" element={<WithdrawalPage />} />

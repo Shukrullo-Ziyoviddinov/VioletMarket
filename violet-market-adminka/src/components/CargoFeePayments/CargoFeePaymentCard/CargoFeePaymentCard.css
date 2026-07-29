@@ -1,0 +1,71 @@
+.cargo-fee-payment-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid var(--admin-color-border, #e6dff2);
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.cargo-fee-payment-card__image {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f5f0ff;
+}
+
+.cargo-fee-payment-card__body {
+  min-width: 0;
+}
+
+.cargo-fee-payment-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cargo-fee-payment-card__top strong {
+  color: var(--admin-color-text, #2a1842);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.cargo-fee-payment-card__badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cargo-fee-payment-card__badge--paid {
+  background: #edf9f0;
+  color: var(--admin-color-success, #16a34a);
+}
+
+.cargo-fee-payment-card__badge--unpaid {
+  background: #fff1f0;
+  color: var(--admin-color-danger, #dc2626);
+}
+
+.cargo-fee-payment-card__body p {
+  margin: 4px 0 0;
+  color: #7a6b8c;
+  font-size: 12px;
+}
+
+.cargo-fee-payment-card__hint {
+  color: var(--admin-color-success, #16a34a) !important;
+  font-weight: 600;
+}
+
+.cargo-fee-payment-card__hint--warn {
+  color: #b45309 !important;
+}

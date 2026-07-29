@@ -60,6 +60,12 @@ const menuItems = [
     route: '/logistica-shipments',
   },
   {
+    key: 'cargo-fee-payments',
+    icon: <DollarOutlined />,
+    label: 'Cargo to‘lovlari',
+    route: '/cargo-fee-payments',
+  },
+  {
     key: 'return-requests',
     icon: <UndoOutlined />,
     label: 'Qaytarish so‘rovlari',
@@ -129,6 +135,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/orders') return 'orders';
   if (pathname === '/foreign-orders') return 'foreign-orders';
   if (pathname === '/logistica-shipments') return 'logistica-shipments';
+  if (pathname === '/cargo-fee-payments') return 'cargo-fee-payments';
   if (pathname === '/return-requests') return 'return-requests';
   if (pathname === '/returned-products') return 'returned-products';
   if (pathname === '/customer-refunds') return 'customer-refunds';
