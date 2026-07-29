@@ -2,6 +2,8 @@
  * Xorij cargo → Toshkent ombori → UZB kuryer zanjiri ko‘prigi.
  * Faqat asosiy admin «Xorij → UZB» orqali.
  * Local handoffSellerOrderItem ga tegmaydi.
+ *
+ * Handoffda admin ombor manzilini kiritadi (matn majburiy, coords ixtiyoriy).
  */
 
 const { Order } = require("../../models/order");
@@ -16,6 +18,10 @@ const {
   isUzWarehouseReadyProcessStep,
   UZ_WAREHOUSE_READY_PROCESS_STEP,
 } = require("../../productManagement/foreignOrderTracking");
+const {
+  normalizeUzWarehousePickupInput,
+  snapshotUzWarehousePickup,
+} = require("../../productManagement/foreignUzWarehousePickup");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -57,9 +63,15 @@ async function loadForeignSellerAccount(sellerId) {
 }
 
 /**
- * Admin: handed_to_cargo (+ Toshkent ombori) → handed_to_courier.
+ * Admin: handed_to_cargo (+ Toshkent ombori + To‘landi) → handed_to_courier.
+ * pickupPayload: { address, coordinates?, phone?, label? }
  */
-async function handoffForeignItemToUzCourier(sellerId, orderIdRaw, itemIndexRaw) {
+async function handoffForeignItemToUzCourier(
+  sellerId,
+  orderIdRaw,
+  itemIndexRaw,
+  pickupPayload = {},
+) {
   const normalizedSellerId = cleanSellerId(sellerId);
   if (!normalizedSellerId) {
     throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
@@ -80,8 +92,14 @@ async function handoffForeignItemToUzCourier(sellerId, orderIdRaw, itemIndexRaw)
   }
 
   const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+  const warehousePickup = normalizeUzWarehousePickupInput(pickupPayload);
 
   if (currentStatus === "handed_to_courier") {
+    // Qayta tasdiq: manzilni yangilash mumkin
+    item.uzWarehousePickup = warehousePickup;
+    order.markModified("items");
+    await order.save();
+
     const handedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : [])
       .find((entry) => String(entry?.status || "") === "handed_to_courier");
     return {
@@ -89,6 +107,7 @@ async function handoffForeignItemToUzCourier(sellerId, orderIdRaw, itemIndexRaw)
       itemIndex,
       trackingStatus: "handed_to_courier",
       handedToCourierAt: handedEntry?.at || null,
+      uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
       alreadyHanded: true,
     };
   }
@@ -117,6 +136,7 @@ async function handoffForeignItemToUzCourier(sellerId, orderIdRaw, itemIndexRaw)
 
   const handedAt = new Date();
   item.trackingStatus = "handed_to_courier";
+  item.uzWarehousePickup = warehousePickup;
   if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
   item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
   order.markModified("items");
@@ -127,6 +147,7 @@ async function handoffForeignItemToUzCourier(sellerId, orderIdRaw, itemIndexRaw)
     itemIndex,
     trackingStatus: "handed_to_courier",
     handedToCourierAt: handedAt,
+    uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
     alreadyHanded: false,
   };
 }

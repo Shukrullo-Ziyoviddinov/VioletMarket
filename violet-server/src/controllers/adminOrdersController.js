@@ -31,8 +31,10 @@ const collectOrderItem = asyncHandler(async (req, res) => {
 });
 
 const handoffOrderItem = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
   const data = await adminOrdersService.handoffAdminOrderItem({
-    sellerId: req.body?.sellerId,
+    ...body,
+    sellerId: body.sellerId,
     orderId: req.params.orderId,
     itemIndex: req.params.itemIndex,
   });

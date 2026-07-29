@@ -95,15 +95,30 @@ export function canShowReturnActions(
   );
 }
 
+export function isWarehousePickup(
+  order:
+    | Pick<DeliveryAcceptedOrder, 'pickupKind' | 'sellerPickup'>
+    | null
+    | undefined,
+) {
+  if (!order) return false;
+  if (order.pickupKind === 'warehouse') return true;
+  return order.sellerPickup?.pickupKind === 'warehouse';
+}
+
 export function getStepBadgeLabel(
-  order: Pick<DeliveryAcceptedOrder, 'status' | 'pickupPhase'> | null | undefined,
+  order: Pick<
+    DeliveryAcceptedOrder,
+    'status' | 'pickupPhase' | 'pickupKind' | 'sellerPickup'
+  > | null | undefined,
 ) {
   const status = getAssignmentStatus(order);
+  const warehouse = isWarehousePickup(order);
   switch (status) {
     case 'accepted':
-      return 'Sotuvchiga borish';
+      return warehouse ? 'Omborga borish' : 'Sotuvchiga borish';
     case 'en_route_to_seller':
-      return 'Sotuvchiga yo‘lda';
+      return warehouse ? 'Omborga yo‘lda' : 'Sotuvchiga yo‘lda';
     case 'arrived_at_seller':
       return 'Mahsulot olish';
     case 'picked_up':
@@ -117,21 +132,29 @@ export function getStepBadgeLabel(
     case 'return_approved':
       return 'Qaytarish tasdiqlandi';
     case 'return_to_seller':
-      return 'Sotuvchiga qaytarish';
+      return warehouse ? 'Omborga qaytarish' : 'Sotuvchiga qaytarish';
     case 'en_route_return_to_seller':
-      return 'Sotuvchiga yo‘lda';
+      return warehouse ? 'Omborga yo‘lda' : 'Sotuvchiga yo‘lda';
     case 'arrived_return_at_seller':
-      return 'Sotuvchiga keldim';
+      return warehouse ? 'Omborga keldim' : 'Sotuvchiga keldim';
     case 'returned':
       return 'Qaytarildi';
     default:
-      if (isReturnPhase(order)) return 'Sotuvchiga qaytarish';
-      return isSellerPhase(order) ? 'Sotuvchidan olish' : 'Mijozga yetkazish';
+      if (isReturnPhase(order)) {
+        return warehouse ? 'Omborga qaytarish' : 'Sotuvchiga qaytarish';
+      }
+      if (isSellerPhase(order)) {
+        return warehouse ? 'Ombordan olish' : 'Sotuvchidan olish';
+      }
+      return 'Mijozga yetkazish';
   }
 }
 
 export function getPrimaryAction(
-  order: Pick<DeliveryAcceptedOrder, 'status' | 'approvedReturnReasonType'> | null | undefined,
+  order: Pick<
+    DeliveryAcceptedOrder,
+    'status' | 'approvedReturnReasonType' | 'pickupKind' | 'sellerPickup'
+  > | null | undefined,
 ): {
   kind: DeliveryPrimaryActionKind;
   label: string;
@@ -139,11 +162,18 @@ export function getPrimaryAction(
   confirmMessage?: string;
 } {
   const status = getAssignmentStatus(order);
+  const warehouse = isWarehousePickup(order);
   switch (status) {
     case 'accepted':
-      return { kind: 'go_to_seller', label: 'Sotuvchiga borish' };
+      return {
+        kind: 'go_to_seller',
+        label: warehouse ? 'Omborga borish' : 'Sotuvchiga borish',
+      };
     case 'en_route_to_seller':
-      return { kind: 'arrive_seller', label: 'Sotuvchiga keldim' };
+      return {
+        kind: 'arrive_seller',
+        label: warehouse ? 'Omborga keldim' : 'Sotuvchiga keldim',
+      };
     case 'arrived_at_seller':
       return {
         kind: 'pick_up',
@@ -168,18 +198,26 @@ export function getPrimaryAction(
     case 'return_approved':
       return {
         kind: 'start_return_to_seller',
-        label: 'Sotuvchiga borish',
+        label: warehouse ? 'Omborga borish' : 'Sotuvchiga borish',
       };
     case 'return_to_seller':
-      return { kind: 'go_return_to_seller', label: 'Sotuvchiga borish' };
+      return {
+        kind: 'go_return_to_seller',
+        label: warehouse ? 'Omborga borish' : 'Sotuvchiga borish',
+      };
     case 'en_route_return_to_seller':
-      return { kind: 'arrive_return_seller', label: 'Sotuvchiga keldim' };
+      return {
+        kind: 'arrive_return_seller',
+        label: warehouse ? 'Omborga keldim' : 'Sotuvchiga keldim',
+      };
     case 'arrived_return_at_seller':
       return {
         kind: 'complete_return',
-        label: 'Sotuvchiga qaytarish',
-        confirmTitle: 'Sotuvchiga qaytarish',
-        confirmMessage: 'Mahsulotni sotuvchiga qaytarganingizni tasdiqlaysizmi?',
+        label: warehouse ? 'Omborga topshirdim' : 'Sotuvchiga qaytarish',
+        confirmTitle: warehouse ? 'Omborga topshirish' : 'Sotuvchiga qaytarish',
+        confirmMessage: warehouse
+          ? 'Mahsulotni omborga topshirganingizni tasdiqlaysizmi?'
+          : 'Mahsulotni sotuvchiga qaytarganingizni tasdiqlaysizmi?',
       };
     default:
       return { kind: 'none', label: '' };

@@ -45,6 +45,8 @@ export type DeliverySellerPickup = {
   address: string;
   sellerPhone: string;
   coordinates: number[] | null;
+  /** warehouse = xorij ombor (admin manzili); seller = UZB siller */
+  pickupKind?: 'seller' | 'warehouse';
 };
 
 export type DeliveryAssignmentStatus =
@@ -84,6 +86,7 @@ export type DeliveryAcceptedOrder = {
   deliveryAddress: DeliveryAddressDetails;
   status: DeliveryAssignmentStatus | string;
   pickupPhase?: 'seller' | 'customer' | 'return';
+  pickupKind?: 'seller' | 'warehouse';
   sellerId?: string;
   sellerPickup?: DeliverySellerPickup | null;
   acceptedAt: string | null;

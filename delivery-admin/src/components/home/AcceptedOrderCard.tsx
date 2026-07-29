@@ -26,7 +26,10 @@ export function AcceptedOrderCard({
   const addressTitle = sellerPhase
     ? String(seller?.address || '').trim() ||
       String(seller?.name || '').trim() ||
-      'Sotuvchi manzili ko‘rsatilmagan'
+      (order.pickupKind === 'warehouse' ||
+      seller?.pickupKind === 'warehouse'
+        ? 'Ombor manzili ko‘rsatilmagan'
+        : 'Sotuvchi manzili ko‘rsatilmagan')
     : address.addressLine ||
       [address.city, address.district].filter(Boolean).join(', ') ||
       'Manzil ko‘rsatilmagan';
@@ -58,7 +61,14 @@ export function AcceptedOrderCard({
 
       <View style={styles.addressRow}>
         <Ionicons
-          name={sellerPhase ? 'storefront-outline' : 'location-outline'}
+          name={
+            sellerPhase
+              ? order.pickupKind === 'warehouse' ||
+                seller?.pickupKind === 'warehouse'
+                ? 'business-outline'
+                : 'storefront-outline'
+              : 'location-outline'
+          }
           size={15}
           color="#6d32c5"
         />

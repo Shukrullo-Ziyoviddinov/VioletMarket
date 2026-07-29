@@ -47,6 +47,7 @@ import {
   getPrimaryAction,
   isReturnPhase,
   isSellerPhase,
+  isWarehousePickup,
   shouldOpenRouteOnAdvance,
   type DeliveryAdvanceAction,
 } from '@/utils/deliveryOrderSteps';
@@ -87,22 +88,29 @@ function addressText(order: DeliveryAcceptedOrder) {
 
 function sellerAddressText(order: DeliveryAcceptedOrder) {
   const seller = order.sellerPickup;
+  const warehouse = isWarehousePickup(order);
   return (
     String(seller?.address || '').trim() ||
     String(seller?.name || '').trim() ||
-    'Sotuvchi manzili ko‘rsatilmagan'
+    (warehouse ? 'Ombor manzili ko‘rsatilmagan' : 'Sotuvchi manzili ko‘rsatilmagan')
   );
 }
 
 async function openRoute(order: DeliveryAcceptedOrder) {
   if (isSellerPhase(order) || isReturnPhase(order)) {
     const seller = order.sellerPickup;
+    const warehouse = isWarehousePickup(order);
     const opened = await openYandexRoute({
       coords: seller?.coordinates || null,
       addressLine: seller?.address || '',
     });
     if (!opened) {
-      Alert.alert('Mashrut', 'Sotuvchi manzili topilmadi yoki xarita ochilmadi');
+      Alert.alert(
+        'Mashrut',
+        warehouse
+          ? 'Ombor manzili topilmadi yoki xarita ochilmadi'
+          : 'Sotuvchi manzili topilmadi yoki xarita ochilmadi',
+      );
     }
     return;
   }
@@ -502,7 +510,11 @@ export default function OrderDetailsScreen() {
                   variant="seller"
                 />
                 <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Sotuvchi ma'lumotlari</Text>
+                  <Text style={styles.cardTitle}>
+                    {isWarehousePickup(order)
+                      ? "Ombor ma'lumotlari"
+                      : "Sotuvchi ma'lumotlari"}
+                  </Text>
                   <Text style={styles.sellerName}>
                     {displayOrDash(order.sellerPickup?.name)}
                   </Text>
@@ -525,7 +537,9 @@ export default function OrderDetailsScreen() {
                         if (!phone) {
                           Alert.alert(
                             'Telefon',
-                            'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
+                            isWarehousePickup(order)
+                              ? 'Ombor telefoni kiritilmagan'
+                              : 'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
                           );
                           return;
                         }
@@ -612,39 +626,45 @@ export default function OrderDetailsScreen() {
                 </View>
               </View>
 
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Sotuvchi ma'lumotlari</Text>
-                <Text style={styles.sellerName}>
-                  {displayOrDash(order.sellerPickup?.name)}
-                </Text>
-                <View style={styles.customerRow}>
-                  <View style={styles.customerInfo}>
-                    <Text style={styles.metaLabel}>Telefon</Text>
-                    <Text style={styles.customerPhone}>
-                      {displayOrDash(order.sellerPickup?.sellerPhone)}
-                    </Text>
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>
+                    {isWarehousePickup(order)
+                      ? "Ombor ma'lumotlari"
+                      : "Sotuvchi ma'lumotlari"}
+                  </Text>
+                  <Text style={styles.sellerName}>
+                    {displayOrDash(order.sellerPickup?.name)}
+                  </Text>
+                  <View style={styles.customerRow}>
+                    <View style={styles.customerInfo}>
+                      <Text style={styles.metaLabel}>Telefon</Text>
+                      <Text style={styles.customerPhone}>
+                        {displayOrDash(order.sellerPickup?.sellerPhone)}
+                      </Text>
+                    </View>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.iconButton,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={() => {
+                        const phone = String(
+                          order.sellerPickup?.sellerPhone || '',
+                        ).trim();
+                        if (!phone) {
+                          Alert.alert(
+                            'Telefon',
+                            isWarehousePickup(order)
+                              ? 'Ombor telefoni kiritilmagan'
+                              : 'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
+                          );
+                          return;
+                        }
+                        callCustomer(phone);
+                      }}>
+                      <Ionicons name="call" size={20} color="#FFFFFF" />
+                    </Pressable>
                   </View>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.iconButton,
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={() => {
-                      const phone = String(
-                        order.sellerPickup?.sellerPhone || '',
-                      ).trim();
-                      if (!phone) {
-                        Alert.alert(
-                          'Telefon',
-                          'Sotuvchi telefon raqami kiritilmagan. Siller admin → Market haqida dan qo‘shing.',
-                        );
-                        return;
-                      }
-                      callCustomer(phone);
-                    }}>
-                    <Ionicons name="call" size={20} color="#FFFFFF" />
-                  </Pressable>
-                </View>
               </View>
 
               <View style={styles.card}>
@@ -860,7 +880,11 @@ export default function OrderDetailsScreen() {
 
       <MiniGlobalModal
         visible={completeReturnConfirmOpen}
-        title="Sotuvchiga qaytarish"
+        title={
+          order && isWarehousePickup(order)
+            ? 'Omborga qaytarish'
+            : 'Sotuvchiga qaytarish'
+        }
         confirmText="Ha"
         cancelText="Yo‘q"
         loading={actionLoading}

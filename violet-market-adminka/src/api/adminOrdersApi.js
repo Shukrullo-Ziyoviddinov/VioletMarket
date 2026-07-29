@@ -107,13 +107,16 @@ export async function fetchAdminOrders(filters = {}) {
   };
 }
 
-async function patchOrderItem(action, orderId, itemIndex, sellerId) {
+async function patchOrderItem(action, orderId, itemIndex, sellerId, extra = {}) {
   const res = await fetch(
     apiUrl(`/api/admin/orders/${Number(orderId)}/items/${Number(itemIndex)}/${action}`),
     {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sellerId: String(sellerId || '') }),
+      body: JSON.stringify({
+        sellerId: String(sellerId || ''),
+        ...(extra && typeof extra === 'object' ? extra : {}),
+      }),
     },
   );
   const payload = await parseJson(res);
@@ -128,8 +131,21 @@ export function collectAdminOrderItem(orderId, itemIndex, sellerId) {
   return patchOrderItem('collect', orderId, itemIndex, sellerId);
 }
 
-export function handoffAdminOrderItem(orderId, itemIndex, sellerId) {
-  return patchOrderItem('handoff', orderId, itemIndex, sellerId);
+export function handoffAdminOrderItem(orderId, itemIndex, sellerId, pickup = null) {
+  const extra =
+    pickup && typeof pickup === 'object'
+      ? {
+          uzWarehousePickup: {
+            address: String(pickup.address || '').trim(),
+            coordinates: Array.isArray(pickup.coordinates)
+              ? pickup.coordinates
+              : undefined,
+            phone: String(pickup.phone || '').trim() || undefined,
+            label: String(pickup.label || 'Toshkent ombori').trim(),
+          },
+        }
+      : {};
+  return patchOrderItem('handoff', orderId, itemIndex, sellerId, extra);
 }
 
 export function cancelAdminOrderItem(orderId, itemIndex, sellerId) {

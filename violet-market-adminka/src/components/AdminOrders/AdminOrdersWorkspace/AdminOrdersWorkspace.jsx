@@ -106,7 +106,7 @@ export default function AdminOrdersWorkspace({
     });
   };
 
-  const handleCourierHandoff = async () => {
+  const handleCourierHandoff = async (pickup) => {
     if (!allowHandoff || !courierOrder || handingOff || cancelling) return;
 
     setHandingOff(true);
@@ -115,6 +115,7 @@ export default function AdminOrdersWorkspace({
         courierOrder.orderId,
         courierOrder.itemIndex,
         courierOrder.sellerId,
+        pickup,
       );
       message.success(
         `${courierOrder?.seller?.name || 'Siller'} · mahsulot kuryerga topshirildi`,
@@ -244,6 +245,7 @@ export default function AdminOrdersWorkspace({
         loading={handingOff}
         cancelling={cancelling}
         allowHandoff={allowHandoff}
+        requireWarehousePickup={pipeline === 'foreign'}
         onClose={() => {
           if (!handingOff && !cancelling) setCourierOrder(null);
         }}

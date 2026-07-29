@@ -18,6 +18,17 @@ const orderTrackingHistorySchema = new mongoose.Schema(
   { _id: false },
 );
 
+/** Xorij → UZB: admin kiritgan ombor pickup (faqat foreign handoff) */
+const uzWarehousePickupSchema = new mongoose.Schema(
+  {
+    address: { type: String, default: "", trim: true },
+    coordinates: { type: [Number], default: undefined },
+    phone: { type: String, default: "", trim: true },
+    label: { type: String, default: "Toshkent ombori", trim: true },
+  },
+  { _id: false },
+);
+
 const orderItemSchema = new mongoose.Schema(
   {
     productId: { type: Number, required: true },
@@ -40,6 +51,10 @@ const orderItemSchema = new mongoose.Schema(
     trackingHistory: {
       type: [orderTrackingHistorySchema],
       default: [],
+    },
+    uzWarehousePickup: {
+      type: uzWarehousePickupSchema,
+      default: undefined,
     },
   },
   { _id: false },

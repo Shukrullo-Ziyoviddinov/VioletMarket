@@ -406,6 +406,7 @@ async function handoffAdminOrderItem(payload = {}) {
       sellerId,
       payload.orderId,
       payload.itemIndex,
+      payload,
     );
   }
 

@@ -4,11 +4,45 @@
   gap: 18px;
 }
 
-.admin-order-handoff-modal__text {
+.admin-order-handoff-modal__hint {
   margin: 0;
-  color: #3d2a57;
-  font-size: 15px;
-  line-height: 1.5;
+  color: #6b5a7d;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin-order-handoff-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #56337d;
+}
+
+.admin-order-handoff-modal__field textarea,
+.admin-order-handoff-modal__field input {
+  border: 1px solid #ddd4ea;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1630;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.admin-order-handoff-modal__field textarea:focus,
+.admin-order-handoff-modal__field input:focus {
+  outline: none;
+  border-color: #6d32c5;
+}
+
+.admin-order-handoff-modal__error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .admin-order-handoff-modal__actions {

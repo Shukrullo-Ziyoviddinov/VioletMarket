@@ -54,6 +54,17 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
       coords: { type: [Number], default: undefined },
     },
 
+    /**
+     * Xorij: admin Xorij→UZB da kiritgan ombor manzili (snapshot).
+     * Bo‘sh = UZB siller pickup (SellerAccount).
+     */
+    warehousePickup: {
+      address: { type: String, default: "", trim: true },
+      coordinates: { type: [Number], default: undefined },
+      phone: { type: String, default: "", trim: true },
+      label: { type: String, default: "", trim: true },
+    },
+
     status: {
       type: String,
       enum: [

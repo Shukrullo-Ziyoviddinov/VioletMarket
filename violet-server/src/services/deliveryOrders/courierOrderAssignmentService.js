@@ -25,6 +25,10 @@ const {
   assignmentUnitKey,
 } = require("../../unitLifecycle/assignmentPoolRules");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
+const {
+  snapshotUzWarehousePickup,
+  toWarehouseSellerPickup,
+} = require("../../productManagement/foreignUzWarehousePickup");
 
 const ACTIVE_ASSIGNMENT_STATUSES = COURIER_IN_PROGRESS_STATUSES;
 const SELLER_PHASE_STATUSES = new Set([
@@ -241,6 +245,8 @@ function toPublicAssignment(doc, extras = {}) {
       courierNote: String(address.courierNote || ""),
       coords: Array.isArray(address.coords) ? address.coords : null,
     },
+    warehousePickup: snapshotUzWarehousePickup(row.warehousePickup),
+    pickupKind: toWarehouseSellerPickup(row.warehousePickup) ? "warehouse" : "seller",
     status: String(row.status || "accepted"),
     pickupPhase: resolvePickupPhase(row.status),
     handedToCourierAt: row.handedToCourierAt || null,
@@ -305,6 +311,7 @@ function toSellerPickup(account) {
       address: "",
       sellerPhone: "",
       coordinates: null,
+      pickupKind: "seller",
     };
   }
   const coords = Array.isArray(account.coordinates) && account.coordinates.length >= 2
@@ -319,6 +326,7 @@ function toSellerPickup(account) {
       coords && Number.isFinite(coords[0]) && Number.isFinite(coords[1])
         ? coords
         : null,
+    pickupKind: "seller",
   };
 }
 
@@ -333,6 +341,11 @@ async function loadSellerPickupMap(sellerIds = []) {
   return new Map(rows.map((row) => [String(row.id), toSellerPickup(row)]));
 }
 
+/**
+ * Pickup manzil:
+ * - xorij warehousePickup snapshot → ombor
+ * - aks holda SellerAccount (UZB siller)
+ */
 async function attachSellerPickup(publicRows = []) {
   const list = Array.isArray(publicRows) ? publicRows.filter(Boolean) : [];
   if (!list.length) return list;
@@ -340,6 +353,20 @@ async function attachSellerPickup(publicRows = []) {
   const sellerMap = await loadSellerPickupMap(list.map((row) => row.sellerId));
   return list.map((row) => {
     const sellerId = String(row.sellerId || "").trim();
+    const warehousePickup = toWarehouseSellerPickup(
+      row.warehousePickup,
+      sellerId,
+    );
+
+    if (warehousePickup) {
+      return {
+        ...row,
+        sellerPickup: warehousePickup,
+        pickupKind: "warehouse",
+        pickupPhase: resolvePickupPhase(row.status),
+      };
+    }
+
     const sellerPickup =
       sellerMap.get(sellerId) ||
       toSellerPickup({
@@ -352,6 +379,7 @@ async function attachSellerPickup(publicRows = []) {
     return {
       ...row,
       sellerPickup,
+      pickupKind: "seller",
       pickupPhase: resolvePickupPhase(row.status),
     };
   });
@@ -410,6 +438,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
   const amount = Math.max(0, Number(item.price) || 0);
   const acceptedAt = new Date();
   const deliveryAddress = snapshotDeliveryAddress(order.deliveryAddress);
+  const warehousePickup = snapshotUzWarehousePickup(item.uzWarehousePickup);
   const courierCoords = parseCourierCoords(payload);
   const distanceKm = resolveAssignmentDistanceKm({ deliveryAddress }, courierCoords);
   const user = order.userId
@@ -438,6 +467,9 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       existing.courier = courierSnapshot;
       existing.customer = customerSnapshot;
       existing.deliveryAddress = deliveryAddress;
+      if (warehousePickup) {
+        existing.warehousePickup = warehousePickup;
+      }
       existing.status = "accepted";
       existing.acceptedAt = acceptedAt;
       resetAssignmentStepFields(existing);
@@ -476,6 +508,10 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     }
 
     if (String(existing.deliveryId) === String(deliveryId)) {
+      if (warehousePickup) {
+        existing.warehousePickup = warehousePickup;
+        await existing.save();
+      }
       const paymentMap = await loadOrderPaymentMap([existing.orderId]);
       const [publicRow] = await attachSellerPickup([
         toPublicAssignment(existing, paymentMap.get(Number(existing.orderId)) || {}),
@@ -508,6 +544,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     courier: courierSnapshot,
     customer: customerSnapshot,
     deliveryAddress,
+    ...(warehousePickup ? { warehousePickup } : {}),
     status: "accepted",
     handedToCourierAt: handedEntry?.at || null,
     acceptedAt,
