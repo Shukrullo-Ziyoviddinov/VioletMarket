@@ -289,6 +289,84 @@ export async function fetchCargoHistory(token: string, page = 1, limit = 30) {
   };
 }
 
+export type CargoHistoryBalanceResponse = {
+  mode: 'month' | 'week';
+  periodLabel: string;
+  balance: number;
+  count: number;
+  selected: {
+    year?: number;
+    month?: number;
+    weekStart?: string;
+    weekEnd?: string;
+  };
+  months: Array<{ key: string; label: string; year: number; month: number }>;
+  weeks: Array<{
+    key: string;
+    label: string;
+    weekStart: string;
+    weekEnd: string;
+  }>;
+};
+
+export async function fetchCargoHistoryBalance(
+  token: string,
+  params: {
+    mode: 'month' | 'week';
+    year?: number;
+    month?: number;
+    weekStart?: string;
+  },
+) {
+  const query = new URLSearchParams();
+  query.set('mode', params.mode);
+  if (params.mode === 'month') {
+    if (params.year) query.set('year', String(params.year));
+    if (params.month) query.set('month', String(params.month));
+  } else if (params.weekStart) {
+    query.set('weekStart', params.weekStart);
+  }
+
+  const data = await apiRequest<CargoHistoryBalanceResponse>(
+    `/api/logistica-auth/history/balance?${query.toString()}`,
+    { method: 'GET' },
+    token,
+  );
+
+  return {
+    mode: data?.mode === 'week' ? 'week' : 'month',
+    periodLabel: String(data?.periodLabel || ''),
+    balance: Math.max(0, Number(data?.balance) || 0),
+    count: Math.max(0, Number(data?.count) || 0),
+    selected: {
+      year: Number(data?.selected?.year) || undefined,
+      month: Number(data?.selected?.month) || undefined,
+      weekStart: data?.selected?.weekStart
+        ? String(data.selected.weekStart)
+        : undefined,
+      weekEnd: data?.selected?.weekEnd
+        ? String(data.selected.weekEnd)
+        : undefined,
+    },
+    months: Array.isArray(data?.months)
+      ? data.months.map((row) => ({
+          key: String(row.key || ''),
+          label: String(row.label || ''),
+          year: Number(row.year) || 0,
+          month: Number(row.month) || 0,
+        }))
+      : [],
+    weeks: Array.isArray(data?.weeks)
+      ? data.weeks.map((row) => ({
+          key: String(row.key || ''),
+          label: String(row.label || ''),
+          weekStart: String(row.weekStart || ''),
+          weekEnd: String(row.weekEnd || ''),
+        }))
+      : [],
+  } satisfies CargoHistoryBalanceResponse;
+}
+
 export async function confirmCargoReturn(token: string, requestId: string) {
   const data = await apiRequest<{
     request?: Record<string, unknown>;

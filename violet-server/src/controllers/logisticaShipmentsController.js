@@ -83,6 +83,15 @@ const listCargoHistory = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const getCargoHistoryBalance = asyncHandler(async (req, res) => {
+  const cargoLogisticaBalanceService = require("../services/cargoShipments/cargoLogisticaBalanceService");
+  const data = await cargoLogisticaBalanceService.getBalanceForLogistica(
+    req.logisticaId,
+    req.query || {},
+  );
+  res.json({ ok: true, data });
+});
+
 const confirmCargoReturn = asyncHandler(async (req, res) => {
   const cargoReturnRequestService = require("../services/cargoShipments/cargoReturnRequestService");
   const data = await cargoReturnRequestService.confirmCargoReturnByLogistica(
@@ -117,6 +126,7 @@ module.exports = {
   listUzWarehouseShipments,
   listCargoReturnsBoard,
   listCargoHistory,
+  getCargoHistoryBalance,
   getShipmentDetail,
   acceptShipment,
   updateProcessStep,

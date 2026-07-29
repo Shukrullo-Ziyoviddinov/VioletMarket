@@ -97,6 +97,7 @@ async function recordHandedOverHistory(shipment, at = new Date()) {
     kind: "handed_over",
     shipment,
     at,
+    amount: Math.max(0, Number(shipment.cargoDeliveryFee) || 0),
   });
 }
 

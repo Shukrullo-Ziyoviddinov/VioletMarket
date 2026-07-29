@@ -37,6 +37,12 @@ router.get(
 );
 
 router.get(
+  "/logistica-auth/history/balance",
+  logisticaAuthMiddleware,
+  controller.getCargoHistoryBalance,
+);
+
+router.get(
   "/logistica-auth/shipments/:shipmentId",
   logisticaAuthMiddleware,
   controller.getShipmentDetail,

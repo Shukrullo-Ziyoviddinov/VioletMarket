@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { ScreenShell } from '@/components/ScreenShell';
+import { TarixBalancePanel } from '@/components/tarix/TarixBalancePanel';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import { fetchCargoHistory } from '@/services/logistica-shipments';
@@ -66,6 +67,7 @@ export default function TarixScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
 
   const load = useCallback(
     async (mode: 'initial' | 'refresh' = 'initial') => {
@@ -85,6 +87,9 @@ export default function TarixScreen() {
         setItems(data.items as HistoryItem[]);
         setPage(data.page);
         setTotalPages(data.totalPages);
+        if (mode === 'refresh') {
+          setBalanceRefreshKey((prev) => prev + 1);
+        }
       } catch (err) {
         setError(
           err instanceof ApiError
@@ -124,6 +129,8 @@ export default function TarixScreen() {
 
   return (
     <ScreenShell title="Tarix">
+      <TarixBalancePanel refreshKey={balanceRefreshKey} />
+
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator color={ACCENT} size="large" />
@@ -230,7 +237,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 24,
     gap: 10,
   },
