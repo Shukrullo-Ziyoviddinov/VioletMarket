@@ -89,6 +89,8 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    background: #9b4fe7;
+    border-color: #9b4fe7;
   }
 }
 

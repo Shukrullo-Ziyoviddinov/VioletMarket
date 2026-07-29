@@ -785,7 +785,7 @@
 .add-to-cart-btn-detail {
   width: 100%;
   flex: 1 1 auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #9b4fe7;
   padding: 12px;
   min-height: 48px;
   border-radius: 8px;
@@ -1320,6 +1320,8 @@ body.share-menu-open {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  background: #9b4fe7;
+  border-color: #9b4fe7;
 }
 
 .product-detail-seller-wrap:has(.product-detail-seller:hover) {

@@ -2,8 +2,8 @@
   flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 10px;
-  border: 2px solid #6d28d9;
-  background: #7c3aed;
+  border: 2px solid #9b4fe7;
+  background: #9b4fe7;
   color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
@@ -13,14 +13,14 @@
 }
 
 .seller-subscribe-btn:hover {
-  background: #6d28d9;
-  border-color: #5b21b6;
+  background: #9b4fe7;
+  border-color: #9b4fe7;
 }
 
 .seller-subscribe-btn--active {
   background: #fff;
-  color: #5b21b6;
-  border-color: #7c3aed;
+  color: #9b4fe7;
+  border-color: #9b4fe7;
 }
 
 .seller-subscribe-btn--active:hover {

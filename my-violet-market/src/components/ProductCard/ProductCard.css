@@ -46,7 +46,7 @@
 }
 
 .heart-icon.liked {
-  color: #9b4fe7;;
+  color: #9b4fe7;
 }
 
 .product-labels {
@@ -229,7 +229,7 @@
 
 .add-to-cart-btn {
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #9b4fe7;
   color: white;
   padding: 3px 5px;
   border-radius: 5px;
