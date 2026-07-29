@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   PanResponder,
@@ -11,8 +12,10 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/services/api';
 import { updateLogisticaProfileDetails } from '@/services/logistica-auth';
@@ -33,8 +36,11 @@ export function MyLogisticaInfoBottomSheet({
   onClose,
   onSaved,
 }: Props) {
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const translateY = useRef(new Animated.Value(700)).current;
   const [sheetHeight, setSheetHeight] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [chinaAddress, setChinaAddress] = useState('');
   const [chinaPhone, setChinaPhone] = useState('');
   const [profileDescription, setProfileDescription] = useState('');
@@ -42,12 +48,34 @@ export function MyLogisticaInfoBottomSheet({
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const showSubscription = Keyboard.addListener('keyboardDidShow', (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (visible) return;
+    Keyboard.dismiss();
+    setKeyboardHeight(0);
+  }, [visible]);
+
+  useEffect(() => {
     if (!visible) return;
     setChinaAddress(profile?.chinaAddress || '');
     setChinaPhone(profile?.chinaPhone || '');
     setProfileDescription(profile?.profileDescription || '');
     setError('');
-    translateY.setValue(sheetHeight || 700);
+    translateY.setValue(700);
     const frame = requestAnimationFrame(() => {
       Animated.timing(translateY, {
         toValue: 0,
@@ -60,7 +88,6 @@ export function MyLogisticaInfoBottomSheet({
     profile?.chinaAddress,
     profile?.chinaPhone,
     profile?.profileDescription,
-    sheetHeight,
     translateY,
     visible,
   ]);
@@ -79,10 +106,19 @@ export function MyLogisticaInfoBottomSheet({
   const panResponder = useMemo(
     () =>
       PanResponder.create({
+        onStartShouldSetPanResponder: () => !saving,
+        onStartShouldSetPanResponderCapture: () => !saving,
         onMoveShouldSetPanResponder: (_, gesture) =>
           !saving &&
           Math.abs(gesture.dy) > 4 &&
           Math.abs(gesture.dy) > Math.abs(gesture.dx),
+        onMoveShouldSetPanResponderCapture: (_, gesture) =>
+          !saving &&
+          Math.abs(gesture.dy) > 4 &&
+          Math.abs(gesture.dy) > Math.abs(gesture.dx),
+        onPanResponderGrant: () => {
+          translateY.stopAnimation();
+        },
         onPanResponderMove: (_, gesture) => {
           translateY.setValue(Math.max(0, gesture.dy));
         },
@@ -108,6 +144,7 @@ export function MyLogisticaInfoBottomSheet({
             stiffness: 220,
           }).start();
         },
+        onPanResponderTerminationRequest: () => false,
       }),
     [closeSheet, saving, sheetHeight, translateY],
   );
@@ -172,7 +209,20 @@ export function MyLogisticaInfoBottomSheet({
         >
           <Animated.View
             onLayout={(event) => setSheetHeight(event.nativeEvent.layout.height)}
-            style={[styles.sheet, { transform: [{ translateY }] }]}
+            style={[
+              styles.sheet,
+              {
+                marginBottom: Platform.OS === 'android' ? keyboardHeight : 0,
+                maxHeight:
+                  Platform.OS === 'android'
+                    ? Math.max(
+                        280,
+                        windowHeight - keyboardHeight - insets.top - 12,
+                      )
+                    : windowHeight * 0.92,
+                transform: [{ translateY }],
+              },
+            ]}
           >
             <View style={styles.dragArea} {...panResponder.panHandlers}>
               <View style={styles.dragHandle} />
@@ -184,7 +234,10 @@ export function MyLogisticaInfoBottomSheet({
 
             <ScrollView
               style={styles.formScroll}
-              contentContainerStyle={styles.form}
+              contentContainerStyle={[
+                styles.form,
+                { paddingBottom: Math.max(24, insets.bottom + 16) },
+              ]}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -273,8 +326,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(17, 24, 39, 0.48)',
   },
   keyboardArea: {
+    flex: 1,
     justifyContent: 'flex-end',
-    maxHeight: '92%',
   },
   sheet: {
     maxHeight: '92%',
@@ -309,7 +362,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   formScroll: {
-    flexGrow: 0,
+    flexShrink: 1,
   },
   form: {
     paddingHorizontal: 18,

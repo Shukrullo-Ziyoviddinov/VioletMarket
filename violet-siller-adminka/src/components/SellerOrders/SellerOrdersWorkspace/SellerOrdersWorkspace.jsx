@@ -6,6 +6,7 @@ import {
   collectSellerOrderItem,
   confirmSellerOrderItem,
   deliverSellerNoAnswerOrder,
+  fetchSellerCargoWarehouseContacts,
   fetchSellerOrders,
   handoffSellerOrderItem,
   reactivateSellerNoAnswerOrder,
@@ -14,6 +15,7 @@ import {
 } from '../../../api/sellerOrdersApi';
 import { useSellerAuth } from '../../../context/SellerAuthContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
+import SellerCargoWarehouseContacts from '../SellerCargoWarehouseContacts/SellerCargoWarehouseContacts';
 import SellerOrderCargoHandedList from '../SellerOrderCargoHandedList/SellerOrderCargoHandedList';
 import SellerOrderCollectionList from '../SellerOrderCollectionList/SellerOrderCollectionList';
 import SellerOrderCourierList from '../SellerOrderCourierList/SellerOrderCourierList';
@@ -83,6 +85,10 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [submittingCargo, setSubmittingCargo] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null);
+  const [cargoContactsLoading, setCargoContactsLoading] = useState(false);
+  const [cargoContactsError, setCargoContactsError] = useState('');
+  const [cargoContacts, setCargoContacts] = useState([]);
+  const [cargoCountryLabel, setCargoCountryLabel] = useState('');
 
   const loadOrders = useCallback(async () => {
     if (!token) {
@@ -111,7 +117,45 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setCourierOrder(null);
     setCargoOrder(null);
     setCancelTarget(null);
+    setCargoContacts([]);
+    setCargoContactsError('');
+    setCargoCountryLabel('');
   }, [filter]);
+
+  useEffect(() => {
+    if (!token || !cargoOrder) {
+      setCargoContacts([]);
+      setCargoContactsError('');
+      setCargoCountryLabel('');
+      setCargoContactsLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+    setCargoContactsLoading(true);
+    setCargoContactsError('');
+
+    fetchSellerCargoWarehouseContacts(token)
+      .then((data) => {
+        if (!active) return;
+        setCargoContacts(data.contacts || []);
+        setCargoCountryLabel(data.sellerCountryLabel || '');
+      })
+      .catch((error) => {
+        if (!active) return;
+        setCargoContacts([]);
+        setCargoContactsError(
+          error?.message || 'Cargo manzillarini yuklab bo‘lmadi',
+        );
+      })
+      .finally(() => {
+        if (active) setCargoContactsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [cargoOrder, token]);
 
   const confirmationOrders = orders.filter(
     (order) => order.trackingStatus === 'accepted',
@@ -403,6 +447,14 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         onConfirm={handleCargoSubmit}
         onCancelOrder={() => requestCancelOrder(cargoOrder)}
         cancelOrderText={t('orders.modal.cancelOrder')}
+        extraContent={
+          <SellerCargoWarehouseContacts
+            loading={cargoContactsLoading}
+            error={cargoContactsError}
+            sellerCountryLabel={cargoCountryLabel}
+            contacts={cargoContacts}
+          />
+        }
       />
 
       <MiniGlobalModal

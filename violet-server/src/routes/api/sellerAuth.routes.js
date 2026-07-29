@@ -102,6 +102,11 @@ router.get(
   sellerOrdersController.listOrders,
 );
 router.get(
+  "/seller-auth/cargo-warehouse-contacts",
+  sellerAuthMiddleware,
+  sellerOrdersController.listCargoWarehouseContacts,
+);
+router.get(
   "/seller-auth/returned-orders",
   sellerAuthMiddleware,
   sellerOrdersController.listReturnedOrders,

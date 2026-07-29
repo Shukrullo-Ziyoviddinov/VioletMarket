@@ -1,0 +1,74 @@
+.seller-cargo-warehouse-contacts {
+  margin: 0 0 16px;
+}
+
+.seller-cargo-warehouse-contacts--state,
+.seller-cargo-warehouse-contacts--error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.seller-cargo-warehouse-contacts--state {
+  background: #f8f5fc;
+  color: #6b5a86;
+  border: 1px solid #ebe4f5;
+}
+
+.seller-cargo-warehouse-contacts--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.seller-cargo-warehouse-contacts__hint {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #5b4d73;
+  font-weight: 600;
+}
+
+.seller-cargo-warehouse-contacts__list {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.seller-cargo-warehouse-contacts__card {
+  border: 1px solid #ebe4f5;
+  border-radius: 12px;
+  background: #faf8fd;
+  padding: 10px 12px;
+}
+
+.seller-cargo-warehouse-contacts__name {
+  display: block;
+  margin-bottom: 6px;
+  color: #2a1842;
+  font-size: 14px;
+}
+
+.seller-cargo-warehouse-contacts__card p {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.seller-cargo-warehouse-contacts__card p:last-child {
+  margin-bottom: 0;
+}
+
+.seller-cargo-warehouse-contacts__card span {
+  display: block;
+  margin-bottom: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

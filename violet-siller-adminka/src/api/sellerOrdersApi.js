@@ -155,6 +155,29 @@ export async function submitSellerOrderItemToCargo(token, orderId, itemIndex, bo
   return payload?.data || {};
 }
 
+export async function fetchSellerCargoWarehouseContacts(token) {
+  const res = await fetch(apiUrl('/api/seller-auth/cargo-warehouse-contacts'), {
+    method: 'GET',
+    headers: authHeaders(token),
+  });
+  const payload = await parseJson(res);
+  const data = payload?.data || {};
+  return {
+    sellerCountry: String(data.sellerCountry || ''),
+    sellerCountryLabel: String(data.sellerCountryLabel || ''),
+    contacts: Array.isArray(data.contacts)
+      ? data.contacts.map((row) => ({
+          id: String(row.id || ''),
+          companyName: String(row.companyName || 'Logistica'),
+          logisticaCountry: String(row.logisticaCountry || ''),
+          chinaAddress: String(row.chinaAddress || ''),
+          chinaPhone: String(row.chinaPhone || ''),
+          profileDescription: String(row.profileDescription || ''),
+        }))
+      : [],
+  };
+}
+
 export async function cancelSellerOrderItem(token, orderId, itemIndex) {
   const res = await fetch(
     apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/cancel`),

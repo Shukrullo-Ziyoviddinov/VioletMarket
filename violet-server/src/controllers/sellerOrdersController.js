@@ -87,6 +87,14 @@ const submitToCargo = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const listCargoWarehouseContacts = asyncHandler(async (req, res) => {
+  const data =
+    await cargoShipmentSellerService.listSellerCargoWarehouseContacts(
+      req.sellerShopId,
+    );
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   listOrders,
   listReturnedOrders,
@@ -98,4 +106,5 @@ module.exports = {
   reactivateNoAnswer,
   deliverNoAnswer,
   submitToCargo,
+  listCargoWarehouseContacts,
 };

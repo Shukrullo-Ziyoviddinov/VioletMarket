@@ -82,6 +82,10 @@
   padding: 20px;
 }
 
+.mini-global-modal__dialog--with-extra {
+  width: min(100%, 480px);
+}
+
 .mini-global-modal__dialog--confirm .mini-global-modal__title {
   margin: 0 0 10px;
   font-size: 18px;

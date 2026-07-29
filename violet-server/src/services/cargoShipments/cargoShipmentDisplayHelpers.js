@@ -61,7 +61,13 @@ async function loadLogisticaMap(logisticaIds = []) {
   if (!ids.length) return new Map();
 
   const rows = await LogisticaProfile.find({ _id: { $in: ids } })
-    .select({ companyName: 1, logisticaCountry: 1 })
+    .select({
+      companyName: 1,
+      logisticaCountry: 1,
+      chinaAddress: 1,
+      chinaPhone: 1,
+      profileDescription: 1,
+    })
     .lean();
 
   return new Map(
@@ -70,9 +76,25 @@ async function loadLogisticaMap(logisticaIds = []) {
       {
         companyName: String(row.companyName || ""),
         logisticaCountry: String(row.logisticaCountry || ""),
+        chinaAddress: String(row.chinaAddress || "").trim(),
+        chinaPhone: String(row.chinaPhone || "").trim(),
+        profileDescription: String(row.profileDescription || "").trim(),
       },
     ]),
   );
+}
+
+/** Siller «cargoga yuborish» modal uchun ochiq aloqa kartasi */
+function toSellerLogisticaContactView(row) {
+  if (!row) return null;
+  return {
+    id: String(row._id || row.id || ""),
+    companyName: String(row.companyName || "").trim() || "Logistica",
+    logisticaCountry: String(row.logisticaCountry || ""),
+    chinaAddress: String(row.chinaAddress || "").trim(),
+    chinaPhone: String(row.chinaPhone || "").trim(),
+    profileDescription: String(row.profileDescription || "").trim(),
+  };
 }
 
 module.exports = {
@@ -81,4 +103,5 @@ module.exports = {
   formatProductCode,
   loadSellerMap,
   loadLogisticaMap,
+  toSellerLogisticaContactView,
 };

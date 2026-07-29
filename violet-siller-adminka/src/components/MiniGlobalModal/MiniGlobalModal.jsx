@@ -21,6 +21,7 @@ function MiniGlobalModalConfirm({
   onCancelOrder,
   cancelOrderLoading = false,
   cancelOrderText = 'Buyurtmani bekor qilish',
+  extraContent = null,
 }) {
   const copy = useMemo(
     () => resolveMiniGlobalModalPermission(permissionKey, itemName),
@@ -60,7 +61,9 @@ function MiniGlobalModalConfirm({
 
       <div className="mini-global-modal__center">
         <div
-          className="mini-global-modal__dialog mini-global-modal__dialog--confirm"
+          className={`mini-global-modal__dialog mini-global-modal__dialog--confirm${
+            extraContent ? ' mini-global-modal__dialog--with-extra' : ''
+          }`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="mini-global-modal-title"
@@ -74,6 +77,8 @@ function MiniGlobalModalConfirm({
               {copy.message}
             </p>
           ) : null}
+
+          {extraContent}
 
           <div
             className={`mini-global-modal__actions${
@@ -191,6 +196,7 @@ export default function MiniGlobalModal({
   onCancelOrder,
   cancelOrderLoading = false,
   cancelOrderText,
+  extraContent = null,
 }) {
   const isConfirmMode = Boolean(permissionKey);
 
@@ -206,6 +212,7 @@ export default function MiniGlobalModal({
         onCancelOrder={onCancelOrder}
         cancelOrderLoading={cancelOrderLoading}
         cancelOrderText={cancelOrderText}
+        extraContent={extraContent}
       />
     );
   }

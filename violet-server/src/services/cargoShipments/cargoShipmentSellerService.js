@@ -11,12 +11,20 @@ const {
   toPublicCargoShipment,
 } = require("../../models/cargoShipment");
 const { Counter } = require("../../models/counter");
+const { LogisticaProfile } = require("../../models/logisticaProfile");
 const { HttpError } = require("../../utils/httpError");
 const {
   normalizeOrderTrackingStatus,
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
-const { normalizeCargoCountry } = require("../../utils/cargoCountryNormalize");
+const {
+  normalizeCargoCountry,
+  cargoCountryMatchValues,
+  cargoCountryDisplayLabel,
+} = require("../../utils/cargoCountryNormalize");
+const {
+  toSellerLogisticaContactView,
+} = require("./cargoShipmentDisplayHelpers");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -266,8 +274,69 @@ async function submitSellerOrderItemToCargo(
   };
 }
 
+/**
+ * Siller «cargoga yuborish» modal — o‘z davlatidagi faol logistica manzillari.
+ * To‘lov / To‘landi zanjiriga aralashmaydi.
+ */
+async function listSellerCargoWarehouseContacts(sellerId) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const account = await SellerAccount.findOne({ id: normalizedSellerId })
+    .select("id sellerCountry")
+    .lean();
+  if (!account) {
+    throw new HttpError(404, "Siller topilmadi", "SELLER_NOT_FOUND");
+  }
+
+  if (resolveSellerPipelineMode(account.sellerCountry) !== "foreign") {
+    throw new HttpError(
+      409,
+      "Faqat xorij sillerlar uchun",
+      "LOCAL_SELLER_FORBIDDEN",
+    );
+  }
+
+  const sellerCountry = normalizeCargoCountry(account.sellerCountry);
+  const countryValues = cargoCountryMatchValues(sellerCountry);
+  if (!countryValues.length) {
+    return {
+      sellerCountry,
+      sellerCountryLabel: cargoCountryDisplayLabel(sellerCountry),
+      contacts: [],
+    };
+  }
+
+  const rows = await LogisticaProfile.find({
+    status: "active",
+    logisticaCountry: { $in: countryValues },
+    $or: [
+      { chinaAddress: { $exists: true, $nin: ["", null] } },
+      { chinaPhone: { $exists: true, $nin: ["", null] } },
+    ],
+  })
+    .select({
+      companyName: 1,
+      logisticaCountry: 1,
+      chinaAddress: 1,
+      chinaPhone: 1,
+      profileDescription: 1,
+    })
+    .sort({ companyName: 1 })
+    .lean();
+
+  return {
+    sellerCountry,
+    sellerCountryLabel: cargoCountryDisplayLabel(sellerCountry),
+    contacts: rows.map(toSellerLogisticaContactView).filter(Boolean),
+  };
+}
+
 module.exports = {
   submitSellerOrderItemToCargo,
+  listSellerCargoWarehouseContacts,
   listCargoShipmentsByOrderItems,
   shipmentLookupKey,
   toPublicCargoShipment,
