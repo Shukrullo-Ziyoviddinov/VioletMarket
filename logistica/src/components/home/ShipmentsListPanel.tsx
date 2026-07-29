@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -24,6 +24,8 @@ type Props = {
   hrefBase?: '/shipment/[id]' | '/ish-stoli/[id]';
   emptyTitle: string;
   emptyText: string;
+  showCargoPaymentStatus?: boolean;
+  filterItems?: (item: ShipmentRequest) => boolean;
 };
 
 export function ShipmentsListPanel({
@@ -31,6 +33,8 @@ export function ShipmentsListPanel({
   hrefBase = '/shipment/[id]',
   emptyTitle,
   emptyText,
+  showCargoPaymentStatus = false,
+  filterItems,
 }: Props) {
   const { token } = useAuth();
   const [items, setItems] = useState<ShipmentRequest[]>([]);
@@ -62,6 +66,8 @@ export function ShipmentsListPanel({
             productCount: row.productCount,
             weightKg: row.weightKg,
             weightLabel: row.weightLabel,
+            cargoFeePaymentRequired: row.cargoFeePaymentRequired,
+            adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt,
           })),
         );
       } catch (err) {
@@ -82,6 +88,11 @@ export function ShipmentsListPanel({
   useEffect(() => {
     void load('initial');
   }, [load]);
+
+  const visibleItems = useMemo(
+    () => (filterItems ? items.filter(filterItems) : items),
+    [filterItems, items],
+  );
 
   if (loading) {
     return (
@@ -113,7 +124,7 @@ export function ShipmentsListPanel({
       style={styles.scroll}
       contentContainerStyle={[
         styles.content,
-        items.length === 0 ? styles.contentEmpty : null,
+        visibleItems.length === 0 ? styles.contentEmpty : null,
       ]}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -127,14 +138,25 @@ export function ShipmentsListPanel({
         />
       }
     >
-      {items.length === 0 ? (
+      {visibleItems.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>{emptyTitle}</Text>
-          <Text style={styles.emptyText}>{emptyText}</Text>
+          <Text style={styles.emptyTitle}>
+            {items.length === 0 ? emptyTitle : 'Bu filter bo‘yicha yuk yo‘q'}
+          </Text>
+          <Text style={styles.emptyText}>
+            {items.length === 0
+              ? emptyText
+              : 'Boshqa to‘lov holatini tanlab ko‘ring.'}
+          </Text>
         </View>
       ) : (
-        items.map((item) => (
-          <ShipmentRequestCard key={item.id} item={item} hrefBase={hrefBase} />
+        visibleItems.map((item) => (
+          <ShipmentRequestCard
+            key={item.id}
+            item={item}
+            hrefBase={hrefBase}
+            showCargoPaymentStatus={showCargoPaymentStatus}
+          />
         ))
       )}
       <View style={styles.bottomSpace} />

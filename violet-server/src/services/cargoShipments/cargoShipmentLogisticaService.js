@@ -98,6 +98,9 @@ function toLogisticaShipmentCard(doc) {
     status: String(row.status || "pending"),
     sellerCountry: String(row.sellerCountry || ""),
     processStep: row.processStep || null,
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
+    customerCargoFeePaidAt: row.customerCargoFeePaidAt || null,
+    adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt || null,
     paidAt: row.paidAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
   };

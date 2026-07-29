@@ -32,6 +32,9 @@ export type ShipmentListItem = {
   status?: string;
   sellerCountry?: string;
   processStep?: string | null;
+  cargoFeePaymentRequired?: boolean;
+  customerCargoFeePaidAt?: string | null;
+  adminCargoFeeConfirmedAt?: string | null;
   paidAt?: string | null;
   submittedAt?: string | null;
 };

@@ -10,6 +10,8 @@ export type ShipmentRequest = {
   productCount: number;
   weightKg: number;
   weightLabel: 'Taxminiy og\'irlik' | 'Og\'irlik';
+  cargoFeePaymentRequired?: boolean;
+  adminCargoFeeConfirmedAt?: string | null;
 };
 
 const CARDBOARD = '#C4A484';
@@ -17,13 +19,18 @@ const CARDBOARD = '#C4A484';
 type Props = {
   item: ShipmentRequest;
   hrefBase?: '/shipment/[id]' | '/ish-stoli/[id]';
+  showCargoPaymentStatus?: boolean;
 };
 
 export function ShipmentRequestCard({
   item,
   hrefBase = '/shipment/[id]',
+  showCargoPaymentStatus = false,
 }: Props) {
   const router = useRouter();
+  const showPaymentBadge =
+    showCargoPaymentStatus && item.cargoFeePaymentRequired;
+  const isCargoPaymentConfirmed = Boolean(item.adminCargoFeeConfirmedAt);
 
   return (
     <Pressable
@@ -57,6 +64,27 @@ export function ShipmentRequestCard({
       </View>
 
       <View style={styles.right}>
+        {showPaymentBadge ? (
+          <View
+            style={[
+              styles.paymentBadge,
+              isCargoPaymentConfirmed
+                ? styles.paymentBadgePaid
+                : styles.paymentBadgeUnpaid,
+            ]}
+          >
+            <Text
+              style={[
+                styles.paymentBadgeText,
+                isCargoPaymentConfirmed
+                  ? styles.paymentBadgeTextPaid
+                  : styles.paymentBadgeTextUnpaid,
+              ]}
+            >
+              {isCargoPaymentConfirmed ? 'To‘landi' : 'To‘lanmagan'}
+            </Text>
+          </View>
+        ) : null}
         <Text style={styles.weightLabel}>{item.weightLabel}</Text>
         <Text style={styles.weightValue}>{item.weightKg} kg</Text>
       </View>
@@ -131,6 +159,32 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 4,
+  },
+  paymentBadge: {
+    borderRadius: 7,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    marginBottom: 2,
+  },
+  paymentBadgePaid: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  paymentBadgeUnpaid: {
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+  },
+  paymentBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  paymentBadgeTextPaid: {
+    color: '#15803D',
+  },
+  paymentBadgeTextUnpaid: {
+    color: '#B91C1C',
   },
   weightLabel: {
     fontSize: 10,

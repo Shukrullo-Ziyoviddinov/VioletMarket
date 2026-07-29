@@ -26,6 +26,11 @@ function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): 
     status: row.status ? String(row.status) : undefined,
     sellerCountry: row.sellerCountry ? String(row.sellerCountry) : undefined,
     processStep: row.processStep != null ? String(row.processStep) : null,
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
+    customerCargoFeePaidAt:
+      (row.customerCargoFeePaidAt as string | null | undefined) ?? null,
+    adminCargoFeeConfirmedAt:
+      (row.adminCargoFeeConfirmedAt as string | null | undefined) ?? null,
     paidAt: (row.paidAt as string | null | undefined) ?? null,
     submittedAt: row.submittedAt ?? null,
   };
