@@ -25,6 +25,7 @@ const {
   applyMarkShipmentPaid,
   canLogisticaMarkPaid,
 } = require("./cargoShipmentProcessActions");
+const { resolveProductTitle } = require("./cargoShipmentDisplayHelpers");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -60,13 +61,6 @@ function formatDateTime(value) {
   const hh = String(date.getHours()).padStart(2, "0");
   const min = String(date.getMinutes()).padStart(2, "0");
   return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
-}
-
-function resolveProductTitle(title) {
-  if (title && typeof title === "object") {
-    return String(title.uz || title.ru || "").trim() || "Mahsulot";
-  }
-  return String(title || "").trim() || "Mahsulot";
 }
 
 function buildVariantLabel(product) {

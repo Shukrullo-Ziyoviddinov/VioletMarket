@@ -13,19 +13,10 @@ const {
   cargoCountryDisplayLabel,
 } = require("../../utils/cargoCountryNormalize");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
-
-function resolveProductTitle(title) {
-  if (title && typeof title === "object") {
-    return String(title.uz || title.ru || "").trim() || "Mahsulot";
-  }
-  return String(title || "").trim() || "Mahsulot";
-}
-
-function formatProductCode(productId) {
-  const id = Number(productId) || 0;
-  if (!id) return "";
-  return `#${String(id).padStart(4, "0")}`;
-}
+const {
+  resolveProductTitle,
+  formatProductCode,
+} = require("./cargoShipmentDisplayHelpers");
 
 function snapshotFromShipment(shipment, extras = {}) {
   const row = shipment?.toObject ? shipment.toObject() : shipment || {};
@@ -40,7 +31,7 @@ function snapshotFromShipment(shipment, extras = {}) {
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
     productTitle: resolveProductTitle(product?.title),
-    productCode: formatProductCode(productId),
+    productCode: formatProductCode(productId, ""),
     amount: Math.max(0, toNumber(extras.amount, 0)),
     cargoCountry: normalizeCargoCountry(row.sellerCountry),
     cargoReturnRequestId: extras.cargoReturnRequestId || null,

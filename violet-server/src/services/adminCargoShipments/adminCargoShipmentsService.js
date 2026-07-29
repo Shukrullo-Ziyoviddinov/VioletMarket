@@ -5,8 +5,6 @@
 
 const mongoose = require("mongoose");
 const { CargoShipment } = require("../../models/cargoShipment");
-const { LogisticaProfile } = require("../../models/logisticaProfile");
-const { SellerAccount } = require("../../models/sellerAccount");
 const { HttpError } = require("../../utils/httpError");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const {
@@ -22,6 +20,12 @@ const {
   applyMarkShipmentPaid,
   canLogisticaMarkPaid,
 } = require("../cargoShipments/cargoShipmentProcessActions");
+const {
+  resolveProductTitle,
+  formatProductCode,
+  loadSellerMap,
+  loadLogisticaMap,
+} = require("../cargoShipments/cargoShipmentDisplayHelpers");
 
 const DEFAULT_PAGE_SIZE = 100;
 
@@ -51,24 +55,6 @@ function processStepLabel(step) {
   };
   const key = String(step || "").trim();
   return map[key] || (key ? key : "Qabul qilindi");
-}
-
-function pickSellerName(account) {
-  if (!account?.name) return "";
-  if (typeof account.name === "string") return account.name;
-  return String(account.name.uz || account.name.ru || "").trim();
-}
-
-function resolveProductTitle(title) {
-  if (title && typeof title === "object") {
-    return String(title.uz || title.ru || "").trim() || "Mahsulot";
-  }
-  return String(title || "").trim() || "Mahsulot";
-}
-
-function formatProductCode(productId) {
-  const id = Number(productId) || 0;
-  return id > 0 ? `#${String(id).padStart(4, "0")}` : "—";
 }
 
 function toAdminShipmentCard(row, sellerMap, logisticaMap) {
@@ -163,47 +149,6 @@ function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
       done: String(row.processStep || "") === "toshkent_omborida" && Boolean(row.uzArrivedAt),
     },
   };
-}
-
-async function loadSellerMap(sellerIds = []) {
-  const ids = [...new Set(sellerIds.map((id) => String(id || "").trim()).filter(Boolean))];
-  if (!ids.length) return new Map();
-  const rows = await SellerAccount.find({ id: { $in: ids } })
-    .select("id name sellerCountry")
-    .lean();
-  return new Map(
-    rows.map((row) => [
-      String(row.id),
-      {
-        id: String(row.id),
-        name: pickSellerName(row) || String(row.id),
-        sellerCountry: String(row.sellerCountry || ""),
-      },
-    ]),
-  );
-}
-
-async function loadLogisticaMap(logisticaIds = []) {
-  const ids = [
-    ...new Set(
-      logisticaIds
-        .map((id) => String(id || "").trim())
-        .filter((id) => mongoose.isValidObjectId(id)),
-    ),
-  ];
-  if (!ids.length) return new Map();
-  const rows = await LogisticaProfile.find({ _id: { $in: ids } })
-    .select({ companyName: 1, logisticaCountry: 1 })
-    .lean();
-  return new Map(
-    rows.map((row) => [
-      String(row._id),
-      {
-        companyName: String(row.companyName || ""),
-        logisticaCountry: String(row.logisticaCountry || ""),
-      },
-    ]),
-  );
 }
 
 async function loadShipmentDoc(shipmentIdRaw) {

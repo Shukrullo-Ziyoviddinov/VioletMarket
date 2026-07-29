@@ -4,13 +4,20 @@ import { fetchAdminCargoFeePayments } from '../../api/adminCargoFeePaymentsApi';
 import CargoFeePaymentFilters from '../../components/CargoFeePayments/CargoFeePaymentFilters/CargoFeePaymentFilters';
 import CargoFeePaymentList from '../../components/CargoFeePayments/CargoFeePaymentList/CargoFeePaymentList';
 import CargoFeePaymentConfirmModal from '../../components/CargoFeePayments/CargoFeePaymentConfirmModal/CargoFeePaymentConfirmModal';
+import { useGlobalLoader } from '../../context/GlobalLoaderContext';
 import './CargoFeePaymentsPage.css';
 
 export default function CargoFeePaymentsPage() {
+  const { setGlobalLoading } = useGlobalLoader();
   const [filter, setFilter] = useState('all');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeItem, setActiveItem] = useState(null);
+
+  useEffect(() => {
+    setGlobalLoading(loading);
+    return () => setGlobalLoading(false);
+  }, [loading, setGlobalLoading]);
 
   const load = useCallback(async (nextFilter = filter) => {
     setLoading(true);

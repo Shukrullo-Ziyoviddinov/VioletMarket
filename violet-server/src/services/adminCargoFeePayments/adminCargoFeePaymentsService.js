@@ -5,8 +5,6 @@
 
 const mongoose = require("mongoose");
 const { CargoShipment } = require("../../models/cargoShipment");
-const { SellerAccount } = require("../../models/sellerAccount");
-const { LogisticaProfile } = require("../../models/logisticaProfile");
 const { HttpError } = require("../../utils/httpError");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
@@ -18,59 +16,13 @@ const {
 const {
   normalizeCargoCountry,
 } = require("../../utils/cargoCountryNormalize");
+const {
+  resolveProductTitle,
+  loadSellerMap,
+  loadLogisticaMap,
+} = require("../cargoShipments/cargoShipmentDisplayHelpers");
 
 const DEFAULT_PAGE_SIZE = 50;
-
-function pickSellerName(account) {
-  if (!account?.name) return "";
-  if (typeof account.name === "string") return account.name;
-  return String(account.name.uz || account.name.ru || "").trim();
-}
-
-function resolveProductTitle(title) {
-  if (title && typeof title === "object") {
-    return String(title.uz || title.ru || "").trim() || "Mahsulot";
-  }
-  return String(title || "").trim() || "Mahsulot";
-}
-
-async function loadSellerMap(sellerIds = []) {
-  const ids = [...new Set(sellerIds.map((id) => String(id || "").trim()).filter(Boolean))];
-  if (!ids.length) return new Map();
-  const rows = await SellerAccount.find({ id: { $in: ids } })
-    .select("id name sellerCountry")
-    .lean();
-  return new Map(
-    rows.map((row) => [
-      String(row.id),
-      {
-        id: String(row.id),
-        name: pickSellerName(row) || String(row.id),
-        sellerCountry: String(row.sellerCountry || ""),
-      },
-    ]),
-  );
-}
-
-async function loadLogisticaMap(logisticaIds = []) {
-  const ids = [
-    ...new Set(
-      logisticaIds
-        .map((id) => String(id || "").trim())
-        .filter((id) => mongoose.isValidObjectId(id)),
-    ),
-  ];
-  if (!ids.length) return new Map();
-  const rows = await LogisticaProfile.find({ _id: { $in: ids } })
-    .select({ companyName: 1 })
-    .lean();
-  return new Map(
-    rows.map((row) => [
-      String(row._id),
-      { companyName: String(row.companyName || "") },
-    ]),
-  );
-}
 
 function toAdminCargoFeeCard(row, sellerMap, logisticaMap) {
   const sellerId = String(row.sellerId || "");
