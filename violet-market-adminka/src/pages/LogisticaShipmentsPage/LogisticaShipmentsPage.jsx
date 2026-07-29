@@ -72,8 +72,8 @@ export default function LogisticaShipmentsPage() {
       <div className="logistica-shipments-page__header">
         <h1 className="logistica-shipments-page__title">Logistica</h1>
         <p className="logistica-shipments-page__subtitle">
-          Qabul qilingan cargo yuklari — davlat bo‘yicha filter, jarayon holati va
-          kerak bo‘lsa holatni o‘zgartirish (logistica ilovasi bilan sinxron).
+          Qabul qilingan cargo yuklari — logistica ilovasi bilan bir xil qoida:
+          jarayon → Clientga yuborish → To‘landi (Xorij→UZB).
         </p>
       </div>
 

@@ -88,13 +88,13 @@ function resolveForeignStepOccurredAt(status, item, orderedAt, shipment) {
     return resolveTrackingDate(history, status);
   }
 
-  // Process steplar tarixi shipment da saqlanmaydi — faqat joriy step uchun updatedAt
+  // Process steplar tarixi shipment da saqlanmaydi — joriy step uchun aniq maydonlar
   const processStep = String(shipment?.processStep || "")
     .trim()
     .toLowerCase();
   if (status === processStep) {
     return (
-      (status === "toshkent_omborida" ? shipment?.paidAt || null : null) ||
+      (status === "toshkent_omborida" ? shipment?.uzArrivedAt || null : null) ||
       shipment?.updatedAt ||
       shipment?.acceptedAt ||
       null

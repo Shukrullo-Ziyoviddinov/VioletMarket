@@ -24,8 +24,8 @@
 }
 
 .sales-statistics-charts-period-filter__button--active {
-  border-color: #56337d;
-  background: #56337d;
+  border-color: var(--admin-color-primary);
+  background: var(--admin-color-primary);
   color: #ffffff;
 }
 
@@ -76,6 +76,6 @@
 
 .sales-statistics-charts-period-filter__dropdown-item--selected {
   background: #f3ebfd;
-  color: #56337d;
+  color: var(--admin-color-primary);
   font-weight: 600;
 }

@@ -92,17 +92,17 @@
 }
 
 .mini-global-modal__btn--ghost:hover:not(:disabled) {
-  border-color: #7b49c8;
-  color: #7b49c8;
+  border-color: var(--admin-color-primary);
+  color: var(--admin-color-primary);
 }
 
 .mini-global-modal__btn--danger {
-  border: 1px solid #dc2626;
-  background: #dc2626;
+  border: 1px solid var(--admin-color-danger);
+  background: var(--admin-color-danger);
   color: #ffffff;
 }
 
 .mini-global-modal__btn--danger:hover:not(:disabled) {
-  background: #b91c1c;
-  border-color: #b91c1c;
+  background: var(--admin-color-danger-hover);
+  border-color: var(--admin-color-danger-hover);
 }

@@ -22,8 +22,8 @@
 }
 
 .sales-category-statistics-period-filter__btn--active {
-  border-color: #56337d;
-  background: #56337d;
+  border-color: var(--admin-color-primary);
+  background: var(--admin-color-primary);
   color: #ffffff;
 }
 

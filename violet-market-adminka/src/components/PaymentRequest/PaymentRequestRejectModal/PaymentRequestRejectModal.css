@@ -39,7 +39,7 @@
   padding: 0 18px;
   border: none;
   border-radius: 10px;
-  background: #dc2626;
+  background: var(--admin-color-danger);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
@@ -47,7 +47,7 @@
 }
 
 .payment-request-reject-modal__submit:hover:not(:disabled) {
-  background: #b91c1c;
+  background: var(--admin-color-danger-hover);
 }
 
 .payment-request-reject-modal__submit:disabled {

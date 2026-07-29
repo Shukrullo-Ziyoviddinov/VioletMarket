@@ -20,9 +20,9 @@
 }
 
 .customer-refund-status-filter__btn--active {
-  border-color: #7b49c8;
-  background: #f7f2fd;
-  color: #6d32c5;
+  border-color: var(--admin-color-primary);
+  background: var(--admin-color-primary-soft);
+  color: var(--admin-color-primary);
 }
 
 .customer-refund-status-filter__count {
@@ -30,13 +30,13 @@
   padding: 2px 7px;
   border-radius: 999px;
   background: #efe7fb;
-  color: #6d32c5;
+  color: var(--admin-color-primary);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
 }
 
 .customer-refund-status-filter__btn--active .customer-refund-status-filter__count {
-  background: #6d32c5;
+  background: var(--admin-color-primary);
   color: #fff;
 }

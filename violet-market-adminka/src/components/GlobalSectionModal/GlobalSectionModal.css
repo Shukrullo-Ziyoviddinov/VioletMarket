@@ -55,7 +55,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 18px;
-  background: #faf8fd;
+  background: var(--admin-color-primary-soft);
 }
 
 .global-section-modal__form-stack {
@@ -139,7 +139,7 @@
 }
 
 .global-section-modal__category-trigger--active {
-  border-color: #9b4fe7;
+  border-color: var(--admin-color-primary);
   box-shadow: 0 0 0 3px rgba(155, 79, 231, 0.15);
 }
 
@@ -220,7 +220,7 @@
 .global-section-modal__select:focus,
 .global-section-modal__textarea:focus {
   outline: none;
-  border-color: #9b4fe7;
+  border-color: var(--admin-color-primary);
   box-shadow: 0 0 0 3px rgba(155, 79, 231, 0.15);
 }
 
@@ -238,7 +238,7 @@
   gap: 6px;
   border: none;
   border-radius: 8px;
-  background: #9b4fe7;
+  background: var(--admin-color-primary);
   color: #fff;
   padding: 8px 10px;
   font-size: 13px;
@@ -270,7 +270,7 @@
 }
 
 .global-section-modal__ghost-btn--active {
-  border-color: #9b4fe7;
+  border-color: var(--admin-color-primary);
   background: #f3ebfd;
   color: #40235f;
 }
@@ -339,7 +339,7 @@
   font-size: 12px;
   line-height: 1.45;
   color: #2d1f46;
-  background: #f7f2fd;
+  background: var(--admin-color-primary-soft);
   border: 1px solid #e7dcf8;
   border-radius: 8px;
   padding: 8px 10px;
@@ -421,7 +421,7 @@
 .global-section-modal__link-btn {
   border: none;
   background: transparent;
-  color: #9b4fe7;
+  color: var(--admin-color-primary);
   cursor: pointer;
   font-size: 13px;
   padding: 0;

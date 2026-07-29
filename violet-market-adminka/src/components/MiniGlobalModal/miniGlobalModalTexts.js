@@ -39,6 +39,15 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  cargoMarkPaid: {
+    title: "To‘landi",
+    getMessage: (itemName) =>
+      itemName
+        ? `"${itemName}" uchun to‘lovni belgilaysizmi? Keyin Xorij→UZB ro‘yxatiga chiqadi.`
+        : 'To‘lovni belgilaysizmi? Keyin Xorij→UZB ro‘yxatiga chiqadi.',
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
 };
 
 export function resolveMiniGlobalModalPermission(permissionKey, itemName = '') {

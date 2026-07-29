@@ -10,5 +10,13 @@ router.patch(
   "/admin/cargo-shipments/:shipmentId/process-step",
   controller.updateProcessStep,
 );
+router.post(
+  "/admin/cargo-shipments/:shipmentId/uz-arrival",
+  controller.arriveUzWarehouse,
+);
+router.post(
+  "/admin/cargo-shipments/:shipmentId/mark-paid",
+  controller.markPaid,
+);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 /**
- * Asosiy admin — cargo / logistica jarayon monitoring.
- * Logistica app bilan bir xil CargoShipment processStep (chalkashmaydi).
+ * Asosiy admin — cargo / logistica jarayon monitoring + amallar.
+ * Amallar bitta qoida: cargoShipmentProcessActions (logistica app bilan bir xil).
  */
 
 const mongoose = require("mongoose");
@@ -15,9 +15,14 @@ const {
 const {
   normalizeCargoCountry,
 } = require("../../utils/cargoCountryNormalize");
+const {
+  YUKLARIM_PROCESS_STEPS,
+  applyYuklarimProcessStep,
+  applyUzWarehouseArrival,
+  applyMarkShipmentPaid,
+} = require("../cargoShipments/cargoShipmentProcessActions");
 
 const DEFAULT_PAGE_SIZE = 100;
-const PROCESS_STEP_SET = new Set(LOGISTICA_PROCESS_STEPS);
 
 const COUNTRY_LABELS = {
   china: "China",
@@ -60,6 +65,11 @@ function resolveProductTitle(title) {
   return String(title || "").trim() || "Mahsulot";
 }
 
+function formatProductCode(productId) {
+  const id = Number(productId) || 0;
+  return id > 0 ? `#${String(id).padStart(4, "0")}` : "—";
+}
+
 function toAdminShipmentCard(row, sellerMap, logisticaMap) {
   const sellerId = String(row.sellerId || "");
   const seller = sellerMap.get(sellerId);
@@ -67,6 +77,7 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
   const logistica = logisticaId ? logisticaMap.get(logisticaId) : null;
   const firstProduct = Array.isArray(row.products) ? row.products[0] : null;
   const country = normalizeCargoCountry(row.sellerCountry) || String(row.sellerCountry || "");
+  const productId = Number(firstProduct?.productId) || 0;
 
   return {
     id: String(row._id),
@@ -78,13 +89,17 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
     sellerCountry: country,
     sellerCountryLabel: countryLabel(country),
     productTitle: resolveProductTitle(firstProduct?.title || row.storeName),
-    productId: Number(firstProduct?.productId) || 0,
+    productId,
+    productCode: formatProductCode(productId),
     productCount: Math.max(0, Number(row.productCount) || 0),
     weightKg: Math.max(0, Number(row.weightKg) || 0),
+    cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     status: String(row.status || ""),
     processStep: row.processStep || null,
     processStepLabel: processStepLabel(row.processStep),
     paidAt: row.paidAt || null,
+    uzArrivedAt: row.uzArrivedAt || null,
+    uzArrivalComment: String(row.uzArrivalComment || ""),
     acceptedAt: row.acceptedAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
     logisticaId: logisticaId || null,
@@ -107,7 +122,7 @@ function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
       key,
       label: processStepLabel(key),
       done: stepIndex >= 0 && index <= stepIndex,
-      at: null,
+      at: key === "toshkent_omborida" ? row.uzArrivedAt || null : null,
     })),
     {
       key: "paid",
@@ -134,10 +149,15 @@ function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
       weightKg: Math.max(0, Number(p.weightKg) || 0),
     })),
     timeline,
-    processSteps: LOGISTICA_PROCESS_STEPS.map((key) => ({
+    processSteps: YUKLARIM_PROCESS_STEPS.map((key) => ({
       key,
       label: processStepLabel(key),
     })),
+    toshkentStep: {
+      key: "toshkent_omborida",
+      label: processStepLabel("toshkent_omborida"),
+      done: String(row.processStep || "") === "toshkent_omborida" && Boolean(row.uzArrivedAt),
+    },
   };
 }
 
@@ -182,12 +202,30 @@ async function loadLogisticaMap(logisticaIds = []) {
   );
 }
 
-/**
- * Filter uchun: qabul qilingan yuklar bor davlatlar (avtomatik).
- */
+async function loadShipmentDoc(shipmentIdRaw) {
+  const shipmentId = String(shipmentIdRaw || "").trim();
+  if (!mongoose.isValidObjectId(shipmentId)) {
+    throw new HttpError(400, "So‘rov ID noto‘g‘ri", "INVALID_SHIPMENT_ID");
+  }
+  const shipment = await CargoShipment.findById(shipmentId);
+  if (!shipment) {
+    throw new HttpError(404, "Yuk so‘rovi topilmadi", "SHIPMENT_NOT_FOUND");
+  }
+  return shipment;
+}
+
+async function toAdminDetailResponse(shipment) {
+  const row = typeof shipment.toObject === "function" ? shipment.toObject() : shipment;
+  const sellerMap = await loadSellerMap([row.sellerId]);
+  const logisticaMap = await loadLogisticaMap([row.logisticaId]);
+  return {
+    shipment: toAdminShipmentDetail(row, sellerMap, logisticaMap),
+  };
+}
+
 async function listAdminCargoShipmentCountries() {
   const rows = await CargoShipment.aggregate([
-    { $match: { status: "accepted" } },
+    { $match: { status: "accepted", paidAt: null } },
     {
       $group: {
         _id: { $toLower: "$sellerCountry" },
@@ -213,7 +251,7 @@ async function listAdminCargoShipmentCountries() {
 }
 
 /**
- * Qabul qilingan cargo so‘rovlari (jarayon monitoring).
+ * Qabul qilingan, hali To‘lanmagan (Xorij→UZB ga o‘tmagan).
  */
 async function listAdminCargoShipments(query = {}) {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
@@ -223,7 +261,7 @@ async function listAdminCargoShipments(query = {}) {
     .toLowerCase();
   const country = countryRaw ? normalizeCargoCountry(countryRaw) || countryRaw : "";
 
-  const filter = { status: "accepted" };
+  const filter = { status: "accepted", paidAt: null };
   if (country) {
     const aliases = [country];
     if (country === "turkiya") aliases.push("turkey");
@@ -255,59 +293,28 @@ async function listAdminCargoShipments(query = {}) {
 }
 
 async function getAdminCargoShipmentDetail(shipmentIdRaw) {
-  const shipmentId = String(shipmentIdRaw || "").trim();
-  if (!mongoose.isValidObjectId(shipmentId)) {
-    throw new HttpError(400, "So‘rov ID noto‘g‘ri", "INVALID_SHIPMENT_ID");
-  }
-
-  const row = await CargoShipment.findById(shipmentId).lean();
-  if (!row) {
-    throw new HttpError(404, "Yuk so‘rovi topilmadi", "SHIPMENT_NOT_FOUND");
-  }
-
-  const sellerMap = await loadSellerMap([row.sellerId]);
-  const logisticaMap = await loadLogisticaMap([row.logisticaId]);
-  return {
-    shipment: toAdminShipmentDetail(row, sellerMap, logisticaMap),
-  };
+  const shipment = await loadShipmentDoc(shipmentIdRaw);
+  return toAdminDetailResponse(shipment);
 }
 
-/**
- * Admin jarayon holatini o‘zgartiradi — logistica app bilan bir xil maydon.
- */
 async function updateAdminCargoShipmentProcessStep(shipmentIdRaw, processStepRaw) {
-  const shipmentId = String(shipmentIdRaw || "").trim();
-  if (!mongoose.isValidObjectId(shipmentId)) {
-    throw new HttpError(400, "So‘rov ID noto‘g‘ri", "INVALID_SHIPMENT_ID");
-  }
+  const shipment = await loadShipmentDoc(shipmentIdRaw);
+  await applyYuklarimProcessStep(shipment, processStepRaw);
+  return toAdminDetailResponse(shipment);
+}
 
-  const processStep = String(processStepRaw || "")
-    .trim()
-    .toLowerCase();
-  if (!PROCESS_STEP_SET.has(processStep)) {
-    throw new HttpError(400, "Jarayon holati noto‘g‘ri", "INVALID_PROCESS_STEP");
-  }
+async function arriveAdminCargoShipmentUzWarehouse(shipmentIdRaw, payload = {}) {
+  const shipment = await loadShipmentDoc(shipmentIdRaw);
+  const result = await applyUzWarehouseArrival(shipment, payload);
+  const data = await toAdminDetailResponse(shipment);
+  return { ...data, alreadyArrived: Boolean(result.alreadyArrived) };
+}
 
-  const shipment = await CargoShipment.findById(shipmentId);
-  if (!shipment) {
-    throw new HttpError(404, "Yuk so‘rovi topilmadi", "SHIPMENT_NOT_FOUND");
-  }
-  if (String(shipment.status || "") !== "accepted") {
-    throw new HttpError(
-      409,
-      "Faqat qabul qilingan so‘rov holatini o‘zgartirish mumkin",
-      "SHIPMENT_STATUS_CONFLICT",
-    );
-  }
-
-  shipment.processStep = processStep;
-  await shipment.save();
-
-  const sellerMap = await loadSellerMap([shipment.sellerId]);
-  const logisticaMap = await loadLogisticaMap([shipment.logisticaId]);
-  return {
-    shipment: toAdminShipmentDetail(shipment.toObject(), sellerMap, logisticaMap),
-  };
+async function markAdminCargoShipmentPaid(shipmentIdRaw) {
+  const shipment = await loadShipmentDoc(shipmentIdRaw);
+  const result = await applyMarkShipmentPaid(shipment);
+  const data = await toAdminDetailResponse(shipment);
+  return { ...data, alreadyPaid: Boolean(result.alreadyPaid) };
 }
 
 module.exports = {
@@ -315,5 +322,8 @@ module.exports = {
   listAdminCargoShipments,
   getAdminCargoShipmentDetail,
   updateAdminCargoShipmentProcessStep,
+  arriveAdminCargoShipmentUzWarehouse,
+  markAdminCargoShipmentPaid,
   LOGISTICA_PROCESS_STEPS,
+  YUKLARIM_PROCESS_STEPS,
 };

@@ -105,7 +105,7 @@
 .seller-order-no-answer-card__button--secondary {
   border: 1px solid #d8cceb;
   background: #faf7ff;
-  color: #56337d;
+  color: var(--admin-color-primary);
 }
 
 .seller-order-no-answer-card__button--secondary:hover {
@@ -114,8 +114,8 @@
 }
 
 .seller-order-no-answer-card__button--primary {
-  border: 1px solid #56337d;
-  background: #56337d;
+  border: 1px solid var(--admin-color-primary);
+  background: var(--admin-color-primary);
   color: #ffffff;
 }
 
@@ -125,14 +125,14 @@
 }
 
 .seller-order-no-answer-card__button--success {
-  border: 1px solid #16a34a;
-  background: #16a34a;
+  border: 1px solid var(--admin-color-success);
+  background: var(--admin-color-success);
   color: #ffffff;
 }
 
 .seller-order-no-answer-card__button--success:hover {
-  background: #15803d;
-  border-color: #15803d;
+  background: var(--admin-color-success-hover);
+  border-color: var(--admin-color-success-hover);
 }
 
 @media (max-width: 900px) {

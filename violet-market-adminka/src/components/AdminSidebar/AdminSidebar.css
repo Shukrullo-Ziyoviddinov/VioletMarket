@@ -41,7 +41,7 @@
   border-inline-end: none !important;
   height: auto;
   min-height: min-content;
-  --ant-menu-dark-item-selected-bg: #9b4fe7;
+  --ant-menu-dark-item-selected-bg: var(--admin-color-primary);
   --ant-menu-dark-item-selected-color: #fff;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .admin-sidebar__menu .ant-menu-item-selected {
-  background: #9b4fe7 !important;
+  background: var(--admin-color-primary) !important;
 }
 
 .admin-sidebar__menu .ant-menu-item-selected .ant-menu-item-icon,

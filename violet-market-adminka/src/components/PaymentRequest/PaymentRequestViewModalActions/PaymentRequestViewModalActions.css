@@ -28,21 +28,21 @@
 }
 
 .payment-request-view-modal-actions__btn--approve {
-  background: #16a34a;
+  background: var(--admin-color-success);
   color: #fff;
 }
 
 .payment-request-view-modal-actions__btn--approve:hover:not(:disabled) {
-  background: #15803d;
+  background: var(--admin-color-success-hover);
 }
 
 .payment-request-view-modal-actions__btn--reject {
-  background: #dc2626;
+  background: var(--admin-color-danger);
   color: #fff;
 }
 
 .payment-request-view-modal-actions__btn--reject:hover:not(:disabled) {
-  background: #b91c1c;
+  background: var(--admin-color-danger-hover);
 }
 
 .payment-request-view-modal-actions__btn--close {

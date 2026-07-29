@@ -67,7 +67,7 @@
 
 .customer-refund-card__badge--return {
   background: #fef2f2;
-  color: #dc2626;
+  color: var(--admin-color-danger);
   border: 1px solid #fecaca;
 }
 
@@ -143,7 +143,7 @@
 }
 
 .customer-refund-card__amount {
-  color: #6d32c5;
+  color: var(--admin-color-primary);
   font-size: 15px;
 }
 
@@ -163,7 +163,7 @@
   padding: 0 16px;
   border: 0;
   border-radius: 12px;
-  background: #6d32c5;
+  background: var(--admin-color-primary);
   color: #fff;
   font-size: 13px;
   font-weight: 700;

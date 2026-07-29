@@ -124,7 +124,7 @@ async function loadShipmentsByKeys(pairs) {
       itemIndex: 1,
       sellerId: 1,
       processStep: 1,
-      paidAt: 1,
+      uzArrivedAt: 1,
       submittedAt: 1,
       acceptedAt: 1,
       updatedAt: 1,

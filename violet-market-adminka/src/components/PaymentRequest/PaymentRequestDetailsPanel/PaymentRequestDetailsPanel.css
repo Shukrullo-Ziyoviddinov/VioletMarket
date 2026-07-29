@@ -249,21 +249,21 @@
 }
 
 .payment-request-details-panel__btn--approve {
-  background: #16a34a;
+  background: var(--admin-color-success);
   color: #fff;
 }
 
 .payment-request-details-panel__btn--approve:hover:not(:disabled) {
-  background: #15803d;
+  background: var(--admin-color-success-hover);
 }
 
 .payment-request-details-panel__btn--reject {
-  background: #dc2626;
+  background: var(--admin-color-danger);
   color: #fff;
 }
 
 .payment-request-details-panel__btn--reject:hover:not(:disabled) {
-  background: #b91c1c;
+  background: var(--admin-color-danger-hover);
 }
 
 @media (max-width: 1100px) {

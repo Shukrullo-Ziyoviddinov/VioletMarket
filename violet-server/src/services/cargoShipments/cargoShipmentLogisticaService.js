@@ -6,12 +6,8 @@
 const mongoose = require("mongoose");
 const { CargoShipment, toPublicCargoShipment } = require("../../models/cargoShipment");
 const { LogisticaProfile } = require("../../models/logisticaProfile");
-const { Order } = require("../../models/order");
 const { HttpError } = require("../../utils/httpError");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
-const {
-  normalizeOrderTrackingStatus,
-} = require("../../productManagement/orderTracking");
 const {
   cargoCountriesMatch,
   cargoCountryMatchValues,
@@ -21,19 +17,15 @@ const {
   createCargoReturnRequestForLogistica,
 } = require("./cargoReturnRequestService");
 const {
-  recordHandedOverHistory,
-} = require("./cargoLogisticaHistoryService");
-const {
-  parseOptionalArrivalPhoto,
-} = require("./cargoUzArrivalPhotoStorage");
+  YUKLARIM_PROCESS_STEPS,
+  UZB_WAREHOUSE_LIST_STEPS,
+  applyAcceptShipment,
+  applyYuklarimProcessStep,
+  applyUzWarehouseArrival,
+  applyMarkShipmentPaid,
+} = require("./cargoShipmentProcessActions");
 
 const DEFAULT_PAGE_SIZE = 20;
-/** Yuklarim jarayon tugmalari — Toshkent UZB ish stolida */
-const YUKLARIM_PROCESS_STEPS = ["xitoy_omborida", "yolda", "bojxonada"];
-const YUKLARIM_PROCESS_STEP_SET = new Set(YUKLARIM_PROCESS_STEPS);
-/** UZBda sahifasi: bojxonada (kutish) + toshkent (To‘landi kutish) */
-const UZB_WAREHOUSE_LIST_STEPS = ["bojxonada", "toshkent_omborida"];
-const UZB_WAREHOUSE_LIST_STEP_SET = new Set(UZB_WAREHOUSE_LIST_STEPS);
 
 function assertActiveLogistica(profile) {
   if (!profile) {
@@ -179,76 +171,6 @@ async function loadShipmentForLogistica(logisticaId, shipmentIdRaw) {
   return { profile, shipment };
 }
 
-/**
- * Order item: ready_for_cargo → handed_to_cargo (logistica qabul).
- */
-async function markOrderItemHandedToCargo(orderId, itemIndex, sellerId, at) {
-  const order = await Order.findOne({ id: Number(orderId) });
-  if (!order) {
-    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
-  }
-  const item = order.items?.[itemIndex];
-  if (!item || String(item.sellerId || "").trim() !== String(sellerId).trim()) {
-    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
-  }
-
-  const status = normalizeOrderTrackingStatus(item.trackingStatus);
-  if (status === "handed_to_cargo") {
-    return { order, item, already: true };
-  }
-  if (status !== "ready_for_cargo") {
-    throw new HttpError(
-      409,
-      "Buyurtma cargoga yuborilmagan",
-      "ORDER_TRACKING_STATUS_CONFLICT",
-    );
-  }
-
-  item.trackingStatus = "handed_to_cargo";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "handed_to_cargo", at });
-  order.markModified("items");
-  await order.save();
-  return { order, item, already: false };
-}
-
-/**
- * Sotuvchiga qaytarish: ready_for_cargo | handed_to_cargo → collected.
- */
-async function revertOrderItemToCollected(orderId, itemIndex, sellerId, at) {
-  const order = await Order.findOne({ id: Number(orderId) });
-  if (!order) {
-    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
-  }
-  const item = order.items?.[itemIndex];
-  if (!item || String(item.sellerId || "").trim() !== String(sellerId).trim()) {
-    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
-  }
-
-  const status = normalizeOrderTrackingStatus(item.trackingStatus);
-  if (status === "collected") {
-    return { order, item, already: true };
-  }
-  if (status !== "ready_for_cargo" && status !== "handed_to_cargo") {
-    throw new HttpError(
-      409,
-      "Bu holatda sotuvchiga qaytarib bo‘lmaydi",
-      "ORDER_TRACKING_STATUS_CONFLICT",
-    );
-  }
-
-  item.trackingStatus = "collected";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({
-    status: "collected",
-    at,
-    note: "cargo_returned_to_seller",
-  });
-  order.markModified("items");
-  await order.save();
-  return { order, item, already: false };
-}
-
 async function listPendingShipmentsForLogistica(logisticaId, query = {}) {
   const profile = await loadActiveLogistica(logisticaId);
   const countryValues = cargoCountryMatchValues(profile.logisticaCountry);
@@ -316,42 +238,10 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
  */
 async function acceptShipmentForLogistica(logisticaId, shipmentIdRaw) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
-  const status = String(shipment.status || "");
-
-  if (status === "accepted" && String(shipment.logisticaId) === String(logisticaId)) {
-    return {
-      shipment: toLogisticaShipmentDetail(shipment.toObject()),
-      alreadyAccepted: true,
-    };
-  }
-
-  if (status !== "pending") {
-    throw new HttpError(
-      409,
-      "Faqat kutilayotgan so‘rovni qabul qilish mumkin",
-      "SHIPMENT_STATUS_CONFLICT",
-    );
-  }
-
-  const acceptedAt = new Date();
-  await markOrderItemHandedToCargo(
-    shipment.orderId,
-    shipment.itemIndex,
-    shipment.sellerId,
-    acceptedAt,
-  );
-
-  shipment.status = "accepted";
-  shipment.logisticaId = logisticaId;
-  shipment.acceptedAt = acceptedAt;
-  shipment.processStep = null;
-  shipment.sellerCountry =
-    normalizeCargoCountry(shipment.sellerCountry) || shipment.sellerCountry;
-  await shipment.save();
-
+  const result = await applyAcceptShipment(shipment, logisticaId);
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
-    alreadyAccepted: false,
+    alreadyAccepted: Boolean(result.alreadyAccepted),
   };
 }
 
@@ -365,47 +255,14 @@ async function updateShipmentProcessStepForLogistica(
   processStepRaw,
 ) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
-  const status = String(shipment.status || "");
-
-  if (status !== "accepted" || String(shipment.logisticaId) !== String(logisticaId)) {
+  if (String(shipment.logisticaId) !== String(logisticaId)) {
     throw new HttpError(
       409,
       "Avval so‘rovni qabul qiling",
       "SHIPMENT_NOT_ACCEPTED",
     );
   }
-
-  if (shipment.paidAt) {
-    throw new HttpError(409, "To‘langan yuk holatini o‘zgartirib bo‘lmaydi", "SHIPMENT_ALREADY_PAID");
-  }
-
-  const processStep = String(processStepRaw || "")
-    .trim()
-    .toLowerCase();
-
-  if (processStep === "toshkent_omborida") {
-    throw new HttpError(
-      409,
-      "Toshkent omboriga «Clientga yuborish» orqali o‘ting",
-      "USE_UZ_ARRIVAL",
-    );
-  }
-
-  if (!YUKLARIM_PROCESS_STEP_SET.has(processStep)) {
-    throw new HttpError(400, "Jarayon holati noto‘g‘ri", "INVALID_PROCESS_STEP");
-  }
-
-  if (UZB_WAREHOUSE_LIST_STEP_SET.has(String(shipment.processStep || ""))) {
-    throw new HttpError(
-      409,
-      "Bu yuk allaqachon UZBda — Yuklarim holatini o‘zgartirib bo‘lmaydi",
-      "ALREADY_IN_UZ_WAREHOUSE_FLOW",
-    );
-  }
-
-  shipment.processStep = processStep;
-  await shipment.save();
-
+  await applyYuklarimProcessStep(shipment, processStepRaw);
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
   };
@@ -422,62 +279,13 @@ async function arriveShipmentAtUzWarehouseForLogistica(
   payload = {},
 ) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
-  const status = String(shipment.status || "");
-
-  if (status !== "accepted" || String(shipment.logisticaId) !== String(logisticaId)) {
+  if (String(shipment.logisticaId) !== String(logisticaId)) {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
-
-  if (shipment.paidAt) {
-    throw new HttpError(409, "To‘langan yukni qayta yuborib bo‘lmaydi", "SHIPMENT_ALREADY_PAID");
-  }
-
-  if (
-    String(shipment.processStep || "") === "toshkent_omborida" &&
-    shipment.uzArrivedAt
-  ) {
-    return {
-      shipment: toLogisticaShipmentDetail(shipment.toObject()),
-      alreadyArrived: true,
-    };
-  }
-
-  if (String(shipment.processStep || "") !== "bojxonada") {
-    throw new HttpError(
-      409,
-      "Avval «Bojxonada» holatini belgilang",
-      "NOT_IN_CUSTOMS",
-    );
-  }
-
-  const weightKg = Number(payload.weightKg);
-  if (!Number.isFinite(weightKg) || weightKg <= 0) {
-    throw new HttpError(400, "Og‘irlikni to‘g‘ri kiriting", "INVALID_WEIGHT");
-  }
-
-  const cargoDeliveryFee = Number(payload.cargoDeliveryFee);
-  if (!Number.isFinite(cargoDeliveryFee) || cargoDeliveryFee < 0) {
-    throw new HttpError(400, "Og‘irlik summasini to‘g‘ri kiriting", "INVALID_FEE");
-  }
-
-  const comment = String(payload.comment || payload.uzArrivalComment || "").trim();
-  const photoUrl = parseOptionalArrivalPhoto(payload.photoBase64 || payload.imageBase64);
-
-  const arrivedAt = new Date();
-  shipment.weightKg = Math.round(weightKg * 1000) / 1000;
-  shipment.weightLabel = "Og'irlik";
-  shipment.cargoDeliveryFee = Math.round(cargoDeliveryFee);
-  shipment.uzArrivalComment = comment;
-  if (photoUrl) {
-    shipment.uzArrivalPhotoUrl = photoUrl;
-  }
-  shipment.uzArrivedAt = arrivedAt;
-  shipment.processStep = "toshkent_omborida";
-  await shipment.save();
-
+  const result = await applyUzWarehouseArrival(shipment, payload);
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
-    alreadyArrived: false,
+    alreadyArrived: Boolean(result.alreadyArrived),
   };
 }
 
@@ -581,35 +389,13 @@ async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
  */
 async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
-  const status = String(shipment.status || "");
-
-  if (status !== "accepted" || String(shipment.logisticaId) !== String(logisticaId)) {
+  if (String(shipment.logisticaId) !== String(logisticaId)) {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
-
-  if (String(shipment.processStep || "") !== "toshkent_omborida") {
-    throw new HttpError(
-      409,
-      "Avval «Clientga yuborish» orqali Toshkent omboriga o‘ting",
-      "NOT_IN_UZ_WAREHOUSE",
-    );
-  }
-
-  if (shipment.paidAt) {
-    await recordHandedOverHistory(shipment, shipment.paidAt);
-    return {
-      shipment: toLogisticaShipmentDetail(shipment.toObject()),
-      alreadyPaid: true,
-    };
-  }
-
-  shipment.paidAt = new Date();
-  await shipment.save();
-  await recordHandedOverHistory(shipment, shipment.paidAt);
-
+  const result = await applyMarkShipmentPaid(shipment);
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
-    alreadyPaid: false,
+    alreadyPaid: Boolean(result.alreadyPaid),
   };
 }
 

@@ -31,8 +31,8 @@
 }
 
 .logistica-shipments-filter__button--active {
-  background: #6d28d9;
-  border-color: #6d28d9;
+  background: var(--admin-color-primary);
+  border-color: var(--admin-color-primary);
   color: #fff;
 }
 

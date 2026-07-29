@@ -31,8 +31,8 @@
 }
 
 .customer-refund-period-filter__button--active {
-  border-color: #7b49c8;
-  background: #f7f2fd;
+  border-color: var(--admin-color-primary);
+  background: var(--admin-color-primary-soft);
 }
 
 .customer-refund-period-filter__button-title {

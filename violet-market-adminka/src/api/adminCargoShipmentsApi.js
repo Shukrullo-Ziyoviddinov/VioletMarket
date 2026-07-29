@@ -26,10 +26,13 @@ function normalizeShipment(row = {}) {
     productId: Number(row.productId) || 0,
     productCount: Number(row.productCount) || 0,
     weightKg: Number(row.weightKg) || 0,
+    cargoDeliveryFee: Number(row.cargoDeliveryFee) || 0,
     status: String(row.status || ''),
     processStep: row.processStep || null,
     processStepLabel: String(row.processStepLabel || ''),
     paidAt: row.paidAt || null,
+    uzArrivedAt: row.uzArrivedAt || null,
+    uzArrivalComment: String(row.uzArrivalComment || ''),
     acceptedAt: row.acceptedAt || null,
     submittedAt: row.submittedAt || null,
     logisticaId: row.logisticaId || null,
@@ -41,6 +44,20 @@ function normalizeShipment(row = {}) {
     products: Array.isArray(row.products) ? row.products : [],
     timeline: Array.isArray(row.timeline) ? row.timeline : [],
     processSteps: Array.isArray(row.processSteps) ? row.processSteps : [],
+    toshkentStep: row.toshkentStep || {
+      key: 'toshkent_omborida',
+      label: 'Toshkent omborida',
+      done: false,
+    },
+  };
+}
+
+function unwrapDetail(payload) {
+  const data = payload?.data || {};
+  return {
+    shipment: normalizeShipment(data.shipment || {}),
+    alreadyArrived: Boolean(data.alreadyArrived),
+    alreadyPaid: Boolean(data.alreadyPaid),
   };
 }
 
@@ -106,4 +123,38 @@ export async function updateAdminCargoShipmentProcessStep(
   );
   const payload = await parseJson(res);
   return normalizeShipment(payload?.data?.shipment || {});
+}
+
+export async function arriveAdminCargoShipmentUzWarehouse(
+  shipmentId,
+  payload = {},
+) {
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/cargo-shipments/${encodeURIComponent(shipmentId)}/uz-arrival`,
+    ),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        weightKg: payload.weightKg,
+        cargoDeliveryFee: payload.cargoDeliveryFee,
+        comment: payload.comment || '',
+        photoBase64: payload.photoBase64 || null,
+      }),
+    },
+  );
+  const body = await parseJson(res);
+  return unwrapDetail(body);
+}
+
+export async function markAdminCargoShipmentPaid(shipmentId) {
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/cargo-shipments/${encodeURIComponent(shipmentId)}/mark-paid`,
+    ),
+    { method: 'POST' },
+  );
+  const body = await parseJson(res);
+  return unwrapDetail(body);
 }

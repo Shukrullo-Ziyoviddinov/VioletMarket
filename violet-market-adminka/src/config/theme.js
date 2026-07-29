@@ -19,7 +19,7 @@ export const violetTheme = {
     Menu: {
       darkItemBg: '#1a1225',
       darkSubMenuItemBg: '#140e1c',
-      darkItemSelectedBg: '#9b4fe7',
+      darkItemSelectedBg: '#764ba2',
     },
   },
 };

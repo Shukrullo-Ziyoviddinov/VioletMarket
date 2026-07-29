@@ -96,7 +96,7 @@
 }
 
 .return-request-card__btn--approve {
-  background: #6d32c5;
+  background: var(--admin-color-primary);
   color: #fff;
 }
 

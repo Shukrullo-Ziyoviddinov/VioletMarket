@@ -14,7 +14,7 @@
   border: 1px solid #fecaca;
   border-radius: 9px;
   background: #fef2f2;
-  color: #dc2626;
+  color: var(--admin-color-danger);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -35,7 +35,7 @@
   padding: 10px 20px;
   border: 0;
   border-radius: 9px;
-  background: #6f35bc;
+  background: var(--admin-color-primary);
   color: #fff;
   font-size: 14px;
   font-weight: 700;

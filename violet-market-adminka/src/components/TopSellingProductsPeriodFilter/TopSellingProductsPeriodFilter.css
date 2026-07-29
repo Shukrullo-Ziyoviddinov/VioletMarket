@@ -23,8 +23,8 @@
 }
 
 .top-selling-products-period-filter__button--active {
-  border-color: #56337d;
-  background: #56337d;
+  border-color: var(--admin-color-primary);
+  background: var(--admin-color-primary);
   color: #ffffff;
 }
 
@@ -81,6 +81,6 @@
 
 .top-selling-products-period-filter__dropdown-item--selected {
   background: #eef2ff;
-  color: #56337d;
+  color: var(--admin-color-primary);
   font-weight: 600;
 }
