@@ -439,6 +439,18 @@
   }
 }
 
+@media (max-width: 450px) {
+  .big-discount-section,
+  .new-collection,
+  .womens-collection,
+  .mens-collection,
+  .beauty-care-section,
+  .active-lifestyle-section {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+}
+
 @media (max-width: 400px) {
   .new-collection-product-item {
     width: 162px;
