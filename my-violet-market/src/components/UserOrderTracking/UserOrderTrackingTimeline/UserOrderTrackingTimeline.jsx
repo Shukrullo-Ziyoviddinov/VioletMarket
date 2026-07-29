@@ -12,7 +12,6 @@ const STEP_ICONS = {
   yolda: 'bx bx-trip',
   bojxonada: 'bx bx-file',
   toshkent_omborida: 'bx bx-home-alt',
-  topshirildi: 'bx bx-badge-check',
   handed_to_courier: 'bx bx-cycling',
   delivered: 'bx bx-check-circle',
 };
