@@ -24,6 +24,7 @@ export function mapApiUserToClient(user) {
     sellerAccountId: user.sellerAccountId ?? null,
     profileImage: user.profileImage || DEFAULT_AVATAR,
     hasUploadedImage: Boolean(user.hasUploadedImage),
+    savedDeliveryAddress: user.savedDeliveryAddress || null,
     isAuthenticated: true,
   };
 }
@@ -50,6 +51,8 @@ export function mergeApiUserWithClient(prev, apiUser) {
         ? mapped.profileImage
         : base.profileImage || mapped.profileImage,
     hasUploadedImage: mapped.hasUploadedImage || base.hasUploadedImage,
+    savedDeliveryAddress:
+      mapped.savedDeliveryAddress || base.savedDeliveryAddress || null,
     isAuthenticated: true,
   };
 }

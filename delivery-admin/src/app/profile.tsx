@@ -20,6 +20,7 @@ import { ProfileCameraCapture } from '@/components/auth/ProfileCameraCapture';
 import { GlobalBottomSheet } from '@/components/GlobalBottomSheet';
 import { MiniGlobalModal } from '@/components/MiniGlobalModal';
 import { BottomNavbar } from '@/components/navigation/BottomNavbar';
+import { RegionModal } from '@/components/profile/RegionModal';
 import {
   BrandLoader,
   usePageRefresh,
@@ -30,6 +31,7 @@ import {
   incomeForSelection,
   toDayKey,
 } from '@/components/income/income-period';
+import { resolveDeliveryRegionLabel } from '@/constants/deliveryRegions';
 import { resolveMediaUrl } from '@/config/env';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchDeliveredHistory } from '@/services/delivery-orders';
@@ -126,11 +128,14 @@ export default function ProfileScreen() {
     updateProfile,
     updateProfileImage,
     updateTransport,
+    updateRegion,
+    refreshProfile,
   } = useAuth();
   const [supportUnread, setSupportUnread] = useState(0);
   const [todayIncome, setTodayIncome] = useState(0);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [transportModalOpen, setTransportModalOpen] = useState(false);
+  const [regionModalOpen, setRegionModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -138,6 +143,7 @@ export default function ProfileScreen() {
   const [selectedTransport, setSelectedTransport] =
     useState<DeliveryTransport | null>(null);
   const [isSavingTransport, setIsSavingTransport] = useState(false);
+  const [isSavingRegion, setIsSavingRegion] = useState(false);
   const [transportError, setTransportError] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -156,15 +162,16 @@ export default function ProfileScreen() {
       let cancelled = false;
 
       Promise.all([
+        refreshProfile().catch(() => null),
         fetchSupportUnreadCount(token),
         fetchDeliveredHistory(token),
       ])
-        .then(([unreadData, historyData]) => {
+        .then(([, unreadData, historyData]) => {
           if (cancelled) return;
-          setSupportUnread(unreadData.unread || 0);
+          setSupportUnread(unreadData?.unread || 0);
           setTodayIncome(
             incomeForSelection(
-              historyData.orders || [],
+              historyData?.orders || [],
               'day',
               toDayKey(new Date()),
             ),
@@ -175,13 +182,14 @@ export default function ProfileScreen() {
       return () => {
         cancelled = true;
       };
-    }, [token]),
+    }, [token, refreshProfile]),
   );
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfilePage = useCallback(async () => {
     if (!token) return;
     try {
-      const [unreadData, historyData] = await Promise.all([
+      const [, unreadData, historyData] = await Promise.all([
+        refreshProfile(),
         fetchSupportUnreadCount(token),
         fetchDeliveredHistory(token),
       ]);
@@ -196,10 +204,10 @@ export default function ProfileScreen() {
     } catch {
       // ignore
     }
-  }, [token]);
+  }, [token, refreshProfile]);
 
   const { refreshing, onRefresh: onProfileRefresh } =
-    useRefreshState(refreshProfile);
+    useRefreshState(refreshProfilePage);
   usePageRefresh(onProfileRefresh);
 
   useEffect(() => {
@@ -267,6 +275,22 @@ export default function ProfileScreen() {
       );
     } finally {
       setIsSavingTransport(false);
+    }
+  }
+
+  async function saveRegion(region: string) {
+    if (isSavingRegion) return;
+    setIsSavingRegion(true);
+    try {
+      await updateRegion(region);
+    } catch (error) {
+      Alert.alert(
+        'Xato',
+        error instanceof Error ? error.message : 'Region saqlanmadi',
+      );
+      throw error;
+    } finally {
+      setIsSavingRegion(false);
     }
   }
 
@@ -405,6 +429,13 @@ export default function ProfileScreen() {
             label="Transport"
             detail={getTransportLabel(delivery.transport)}
             onPress={openTransportModal}
+          />
+          <View style={styles.divider} />
+          <MenuRow
+            icon="map-outline"
+            label="Region"
+            detail={resolveDeliveryRegionLabel(delivery.region)}
+            onPress={() => setRegionModalOpen(true)}
           />
           <View style={styles.divider} />
           <MenuRow
@@ -559,6 +590,14 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </GlobalBottomSheet>
+
+      <RegionModal
+        visible={regionModalOpen}
+        currentRegion={delivery.region}
+        saving={isSavingRegion}
+        onClose={() => setRegionModalOpen(false)}
+        onSave={saveRegion}
+      />
 
       <MiniGlobalModal
         visible={logoutModalOpen}

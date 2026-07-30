@@ -43,6 +43,7 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
     },
 
     deliveryAddress: {
+      region: { type: String, default: "", trim: true },
       city: { type: String, default: "" },
       district: { type: String, default: "" },
       addressLine: { type: String, default: "" },

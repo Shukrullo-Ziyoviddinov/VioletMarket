@@ -15,7 +15,7 @@ const {
   resolveVariantAvailability,
 } = require("../../productManagement/variantStockAdjust");
 const {
-  normalizeDeliveryAddress,
+  requireDeliveryRegionAddress,
 } = require("../../utils/normalizeDeliveryAddress");
 const {
   generateInitialUrgencyStock,
@@ -262,10 +262,10 @@ async function clearCartForUser(userId) {
 }
 
 async function saveDeliveryAddressForUser(userId, rawAddress) {
-  const normalized = normalizeDeliveryAddress(rawAddress);
-  if (!normalized) {
-    throw new HttpError(400, "Manzil bo‘sh", "INVALID_DELIVERY_ADDRESS");
-  }
+  const normalized = requireDeliveryRegionAddress(
+    rawAddress,
+    "Manzil bo‘sh yoki viloyati aniqlanmadi",
+  );
 
   const extra =
     rawAddress && typeof rawAddress === "object" && !Array.isArray(rawAddress)
@@ -274,11 +274,11 @@ async function saveDeliveryAddressForUser(userId, rawAddress) {
 
   const payload = {
     ...normalized,
-    placeType: String(extra.placeType || "").trim(),
-    entrance: String(extra.entrance || "").trim(),
-    floor: String(extra.floor || "").trim(),
-    domofon: String(extra.domofon || "").trim(),
-    courierNote: String(extra.courierNote || "").trim(),
+    placeType: String(extra.placeType || normalized.placeType || "").trim(),
+    entrance: String(extra.entrance || normalized.entrance || "").trim(),
+    floor: String(extra.floor || normalized.floor || "").trim(),
+    domofon: String(extra.domofon || normalized.domofon || "").trim(),
+    courierNote: String(extra.courierNote || normalized.courierNote || "").trim(),
     formatted: String(extra.formatted || normalized.addressLine || "").trim(),
   };
 
@@ -297,11 +297,26 @@ async function saveDeliveryAddressForUser(userId, rawAddress) {
 }
 
 async function resolveCheckoutDeliveryAddress(userId, rawAddress) {
-  const fromBody = normalizeDeliveryAddress(rawAddress);
+  const tryNormalize = (raw) => {
+    if (!raw) return null;
+    try {
+      return requireDeliveryRegionAddress(raw);
+    } catch (error) {
+      if (
+        error?.code === "DELIVERY_ADDRESS_REQUIRED" ||
+        error?.code === "DELIVERY_REGION_UNRESOLVED"
+      ) {
+        return null;
+      }
+      throw error;
+    }
+  };
+
+  const fromBody = tryNormalize(rawAddress);
   if (fromBody) return fromBody;
 
   const user = await User.findById(userId).select("savedDeliveryAddress").lean();
-  return normalizeDeliveryAddress(user?.savedDeliveryAddress) || null;
+  return tryNormalize(user?.savedDeliveryAddress);
 }
 
 async function checkoutCartForUser(userId, options = {}) {

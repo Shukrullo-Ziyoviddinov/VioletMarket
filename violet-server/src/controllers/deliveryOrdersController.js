@@ -18,7 +18,10 @@ const {
 const courierReturnRequestController = require("./courierReturnRequestController");
 
 const listAvailableOrders = asyncHandler(async (req, res) => {
-  const data = await listAvailableDeliveryOrders(req.query || {});
+  const data = await listAvailableDeliveryOrders(
+    req.deliveryId,
+    req.query || {},
+  );
   res.json({ ok: true, data });
 });
 

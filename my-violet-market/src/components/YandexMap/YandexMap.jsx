@@ -46,6 +46,7 @@ const YandexMap = ({
   className = '',
   height = '400px',
   isVisible = true,
+  skipAutoGeolocation = false,
 }) => {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -122,7 +123,16 @@ const YandexMap = ({
 
   // Modal ochilganda — geolocation avtomatik aniqlash
   useEffect(() => {
-    if (!isVisible || !mapReady || !mapRef.current || !window.ymaps || geoRequestedRef.current) return;
+    if (
+      !isVisible ||
+      !mapReady ||
+      !mapRef.current ||
+      !window.ymaps ||
+      geoRequestedRef.current ||
+      skipAutoGeolocation
+    ) {
+      return;
+    }
     geoRequestedRef.current = true;
     const map = mapRef.current;
 
@@ -155,7 +165,7 @@ const YandexMap = ({
 
     const t = setTimeout(doGeolocation, 400);
     return () => clearTimeout(t);
-  }, [isVisible, mapReady]);
+  }, [isVisible, mapReady, skipAutoGeolocation]);
 
   // Xaritani init qilish
   useEffect(() => {

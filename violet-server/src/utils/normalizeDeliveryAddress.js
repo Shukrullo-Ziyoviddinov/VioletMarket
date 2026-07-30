@@ -1,3 +1,11 @@
+const {
+  canonicalizeDeliveryRegion,
+  detectDeliveryRegionFromText,
+  detectDistrictHintFromText,
+  resolveLocalityMapping,
+} = require("../constants/deliveryRegions");
+const { HttpError } = require("./httpError");
+
 function cleanText(value) {
   return String(value || "").trim();
 }
@@ -26,25 +34,28 @@ function parseCityDistrictFromLine(addressLine) {
   const line = cleanText(addressLine);
   if (!line) return { city: "", district: "" };
 
-  let city = "";
+  // Region tokens only here — locality short-token scan disabled for free text.
+  const city = detectDeliveryRegionFromText(line, {
+    allowShortLocalities: false,
+  });
+
   let district = "";
-
-  const cityMatch = line.match(
-    /\b(Toshkent|Тошкент|Tashkent|Samarqand|Самарканд|Samarkand|Buxoro|Бухоро|Bukhara|Andijon|Андижан|Andijan|Namangan|Наманган|Farg['ʻ’`]?ona|Фергана|Fergana|Nukus|Нукус|Xorazm|Хорезм|Navoiy|Навои)\b/i,
-  );
-  if (cityMatch) city = cityMatch[1];
-
   const districtMatch =
     line.match(
-      /([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳʻ''`\-\s]{3,}?)\s*(tumani|tumani|тумани|district|р-н|район)/i,
-    ) || line.match(/\b(Chilonzor|Yunusobod|Mirzo\s*Ulug['ʻ’`]?bek|Yakkasaroy|Yashnobod|Sergeli|Uchtepa|Olmazor|Bektemir|Mirobod|Shayxontohur|Чиланзар|Юнусабад)\b/i);
+      /([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳʻ''`\-\s]{3,}?)\s*(tumani|тумани|district|р-н|район)/i,
+    ) ||
+    line.match(
+      /\b(Chilonzor|Yunusobod|Mirzo\s*Ulug['ʻ’`]?bek|Yakkasaroy|Yashnobod|Sergeli|Uchtepa|Olmazor|Bektemir|Mirobod|Shayxontohur|Shahrisabz|Yakkabog['ʻ’`]?|Qarshi|Чиланзар|Юнусабад|Шахрисабз|Карши)\b/i,
+    );
 
   if (districtMatch) {
     district = cleanText(districtMatch[1]);
   }
 
-  if (city && /^toshkent|тошкент|tashkent$/i.test(city)) {
-    city = "Toshkent";
+  if (!district) {
+    district = detectDistrictHintFromText(line, {
+      allowShortLocalities: false,
+    });
   }
 
   return { city, district };
@@ -70,30 +81,97 @@ function coerceRawAddress(raw) {
   return raw;
 }
 
+function resolveCanonicalRegion({
+  rawRegion,
+  rawCity,
+  rawDistrict,
+  addressLine,
+  existingRegion,
+}) {
+  const structuredRegion =
+    canonicalizeDeliveryRegion(existingRegion) ||
+    canonicalizeDeliveryRegion(rawRegion) ||
+    detectDeliveryRegionFromText(rawRegion, { allowShortLocalities: false });
+
+  const cityLocality = resolveLocalityMapping(rawCity);
+  const districtLocality = resolveLocalityMapping(rawDistrict);
+  const cityAsRegion = canonicalizeDeliveryRegion(rawCity);
+
+  // Structured province/region always wins over ambiguous city="Toshkent".
+  if (structuredRegion) return structuredRegion;
+  if (cityLocality?.region) return cityLocality.region;
+  if (districtLocality?.region) return districtLocality.region;
+  if (cityAsRegion) return cityAsRegion;
+
+  return (
+    detectDeliveryRegionFromText(addressLine, { allowShortLocalities: false }) ||
+    ""
+  );
+}
+
+function resolveDisplayCity({
+  region,
+  rawCity,
+  cityLocality,
+  districtLocality,
+}) {
+  if (cityLocality?.district) return cityLocality.district;
+  if (rawCity && !canonicalizeDeliveryRegion(rawCity)) return rawCity;
+  if (districtLocality?.district) return districtLocality.district;
+  // Region-only addresses (e.g. Toshkent city) keep region as display city.
+  return region || "";
+}
+
 function normalizeDeliveryAddress(raw) {
   const data = coerceRawAddress(raw);
   if (!data) return null;
 
-  const parsed = parseCityDistrictFromLine(
-    data.addressLine || data.formatted || data.line || "",
-  );
-
-  const city = cleanText(
-    data.city || data.locality || data.province || parsed.city,
-  );
-  const district = cleanText(
-    data.district ||
-      data.tuman ||
-      data.districtName ||
-      data.area ||
-      parsed.district,
-  );
   const addressLine = cleanText(
     data.addressLine || data.formatted || data.line,
   );
+  const parsed = parseCityDistrictFromLine(addressLine);
+
+  const rawCity = cleanText(data.city || data.locality || data.area || "");
+  const rawRegion = cleanText(
+    data.region || data.province || data.state || data.administrativeArea,
+  );
+  let district = cleanText(
+    data.district ||
+      data.tuman ||
+      data.districtName ||
+      parsed.district,
+  );
+
+  const cityLocality = resolveLocalityMapping(rawCity);
+  const districtLocality = resolveLocalityMapping(district);
+
+  const region = resolveCanonicalRegion({
+    rawRegion,
+    rawCity,
+    rawDistrict: district,
+    addressLine,
+    existingRegion: data.region,
+  });
+
+  if (!district && cityLocality?.district) {
+    district = cityLocality.district;
+  }
+  if (!district) {
+    district = detectDistrictHintFromText(addressLine, {
+      allowShortLocalities: false,
+    });
+  }
+
+  const city = resolveDisplayCity({
+    region,
+    rawCity,
+    cityLocality,
+    districtLocality,
+  });
+
   const coords = normalizeCoords(data.coords || data.location || data.position);
 
-  if (!city && !district && !addressLine && !coords) return null;
+  if (!region && !city && !district && !addressLine && !coords) return null;
 
   const placeType = cleanText(data.placeType || data.homeType);
   const entrance = cleanText(data.entrance || data.podъезд || data.yolak);
@@ -102,6 +180,7 @@ function normalizeDeliveryAddress(raw) {
   const courierNote = cleanText(data.courierNote || data.note);
 
   return {
+    region: region || "",
     city,
     district,
     addressLine,
@@ -114,8 +193,28 @@ function normalizeDeliveryAddress(raw) {
   };
 }
 
+function requireDeliveryRegionAddress(raw, message) {
+  const normalized = normalizeDeliveryAddress(raw);
+  if (!normalized) {
+    throw new HttpError(
+      400,
+      message || "Yetkazib berish manzili yuborilmadi",
+      "DELIVERY_ADDRESS_REQUIRED",
+    );
+  }
+  if (!normalized.region) {
+    throw new HttpError(
+      400,
+      "Manzil viloyatini aniqlab bo‘lmadi. Region/viloyatni aniq saqlang",
+      "DELIVERY_REGION_UNRESOLVED",
+    );
+  }
+  return normalized;
+}
+
 module.exports = {
   normalizeDeliveryAddress,
+  requireDeliveryRegionAddress,
   normalizeCoords,
   cleanText,
   parseCityDistrictFromLine,

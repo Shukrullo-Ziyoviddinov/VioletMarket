@@ -8,7 +8,9 @@
     "seed:sellers": "node src/seed/seedSellersOnly.js",
     "seed:trending": "node src/seed/repairTrendingCategory.js",
     "db:check": "node src/seed/checkDb.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:regions": "node src/scripts/testDeliveryRegions.js",
+    "backfill:regions": "node src/scripts/backfillDeliveryRegions.js",
+    "test": "npm run test:regions"
   },
   "keywords": [],
   "author": "",

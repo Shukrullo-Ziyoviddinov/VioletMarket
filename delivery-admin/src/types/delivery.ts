@@ -10,6 +10,7 @@ export type DeliveryProfile = {
   phone: string;
   profileImage: string;
   transport: DeliveryTransport | null;
+  region: string;
   isOnline: boolean;
   status: DeliveryAccountStatus;
   reviewedAt?: string | null;

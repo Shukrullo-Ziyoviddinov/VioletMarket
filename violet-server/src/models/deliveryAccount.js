@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { DELIVERY_REGIONS } = require("../constants/deliveryRegions");
 
 const deliveryAccountSchema = new mongoose.Schema(
   {
@@ -18,6 +19,19 @@ const deliveryAccountSchema = new mongoose.Schema(
       type: String,
       enum: ["car", "scooter", "bicycle"],
       default: null,
+    },
+    region: {
+      type: String,
+      default: "",
+      trim: true,
+      index: true,
+      validate: {
+        validator(value) {
+          if (!value) return true;
+          return DELIVERY_REGIONS.includes(value);
+        },
+        message: "Viloyat noto‘g‘ri",
+      },
     },
     isOnline: { type: Boolean, default: true },
     status: {
@@ -44,6 +58,7 @@ deliveryAccountSchema.methods.toPublicJSON = function toPublicJSON() {
     phone: this.phone,
     profileImage: this.profileImage,
     transport: this.transport || null,
+    region: this.region || "",
     isOnline: this.isOnline,
     status: this.status,
     reviewedAt: this.reviewedAt || null,

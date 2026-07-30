@@ -11,6 +11,7 @@ import {
 import {
   getDeliveryProfile,
   updateDeliveryProfile,
+  updateDeliveryRegion,
   updateDeliveryTransport,
   uploadDeliveryProfileImage,
   type UpdateDeliveryProfilePayload,
@@ -36,6 +37,7 @@ type AuthContextValue = {
   updateProfile: (payload: UpdateDeliveryProfilePayload) => Promise<void>;
   updateProfileImage: (imageBase64: string) => Promise<void>;
   updateTransport: (transport: DeliveryTransport) => Promise<void>;
+  updateRegion: (region: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -114,6 +116,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [token],
   );
 
+  const updateRegion = useCallback(
+    async (region: string) => {
+      if (!token) throw new Error('Avtorizatsiya talab qilinadi');
+      const profile = await updateDeliveryRegion(token, region);
+      setDelivery(profile);
+    },
+    [token],
+  );
+
   const value = useMemo(
     () => ({
       isLoading,
@@ -125,6 +136,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       updateProfile,
       updateProfileImage,
       updateTransport,
+      updateRegion,
     }),
     [
       delivery,
@@ -136,6 +148,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       updateProfile,
       updateProfileImage,
       updateTransport,
+      updateRegion,
     ],
   );
 

@@ -6,9 +6,7 @@ const {
 const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
-const {
-  parseCityDistrictFromLine,
-} = require("../../utils/normalizeDeliveryAddress");
+const { haversineKm } = require("../../utils/geoDistance");
 const { isOrderPaid } = require("./courierReturnOrderService");
 const {
   resolveStoredPaymentMethod,
@@ -17,30 +15,11 @@ const {
   loadTakenAssignmentUnitKeys,
   assignmentUnitKey,
 } = require("../../unitLifecycle/assignmentPoolRules");
-
-function toRad(value) {
-  return (Number(value) * Math.PI) / 180;
-}
-
-function haversineKm(from, to) {
-  if (!Array.isArray(from) || !Array.isArray(to) || from.length < 2 || to.length < 2) {
-    return null;
-  }
-  const lat1 = Number(from[0]);
-  const lon1 = Number(from[1]);
-  const lat2 = Number(to[0]);
-  const lon2 = Number(to[1]);
-  if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return null;
-
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(R * c * 10) / 10;
-}
+const {
+  getActiveCourierWithRegion,
+  resolveOrderAddressFields,
+  resolveOrderDeliveryRegion,
+} = require("./deliveryRegionPolicy");
 
 function resolveTitle(title) {
   if (title && typeof title === "object") {
@@ -53,28 +32,18 @@ function resolveTitle(title) {
   return { uz: text, ru: text };
 }
 
-function resolveAddressFields(order) {
-  const address = order?.deliveryAddress || {};
-  const addressLine = String(address.addressLine || "").trim();
-  const parsed = parseCityDistrictFromLine(addressLine);
-  const city =
-    String(address.city || "").trim() || parsed.city || "Toshkent";
-  const district =
-    String(address.district || "").trim() ||
-    parsed.district ||
-    "Noma’lum tuman";
-  return {
-    city,
-    district,
-    addressLine,
-    coords: Array.isArray(address.coords) ? address.coords : null,
-  };
+function parseCourierCoords(query = {}) {
+  const lat = Number(query.courierLat ?? query.lat);
+  const lng = Number(query.courierLng ?? query.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return [lat, lng];
 }
 
 function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoords) {
   const orderId = Number(order?.id) || 0;
   const productId = Number(item?.productId) || 0;
-  const address = resolveAddressFields(order);
+  const address = resolveOrderAddressFields(order);
   const fromCoords =
     Array.isArray(courierCoords) && courierCoords.length >= 2
       ? courierCoords
@@ -97,6 +66,7 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     productCode: formatProductCode(productId),
     barcode: formatProductCode(productId),
     title: resolveTitle(item?.title),
+    region: address.region,
     city: address.city,
     district: address.district,
     distanceKm,
@@ -111,16 +81,9 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
   };
 }
 
-function parseCourierCoords(query = {}) {
-  const lat = Number(query.courierLat ?? query.lat);
-  const lng = Number(query.courierLng ?? query.lng);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-  return [lat, lng];
-}
-
-async function listAvailableDeliveryOrders(query = {}) {
-  const cityFilter = String(query.city || "").trim().toLowerCase();
+async function listAvailableDeliveryOrders(deliveryId, query = {}) {
+  const { region: courierRegion } =
+    await getActiveCourierWithRegion(deliveryId);
   const districtFilter = String(query.district || "").trim().toLowerCase();
   const maxDistanceKm = Number(query.maxDistanceKm);
   const courierCoords = parseCourierCoords(query);
@@ -134,6 +97,9 @@ async function listAvailableDeliveryOrders(query = {}) {
   const cards = [];
 
   for (const order of orders) {
+    const orderRegion = resolveOrderDeliveryRegion(order);
+    if (orderRegion !== courierRegion) continue;
+
     const items = Array.isArray(order.items) ? order.items : [];
     items.forEach((item, itemIndex) => {
       if (normalizeOrderTrackingStatus(item?.trackingStatus) !== "handed_to_courier") {
@@ -157,12 +123,6 @@ async function listAvailableDeliveryOrders(query = {}) {
         assignmentUnitKey(card.orderId, card.itemIndex, card.unitIndex),
       ),
   );
-
-  if (cityFilter) {
-    filtered = filtered.filter(
-      (card) => String(card.city || "").trim().toLowerCase() === cityFilter,
-    );
-  }
 
   if (districtFilter && districtFilter !== "barchasi") {
     filtered = filtered.filter(
@@ -194,6 +154,7 @@ async function listAvailableDeliveryOrders(query = {}) {
   return {
     total: filtered.length,
     orders: filtered,
+    region: courierRegion,
     locationUsed: Boolean(courierCoords),
   };
 }

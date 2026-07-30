@@ -1,6 +1,5 @@
 const { Order } = require("../../models/order");
 const { User } = require("../../models/user");
-const { DeliveryAccount } = require("../../models/deliveryAccount");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { HttpError } = require("../../utils/httpError");
@@ -29,6 +28,10 @@ const {
   snapshotUzWarehousePickup,
   toWarehouseSellerPickup,
 } = require("../../productManagement/foreignUzWarehousePickup");
+const {
+  getActiveCourierWithRegion,
+  assertOrderMatchesCourierRegion,
+} = require("./deliveryRegionPolicy");
 
 const ACTIVE_ASSIGNMENT_STATUSES = COURIER_IN_PROGRESS_STATUSES;
 const SELLER_PHASE_STATUSES = new Set([
@@ -174,6 +177,7 @@ function snapshotDeliveryAddress(raw) {
   const normalized = normalizeDeliveryAddress(raw);
   if (!normalized) {
     return {
+      region: "",
       city: "",
       district: "",
       addressLine: "",
@@ -185,6 +189,7 @@ function snapshotDeliveryAddress(raw) {
     };
   }
   return {
+    region: normalized.region || "",
     city: normalized.city || "",
     district: normalized.district || "",
     addressLine: normalized.addressLine || "",
@@ -235,6 +240,7 @@ function toPublicAssignment(doc, extras = {}) {
       phone: String(customer.phone || ""),
     },
     deliveryAddress: {
+      region: String(address.region || ""),
       city: String(address.city || ""),
       district: String(address.district || ""),
       addressLine: String(address.addressLine || ""),
@@ -401,15 +407,14 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     throw new HttpError(400, "Mahsulot indeksi noto‘g‘ri", "INVALID_ITEM_INDEX");
   }
 
-  const delivery = await DeliveryAccount.findById(deliveryId).lean();
-  if (!delivery || String(delivery.status) !== "active") {
-    throw new HttpError(403, "Kuryer hisobi faol emas", "DELIVERY_INACTIVE");
-  }
+  const { delivery, region: courierRegion } =
+    await getActiveCourierWithRegion(deliveryId);
 
   const order = await Order.findOne({ id: orderId });
   if (!order) {
     throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
   }
+  assertOrderMatchesCourierRegion(order, courierRegion);
 
   const item = Array.isArray(order.items) ? order.items[itemIndex] : null;
   if (!item) {

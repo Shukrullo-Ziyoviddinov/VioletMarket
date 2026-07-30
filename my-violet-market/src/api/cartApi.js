@@ -78,59 +78,53 @@ export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) 
     }
   }
 
-  if (!addressPayload) {
-    return Promise.reject(
-      Object.assign(
-        new Error('Yetkazib berish manzilini saqlang, keyin to‘lov qiling'),
-        { status: 400, code: 'DELIVERY_ADDRESS_REQUIRED' },
-      ),
-    );
-  }
+  const body = { paymentMethod: method };
 
-  const city = String(addressPayload.city || '').trim();
-  const district = String(addressPayload.district || '').trim();
-  const addressLine = String(
-    addressPayload.addressLine || addressPayload.formatted || '',
-  ).trim();
-  const coords = Array.isArray(addressPayload.coords)
-    ? addressPayload.coords
-    : null;
+  if (addressPayload) {
+    const city = String(addressPayload.city || '').trim();
+    const province = String(addressPayload.province || '').trim();
+    const region = String(addressPayload.region || province || '').trim();
+    const district = String(addressPayload.district || '').trim();
+    const addressLine = String(
+      addressPayload.addressLine || addressPayload.formatted || '',
+    ).trim();
+    const coords = Array.isArray(addressPayload.coords)
+      ? addressPayload.coords
+      : null;
 
-  if (!addressLine && !coords) {
-    return Promise.reject(
-      Object.assign(
-        new Error('Manzil to‘liq emas. Manzilni qayta saqlang'),
-        { status: 400, code: 'DELIVERY_ADDRESS_REQUIRED' },
-      ),
-    );
-  }
+    if (!addressLine && !coords) {
+      return Promise.reject(
+        Object.assign(
+          new Error('Manzil to‘liq emas. Manzilni qayta saqlang'),
+          { status: 400, code: 'DELIVERY_ADDRESS_REQUIRED' },
+        ),
+      );
+    }
 
-  return fetch(apiUrl('/api/cart/checkout'), {
-    method: 'POST',
-    headers: authHeaders(token),
-    body: JSON.stringify({
-      paymentMethod: method,
-      deliveryAddress: {
-        ...addressPayload,
-        city,
-        district,
-        addressLine,
-        coords,
-      },
-      address: {
-        ...addressPayload,
-        city,
-        district,
-        addressLine,
-        coords,
-      },
-      // Flat fallback — ba'zi proxy/body parser holatlari uchun
+    body.deliveryAddress = {
+      ...addressPayload,
       city,
+      province,
+      region,
       district,
       addressLine,
       coords,
-      formatted: addressPayload.formatted || addressLine,
-    }),
+    };
+    body.address = body.deliveryAddress;
+    body.city = city;
+    body.province = province;
+    body.region = region;
+    body.district = district;
+    body.addressLine = addressLine;
+    body.coords = coords;
+    body.formatted = addressPayload.formatted || addressLine;
+  }
+
+  // Manzil bodyda bo‘lmasa server savedDeliveryAddress dan oladi.
+  return fetch(apiUrl('/api/cart/checkout'), {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(body),
   }).then(parseJsonResponse);
 }
 

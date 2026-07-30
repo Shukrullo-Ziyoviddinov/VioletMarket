@@ -5,11 +5,17 @@ export type CourierCoords = {
   longitude: number;
 };
 
-export async function requestCourierLocation(): Promise<{
+const LAST_KNOWN_MAX_AGE_MS = 2 * 60 * 1000;
+
+export async function requestCourierLocation(options?: {
+  preferFresh?: boolean;
+}): Promise<{
   coords: CourierCoords | null;
   denied: boolean;
   errorMessage?: string;
 }> {
+  const preferFresh = Boolean(options?.preferFresh);
+
   try {
     const current = await Location.getForegroundPermissionsAsync();
     let status = current.status;
@@ -28,21 +34,24 @@ export async function requestCourierLocation(): Promise<{
       };
     }
 
-    // Avval oxirgi ma'lum joy — tez; bo'lmasa yangi GPS
-    const last = await Location.getLastKnownPositionAsync();
-    if (last?.coords) {
-      const latitude = Number(last.coords.latitude);
-      const longitude = Number(last.coords.longitude);
-      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-        // Fondda aniqroq yangilab qo'yamiz (kutmaymiz)
-        void Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        }).catch(() => null);
-
-        return {
-          coords: { latitude, longitude },
-          denied: false,
-        };
+    if (!preferFresh) {
+      const last = await Location.getLastKnownPositionAsync();
+      if (last?.coords) {
+        const ageMs = Date.now() - Number(last.timestamp || 0);
+        const latitude = Number(last.coords.latitude);
+        const longitude = Number(last.coords.longitude);
+        if (
+          Number.isFinite(latitude) &&
+          Number.isFinite(longitude) &&
+          Number.isFinite(ageMs) &&
+          ageMs >= 0 &&
+          ageMs <= LAST_KNOWN_MAX_AGE_MS
+        ) {
+          return {
+            coords: { latitude, longitude },
+            denied: false,
+          };
+        }
       }
     }
 

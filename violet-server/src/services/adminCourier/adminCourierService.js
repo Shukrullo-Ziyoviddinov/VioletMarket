@@ -25,6 +25,7 @@ function toAdminCourierJSON(account) {
     phone: account.phone,
     profileImage: account.profileImage || "",
     transport: account.transport || null,
+    region: account.region || "",
     isOnline: Boolean(account.isOnline),
     status: account.status,
     reviewedAt: account.reviewedAt || null,

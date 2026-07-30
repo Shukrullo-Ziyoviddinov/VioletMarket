@@ -37,5 +37,11 @@ router.patch(
   deliveryAuthMiddleware,
   controller.updateTransport,
 );
+router.patch(
+  "/delivery-auth/me/region",
+  deliveryAuthMiddleware,
+  controller.updateRegion,
+);
+router.get("/delivery-auth/regions", controller.listRegions);
 
 module.exports = router;

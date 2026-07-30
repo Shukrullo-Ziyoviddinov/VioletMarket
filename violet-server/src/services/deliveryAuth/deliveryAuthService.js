@@ -1,4 +1,8 @@
 const { DeliveryAccount } = require("../../models/deliveryAccount");
+const {
+  assertDeliveryRegion,
+  DELIVERY_REGIONS,
+} = require("../../constants/deliveryRegions");
 const { HttpError } = require("../../utils/httpError");
 const { signDeliveryToken } = require("../../utils/deliveryJwt");
 const {
@@ -253,6 +257,30 @@ async function updateTransport(deliveryId, payload) {
   return account.toPublicJSON();
 }
 
+async function updateRegion(deliveryId, payload) {
+  const account = await DeliveryAccount.findById(deliveryId);
+  assertActiveAccount(account);
+
+  const region = assertDeliveryRegion(payload.region);
+  if (!region) {
+    throw new HttpError(
+      400,
+      "Viloyat noto‘g‘ri tanlandi",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  account.region = region;
+  await account.save();
+  return account.toPublicJSON();
+}
+
+function listDeliveryRegions() {
+  return {
+    regions: [...DELIVERY_REGIONS],
+  };
+}
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
@@ -263,4 +291,6 @@ module.exports = {
   updateProfile,
   updateProfilePhoto,
   updateTransport,
+  updateRegion,
+  listDeliveryRegions,
 };

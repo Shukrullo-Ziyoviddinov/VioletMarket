@@ -8,6 +8,7 @@ export type DeliveryAvailableOrder = {
   productCode: string;
   barcode: string;
   title: { uz: string; ru: string };
+  region?: string;
   city: string;
   district: string;
   distanceKm: number | null;
@@ -22,6 +23,7 @@ export type DeliveryAvailableOrder = {
 };
 
 export type DeliveryAddressDetails = {
+  region?: string;
   city: string;
   district: string;
   addressLine: string;

@@ -41,9 +41,11 @@ const checkout = asyncHandler(async (req, res) => {
     body.address ??
     body.delivery_address ??
     body.checkoutAddress ??
-    (body.addressLine || body.city || body.district || body.coords
+    (body.addressLine || body.city || body.district || body.region || body.province || body.coords
       ? {
           city: body.city,
+          province: body.province,
+          region: body.region || body.province,
           district: body.district,
           addressLine: body.addressLine || body.formatted,
           coords: body.coords,

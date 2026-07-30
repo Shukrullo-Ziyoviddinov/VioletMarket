@@ -1,7 +1,7 @@
 const { Order } = require("../models/order");
 const { createInitialOrderTracking } = require("./orderTracking");
 const {
-  normalizeDeliveryAddress,
+  requireDeliveryRegionAddress,
 } = require("../utils/normalizeDeliveryAddress");
 const { normalizePaymentMethod } = require("./paymentMethods");
 
@@ -90,7 +90,7 @@ async function recordCartPayment({
   const normalizedPaymentMethod = normalizePaymentMethod(paymentMethod, {
     allowMock: source !== PAYMENT_SOURCES.CHECKOUT,
   });
-  const normalizedAddress = normalizeDeliveryAddress(deliveryAddress);
+  const normalizedAddress = requireDeliveryRegionAddress(deliveryAddress);
 
   const order = await Order.create({
     userId,
@@ -100,15 +100,8 @@ async function recordCartPayment({
     status,
     paidAt,
     source,
+    deliveryAddress: normalizedAddress,
   });
-
-  if (normalizedAddress) {
-    await Order.updateOne(
-      { _id: order._id },
-      { $set: { deliveryAddress: normalizedAddress } },
-    );
-    order.deliveryAddress = normalizedAddress;
-  }
 
   return order;
 }

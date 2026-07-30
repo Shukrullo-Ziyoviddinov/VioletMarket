@@ -62,6 +62,7 @@ const orderItemSchema = new mongoose.Schema(
 
 const deliveryAddressSchema = new mongoose.Schema(
   {
+    region: { type: String, default: "", trim: true, index: true },
     city: { type: String, default: "" },
     district: { type: String, default: "" },
     addressLine: { type: String, default: "" },
@@ -126,6 +127,7 @@ orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ status: 1, paidAt: -1 });
 orderSchema.index({ "items.sellerId": 1, paidAt: -1 });
 orderSchema.index({ "items.trackingStatus": 1, paidAt: -1 });
+orderSchema.index({ "deliveryAddress.region": 1, "deliveryAddress.district": 1 });
 orderSchema.index({ "deliveryAddress.city": 1, "deliveryAddress.district": 1 });
 
 orderSchema.pre("validate", async function autoAssignId() {

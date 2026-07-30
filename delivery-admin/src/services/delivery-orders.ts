@@ -6,7 +6,6 @@ import type {
 } from '@/types/delivery-order';
 
 export type AvailableOrdersFilters = {
-  city?: string;
   district?: string;
   maxDistanceKm?: number;
   courierLat?: number;
@@ -18,7 +17,6 @@ export async function fetchAvailableDeliveryOrders(
   filters: AvailableOrdersFilters = {},
 ) {
   const params = new URLSearchParams();
-  if (filters.city) params.set('city', filters.city);
   if (filters.district && filters.district !== 'Barchasi') {
     params.set('district', filters.district);
   }

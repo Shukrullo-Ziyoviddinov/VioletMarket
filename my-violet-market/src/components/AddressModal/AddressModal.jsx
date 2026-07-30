@@ -7,20 +7,38 @@ const DEFAULT_CENTER = [41.311151, 69.279737];
 const SUGGEST_DEBOUNCE_MS = 350;
 const SUGGEST_MAX = 6;
 
-const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
-  const { t } = useTranslation();
-  const [form, setForm] = useState({
+function buildFormFromAddress(initialAddress) {
+  return {
     addressLine: initialAddress?.addressLine ?? '',
     city: initialAddress?.city ?? '',
+    province: initialAddress?.province ?? '',
+    region: initialAddress?.region ?? '',
     district: initialAddress?.district ?? '',
     placeType: initialAddress?.placeType ?? '',
     entrance: initialAddress?.entrance ?? '',
     floor: initialAddress?.floor ?? '',
     domofon: initialAddress?.domofon ?? '',
     courierNote: initialAddress?.courierNote ?? '',
-  });
+  };
+}
+
+function hasConfirmedCoords(address) {
+  return (
+    Array.isArray(address?.coords) &&
+    address.coords.length >= 2 &&
+    Number.isFinite(Number(address.coords[0])) &&
+    Number.isFinite(Number(address.coords[1]))
+  );
+}
+
+const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
+  const { t } = useTranslation();
+  const [form, setForm] = useState(() => buildFormFromAddress(initialAddress));
   const [mapCenter, setMapCenter] = useState(
-    initialAddress?.coords ? initialAddress.coords : DEFAULT_CENTER
+    hasConfirmedCoords(initialAddress) ? initialAddress.coords : DEFAULT_CENTER,
+  );
+  const [coordsConfirmed, setCoordsConfirmed] = useState(() =>
+    hasConfirmedCoords(initialAddress),
   );
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -39,13 +57,27 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
   const openedAtRef = useRef(0);
 
   const REQUIRED_FIELDS = ['addressLine', 'placeType', 'entrance', 'floor', 'domofon'];
+  const skipAutoGeolocation =
+    Boolean(String(initialAddress?.addressLine || '').trim()) ||
+    hasConfirmedCoords(initialAddress);
 
   useEffect(() => {
-    if (isOpen) {
-      setIsClosing(false);
-      openedAtRef.current = Date.now();
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+    setIsClosing(false);
+    openedAtRef.current = Date.now();
+    setForm(buildFormFromAddress(initialAddress));
+    setMapCenter(
+      hasConfirmedCoords(initialAddress) ? initialAddress.coords : DEFAULT_CENTER,
+    );
+    setCoordsConfirmed(hasConfirmedCoords(initialAddress));
+    setSuggestions([]);
+    setSuggestOpen(false);
+    setFieldErrors({});
+    userSearchedRef.current = Boolean(
+      String(initialAddress?.addressLine || '').trim() ||
+        hasConfirmedCoords(initialAddress),
+    );
+  }, [isOpen, initialAddress]);
 
   const DRAG_CLOSE_THRESHOLD = 80;
 
@@ -78,8 +110,16 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     const c = [Number(coords[0]), Number(coords[1])];
     if (Number.isNaN(c[0]) || Number.isNaN(c[1])) return;
     userSearchedRef.current = true;
+    setCoordsConfirmed(true);
     if (formattedAddress) {
-      setForm((prev) => ({ ...prev, addressLine: formattedAddress }));
+      setForm((prev) => ({
+        ...prev,
+        addressLine: formattedAddress,
+        city: '',
+        province: '',
+        region: '',
+        district: '',
+      }));
     }
     setMapCenter(c);
     // Har safar yangi object reference → YandexMap effect albatta ishlaydi
@@ -194,7 +234,16 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'addressLine'
+        ? { city: '', province: '', region: '', district: '' }
+        : {}),
+    }));
+    if (name === 'addressLine') {
+      setCoordsConfirmed(false);
+    }
     if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: false }));
     if (name !== 'addressLine') return;
 
@@ -255,7 +304,8 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     if (result._fromGeolocation && userSearchedRef.current) return;
 
     const a = result.address;
-    const city = a.city || a.locality || a.province || a.area || '';
+    const city = a.locality || a.city || a.area || '';
+    const province = a.province || '';
     const district = a.tuman || a.district || a.area || '';
     const rawParts = [
       a.province, a.locality, a.area, a.district,
@@ -276,9 +326,12 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     setForm((prev) => ({
       ...prev,
       addressLine: line,
-      city: city || prev.city || '',
-      district: district || prev.district || '',
+      city: city || '',
+      province: province || '',
+      region: '',
+      district: district || '',
     }));
+    setCoordsConfirmed(true);
     setFieldErrors((prev) => ({ ...prev, addressLine: false }));
     if (result.coords && result.coords.length >= 2) {
       setMapCenter([Number(result.coords[0]), Number(result.coords[1])]);
@@ -291,6 +344,10 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     REQUIRED_FIELDS.forEach((key) => {
       if (!(form[key] || '').trim()) errors[key] = true;
     });
+    if (!coordsConfirmed) {
+      errors.addressLine = true;
+      alert('Xaritada manzilni qidiring yoki pin qo‘ying, keyin saqlang');
+    }
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -298,14 +355,15 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
     setFieldErrors({});
 
     let city = String(form.city || '').trim();
+    let province = String(form.province || '').trim();
     let district = String(form.district || '').trim();
-    let coords =
-      Array.isArray(mapCenter) && mapCenter.length >= 2
-        ? [Number(mapCenter[0]), Number(mapCenter[1])]
-        : DEFAULT_CENTER;
+    const coords = [
+      Number(mapCenter[0]),
+      Number(mapCenter[1]),
+    ];
 
-    // Agar shahar/tuman bo'sh bo'lsa — saqlashdan oldin geocode qilib to'ldiramiz
-    if ((!city || !district) && window.ymaps?.geocode) {
+    // Faqat tasdiqlangan pin bo‘yicha reverse-geocode
+    if ((!city || !province || !district) && window.ymaps?.geocode) {
       try {
         const res = await window.ymaps.geocode(coords, { results: 1 });
         const first = res.geoObjects.get(0);
@@ -321,45 +379,28 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
             return c ? String(c.name || '').trim() : '';
           };
           const locality = getComp('locality');
-          const province = getComp('province');
+          const provinceComp = getComp('province');
           const area = getComp('area');
           const districtComp = getComp('district');
-          if (!city) city = locality || province || area || city;
+          if (!city) city = locality || area || city;
+          if (!province) province = provinceComp;
           if (!district) district = districtComp || area || district;
         }
       } catch {
-        // geocode bo'lmasa ham manzilni saqlaymiz
+        // geocode bo'lmasa structured maydonlar bilan serverga ishonamiz
       }
     }
 
-    // Matndan ham urinib ko'ramiz (masalan "Chilonzor tumani")
-    if (!city || !district) {
-      const line = String(form.addressLine || '').trim();
-      if (!city) {
-        const cityMatch = line.match(
-          /\b(Toshkent|Tashkent|Тошкент|Samarqand|Buxoro|Andijon|Namangan|Fargona|Farg'ona|Nukus)\b/i,
-        );
-        if (cityMatch) {
-          city = /toshkent|tashkent|тошкент/i.test(cityMatch[1])
-            ? 'Toshkent'
-            : cityMatch[1];
-        }
-      }
-      if (!district) {
-        const districtMatch =
-          line.match(
-            /([A-Za-zА-Яа-яЁёЎўҚқҒғҲҳʻ''`-]{3,}?)\s*(tumani|тумани|district)/i,
-          ) ||
-          line.match(
-            /\b(Chilonzor|Yunusobod|Mirzo\s*Ulug'bek|Yakkasaroy|Yashnobod|Sergeli|Uchtepa|Olmazor|Bektemir|Mirobod|Shayxontohur)\b/i,
-          );
-        if (districtMatch) district = String(districtMatch[1]).trim();
-      }
+    if (!city && !province) {
+      alert('Viloyat/shahar aniqlanmadi. Manzilni xaritadan qayta tanlang');
+      return;
     }
 
     onSave({
       ...form,
       city,
+      province,
+      region: province || form.region || '',
       district,
       coords,
     });
@@ -568,6 +609,7 @@ const AddressModal = ({ isOpen, onClose, onSave, initialAddress }) => {
               flyToCoords={flyToCoords}
               onFlyComplete={() => setFlyToCoords(null)}
               isVisible={isOpen}
+              skipAutoGeolocation={skipAutoGeolocation}
               height="100%"
               className="address-modal__map"
             />

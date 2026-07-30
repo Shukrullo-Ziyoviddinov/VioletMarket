@@ -20,20 +20,16 @@ export function FilterChip({ label, onPress }: FilterChipProps) {
 }
 
 type OrdersFilterBarProps = {
-  cityLabel: string;
   districtLabel: string;
   distanceLabel: string;
-  onCityPress: () => void;
   onDistrictPress: () => void;
   onDistancePress: () => void;
   total: number;
 };
 
 export function OrdersFilterBar({
-  cityLabel,
   districtLabel,
   distanceLabel,
-  onCityPress,
   onDistrictPress,
   onDistancePress,
   total,
@@ -41,7 +37,6 @@ export function OrdersFilterBar({
   return (
     <View style={styles.root}>
       <View style={styles.row}>
-        <FilterChip label={cityLabel} onPress={onCityPress} />
         <FilterChip label={districtLabel} onPress={onDistrictPress} />
         <FilterChip label={distanceLabel} onPress={onDistancePress} />
       </View>

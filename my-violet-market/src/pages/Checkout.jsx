@@ -69,17 +69,47 @@ const Checkout = () => {
     if (token && address) {
       saveDeliveryAddressApi(token, address).catch((err) => {
         console.error('Manzil serverga saqlanmadi:', err);
+        window.alert(
+          err?.message ||
+            'Manzil serverga saqlanmadi. Viloyat aniqlanganini tekshirib qayta saqlang.',
+        );
       });
     }
   };
 
-  // Sahifa ochilganda localStorage dagi manzilni serverga sync qilamiz
+  // Sahifa ochilganda: localStorage → bo‘sh/yaroqsiz bo‘lsa server savedDeliveryAddress
   useEffect(() => {
     const token = authToken || localStorage.getItem('authToken');
-    if (!token || !savedAddress) return;
-    if (!(savedAddress.addressLine || savedAddress.formatted)) return;
-    saveDeliveryAddressApi(token, savedAddress).catch(() => {});
-  }, [authToken]); // eslint-disable-line react-hooks/exhaustive-deps
+    const serverAddress = userData?.savedDeliveryAddress || null;
+    const localHasRegion = Boolean(
+      String(savedAddress?.region || savedAddress?.province || '').trim() ||
+        String(savedAddress?.city || '').trim(),
+    );
+    const serverHasAddress = Boolean(
+      serverAddress &&
+        (serverAddress.addressLine ||
+          serverAddress.formatted ||
+          serverAddress.region),
+    );
+
+    if ((!savedAddress || !localHasRegion) && serverHasAddress) {
+      setSavedAddress(serverAddress);
+      try {
+        localStorage.setItem('checkoutAddress', JSON.stringify(serverAddress));
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!token) return;
+    const active =
+      savedAddress && localHasRegion
+        ? savedAddress
+        : serverAddress || savedAddress;
+    if (!active) return;
+    if (!(active.addressLine || active.formatted || active.region)) return;
+    saveDeliveryAddressApi(token, active).catch(() => {});
+  }, [authToken, userData?.savedDeliveryAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!cartReady) return;

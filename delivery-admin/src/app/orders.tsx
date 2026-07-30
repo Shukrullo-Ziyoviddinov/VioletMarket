@@ -21,6 +21,11 @@ import { OrderCard } from '@/components/orders/OrderCard';
 import { OrdersFilterBar } from '@/components/orders/OrdersFilterBar';
 import { useAuth } from '@/providers/AuthProvider';
 import {
+  canonicalizeDeliveryRegion,
+  FALLBACK_DELIVERY_REGIONS,
+} from '@/constants/deliveryRegions';
+import { ApiError } from '@/services/api';
+import {
   requestCourierLocation,
   type CourierCoords,
 } from '@/services/courier-location';
@@ -30,11 +35,12 @@ import {
 } from '@/services/delivery-orders';
 import {
   DISTANCE_FILTERS,
-  TASHKENT_CITY,
   type DeliveryAvailableOrder,
 } from '@/types/delivery-order';
+type FilterSheet = 'district' | 'distance' | null;
 
-type FilterSheet = 'city' | 'district' | 'distance' | null;
+const REGION_REQUIRED_MESSAGE =
+  'Buyurtmalar tanlash uchun mos region tanlang';
 
 export default function OrdersScreen() {
   const router = useRouter();
@@ -42,7 +48,6 @@ export default function OrdersScreen() {
   const [allOrders, setAllOrders] = useState<DeliveryAvailableOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
-  const [city, setCity] = useState(TASHKENT_CITY);
   const [district, setDistrict] = useState<string>('Barchasi');
   const [maxDistanceKm, setMaxDistanceKm] = useState(0);
   const [filterSheet, setFilterSheet] = useState<FilterSheet>(null);
@@ -50,7 +55,26 @@ export default function OrdersScreen() {
     null,
   );
   const [locationDenied, setLocationDenied] = useState(false);
+  const [regionRequired, setRegionRequired] = useState(false);
   const askedLocationRef = useRef(false);
+  const courierCoordsRef = useRef<CourierCoords | null>(null);
+  const loadSeqRef = useRef(0);
+  const locationInFlightRef = useRef<Promise<CourierCoords | null> | null>(
+    null,
+  );
+
+  courierCoordsRef.current = courierCoords;
+
+  const selectedRegion = useMemo(() => {
+    return (
+      canonicalizeDeliveryRegion(
+        delivery?.region,
+        FALLBACK_DELIVERY_REGIONS,
+      ) || null
+    );
+  }, [delivery?.region]);
+
+  const hasRegion = Boolean(selectedRegion) && !regionRequired;
 
   useEffect(() => {
     if (!isLoading && !delivery) router.replace('/auth');
@@ -134,87 +158,161 @@ export default function OrdersScreen() {
     if (!stillValid) setMaxDistanceKm(0);
   }, [availableDistanceFilters, maxDistanceKm]);
 
-  const ensureCourierLocation = useCallback(
-    async (forceAsk = false) => {
-      if (courierCoords && !forceAsk) return courierCoords;
+  const ensureCourierLocation = useCallback(async (forceAsk = false) => {
+    if (courierCoordsRef.current && !forceAsk) {
+      return courierCoordsRef.current;
+    }
 
-      const result = await requestCourierLocation();
+    if (locationInFlightRef.current) {
+      return locationInFlightRef.current;
+    }
+
+    const request = (async () => {
+      const result = await requestCourierLocation({
+        preferFresh: forceAsk,
+      });
       if (result.coords) {
+        courierCoordsRef.current = result.coords;
         setCourierCoords(result.coords);
         setLocationDenied(false);
         return result.coords;
       }
 
       setLocationDenied(Boolean(result.denied));
+      if (result.denied) {
+        courierCoordsRef.current = null;
+        setCourierCoords(null);
+      }
       if (result.errorMessage) {
         Alert.alert('Joylashuv', result.errorMessage);
       }
-      return null;
-    },
-    [courierCoords],
-  );
+      // Force refresh failed: keep last known coords if still available.
+      return forceAsk ? courierCoordsRef.current : null;
+    })();
+
+    locationInFlightRef.current = request;
+    try {
+      return await request;
+    } finally {
+      if (locationInFlightRef.current === request) {
+        locationInFlightRef.current = null;
+      }
+    }
+  }, []);
 
   const loadOrders = useCallback(
-    async (coords?: CourierCoords | null) => {
+    async (
+      coords: CourierCoords | null = null,
+      options?: { seq?: number },
+    ) => {
       if (!token) return;
-      const activeCoords = coords === undefined ? courierCoords : coords;
-      const data = await fetchAvailableDeliveryOrders(token, {
-        city,
-        courierLat: activeCoords?.latitude,
-        courierLng: activeCoords?.longitude,
-      });
-      setAllOrders(data.orders || []);
+      if (!selectedRegion) {
+        setAllOrders([]);
+        setRegionRequired(true);
+        return;
+      }
+
+      const seq = options?.seq ?? ++loadSeqRef.current;
+      try {
+        const data = await fetchAvailableDeliveryOrders(token, {
+          courierLat: coords?.latitude,
+          courierLng: coords?.longitude,
+        });
+        if (seq !== loadSeqRef.current) return;
+        setRegionRequired(false);
+        setAllOrders(data.orders || []);
+      } catch (error) {
+        if (seq !== loadSeqRef.current) return;
+        if (
+          error instanceof ApiError &&
+          error.code === 'DELIVERY_REGION_REQUIRED'
+        ) {
+          setRegionRequired(true);
+          setAllOrders([]);
+          return;
+        }
+        // Soft failure: keep previous list, show message.
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Buyurtmalarni yuklab bo‘lmadi';
+        Alert.alert('Xatolik', message);
+      }
     },
-    [token, city, courierCoords],
+    [token, selectedRegion],
   );
 
   const { refreshing, onRefresh } = useRefreshState(async () => {
-    try {
-      const coords = await ensureCourierLocation(false);
-      await loadOrders(coords);
-    } catch {
+    if (!selectedRegion) {
       setAllOrders([]);
+      setRegionRequired(true);
+      return;
     }
+    const coords = await ensureCourierLocation(false);
+    await loadOrders(coords);
   });
 
   usePageRefresh(onRefresh);
 
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false;
+      const seqAtStart = ++loadSeqRef.current;
 
       async function boot() {
         setLoading(true);
         try {
-          let coords = courierCoords;
-          if (!askedLocationRef.current) {
-            askedLocationRef.current = true;
-            coords = await ensureCourierLocation(true);
+          if (!selectedRegion) {
+            if (seqAtStart === loadSeqRef.current) {
+              setAllOrders([]);
+              setRegionRequired(true);
+              setLoading(false);
+            }
+            return;
           }
-          if (cancelled) return;
-          await loadOrders(coords);
-        } catch {
-          if (!cancelled) setAllOrders([]);
+
+          let coords = courierCoordsRef.current;
+          if (!askedLocationRef.current) {
+            coords = await ensureCourierLocation(true);
+            askedLocationRef.current = true;
+          } else if (!coords) {
+            coords = await ensureCourierLocation(false);
+          }
+
+          if (seqAtStart !== loadSeqRef.current) return;
+          await loadOrders(coords, { seq: seqAtStart });
+        } catch (error) {
+          if (seqAtStart !== loadSeqRef.current) return;
+          if (
+            error instanceof ApiError &&
+            error.code === 'DELIVERY_REGION_REQUIRED'
+          ) {
+            setRegionRequired(true);
+            setAllOrders([]);
+          } else {
+            const message =
+              error instanceof Error
+                ? error.message
+                : 'Buyurtmalarni yuklab bo‘lmadi';
+            Alert.alert('Xatolik', message);
+          }
         } finally {
-          if (!cancelled) setLoading(false);
+          if (seqAtStart === loadSeqRef.current) setLoading(false);
         }
       }
 
       void boot();
 
       return () => {
-        cancelled = true;
+        loadSeqRef.current += 1;
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]),
+    }, [token, selectedRegion, ensureCourierLocation, loadOrders]),
   );
 
   useEffect(() => {
-    if (!token || !askedLocationRef.current) return;
     setDistrict('Barchasi');
     setMaxDistanceKm(0);
-    loadOrders();
-  }, [city, token]); // eslint-disable-line react-hooks/exhaustive-deps
+    setRegionRequired(false);
+  }, [selectedRegion]);
 
   function handleSelectDistrict(value: string) {
     setDistrict(value);
@@ -234,6 +332,10 @@ export default function OrdersScreen() {
   }
 
   function openDistrictFilter() {
+    if (!hasRegion) {
+      Alert.alert('Region', REGION_REQUIRED_MESSAGE);
+      return;
+    }
     if (availableDistricts.length <= 1) {
       Alert.alert(
         'Tuman',
@@ -245,6 +347,10 @@ export default function OrdersScreen() {
   }
 
   function openDistanceFilter() {
+    if (!hasRegion) {
+      Alert.alert('Region', REGION_REQUIRED_MESSAGE);
+      return;
+    }
     if (!availableDistanceFilters.length) {
       Alert.alert(
         'Masofa',
@@ -257,6 +363,10 @@ export default function OrdersScreen() {
 
   async function handleAccept(order: DeliveryAvailableOrder) {
     if (!token || acceptingId) return;
+    if (!hasRegion) {
+      Alert.alert('Region', REGION_REQUIRED_MESSAGE);
+      return;
+    }
     setAcceptingId(order.id);
     try {
       await acceptDeliveryOrder(token, {
@@ -296,17 +406,26 @@ export default function OrdersScreen() {
       </View>
 
       <View style={styles.body}>
+        {!hasRegion ? (
+          <Pressable
+            style={styles.regionBanner}
+            onPress={() => router.push('/profile')}>
+            <Text style={styles.regionBannerTitle}>Region tanlanmagan</Text>
+            <Text style={styles.regionBannerText}>
+              {REGION_REQUIRED_MESSAGE}
+            </Text>
+          </Pressable>
+        ) : null}
+
         <OrdersFilterBar
-          cityLabel={city}
           districtLabel={district === 'Barchasi' ? 'Tuman' : district}
           distanceLabel={maxDistanceKm > 0 ? distanceLabel : 'Masofa'}
-          onCityPress={() => setFilterSheet('city')}
           onDistrictPress={openDistrictFilter}
           onDistancePress={openDistanceFilter}
           total={total}
         />
 
-        {locationDenied ? (
+        {locationDenied && hasRegion ? (
           <Pressable
             style={styles.locationBanner}
             onPress={async () => {
@@ -320,19 +439,30 @@ export default function OrdersScreen() {
         ) : null}
 
         <PullRefreshFlatList
-          data={orders}
+          data={hasRegion ? orders : []}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          loading={loading}
+          loading={loading && hasRegion}
           refreshing={refreshing}
           onRefresh={onRefresh}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Buyurtma yo‘q</Text>
-              <Text style={styles.emptyText}>
-                Seller kuryerga topshirgan mahsulotlar shu yerda chiqadi.
+              <Text style={styles.emptyTitle}>
+                {hasRegion ? 'Buyurtma yo‘q' : 'Region tanlang'}
               </Text>
+              <Text style={styles.emptyText}>
+                {hasRegion
+                  ? 'Seller kuryerga topshirgan mahsulotlar shu yerda chiqadi.'
+                  : REGION_REQUIRED_MESSAGE}
+              </Text>
+              {!hasRegion ? (
+                <Pressable
+                  style={styles.regionCta}
+                  onPress={() => router.push('/profile')}>
+                  <Text style={styles.regionCtaText}>Profilga o‘tish</Text>
+                </Pressable>
+              ) : null}
             </View>
           }
           renderItem={({ item }) => (
@@ -346,20 +476,6 @@ export default function OrdersScreen() {
       </View>
 
       <BottomNavbar />
-
-      <GlobalBottomSheet
-        visible={filterSheet === 'city'}
-        title="Shahar"
-        onClose={() => setFilterSheet(null)}>
-        <Pressable
-          style={styles.option}
-          onPress={() => {
-            setCity(TASHKENT_CITY);
-            setFilterSheet(null);
-          }}>
-          <Text style={styles.optionText}>{TASHKENT_CITY}</Text>
-        </Pressable>
-      </GlobalBottomSheet>
 
       <GlobalBottomSheet
         visible={filterSheet === 'district'}
@@ -450,6 +566,41 @@ const styles = StyleSheet.create({
     color: '#92400E',
     fontSize: 13,
     fontWeight: '600',
+  },
+  regionBanner: {
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: '#EDE9FE',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  regionBannerTitle: {
+    color: '#5B21B6',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  regionBannerText: {
+    color: '#6D28D9',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  regionCta: {
+    marginTop: 14,
+    minHeight: 42,
+    borderRadius: 12,
+    backgroundColor: '#6d32c5',
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  regionCtaText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
   },
   listContent: {
     gap: 12,

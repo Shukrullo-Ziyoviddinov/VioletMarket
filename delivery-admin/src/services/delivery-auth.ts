@@ -115,3 +115,20 @@ export function updateDeliveryTransport(
     token,
   );
 }
+
+export function updateDeliveryRegion(token: string, region: string) {
+  return apiRequest<DeliveryProfile>(
+    '/api/delivery-auth/me/region',
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ region }),
+    },
+    token,
+  );
+}
+
+export function fetchDeliveryRegions() {
+  return apiRequest<{ regions: string[] }>('/api/delivery-auth/regions', {
+    method: 'GET',
+  });
+}

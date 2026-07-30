@@ -55,6 +55,19 @@ const updateTransport = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const updateRegion = asyncHandler(async (req, res) => {
+  const data = await deliveryAuthService.updateRegion(
+    req.deliveryId,
+    req.body || {},
+  );
+  res.json({ ok: true, data });
+});
+
+const listRegions = asyncHandler(async (_req, res) => {
+  const data = deliveryAuthService.listDeliveryRegions();
+  res.json({ ok: true, data });
+});
+
 module.exports = {
   startEmailAuth,
   sendRegistrationCode,
@@ -65,4 +78,6 @@ module.exports = {
   updateProfile,
   updateProfilePhoto,
   updateTransport,
+  updateRegion,
+  listRegions,
 };
