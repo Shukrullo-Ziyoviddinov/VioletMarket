@@ -8,7 +8,14 @@
     "returnedOrders": "Returned orders",
     "salesStatistics": "Sales & statistics",
     "salesEarnings": "Sales & earnings",
-    "salesWithdrawals": "Withdrawn amounts history"
+    "salesWithdrawals": "Withdrawn amounts history",
+    "logout": "Log out"
+  },
+  "logout": {
+    "title": "Log out",
+    "message": "Are you sure you want to log out?",
+    "cancel": "No",
+    "confirm": "Yes"
   },
   "returnedOrders": {
     "title": "Returned orders",

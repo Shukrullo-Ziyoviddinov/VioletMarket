@@ -8,7 +8,14 @@
     "returnedOrders": "Qaytarilgan buyurtma",
     "salesStatistics": "Sotuv va statistika",
     "salesEarnings": "Sotuv va daromat",
-    "salesWithdrawals": "Yechilgan summalar tarixi"
+    "salesWithdrawals": "Yechilgan summalar tarixi",
+    "logout": "Chiqish"
+  },
+  "logout": {
+    "title": "Chiqish",
+    "message": "Chindan ham hisobdan chiqmoqchimisiz?",
+    "cancel": "Yo'q",
+    "confirm": "Ha"
   },
   "returnedOrders": {
     "title": "Qaytarilgan buyurtma",

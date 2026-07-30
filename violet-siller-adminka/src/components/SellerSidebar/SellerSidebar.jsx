@@ -202,11 +202,15 @@ export default function SellerSidebar({
         <button
           type="button"
           className="seller-sidebar__logout"
-          title="Chiqish"
+          title={t('sidebar.logout')}
           onClick={() => setIsLogoutConfirmOpen(true)}
         >
           <LogoutOutlined className="seller-sidebar__logout-icon" />
-          {!collapsed ? <span className="seller-sidebar__logout-text">Chiqish</span> : null}
+          {!collapsed ? (
+            <span className="seller-sidebar__logout-text">
+              {t('sidebar.logout')}
+            </span>
+          ) : null}
         </button>
       </div>
 
@@ -217,23 +221,23 @@ export default function SellerSidebar({
         labelledBy="seller-logout-confirm-title"
       >
         <h3 id="seller-logout-confirm-title" className="mini-modal__title">
-          Chiqish
+          {t('logout.title')}
         </h3>
-        <p className="mini-modal__text">Chindan ham hisobdan chiqmoqchimisiz?</p>
+        <p className="mini-modal__text">{t('logout.message')}</p>
         <div className="mini-modal__actions">
           <button
             type="button"
             className="mini-modal__btn mini-modal__btn--ghost"
             onClick={() => setIsLogoutConfirmOpen(false)}
           >
-            Yo&apos;q
+            {t('logout.cancel')}
           </button>
           <button
             type="button"
             className="mini-modal__btn mini-modal__btn--danger"
             onClick={handleConfirmLogout}
           >
-            Ha
+            {t('logout.confirm')}
           </button>
         </div>
       </MiniModal>

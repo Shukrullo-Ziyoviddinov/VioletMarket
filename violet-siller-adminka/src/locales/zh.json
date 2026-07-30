@@ -8,7 +8,14 @@
     "returnedOrders": "退回订单",
     "salesStatistics": "销售与统计",
     "salesEarnings": "销售与收入",
-    "salesWithdrawals": "已提现金额历史"
+    "salesWithdrawals": "已提现金额历史",
+    "logout": "退出登录"
+  },
+  "logout": {
+    "title": "退出登录",
+    "message": "您确定要退出当前账户吗？",
+    "cancel": "否",
+    "confirm": "是"
   },
   "returnedOrders": {
     "title": "退回订单",
