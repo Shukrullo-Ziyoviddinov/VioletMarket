@@ -7,6 +7,7 @@ import MessageChatQuotedBlock from '../MessageChatQuotedBlock/MessageChatQuotedB
 export default function SellerUserChatMessageBubble({
   message,
   onPress,
+  onImagePress,
   isHighlighted = false,
   isDeleting = false,
   onJumpToMessage,
@@ -22,7 +23,15 @@ export default function SellerUserChatMessageBubble({
         <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
       ) : null}
       {isImage ? (
-        <img src={imageSrc} alt="" className="seller-user-chat-bubble__image" />
+        <img
+          src={imageSrc}
+          alt=""
+          className="seller-user-chat-bubble__image"
+          onClick={(event) => {
+            event.stopPropagation();
+            onImagePress?.(imageSrc);
+          }}
+        />
       ) : (
         <p className="seller-user-chat-bubble__text">{message.content}</p>
       )}

@@ -9,6 +9,7 @@ import './ProductSellerChatMessageBubble.css';
 export default function ProductSellerChatMessageBubble({
   message,
   onPress,
+  onImagePress,
   isHighlighted = false,
   isDeleting = false,
   onJumpToMessage,
@@ -25,7 +26,15 @@ export default function ProductSellerChatMessageBubble({
         <MessageChatQuotedBlock replyTo={message.replyTo} onJumpToMessage={onJumpToMessage} />
       ) : null}
       {isImage ? (
-        <img src={imageSrc} alt="" className="product-seller-chat-message-bubble__image" />
+        <img
+          src={imageSrc}
+          alt=""
+          className="product-seller-chat-message-bubble__image"
+          onClick={(event) => {
+            event.stopPropagation();
+            onImagePress?.(imageSrc);
+          }}
+        />
       ) : (
         <p className="product-seller-chat-message-bubble__text">{message.content}</p>
       )}

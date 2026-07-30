@@ -44,6 +44,7 @@ export default function CourierChatModal({
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
 
   const deliveryId = courier?.deliveryId || courier?.id || '';
   const fullName =
@@ -55,7 +56,12 @@ export default function CourierChatModal({
     if (!open) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose?.();
+      if (event.key !== 'Escape') return;
+      if (previewImageUrl) {
+        setPreviewImageUrl('');
+        return;
+      }
+      onClose?.();
     };
 
     document.body.style.overflow = 'hidden';
@@ -65,7 +71,11 @@ export default function CourierChatModal({
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, previewImageUrl]);
+
+  useEffect(() => {
+    if (!open) setPreviewImageUrl('');
+  }, [open]);
 
   useEffect(() => {
     if (!open || !deliveryId) return undefined;
@@ -232,6 +242,10 @@ export default function CourierChatModal({
             ) : (
               messages.map((message) => {
                 const mine = message.sender === 'admin';
+                const imageUrl =
+                  message.type === 'image'
+                    ? resolveCourierImage(message.content) || message.content
+                    : '';
                 return (
                   <div
                     key={message.id}
@@ -248,12 +262,19 @@ export default function CourierChatModal({
                           : 'courier-chat-modal__bubble--theirs'
                       }`}
                     >
-                      {message.type === 'image' ? (
-                        <img
-                          className="courier-chat-modal__bubble-image"
-                          src={resolveCourierImage(message.content) || message.content}
-                          alt="Chat rasmi"
-                        />
+                      {imageUrl ? (
+                        <button
+                          type="button"
+                          className="courier-chat-modal__bubble-image-button"
+                          onClick={() => setPreviewImageUrl(imageUrl)}
+                          aria-label="Rasmni katta ochish"
+                        >
+                          <img
+                            className="courier-chat-modal__bubble-image"
+                            src={imageUrl}
+                            alt="Chat rasmi"
+                          />
+                        </button>
                       ) : (
                         <p className="courier-chat-modal__bubble-text">
                           {message.content}
@@ -329,6 +350,35 @@ export default function CourierChatModal({
           </div>
         </div>
       </div>
+
+      {previewImageUrl ? (
+        <div
+          className="courier-chat-modal__image-preview"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Chat rasmi"
+        >
+          <button
+            type="button"
+            className="courier-chat-modal__image-preview-backdrop"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label="Rasmni yopish"
+          />
+          <img
+            className="courier-chat-modal__image-preview-image"
+            src={previewImageUrl}
+            alt="Chat rasmi"
+          />
+          <button
+            type="button"
+            className="courier-chat-modal__image-preview-close"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label="Yopish"
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
     </div>,
     document.body,
   );

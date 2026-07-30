@@ -40,10 +40,13 @@ export default function ProductSellerChatModal({
   const [editingMessage, setEditingMessage] = useState(null);
   const [composerText, setComposerText] = useState('');
   const [deletingMessageId, setDeletingMessageId] = useState(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
   const actionMessageRef = useRef(null);
+  const previewImageRef = useRef('');
   const lockedScrollYRef = useRef(0);
 
   actionMessageRef.current = actionMessage;
+  previewImageRef.current = previewImageUrl;
 
   useEffect(() => {
     if (!open) {
@@ -53,6 +56,7 @@ export default function ProductSellerChatModal({
       setEditingMessage(null);
       setComposerText('');
       setDeletingMessageId(null);
+      setPreviewImageUrl('');
     }
   }, [open]);
 
@@ -65,6 +69,10 @@ export default function ProductSellerChatModal({
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
+        if (previewImageRef.current) {
+          setPreviewImageUrl('');
+          return;
+        }
         if (actionMessageRef.current) {
           setActionMessage(null);
           return;
@@ -190,6 +198,7 @@ export default function ProductSellerChatModal({
           messages={messages}
           loading={loading}
           onMessagePress={setActionMessage}
+          onImagePress={setPreviewImageUrl}
           deletingMessageId={deletingMessageId}
         />
         {contextProduct && !contextProductSent ? (
@@ -217,6 +226,35 @@ export default function ProductSellerChatModal({
           onReply={handleReplyMessage}
         />
       </div>
+
+      {previewImageUrl ? (
+        <div
+          className="product-seller-chat-modal__image-preview"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('productDetail.chat.image')}
+        >
+          <button
+            type="button"
+            className="product-seller-chat-modal__image-preview-backdrop"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label={t('productDetail.chat.close')}
+          />
+          <img
+            className="product-seller-chat-modal__image-preview-image"
+            src={previewImageUrl}
+            alt=""
+          />
+          <button
+            type="button"
+            className="product-seller-chat-modal__image-preview-close"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label={t('productDetail.chat.close')}
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
     </div>,
     getPortalContainer(),
   );

@@ -1,5 +1,14 @@
-import type { RefObject } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useState, type RefObject } from 'react';
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { resolveMediaUrl } from '@/config/env';
 import type { SupportChatMessage } from '@/types/support-chat';
@@ -23,6 +32,8 @@ export function SupportMessageList({
   messages,
   listRef,
 }: SupportMessageListProps) {
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
   if (!messages.length) {
     return (
       <View style={styles.empty}>
@@ -35,53 +46,101 @@ export function SupportMessageList({
   }
 
   return (
-    <ScrollView
-      ref={listRef}
-      style={styles.list}
-      contentContainerStyle={styles.listContent}
-      keyboardShouldPersistTaps="handled"
-      onContentSizeChange={() => {
-        listRef?.current?.scrollToEnd({ animated: true });
-      }}>
-      {messages.map((message) => {
-        const mine = message.sender === 'courier';
-        return (
-          <View
-            key={message.id}
-            style={[styles.bubbleRow, mine ? styles.mineRow : styles.adminRow]}>
+    <>
+      <ScrollView
+        ref={listRef}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        onContentSizeChange={() => {
+          listRef?.current?.scrollToEnd({ animated: true });
+        }}>
+        {messages.map((message) => {
+          const mine = message.sender === 'courier';
+          const imageUrl =
+            message.type === 'image'
+              ? resolveMediaUrl(message.content)
+              : null;
+          return (
             <View
-              style={[styles.bubble, mine ? styles.mineBubble : styles.adminBubble]}>
-              {message.type === 'image' ? (
-                <Image
-                  source={{ uri: resolveMediaUrl(message.content) }}
-                  style={styles.image}
-                />
-              ) : (
-                <Text
-                  style={[styles.text, mine ? styles.mineText : styles.adminText]}>
-                  {message.content}
-                </Text>
-              )}
-              <View style={[styles.meta, mine && styles.mineMeta]}>
-                <Text
-                  style={[styles.time, mine ? styles.mineTime : styles.adminTime]}>
-                  {formatTime(message.createdAt)}
-                </Text>
-                {mine ? (
+              key={message.id}
+              style={[
+                styles.bubbleRow,
+                mine ? styles.mineRow : styles.adminRow,
+              ]}>
+              <View
+                style={[
+                  styles.bubble,
+                  mine ? styles.mineBubble : styles.adminBubble,
+                ]}>
+                {imageUrl ? (
+                  <Pressable
+                    onPress={() => setPreviewImageUrl(imageUrl)}
+                    style={({ pressed }) => pressed && styles.imagePressed}>
+                    <Image source={{ uri: imageUrl }} style={styles.image} />
+                  </Pressable>
+                ) : (
                   <Text
                     style={[
-                      styles.readMark,
-                      message.readByAdmin && styles.readMarkDone,
+                      styles.text,
+                      mine ? styles.mineText : styles.adminText,
                     ]}>
-                    {message.readByAdmin ? '✓✓' : '✓'}
+                    {message.content}
                   </Text>
-                ) : null}
+                )}
+                <View style={[styles.meta, mine && styles.mineMeta]}>
+                  <Text
+                    style={[
+                      styles.time,
+                      mine ? styles.mineTime : styles.adminTime,
+                    ]}>
+                    {formatTime(message.createdAt)}
+                  </Text>
+                  {mine ? (
+                    <Text
+                      style={[
+                        styles.readMark,
+                        message.readByAdmin && styles.readMarkDone,
+                      ]}>
+                      {message.readByAdmin ? '✓✓' : '✓'}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
             </View>
-          </View>
-        );
-      })}
-    </ScrollView>
+          );
+        })}
+      </ScrollView>
+
+      <Modal
+        visible={Boolean(previewImageUrl)}
+        transparent
+        statusBarTranslucent
+        animationType="fade"
+        onRequestClose={() => setPreviewImageUrl(null)}>
+        <View style={styles.previewRoot}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setPreviewImageUrl(null)}
+          />
+          {previewImageUrl ? (
+            <Image
+              source={{ uri: previewImageUrl }}
+              style={styles.previewImage}
+              resizeMode="contain"
+            />
+          ) : null}
+          <Pressable
+            style={({ pressed }) => [
+              styles.previewClose,
+              pressed && styles.imagePressed,
+            ]}
+            onPress={() => setPreviewImageUrl(null)}>
+            <Ionicons name="close" size={28} color="#FFFFFF" />
+          </Pressable>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -152,6 +211,31 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 12,
     backgroundColor: '#E5E7EB',
+  },
+  imagePressed: {
+    opacity: 0.8,
+  },
+  previewRoot: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(0,0,0,0.94)',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewClose: {
+    position: 'absolute',
+    top: 48,
+    right: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
   },
   time: {
     fontSize: 11,

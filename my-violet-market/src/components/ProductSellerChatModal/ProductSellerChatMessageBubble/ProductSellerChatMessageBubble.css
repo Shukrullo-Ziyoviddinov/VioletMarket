@@ -61,6 +61,7 @@
   display: block;
   max-width: 220px;
   width: 100%;
+  cursor: zoom-in;
 }
 
 .product-seller-chat-message-bubble--customer .product-seller-chat-message-bubble__image {

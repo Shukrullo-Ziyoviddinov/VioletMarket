@@ -65,8 +65,7 @@ export default function ProductSellerChatComposer({
     event.target.value = '';
     if (!file || !file.type.startsWith('image/') || isSending) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    onSendImage?.(previewUrl, file);
+    onSendImage?.(file);
     setEmojiOpen(false);
   };
 

@@ -10,6 +10,7 @@ export default function ProductSellerChatMessageList({
   messages = [],
   loading = false,
   onMessagePress,
+  onImagePress,
   deletingMessageId = null,
 }) {
   const { t } = useTranslation();
@@ -66,6 +67,7 @@ export default function ProductSellerChatMessageList({
               <ProductSellerChatMessageBubble
                 message={message}
                 onPress={onMessagePress}
+                onImagePress={onImagePress}
                 isHighlighted={isHighlighted}
                 isDeleting={isDeleting}
                 onJumpToMessage={jumpToMessage}

@@ -121,7 +121,13 @@ function SellerUserChatHeader({
   );
 }
 
-function SellerUserChatMessageList({ messages, loading = false, onMessagePress, deletingMessageId = null }) {
+function SellerUserChatMessageList({
+  messages,
+  loading = false,
+  onMessagePress,
+  onImagePress,
+  deletingMessageId = null,
+}) {
   const endRef = useRef(null);
   const prevLengthRef = useRef(messages.length);
   const { highlightedMessageId, registerMessageRef, jumpToMessage } = useMessageChatJumpTo();
@@ -179,6 +185,7 @@ function SellerUserChatMessageList({ messages, loading = false, onMessagePress, 
               <SellerUserChatMessageBubble
                 message={message}
                 onPress={onMessagePress}
+                onImagePress={onImagePress}
                 isHighlighted={isHighlighted}
                 isDeleting={isDeleting}
                 onJumpToMessage={jumpToMessage}
@@ -351,9 +358,12 @@ export default function SellerUserChatModal({
   const [editingMessage, setEditingMessage] = useState(null);
   const [composerText, setComposerText] = useState('');
   const [deletingMessageId, setDeletingMessageId] = useState(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
   const actionMessageRef = useRef(null);
+  const previewImageRef = useRef('');
 
   actionMessageRef.current = actionMessage;
+  previewImageRef.current = previewImageUrl;
 
   useEffect(() => {
     if (!open) {
@@ -362,6 +372,7 @@ export default function SellerUserChatModal({
       setEditingMessage(null);
       setComposerText('');
       setDeletingMessageId(null);
+      setPreviewImageUrl('');
     }
   }, [open]);
 
@@ -370,6 +381,10 @@ export default function SellerUserChatModal({
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
+        if (previewImageRef.current) {
+          setPreviewImageUrl('');
+          return;
+        }
         if (actionMessageRef.current) {
           setActionMessage(null);
           return;
@@ -458,6 +473,7 @@ export default function SellerUserChatModal({
           messages={messages}
           loading={loading}
           onMessagePress={setActionMessage}
+          onImagePress={setPreviewImageUrl}
           deletingMessageId={deletingMessageId}
         />
         <SellerUserChatComposer
@@ -482,6 +498,35 @@ export default function SellerUserChatModal({
           onReply={handleReplyMessage}
         />
       </div>
+
+      {previewImageUrl ? (
+        <div
+          className="seller-user-chat-modal__image-preview"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Chat rasmi"
+        >
+          <button
+            type="button"
+            className="seller-user-chat-modal__image-preview-backdrop"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label="Rasmni yopish"
+          />
+          <img
+            className="seller-user-chat-modal__image-preview-image"
+            src={previewImageUrl}
+            alt=""
+          />
+          <button
+            type="button"
+            className="seller-user-chat-modal__image-preview-close"
+            onClick={() => setPreviewImageUrl('')}
+            aria-label="Yopish"
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
     </div>,
     document.body,
   );
