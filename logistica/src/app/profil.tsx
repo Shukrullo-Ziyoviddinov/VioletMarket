@@ -11,6 +11,11 @@ import {
 
 import { MyLogisticaInfoBottomSheet } from '@/components/profile/MyLogisticaInfoBottomSheet';
 import { useAuth } from '@/providers/AuthProvider';
+import { fetchLogisticaChatUnreadCount } from '@/services/logistica-chat';
+import {
+  connectLogisticaChatSocket,
+  onLogisticaChatThreadsUpdated,
+} from '@/services/logistica-chat-socket';
 import { LOGISTICA_COUNTRY_OPTIONS } from '@/types/logistica';
 import { ScreenShell } from '@/components/ScreenShell';
 import type { LogisticaProfile } from '@/types/logistica';
@@ -21,10 +26,43 @@ export default function ProfilScreen() {
   const [displayProfile, setDisplayProfile] =
     useState<LogisticaProfile | null>(profile);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   useEffect(() => {
     setDisplayProfile(profile);
   }, [profile]);
+
+  useEffect(() => {
+    if (!token) {
+      setUnreadChatCount(0);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const loadUnreadCount = async () => {
+      try {
+        const data = await fetchLogisticaChatUnreadCount(token);
+        if (!cancelled) {
+          setUnreadChatCount(data.unread || 0);
+        }
+      } catch {
+        // Profil ishlashiga chat hisoblagichi xatosi ta’sir qilmasin.
+      }
+    };
+
+    loadUnreadCount();
+    connectLogisticaChatSocket(token);
+    const unsubscribe = onLogisticaChatThreadsUpdated((payload) => {
+      if (payload.logisticaId && payload.logisticaId !== profile?.id) return;
+      loadUnreadCount();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [token, profile?.id]);
 
   const companyName = profile?.companyName || profile?.name || '—';
 
@@ -137,6 +175,13 @@ export default function ProfilScreen() {
               Asosiy admin bilan yozishma
             </Text>
           </View>
+          {unreadChatCount > 0 ? (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>
+                {unreadChatCount > 99 ? '99+' : unreadChatCount}
+              </Text>
+            </View>
+          ) : null}
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
         </Pressable>
       </ScrollView>
@@ -317,5 +362,19 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 12,
     fontWeight: '500',
+  },
+  unreadBadge: {
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 7,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#7C3AED',
+  },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
