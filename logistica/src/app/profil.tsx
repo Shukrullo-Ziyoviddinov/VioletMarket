@@ -181,6 +181,29 @@ export default function ProfilScreen() {
         </View>
 
         <Pressable
+          onPress={() => router.push('/balans')}
+          style={({ pressed }) => [
+            styles.myInfoButton,
+            pressed && styles.myInfoButtonPressed,
+          ]}
+        >
+          <View style={[styles.myInfoIcon, styles.balanceIcon]}>
+            <Ionicons name="wallet-outline" size={22} color="#059669" />
+          </View>
+          <View style={styles.myInfoText}>
+            <Text style={styles.myInfoTitle}>{t('profile.balance')}</Text>
+            <Text style={styles.myInfoSubtitle} numberOfLines={1}>
+              {t('profile.balanceSubtitle')}
+            </Text>
+          </View>
+          <Text style={styles.monthlyBalanceText} numberOfLines={1}>
+            {monthlyBalance.toLocaleString(localeForLanguage(language))}{' '}
+            {t('common.sum')}
+          </Text>
+          <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
+        </Pressable>
+
+        <Pressable
           onPress={() => setInfoModalOpen(true)}
           style={({ pressed }) => [
             styles.myInfoButton,
@@ -243,29 +266,6 @@ export default function ProfilScreen() {
               {selectedLanguageLabel}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push('/balans')}
-          style={({ pressed }) => [
-            styles.myInfoButton,
-            pressed && styles.myInfoButtonPressed,
-          ]}
-        >
-          <View style={[styles.myInfoIcon, styles.balanceIcon]}>
-            <Ionicons name="wallet-outline" size={22} color="#059669" />
-          </View>
-          <View style={styles.myInfoText}>
-            <Text style={styles.myInfoTitle}>{t('profile.balance')}</Text>
-            <Text style={styles.myInfoSubtitle} numberOfLines={1}>
-              {t('profile.balanceSubtitle')}
-            </Text>
-          </View>
-          <Text style={styles.monthlyBalanceText} numberOfLines={1}>
-            {monthlyBalance.toLocaleString(localeForLanguage(language))}{' '}
-            {t('common.sum')}
-          </Text>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
         </Pressable>
       </ScrollView>
