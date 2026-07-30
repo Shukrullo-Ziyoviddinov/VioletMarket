@@ -5,6 +5,7 @@ import { useAdminToast } from '../../context/AdminToastContext';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import LogisticaChatModal from '../LogisticaChatModal/LogisticaChatModal';
 import LogisticaActionsMenu from './LogisticaActionsMenu';
+import LogisticaDetailModal from './LogisticaDetailModal';
 import './LogisticaInfo.css';
 
 const { Title, Text } = Typography;
@@ -22,6 +23,7 @@ export default function LogisticaApproved({ profiles, loading, onChanged }) {
   const [openMenuId, setOpenMenuId] = useState('');
   const [deletingId, setDeletingId] = useState('');
   const [chatLogistica, setChatLogistica] = useState(null);
+  const [detailLogisticaId, setDetailLogisticaId] = useState('');
 
   const handleDelete = (profile) => {
     const name = profile.companyName || profile.name || profile.email || 'Logistica';
@@ -95,6 +97,7 @@ export default function LogisticaApproved({ profiles, loading, onChanged }) {
             deleting={deletingId === record.id}
             onToggle={() => setOpenMenuId(isOpen ? '' : record.id)}
             onClose={() => setOpenMenuId('')}
+            onInfo={() => setDetailLogisticaId(record.id)}
             onChat={() =>
               setChatLogistica({
                 ...record,
@@ -135,6 +138,12 @@ export default function LogisticaApproved({ profiles, loading, onChanged }) {
         open={Boolean(chatLogistica)}
         logistica={chatLogistica}
         onClose={() => setChatLogistica(null)}
+      />
+
+      <LogisticaDetailModal
+        open={Boolean(detailLogisticaId)}
+        logisticaId={detailLogisticaId}
+        onClose={() => setDetailLogisticaId('')}
       />
     </section>
   );

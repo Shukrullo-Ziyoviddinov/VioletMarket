@@ -1,12 +1,32 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DeleteOutlined, MessageOutlined, MoreOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  InfoCircleOutlined,
+  MessageOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
 import { Button } from 'antd';
 import '../ProductCardMenu/ProductCardMenu.css';
 
-function LogisticaActionsDropdown({ style, deleting, onChat, onDelete }) {
+function LogisticaActionsDropdown({
+  style,
+  deleting,
+  onInfo,
+  onChat,
+  onDelete,
+}) {
   return (
     <div className="product-card-menu__dropdown" role="menu" style={style}>
+      <button
+        type="button"
+        role="menuitem"
+        className="product-card-menu__item"
+        onClick={onInfo}
+      >
+        <InfoCircleOutlined aria-hidden="true" />
+        <span>Ma’lumot</span>
+      </button>
       <button
         type="button"
         role="menuitem"
@@ -35,6 +55,7 @@ export default function LogisticaActionsMenu({
   deleting = false,
   onToggle,
   onClose,
+  onInfo,
   onChat,
   onDelete,
 }) {
@@ -118,6 +139,10 @@ export default function LogisticaActionsMenu({
             <LogisticaActionsDropdown
               style={dropdownStyle}
               deleting={deleting}
+              onInfo={() => {
+                onClose?.();
+                onInfo?.();
+              }}
               onChat={() => {
                 onClose?.();
                 onChat?.();

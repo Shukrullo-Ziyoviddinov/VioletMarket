@@ -7,6 +7,7 @@ export default function GlobalModal({
   title = '',
   onClose,
   children,
+  wide = false,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -39,7 +40,7 @@ export default function GlobalModal({
 
       <div className="global-modal__center">
         <div
-          className="global-modal__dialog"
+          className={`global-modal__dialog${wide ? ' global-modal__dialog--wide' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="global-modal-title"

@@ -38,6 +38,10 @@
   overflow: hidden;
 }
 
+.global-modal__dialog--wide {
+  max-width: 880px;
+}
+
 .global-modal__header {
   display: flex;
   align-items: center;

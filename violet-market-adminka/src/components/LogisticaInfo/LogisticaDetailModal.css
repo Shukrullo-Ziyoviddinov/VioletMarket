@@ -1,0 +1,235 @@
+.logistica-detail-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logistica-detail-modal__loading,
+.logistica-detail-modal__error {
+  margin: 0;
+  text-align: center;
+  color: #7c6b95;
+  padding: 24px 8px;
+}
+
+.logistica-detail-modal__error {
+  color: #b91c1c;
+}
+
+.logistica-detail-modal__profile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  padding: 14px;
+  border: 1px solid #ece7f3;
+  border-radius: 14px;
+  background: #faf8ff;
+}
+
+.logistica-detail-modal__field {
+  min-width: 0;
+}
+
+.logistica-detail-modal__field--full {
+  grid-column: 1 / -1;
+}
+
+.logistica-detail-modal__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.logistica-detail-modal__value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a1842;
+  word-break: break-word;
+}
+
+.logistica-detail-modal__section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2a1842;
+}
+
+.logistica-detail-modal__balance-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.logistica-detail-modal__balance-card {
+  border: 1px solid #ece7f3;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.logistica-detail-modal__balance-card--week {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.logistica-detail-modal__balance-card--month {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.logistica-detail-modal__balance-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.logistica-detail-modal__balance-amount {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.logistica-detail-modal__balance-period {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.logistica-detail-modal__filters {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f3e8ff;
+  border: 1px solid #e9d5ff;
+}
+
+.logistica-detail-modal__filter {
+  flex: 1;
+  min-height: 36px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #6b21a8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logistica-detail-modal__filter--active {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.logistica-detail-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.logistica-detail-modal__empty {
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  color: #7c6b95;
+  border: 1px dashed #e9d5ff;
+  border-radius: 12px;
+}
+
+.logistica-detail-modal__card {
+  border: 1px solid #ece7f3;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.logistica-detail-modal__card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.logistica-detail-modal__code {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #6d28d9;
+}
+
+.logistica-detail-modal__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.logistica-detail-modal__badge--handed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.logistica-detail-modal__badge--returned {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.logistica-detail-modal__title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.logistica-detail-modal__meta {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.logistica-detail-modal__amount {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.logistica-detail-modal__more {
+  align-self: center;
+  min-height: 36px;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+  background: #fff;
+  color: #7c3aed;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.logistica-detail-modal__more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .logistica-detail-modal__profile,
+  .logistica-detail-modal__balance-row {
+    grid-template-columns: 1fr;
+  }
+}
