@@ -34,7 +34,6 @@ import {
   fetchAvailableDeliveryOrders,
 } from '@/services/delivery-orders';
 import {
-  DISTANCE_FILTERS,
   type DeliveryAvailableOrder,
 } from '@/types/delivery-order';
 type FilterSheet = 'district' | 'distance' | null;
@@ -104,15 +103,23 @@ export default function OrdersScreen() {
     const distances = source
       .map((order) => order.distanceKm)
       .filter(
-        (value): value is number => value != null && Number.isFinite(value),
+        (value): value is number =>
+          value != null && Number.isFinite(value) && value > 0,
       );
 
     if (!distances.length) return [];
 
-    return DISTANCE_FILTERS.filter((item) => {
-      if (item.value === 0) return true;
-      return distances.some((distance) => distance <= item.value);
-    });
+    const uniqueDistances = Array.from(
+      new Set(distances.map((distance) => Math.ceil(distance * 10) / 10)),
+    ).sort((a, b) => a - b);
+
+    return [
+      { label: 'Barchasi', value: 0 },
+      ...uniqueDistances.map((distance) => ({
+        label: `${distance} km gacha`,
+        value: distance,
+      })),
+    ];
   }, [allOrders, district]);
 
   const orders = useMemo(() => {
