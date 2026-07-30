@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Menu } from 'antd';
 import {
   AppstoreOutlined,
@@ -7,6 +7,7 @@ import {
   DollarOutlined,
   HistoryOutlined,
   LineChartOutlined,
+  LogoutOutlined,
   MessageOutlined,
   PauseCircleOutlined,
   PlusCircleOutlined,
@@ -16,6 +17,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import MiniModal from '../MiniModal';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { useSellerMessageThreadsUnread } from '../../hooks/useSellerMessageThreadsUnread';
 import { useSellerSupportChatUnread } from '../../hooks/useSellerSupportChatUnread';
@@ -90,7 +92,8 @@ export default function SellerSidebar({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, isAuthenticated } = useSellerAuth();
+  const { token, isAuthenticated, logout } = useSellerAuth();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const totalUnread = useSellerMessageThreadsUnread(token, isAuthenticated);
   const { unreadCount: supportUnread } = useSellerSupportChatUnread();
   const selectedKey = supportOpen
@@ -166,6 +169,12 @@ export default function SellerSidebar({
     }
   };
 
+  const handleConfirmLogout = () => {
+    setIsLogoutConfirmOpen(false);
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <aside className={`seller-sidebar${collapsed ? ' seller-sidebar--collapsed' : ''}`}>
       <div className="seller-sidebar__logo">
@@ -178,14 +187,56 @@ export default function SellerSidebar({
         />
       </div>
 
-      <Menu
-        theme="dark"
-        mode="inline"
-        className="seller-sidebar__menu"
-        selectedKeys={[selectedKey]}
-        items={sidebarMenuItems}
-        onClick={handleMenuClick}
-      />
+      <div className="seller-sidebar__menu-wrap">
+        <Menu
+          theme="dark"
+          mode="inline"
+          className="seller-sidebar__menu"
+          selectedKeys={[selectedKey]}
+          items={sidebarMenuItems}
+          onClick={handleMenuClick}
+        />
+      </div>
+
+      <div className="seller-sidebar__account">
+        <button
+          type="button"
+          className="seller-sidebar__logout"
+          title="Chiqish"
+          onClick={() => setIsLogoutConfirmOpen(true)}
+        >
+          <LogoutOutlined className="seller-sidebar__logout-icon" />
+          {!collapsed ? <span className="seller-sidebar__logout-text">Chiqish</span> : null}
+        </button>
+      </div>
+
+      <MiniModal
+        open={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        align="center"
+        labelledBy="seller-logout-confirm-title"
+      >
+        <h3 id="seller-logout-confirm-title" className="mini-modal__title">
+          Chiqish
+        </h3>
+        <p className="mini-modal__text">Chindan ham hisobdan chiqmoqchimisiz?</p>
+        <div className="mini-modal__actions">
+          <button
+            type="button"
+            className="mini-modal__btn mini-modal__btn--ghost"
+            onClick={() => setIsLogoutConfirmOpen(false)}
+          >
+            Yo&apos;q
+          </button>
+          <button
+            type="button"
+            className="mini-modal__btn mini-modal__btn--danger"
+            onClick={handleConfirmLogout}
+          >
+            Ha
+          </button>
+        </div>
+      </MiniModal>
     </aside>
   );
 }
