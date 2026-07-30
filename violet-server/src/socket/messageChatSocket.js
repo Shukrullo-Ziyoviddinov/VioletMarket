@@ -12,6 +12,10 @@ const {
   getLogisticaRoom,
   getLogisticaAdminRoom,
 } = require("./logisticaChatSocketEmitter");
+const {
+  getSellerSupportRoom,
+  getSellerSupportAdminRoom,
+} = require("./sellerSupportChatSocketEmitter");
 
 function initMessageChatSocket(httpServer) {
   const io = new Server(httpServer, {
@@ -44,7 +48,9 @@ function initMessageChatSocket(httpServer) {
       registerMessageChatSendingOnSocket(socket, io);
       registerMessageChatPresenceOnSocket(socket, io);
     } else if (identity.kind === "seller") {
-      socket.join(`message-chat:seller:${String(identity.sellerId).trim()}`);
+      const sellerId = String(identity.sellerId).trim();
+      socket.join(`message-chat:seller:${sellerId}`);
+      socket.join(getSellerSupportRoom(sellerId));
       registerMessageChatTypingOnSocket(socket, io);
       registerMessageChatSendingOnSocket(socket, io);
       registerMessageChatPresenceOnSocket(socket, io);
@@ -55,6 +61,7 @@ function initMessageChatSocket(httpServer) {
     } else if (identity.kind === "admin") {
       socket.join(getAdminRoom());
       socket.join(getLogisticaAdminRoom());
+      socket.join(getSellerSupportAdminRoom());
     }
   });
 

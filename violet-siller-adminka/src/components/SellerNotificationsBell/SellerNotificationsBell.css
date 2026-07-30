@@ -74,7 +74,13 @@
 }
 
 .seller-notifications-bell__item--unread {
-  background: #f8f6fc;
+  background: #efe8ff;
+  border-color: #c4b5fd;
+}
+
+.seller-notifications-bell__item--unread .seller-notifications-bell__content strong {
+  color: #5b21b6;
+  font-weight: 700;
 }
 
 .seller-notifications-bell__icon {

@@ -12,7 +12,13 @@ function buildAdminReturnRequestSubmittedMessage({ courierName, productCode }) {
   return `${courier} Ajdaniya so‘rovi yubordi`;
 }
 
+function buildAdminSellerSupportChatMessage(sellerName) {
+  const name = String(sellerName || "Sotuvchi").trim() || "Sotuvchi";
+  return `${name} sizga yordam chatida xabar yozdi`;
+}
+
 module.exports = {
   buildAdminPaymentRequestSubmittedMessage,
   buildAdminReturnRequestSubmittedMessage,
+  buildAdminSellerSupportChatMessage,
 };

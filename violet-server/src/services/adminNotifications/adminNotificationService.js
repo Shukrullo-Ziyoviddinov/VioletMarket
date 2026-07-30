@@ -4,7 +4,11 @@ const { HttpError } = require("../../utils/httpError");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const { nextSequence } = require("../../models/autoIncrement");
 const { toNumber } = require("../adminSales/salesStatisticsHelpers");
-const { buildAdminPaymentRequestSubmittedMessage, buildAdminReturnRequestSubmittedMessage } = require("./adminNotificationMessages");
+const {
+  buildAdminPaymentRequestSubmittedMessage,
+  buildAdminReturnRequestSubmittedMessage,
+  buildAdminSellerSupportChatMessage,
+} = require("./adminNotificationMessages");
 
 const KEEP_LIMIT = 20;
 
@@ -113,6 +117,52 @@ async function notifyAdminReturnRequestSubmitted(returnRequest) {
   return notification;
 }
 
+/**
+ * Sotuvchi yordam chatida admin’ga xabar yozganda.
+ */
+async function notifyAdminSellerSupportChatMessage({
+  sellerId,
+  account,
+  messageType,
+  content,
+}) {
+  const normalizedSellerId = String(sellerId || "").trim();
+  if (!normalizedSellerId) return null;
+
+  let sellerAccount = account;
+  if (!sellerAccount) {
+    sellerAccount = await SellerAccount.findOne({ id: normalizedSellerId })
+      .select({ id: 1, name: 1, logo: 1 })
+      .lean();
+  }
+
+  const sellerName = resolveSellerDisplayName(sellerAccount, normalizedSellerId);
+  const sellerLogoUrl = resolvePublicAssetUrl(sellerAccount?.logo || "");
+  const preview =
+    String(messageType || "") === "image"
+      ? "Rasm yuborildi"
+      : String(content || "").trim();
+  if (!preview) return null;
+
+  const id = await nextSequence("admin_notification_id");
+  const notification = await AdminNotification.create({
+    id,
+    type: "seller_support_chat_message_received",
+    paymentRequestId: null,
+    requestCode: "",
+    sellerId: normalizedSellerId,
+    sellerName,
+    sellerLogoUrl,
+    itemCount: 0,
+    totalAmount: 0,
+    message: buildAdminSellerSupportChatMessage(sellerName),
+    readAt: null,
+  });
+
+  await pruneOldAdminNotifications().catch(() => null);
+  return notification;
+}
+
 async function getUnreadCount() {
   return AdminNotification.countDocuments({ readAt: null });
 }
@@ -171,6 +221,7 @@ async function markAllNotificationsRead() {
 module.exports = {
   notifyAdminPaymentRequestSubmitted,
   notifyAdminReturnRequestSubmitted,
+  notifyAdminSellerSupportChatMessage,
   getUnreadCount,
   listNotifications,
   markNotificationRead,

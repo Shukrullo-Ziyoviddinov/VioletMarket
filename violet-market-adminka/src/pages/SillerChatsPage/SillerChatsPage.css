@@ -1,0 +1,11 @@
+.siller-chats-page {
+  width: 100%;
+  padding: 8px 4px 24px;
+}
+
+.siller-chats-page__loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

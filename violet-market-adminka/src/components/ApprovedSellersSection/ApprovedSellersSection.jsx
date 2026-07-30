@@ -3,6 +3,7 @@ import { Empty, Input, message, Table, Typography } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { activateSeller, deleteSeller, pauseSeller } from '../../api/sellersAdminApi';
 import ApprovedSellerActionsMenu from '../ApprovedSellerActionsMenu/ApprovedSellerActionsMenu';
+import SellerSupportChatModal from '../SellerSupportChatModal/SellerSupportChatModal';
 import SellerStatusBadge from '../SellerStatusBadge/SellerStatusBadge';
 import { useMiniGlobalModal } from '../../context/MiniGlobalModalContext';
 import {
@@ -45,6 +46,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
   const [openMenuShopId, setOpenMenuShopId] = useState(null);
   const [togglingShopId, setTogglingShopId] = useState(null);
   const [deletingShopId, setDeletingShopId] = useState(null);
+  const [chatSeller, setChatSeller] = useState(null);
 
   const filteredSellers = useMemo(
     () => filterApprovedSellersBySearch(sellers, searchQuery),
@@ -98,6 +100,21 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
     });
   };
 
+  const handleOpenChat = (seller) => {
+    const account = seller?.sellerAccount || {};
+    setChatSeller({
+      sellerId: seller?.shopId || account.id,
+      name:
+        seller?.shopDisplayName ||
+        account?.name?.uz ||
+        account?.name?.ru ||
+        seller?.shopId ||
+        'Sotuvchi',
+      logoUrl: account.logo || '',
+      sellerCountry: account.sellerCountry || seller?.sellerCountry || '',
+    });
+  };
+
   const columns = [
     buildFirstNameColumn(),
     buildLastNameColumn(),
@@ -119,6 +136,7 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
           togglingStatus={togglingShopId === shopId}
           onToggle={() => setOpenMenuShopId(isOpen ? null : shopId)}
           onClose={() => setOpenMenuShopId(null)}
+          onChat={() => handleOpenChat(seller)}
           onDelete={() => handleDeleteSeller(seller)}
           onToggleStatus={() => handleToggleStatus(seller)}
         />
@@ -161,6 +179,12 @@ export default function ApprovedSellersSection({ sellers, loading, onChanged }) 
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
         locale={{ emptyText: <Empty description={emptyDescription} /> }}
         scroll={filteredSellers.length ? { x: getSellersTableScrollX(APPROVED_COLUMN_KEYS) } : undefined}
+      />
+
+      <SellerSupportChatModal
+        open={Boolean(chatSeller)}
+        seller={chatSeller}
+        onClose={() => setChatSeller(null)}
       />
     </section>
   );

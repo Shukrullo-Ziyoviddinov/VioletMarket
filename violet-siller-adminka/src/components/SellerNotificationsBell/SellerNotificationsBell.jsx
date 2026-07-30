@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BellOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckCircleOutlined, CloseCircleOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import GlobalModal from '../GlobalModal/GlobalModal';
+import { OPEN_SELLER_SUPPORT_CHAT_EVENT } from '../../constants/sellerSupportChatEvents';
 import { useSellerNotifications } from '../../hooks/useSellerNotifications';
 import {
   formatNotificationBadgeCount,
@@ -11,7 +12,12 @@ import {
 } from '../../utils/notificationDisplay';
 import './SellerNotificationsBell.css';
 
-function isChatNotification(notification) {
+function isSupportChatNotification(notification) {
+  return String(notification?.type || '') === 'support_chat_message_received';
+}
+
+function isCustomerChatNotification(notification) {
+  if (isSupportChatNotification(notification)) return false;
   return (
     String(notification?.type || '') === 'chat_message_received'
     || Boolean(String(notification?.userId || '').trim())
@@ -55,6 +61,27 @@ function ChatNotificationItem({ notification }) {
   );
 }
 
+function SupportChatNotificationItem({ notification }) {
+  const preview = notification.previewText || '';
+
+  return (
+    <>
+      <div className="seller-notifications-bell__avatar">
+        <CustomerServiceOutlined />
+      </div>
+      <div className="seller-notifications-bell__content">
+        <strong>{notification.message || 'Sizga yordam xizmati javob yozdi'}</strong>
+        {preview ? (
+          <p className="seller-notifications-bell__preview" title={preview}>
+            {preview}
+          </p>
+        ) : null}
+        <span>{formatNotificationDateTime(notification.createdAt)}</span>
+      </div>
+    </>
+  );
+}
+
 function PaymentNotificationItem({ notification }) {
   return (
     <>
@@ -77,23 +104,30 @@ export default function SellerNotificationsBell() {
     loading,
     loadNotifications,
     markAllRead,
+    markDisplayedAsRead,
     refreshUnreadCount,
   } = useSellerNotifications();
 
   const handleOpen = async () => {
     setOpen(true);
     await loadNotifications();
-    await markAllRead();
+    await markAllRead({ preserveDisplay: true });
     await refreshUnreadCount();
   };
 
   const handleClose = () => {
+    markDisplayedAsRead();
     setOpen(false);
   };
 
   const handleItemClick = (notification) => {
     setOpen(false);
-    if (isChatNotification(notification)) {
+    markDisplayedAsRead();
+    if (isSupportChatNotification(notification)) {
+      window.dispatchEvent(new CustomEvent(OPEN_SELLER_SUPPORT_CHAT_EVENT));
+      return;
+    }
+    if (isCustomerChatNotification(notification)) {
       const nameParts = String(notification.userName || '')
         .trim()
         .split(/\s+/)
@@ -153,7 +187,9 @@ export default function SellerNotificationsBell() {
                 }`}
                 onClick={() => handleItemClick(notification)}
               >
-                {isChatNotification(notification) ? (
+                {isSupportChatNotification(notification) ? (
+                  <SupportChatNotificationItem notification={notification} />
+                ) : isCustomerChatNotification(notification) ? (
                   <ChatNotificationItem notification={notification} />
                 ) : (
                   <PaymentNotificationItem notification={notification} />

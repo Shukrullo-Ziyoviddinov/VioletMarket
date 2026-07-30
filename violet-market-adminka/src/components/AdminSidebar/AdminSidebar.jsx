@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Menu } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -28,6 +28,7 @@ import {
   RollbackOutlined,
 } from '@ant-design/icons';
 import ScrollArea from '../ScrollArea/ScrollArea';
+import { useSellerSupportChatUnread } from '../../hooks/useSellerSupportChatUnread';
 import './AdminSidebar.css';
 
 const LOGO_SRC = `${process.env.PUBLIC_URL}/img/vlll_preview_rev_1.png`;
@@ -126,6 +127,12 @@ const menuItems = [
     label: 'Logistica bilan chat',
     route: '/logistica-chats',
   },
+  {
+    key: 'siller-chats',
+    icon: <MessageOutlined />,
+    label: 'Sotuvchi bilan chat',
+    route: '/siller-chats',
+  },
   { key: 'payment-requests', icon: <DollarOutlined />, label: "To'lov so'rovlari", route: '/payment-requests' },
   { key: 'withdrawals', icon: <HistoryOutlined />, label: 'Yechilgan summalar tarixi', route: '/withdrawals' },
   { key: 'shipping-country', icon: <GlobalOutlined />, label: "Mahsulot hududi" },
@@ -134,6 +141,25 @@ const menuItems = [
   { key: 'flash-sale-rules', icon: <ControlOutlined />, label: 'Flash sale rules' },
   { key: 'footer', icon: <LayoutOutlined />, label: 'Footer' },
 ];
+
+function formatUnreadCount(count) {
+  return count > 99 ? '99+' : String(count);
+}
+
+function SidebarUnreadBadge({ count, collapsed = false }) {
+  if (!count || count <= 0) return null;
+
+  return (
+    <span
+      className={`admin-sidebar__unread-badge${
+        collapsed ? ' admin-sidebar__unread-badge--icon' : ''
+      }`}
+      aria-label={`${count} ta o'qilmagan xabar`}
+    >
+      {formatUnreadCount(count)}
+    </span>
+  );
+}
 
 function getSelectedKeyFromPath(pathname) {
   if (pathname === '/customers/statistics') return 'customers-statistics';
@@ -153,6 +179,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/logistica') return 'logistica-accounts';
   if (pathname === '/courier-chats') return 'courier-chats';
   if (pathname === '/logistica-chats') return 'logistica-chats';
+  if (pathname === '/siller-chats') return 'siller-chats';
   if (pathname === '/payment-requests') return 'payment-requests';
   if (pathname === '/withdrawals') return 'withdrawals';
   return 'dashboard';
@@ -162,6 +189,38 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedKey = getSelectedKeyFromPath(location.pathname);
+  const sellerSupportUnread = useSellerSupportChatUnread();
+
+  const sidebarMenuItems = useMemo(
+    () =>
+      menuItems.map(({ key, icon, label, title }) => {
+        if (key !== 'siller-chats') {
+          return { key, icon, label, title };
+        }
+
+        return {
+          key,
+          title,
+          icon: (
+            <span className="admin-sidebar__icon-wrap">
+              {icon}
+              {collapsed ? (
+                <SidebarUnreadBadge count={sellerSupportUnread} collapsed />
+              ) : null}
+            </span>
+          ),
+          label: (
+            <span className="admin-sidebar__menu-label">
+              <span>{label}</span>
+              {!collapsed ? (
+                <SidebarUnreadBadge count={sellerSupportUnread} />
+              ) : null}
+            </span>
+          ),
+        };
+      }),
+    [collapsed, sellerSupportUnread],
+  );
 
   const handleMenuClick = ({ key }) => {
     const selectedSection = menuItems.find((item) => item.key === key);
@@ -198,12 +257,7 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
           mode="inline"
           className="admin-sidebar__menu"
           selectedKeys={[selectedKey]}
-          items={menuItems.map(({ key, icon, label, title }) => ({
-            key,
-            icon,
-            label,
-            title,
-          }))}
+          items={sidebarMenuItems}
           onClick={handleMenuClick}
         />
       </ScrollArea>

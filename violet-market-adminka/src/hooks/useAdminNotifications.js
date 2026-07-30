@@ -35,15 +35,31 @@ export function useAdminNotifications() {
     }
   }, []);
 
-  const markAllRead = useCallback(async () => {
+  const markAllRead = useCallback(async ({ preserveDisplay = false } = {}) => {
     try {
       const data = await markAllAdminNotificationsRead();
       setUnreadCount(data.unreadCount);
-      setNotifications((rows) => rows.map((row) => ({ ...row, readAt: row.readAt || new Date().toISOString() })));
+      if (!preserveDisplay) {
+        setNotifications((rows) =>
+          rows.map((row) => ({
+            ...row,
+            readAt: row.readAt || new Date().toISOString(),
+          })),
+        );
+      }
     } catch {
       await refreshUnreadCount();
     }
   }, [refreshUnreadCount]);
+
+  const markDisplayedAsRead = useCallback(() => {
+    setNotifications((rows) =>
+      rows.map((row) => ({
+        ...row,
+        readAt: row.readAt || new Date().toISOString(),
+      })),
+    );
+  }, []);
 
   useEffect(() => {
     refreshUnreadCount();
@@ -58,5 +74,6 @@ export function useAdminNotifications() {
     refreshUnreadCount,
     loadNotifications,
     markAllRead,
+    markDisplayedAsRead,
   };
 }

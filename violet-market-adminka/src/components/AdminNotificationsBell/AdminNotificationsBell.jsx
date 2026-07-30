@@ -19,24 +19,31 @@ export default function AdminNotificationsBell() {
     loading,
     loadNotifications,
     markAllRead,
+    markDisplayedAsRead,
     refreshUnreadCount,
   } = useAdminNotifications();
 
   const handleOpen = async () => {
     setOpen(true);
     await loadNotifications();
-    await markAllRead();
+    await markAllRead({ preserveDisplay: true });
     await refreshUnreadCount();
   };
 
   const handleClose = () => {
+    markDisplayedAsRead();
     setOpen(false);
   };
 
   const handleItemClick = (notification) => {
     setOpen(false);
+    markDisplayedAsRead();
     if (notification?.type === 'return_request_submitted') {
       navigate('/return-requests');
+      return;
+    }
+    if (notification?.type === 'seller_support_chat_message_received') {
+      navigate('/siller-chats');
       return;
     }
     navigate('/payment-requests');

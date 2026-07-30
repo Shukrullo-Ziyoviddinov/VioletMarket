@@ -12,6 +12,7 @@ const {
   buildSellerPaymentRequestRejectedMessage,
   buildChatPreviewText,
   buildSellerChatMessageReceivedMessage,
+  buildSellerSupportChatMessageReceivedMessage,
 } = require("./sellerNotificationMessages");
 
 const KEEP_LIMIT = 20;
@@ -160,6 +161,31 @@ async function notifySellerChatMessageReceived({ sellerId, userId, messageType, 
   return notification;
 }
 
+async function notifySellerSupportChatMessageReceived({
+  sellerId,
+  messageType,
+  content,
+}) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) return null;
+
+  const previewText = buildChatPreviewText(messageType, content);
+  if (!previewText) return null;
+
+  const id = await nextSequence("seller_notification_id");
+  const notification = await SellerNotification.create({
+    id,
+    sellerId: normalizedSellerId,
+    type: "support_chat_message_received",
+    previewText,
+    message: buildSellerSupportChatMessageReceivedMessage(),
+    readAt: null,
+  });
+
+  await pruneOldSellerNotifications(normalizedSellerId).catch(() => null);
+  return notification;
+}
+
 async function getUnreadCountForSeller(sellerId) {
   const normalizedSellerId = cleanSellerId(sellerId);
   if (!normalizedSellerId) return 0;
@@ -234,6 +260,7 @@ async function markAllNotificationsReadForSeller(sellerId) {
 module.exports = {
   notifySellerPaymentRequestReviewed,
   notifySellerChatMessageReceived,
+  notifySellerSupportChatMessageReceived,
   getUnreadCountForSeller,
   listNotificationsForSeller,
   markNotificationReadForSeller,

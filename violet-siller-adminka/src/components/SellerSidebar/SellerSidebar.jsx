@@ -1,10 +1,24 @@
 import React, { useMemo } from 'react';
 import { Menu } from 'antd';
-import { AppstoreOutlined, DashboardOutlined, DollarOutlined, HistoryOutlined, LineChartOutlined, MessageOutlined, PauseCircleOutlined, PlusCircleOutlined, RollbackOutlined, ShoppingOutlined, ShopOutlined } from '@ant-design/icons';
+import {
+  AppstoreOutlined,
+  CustomerServiceOutlined,
+  DashboardOutlined,
+  DollarOutlined,
+  HistoryOutlined,
+  LineChartOutlined,
+  MessageOutlined,
+  PauseCircleOutlined,
+  PlusCircleOutlined,
+  RollbackOutlined,
+  ShoppingOutlined,
+  ShopOutlined,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import { useSellerMessageThreadsUnread } from '../../hooks/useSellerMessageThreadsUnread';
+import { useSellerSupportChatUnread } from '../../hooks/useSellerSupportChatUnread';
 import './SellerSidebar.css';
 
 const LOGO_SRC = `${process.env.PUBLIC_URL}/img/${encodeURIComponent('vio_preview_rev_1 (1).png')}`;
@@ -30,6 +44,7 @@ const menuItems = [
   { key: 'sales-earnings', icon: <DollarOutlined />, labelKey: 'sidebar.salesEarnings', route: '/sales/earnings' },
   { key: 'sales-withdrawals', icon: <HistoryOutlined />, labelKey: 'sidebar.salesWithdrawals', route: '/sales/withdrawals' },
   { key: 'messages', icon: <MessageOutlined />, labelKey: 'messages.title', route: '/messages' },
+  { key: 'support', icon: <CustomerServiceOutlined />, label: 'Yordam' },
   { key: 'market-info', icon: <ShopOutlined />, labelKey: 'marketInfo.title' },
 ];
 
@@ -66,46 +81,80 @@ function getSelectedKeyFromPath(pathname) {
   return 'home';
 }
 
-export default function SellerSidebar({ collapsed = false, onOpenMarketInfo }) {
+export default function SellerSidebar({
+  collapsed = false,
+  onOpenMarketInfo,
+  onOpenSupport,
+  supportOpen = false,
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { token, isAuthenticated } = useSellerAuth();
   const totalUnread = useSellerMessageThreadsUnread(token, isAuthenticated);
-  const selectedKey = getSelectedKeyFromPath(location.pathname);
+  const { unreadCount: supportUnread } = useSellerSupportChatUnread();
+  const selectedKey = supportOpen
+    ? 'support'
+    : getSelectedKeyFromPath(location.pathname);
 
   const sidebarMenuItems = useMemo(
     () =>
-      menuItems.map(({ key, icon, labelKey, route }) => {
-        const resolvedLabel = t(labelKey);
+      menuItems.map((item) => {
+        const { key, icon, labelKey, label, route } = item;
+        const resolvedLabel = labelKey ? t(labelKey) : label;
 
-        if (key !== 'messages') {
-          return { key, icon, label: resolvedLabel, route };
+        if (key === 'messages') {
+          return {
+            key,
+            icon: (
+              <span className="seller-sidebar__icon-wrap">
+                {icon}
+                {collapsed ? <SidebarUnreadBadge count={totalUnread} collapsed /> : null}
+              </span>
+            ),
+            label: (
+              <span className="seller-sidebar__menu-label">
+                <span>{resolvedLabel}</span>
+                {!collapsed ? <SidebarUnreadBadge count={totalUnread} /> : null}
+              </span>
+            ),
+            route,
+          };
         }
 
-        return {
-          key,
-          icon: (
-            <span className="seller-sidebar__icon-wrap">
-              {icon}
-              {collapsed ? <SidebarUnreadBadge count={totalUnread} collapsed /> : null}
-            </span>
-          ),
-          label: (
-            <span className="seller-sidebar__menu-label">
-              <span>{resolvedLabel}</span>
-              {!collapsed ? <SidebarUnreadBadge count={totalUnread} /> : null}
-            </span>
-          ),
-          route,
-        };
+        if (key === 'support') {
+          return {
+            key,
+            icon: (
+              <span className="seller-sidebar__icon-wrap">
+                {icon}
+                {collapsed ? (
+                  <SidebarUnreadBadge count={supportUnread} collapsed />
+                ) : null}
+              </span>
+            ),
+            label: (
+              <span className="seller-sidebar__menu-label">
+                <span>{resolvedLabel}</span>
+                {!collapsed ? <SidebarUnreadBadge count={supportUnread} /> : null}
+              </span>
+            ),
+          };
+        }
+
+        return { key, icon, label: resolvedLabel, route };
       }),
-    [t, totalUnread, collapsed],
+    [t, totalUnread, supportUnread, collapsed],
   );
 
   const handleMenuClick = ({ key }) => {
     const selectedItem = menuItems.find((item) => item.key === key);
     if (!selectedItem) return;
+
+    if (key === 'support') {
+      onOpenSupport?.();
+      return;
+    }
 
     if (selectedItem.route) {
       navigate(selectedItem.route);

@@ -66,6 +66,7 @@ const adminReturnedProductsRoutes = require("./adminReturnedProducts.routes");
 const adminCustomerRefundRoutes = require("./adminCustomerRefund.routes");
 const supportChatRoutes = require("./supportChat.routes");
 const logisticaChatRoutes = require("./logisticaChat.routes");
+const sellerSupportChatRoutes = require("./sellerSupportChat.routes");
 const deliveryOrdersRoutes = require("./deliveryOrders.routes");
 
 const router = express.Router();
@@ -137,6 +138,7 @@ router.use(adminReturnedProductsRoutes);
 router.use(adminCustomerRefundRoutes);
 router.use(supportChatRoutes);
 router.use(logisticaChatRoutes);
+router.use(sellerSupportChatRoutes);
 router.use(deliveryOrdersRoutes);
 
 module.exports = router;

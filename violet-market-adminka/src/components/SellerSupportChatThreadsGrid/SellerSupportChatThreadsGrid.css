@@ -1,0 +1,112 @@
+.seller-support-chat-threads {
+  width: 100%;
+}
+
+.seller-support-chat-threads__head {
+  margin-bottom: 18px;
+}
+
+.seller-support-chat-threads__title {
+  margin: 0 !important;
+}
+
+.seller-support-chat-threads__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.seller-support-chat-threads__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #ece7f3;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 14px rgba(42, 24, 66, 0.06);
+}
+
+.seller-support-chat-threads__card:hover {
+  transform: translateY(-2px);
+  border-color: #c4b5fd;
+  box-shadow: 0 10px 26px rgba(124, 58, 237, 0.14);
+}
+
+.seller-support-chat-threads__card .ant-avatar {
+  flex-shrink: 0;
+  border: 2px solid #ede9fe;
+}
+
+.seller-support-chat-threads__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.seller-support-chat-threads__name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.seller-support-chat-threads__name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2a1842;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-support-chat-threads__badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #6d28d9;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-support-chat-threads__preview {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #7c6b95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seller-support-chat-threads__time {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #a89bb8;
+}
+
+@media (max-width: 1400px) {
+  .seller-support-chat-threads__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .seller-support-chat-threads__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .seller-support-chat-threads__grid {
+    grid-template-columns: 1fr;
+  }
+}

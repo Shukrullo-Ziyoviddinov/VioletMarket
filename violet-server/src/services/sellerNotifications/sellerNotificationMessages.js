@@ -41,10 +41,15 @@ function buildSellerChatMessageReceivedMessage(userName) {
   return `${name} sizga xabar yubordi`;
 }
 
+function buildSellerSupportChatMessageReceivedMessage() {
+  return "Sizga yordam xizmati javob yozdi";
+}
+
 module.exports = {
   buildProductLabel,
   buildSellerPaymentRequestApprovedMessage,
   buildSellerPaymentRequestRejectedMessage,
   buildChatPreviewText,
   buildSellerChatMessageReceivedMessage,
+  buildSellerSupportChatMessageReceivedMessage,
 };

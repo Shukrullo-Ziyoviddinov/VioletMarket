@@ -48,17 +48,33 @@ export function useSellerNotifications() {
     }
   }, [token]);
 
-  const markAllRead = useCallback(async () => {
+  const markAllRead = useCallback(async ({ preserveDisplay = false } = {}) => {
     if (!token) return;
 
     try {
       const data = await markAllSellerNotificationsRead(token);
       setUnreadCount(data.unreadCount);
-      setNotifications((rows) => rows.map((row) => ({ ...row, readAt: row.readAt || new Date().toISOString() })));
+      if (!preserveDisplay) {
+        setNotifications((rows) =>
+          rows.map((row) => ({
+            ...row,
+            readAt: row.readAt || new Date().toISOString(),
+          })),
+        );
+      }
     } catch {
       await refreshUnreadCount();
     }
   }, [refreshUnreadCount, token]);
+
+  const markDisplayedAsRead = useCallback(() => {
+    setNotifications((rows) =>
+      rows.map((row) => ({
+        ...row,
+        readAt: row.readAt || new Date().toISOString(),
+      })),
+    );
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
@@ -79,5 +95,6 @@ export function useSellerNotifications() {
     refreshUnreadCount,
     loadNotifications,
     markAllRead,
+    markDisplayedAsRead,
   };
 }

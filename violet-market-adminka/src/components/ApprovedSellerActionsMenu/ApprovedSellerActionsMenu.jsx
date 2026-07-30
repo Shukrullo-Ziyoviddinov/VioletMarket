@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DeleteOutlined,
+  MessageOutlined,
   MoreOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
@@ -15,11 +16,22 @@ function ApprovedSellerActionsDropdown({
   isPaused,
   deleting,
   togglingStatus,
+  onChat,
   onDelete,
   onToggleStatus,
 }) {
   return (
     <div className="product-card-menu__dropdown" role="menu" style={style}>
+      <button
+        type="button"
+        role="menuitem"
+        className="product-card-menu__item"
+        onClick={onChat}
+        disabled={deleting || togglingStatus}
+      >
+        <MessageOutlined aria-hidden="true" />
+        <span>Chat</span>
+      </button>
       <button
         type="button"
         role="menuitem"
@@ -65,6 +77,7 @@ export default function ApprovedSellerActionsMenu({
   togglingStatus = false,
   onToggle,
   onClose,
+  onChat,
   onDelete,
   onToggleStatus,
 }) {
@@ -130,6 +143,11 @@ export default function ApprovedSellerActionsMenu({
     onDelete?.();
   };
 
+  const handleChat = () => {
+    onClose?.();
+    onChat?.();
+  };
+
   const handleToggleStatus = () => {
     onClose?.();
     onToggleStatus?.();
@@ -159,6 +177,7 @@ export default function ApprovedSellerActionsMenu({
               isPaused={isPaused}
               deleting={deleting}
               togglingStatus={togglingStatus}
+              onChat={handleChat}
               onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}
             />,
