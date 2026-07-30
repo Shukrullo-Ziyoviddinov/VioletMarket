@@ -250,15 +250,45 @@ export async function fetchCargoReturnsBoard(
   };
 }
 
-export async function fetchCargoHistory(token: string, page = 1, limit = 30) {
+export type CargoHistoryPeriodParams = {
+  mode?: 'month' | 'week';
+  year?: number;
+  month?: number;
+  weekStart?: string;
+  kind?: 'all' | 'handed_over' | 'returned';
+};
+
+export async function fetchCargoHistory(
+  token: string,
+  page = 1,
+  limit = 30,
+  period: CargoHistoryPeriodParams = {},
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (period.kind) query.set('kind', period.kind);
+  if (period.mode) query.set('mode', period.mode);
+  if (period.mode === 'month') {
+    if (period.year) query.set('year', String(period.year));
+    if (period.month) query.set('month', String(period.month));
+  } else if (period.mode === 'week' && period.weekStart) {
+    query.set('weekStart', period.weekStart);
+  }
+
   const data = await apiRequest<{
     page: number;
     limit: number;
     total: number;
     totalPages: number;
+    counts?: {
+      handedOver?: number;
+      returned?: number;
+    };
     items: Array<Record<string, unknown>>;
   }>(
-    `/api/logistica-auth/history?page=${page}&limit=${limit}`,
+    `/api/logistica-auth/history?${query.toString()}`,
     { method: 'GET' },
     token,
   );
@@ -285,6 +315,10 @@ export async function fetchCargoHistory(token: string, page = 1, limit = 30) {
     limit: Number(data?.limit) || limit,
     total: Number(data?.total) || items.length,
     totalPages: Number(data?.totalPages) || 1,
+    counts: {
+      handedOver: Math.max(0, Number(data?.counts?.handedOver) || 0),
+      returned: Math.max(0, Number(data?.counts?.returned) || 0),
+    },
     items,
   };
 }

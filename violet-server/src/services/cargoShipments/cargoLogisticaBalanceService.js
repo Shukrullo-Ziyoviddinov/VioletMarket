@@ -240,4 +240,6 @@ module.exports = {
   buildWeekRange,
   buildMonthOptions,
   buildWeekOptions,
+  nowUzParts,
+  mondayOnOrBefore,
 };

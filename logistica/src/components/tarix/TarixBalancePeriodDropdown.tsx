@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 export type TarixBalancePeriodOption = {
   key: string;
@@ -21,7 +21,12 @@ export function TarixBalancePeriodDropdown({
   if (!open) return null;
 
   return (
-    <View style={styles.dropdown}>
+    <ScrollView
+      style={styles.dropdown}
+      nestedScrollEnabled
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       {options.map((option) => {
         const active = option.key === selectedKey;
         return (
@@ -42,7 +47,7 @@ export function TarixBalancePeriodDropdown({
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 

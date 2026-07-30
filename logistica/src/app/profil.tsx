@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -16,6 +16,7 @@ import {
   connectLogisticaChatSocket,
   onLogisticaChatThreadsUpdated,
 } from '@/services/logistica-chat-socket';
+import { fetchCargoHistoryBalance } from '@/services/logistica-shipments';
 import { LOGISTICA_COUNTRY_OPTIONS } from '@/types/logistica';
 import { ScreenShell } from '@/components/ScreenShell';
 import type { LogisticaProfile } from '@/types/logistica';
@@ -27,6 +28,7 @@ export default function ProfilScreen() {
     useState<LogisticaProfile | null>(profile);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [monthlyBalance, setMonthlyBalance] = useState(0);
 
   useEffect(() => {
     setDisplayProfile(profile);
@@ -63,6 +65,34 @@ export default function ProfilScreen() {
       unsubscribe();
     };
   }, [token, profile?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) {
+        setMonthlyBalance(0);
+        return undefined;
+      }
+
+      let cancelled = false;
+      const now = new Date();
+
+      fetchCargoHistoryBalance(token, {
+        mode: 'month',
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      })
+        .then((data) => {
+          if (!cancelled) setMonthlyBalance(data.balance || 0);
+        })
+        .catch(() => {
+          // Profil ishlashiga balans xatosi ta’sir qilmasin.
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [token]),
+  );
 
   const companyName = profile?.companyName || profile?.name || '—';
 
@@ -182,6 +212,28 @@ export default function ProfilScreen() {
               </Text>
             </View>
           ) : null}
+          <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push('/balans')}
+          style={({ pressed }) => [
+            styles.myInfoButton,
+            pressed && styles.myInfoButtonPressed,
+          ]}
+        >
+          <View style={[styles.myInfoIcon, styles.balanceIcon]}>
+            <Ionicons name="wallet-outline" size={22} color="#059669" />
+          </View>
+          <View style={styles.myInfoText}>
+            <Text style={styles.myInfoTitle}>Balans</Text>
+            <Text style={styles.myInfoSubtitle} numberOfLines={1}>
+              Joriy oyning to‘langan cargo mablag‘i
+            </Text>
+          </View>
+          <Text style={styles.monthlyBalanceText} numberOfLines={1}>
+            {monthlyBalance.toLocaleString('uz-UZ')} so‘m
+          </Text>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
         </Pressable>
       </ScrollView>
@@ -348,6 +400,9 @@ const styles = StyleSheet.create({
   helpIcon: {
     backgroundColor: '#DBEAFE',
   },
+  balanceIcon: {
+    backgroundColor: '#D1FAE5',
+  },
   myInfoText: {
     flex: 1,
     minWidth: 0,
@@ -376,5 +431,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
+  },
+  monthlyBalanceText: {
+    maxWidth: 108,
+    color: '#059669',
+    fontSize: 12,
+    fontWeight: '900',
+    textAlign: 'right',
   },
 });
