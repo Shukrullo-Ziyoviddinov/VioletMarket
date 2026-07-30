@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,25 +7,26 @@ const ACCENT = '#7c3aed';
 
 export default function AuthGateScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
-        <Text style={styles.title}>Logistica</Text>
-        <Text style={styles.subtitle}>Davom etish uchun tanlang</Text>
+        <Text style={styles.title}>{t('auth.brand')}</Text>
+        <Text style={styles.subtitle}>{t('auth.gate.subtitle')}</Text>
 
         <Pressable
           style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
           onPress={() => router.push('/register')}
         >
-          <Text style={styles.primaryText}>Ro‘yxatdan o‘tish</Text>
+          <Text style={styles.primaryText}>{t('auth.register')}</Text>
         </Pressable>
 
         <Pressable
           style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
           onPress={() => router.push('/login')}
         >
-          <Text style={styles.secondaryText}>Kirish</Text>
+          <Text style={styles.secondaryText}>{t('auth.login')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>

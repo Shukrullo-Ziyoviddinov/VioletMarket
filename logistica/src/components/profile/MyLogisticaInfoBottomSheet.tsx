@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/services/api';
@@ -36,6 +37,7 @@ export function MyLogisticaInfoBottomSheet({
   onClose,
   onSaved,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const translateY = useRef(new Animated.Value(700)).current;
@@ -154,11 +156,11 @@ export function MyLogisticaInfoBottomSheet({
     const address = chinaAddress.trim();
     const phone = chinaPhone.trim();
     if (!address) {
-      setError('Xitoydagi manzilni kiriting');
+      setError(t('profileInfo.addressRequired'));
       return;
     }
     if (!phone) {
-      setError('Xitoydagi telefon raqamini kiriting');
+      setError(t('profileInfo.phoneRequired'));
       return;
     }
 
@@ -184,7 +186,7 @@ export function MyLogisticaInfoBottomSheet({
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Ma’lumotlarni saqlab bo‘lmadi',
+          : t('profileInfo.saveFailed'),
       );
     } finally {
       setSaving(false);
@@ -226,10 +228,8 @@ export function MyLogisticaInfoBottomSheet({
           >
             <View style={styles.dragArea} {...panResponder.panHandlers}>
               <View style={styles.dragHandle} />
-              <Text style={styles.title}>Mening ma’lumotlarim</Text>
-              <Text style={styles.subtitle}>
-                Xitoydagi ombor va aloqa ma’lumotlarini kiriting
-              </Text>
+              <Text style={styles.title}>{t('profileInfo.title')}</Text>
+              <Text style={styles.subtitle}>{t('profileInfo.subtitle')}</Text>
             </View>
 
             <ScrollView
@@ -242,12 +242,12 @@ export function MyLogisticaInfoBottomSheet({
               showsVerticalScrollIndicator={false}
             >
               <View style={styles.field}>
-                <Text style={styles.label}>Xitoydagi manzil</Text>
+                <Text style={styles.label}>{t('profileInfo.addressLabel')}</Text>
                 <TextInput
                   value={chinaAddress}
                   onChangeText={setChinaAddress}
                   editable={!saving}
-                  placeholder="Ombor yoki ofis manzili"
+                  placeholder={t('profileInfo.addressPlaceholder')}
                   placeholderTextColor="#9CA3AF"
                   style={[styles.input, styles.multiline]}
                   multiline
@@ -256,7 +256,7 @@ export function MyLogisticaInfoBottomSheet({
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Xitoydagi telefon raqami</Text>
+                <Text style={styles.label}>{t('profileInfo.phoneLabel')}</Text>
                 <TextInput
                   value={chinaPhone}
                   onChangeText={setChinaPhone}
@@ -271,13 +271,16 @@ export function MyLogisticaInfoBottomSheet({
 
               <View style={styles.field}>
                 <Text style={styles.label}>
-                  Qisqacha tavsif <Text style={styles.optional}>(ixtiyoriy)</Text>
+                  {t('profileInfo.descriptionLabel')}{' '}
+                  <Text style={styles.optional}>
+                    {t('profileInfo.optional')}
+                  </Text>
                 </Text>
                 <TextInput
                   value={profileDescription}
                   onChangeText={setProfileDescription}
                   editable={!saving}
-                  placeholder="Qo‘shimcha ma’lumot"
+                  placeholder={t('profileInfo.descriptionPlaceholder')}
                   placeholderTextColor="#9CA3AF"
                   style={[styles.input, styles.description]}
                   multiline
@@ -301,7 +304,7 @@ export function MyLogisticaInfoBottomSheet({
                 {saving ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.saveText}>Saqlash</Text>
+                  <Text style={styles.saveText}>{t('common.save')}</Text>
                 )}
               </Pressable>
             </ScrollView>

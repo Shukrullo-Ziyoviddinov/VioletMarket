@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export type TarixBalanceMode = 'month' | 'week';
 
@@ -7,15 +8,16 @@ type Props = {
   onChange: (value: TarixBalanceMode) => void;
 };
 
-const OPTIONS: Array<{ key: TarixBalanceMode; label: string }> = [
-  { key: 'month', label: 'Oy' },
-  { key: 'week', label: 'Hafta' },
-];
-
 export function TarixBalanceModeFilter({ value, onChange }: Props) {
+  const { t } = useTranslation();
+  const options: Array<{ key: TarixBalanceMode; label: string }> = [
+    { key: 'month', label: t('balance.modeMonth') },
+    { key: 'week', label: t('balance.modeWeek') },
+  ];
+
   return (
     <View style={styles.row} accessibilityRole="tablist">
-      {OPTIONS.map((item) => {
+      {options.map((item) => {
         const active = item.key === value;
         return (
           <Pressable

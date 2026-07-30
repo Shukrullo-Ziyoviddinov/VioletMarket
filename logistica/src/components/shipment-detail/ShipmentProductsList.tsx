@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { ShipmentProduct } from '@/types/shipment';
@@ -7,9 +8,11 @@ type Props = {
 };
 
 export function ShipmentProductsList({ products }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>Mahsulotlar</Text>
+      <Text style={styles.title}>{t('shipments.detail.products')}</Text>
       <View style={styles.card}>
         {products.map((product, index) => (
           <View key={product.id}>

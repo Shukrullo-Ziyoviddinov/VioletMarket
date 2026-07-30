@@ -6,6 +6,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type LogisticaChatComposerProps = {
   value: string;
@@ -24,6 +25,7 @@ export function LogisticaChatComposer({
   sending,
   disabled,
 }: LogisticaChatComposerProps) {
+  const { t } = useTranslation();
   const canSend = Boolean(value.trim()) && !sending && !disabled;
 
   return (
@@ -44,7 +46,7 @@ export function LogisticaChatComposer({
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
-        placeholder="Xabar yozing..."
+        placeholder={t('help.placeholder')}
         placeholderTextColor="#9CA3AF"
         editable={!sending && !disabled}
         multiline

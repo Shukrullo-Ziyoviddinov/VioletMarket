@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Pressable,
   ScrollView,
@@ -10,7 +11,10 @@ import {
 } from 'react-native';
 
 import { MyLogisticaInfoBottomSheet } from '@/components/profile/MyLogisticaInfoBottomSheet';
+import { LanguageModal } from '@/components/profile/LanguageModal';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
+import { useAppLanguage } from '@/providers/LanguageProvider';
 import { fetchLogisticaChatUnreadCount } from '@/services/logistica-chat';
 import {
   connectLogisticaChatSocket,
@@ -22,11 +26,14 @@ import { ScreenShell } from '@/components/ScreenShell';
 import type { LogisticaProfile } from '@/types/logistica';
 
 export default function ProfilScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { profile, token } = useAuth();
+  const { language } = useAppLanguage();
   const [displayProfile, setDisplayProfile] =
     useState<LogisticaProfile | null>(profile);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [monthlyBalance, setMonthlyBalance] = useState(0);
 
@@ -96,10 +103,15 @@ export default function ProfilScreen() {
 
   const companyName = profile?.companyName || profile?.name || '—';
 
-  const countryLabel =
-    LOGISTICA_COUNTRY_OPTIONS.find(
-      (item) => item.key === profile?.logisticaCountry,
-    )?.label || profile?.logisticaCountry || '—';
+  const countryOption = LOGISTICA_COUNTRY_OPTIONS.find(
+    (item) => item.key === profile?.logisticaCountry,
+  );
+  const countryLabel = profile?.logisticaCountry
+    ? t(`countries.${profile.logisticaCountry}`, {
+        defaultValue: countryOption?.label || profile.logisticaCountry,
+      })
+    : '—';
+  const selectedLanguageLabel = t(`language.${language}`);
 
   const initial = String(companyName || 'L').trim().charAt(0).toUpperCase();
   const hasInfo = Boolean(
@@ -107,7 +119,7 @@ export default function ProfilScreen() {
   );
 
   return (
-    <ScreenShell title="Profil">
+    <ScreenShell title={t('profile.title')}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.wrap}
@@ -121,7 +133,7 @@ export default function ProfilScreen() {
             <Text style={styles.companyName}>{companyName}</Text>
             <View style={styles.roleBadge}>
               <Ionicons name="cube-outline" size={14} color="#6D28D9" />
-              <Text style={styles.roleText}>Logistica hamkori</Text>
+              <Text style={styles.roleText}>{t('profile.partner')}</Text>
             </View>
           </View>
         </View>
@@ -132,7 +144,7 @@ export default function ProfilScreen() {
               <Ionicons name="business-outline" size={22} color="#7C3AED" />
             </View>
             <View style={styles.infoText}>
-              <Text style={styles.label}>Kompaniya nomi</Text>
+              <Text style={styles.label}>{t('profile.companyName')}</Text>
               <Text style={styles.value} numberOfLines={2}>
                 {companyName}
               </Text>
@@ -146,7 +158,7 @@ export default function ProfilScreen() {
               <Ionicons name="mail-outline" size={22} color="#2563EB" />
             </View>
             <View style={styles.infoText}>
-              <Text style={styles.label}>Gmail</Text>
+              <Text style={styles.label}>{t('profile.email')}</Text>
               <Text style={styles.value} numberOfLines={2}>
                 {profile?.email || '—'}
               </Text>
@@ -160,7 +172,7 @@ export default function ProfilScreen() {
               <Ionicons name="location-outline" size={22} color="#059669" />
             </View>
             <View style={styles.infoText}>
-              <Text style={styles.label}>Logistica davlati</Text>
+              <Text style={styles.label}>{t('profile.country')}</Text>
               <Text style={styles.value} numberOfLines={2}>
                 {countryLabel}
               </Text>
@@ -179,11 +191,11 @@ export default function ProfilScreen() {
             <Ionicons name="person-outline" size={22} color="#7C3AED" />
           </View>
           <View style={styles.myInfoText}>
-            <Text style={styles.myInfoTitle}>Mening ma’lumotlarim</Text>
+            <Text style={styles.myInfoTitle}>{t('profile.myInfo')}</Text>
             <Text style={styles.myInfoSubtitle} numberOfLines={1}>
               {hasInfo
                 ? displayProfile?.chinaAddress
-                : 'Xitoydagi manzil va telefonni kiriting'}
+                : t('profile.enterChinaDetails')}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
@@ -200,9 +212,9 @@ export default function ProfilScreen() {
             <Ionicons name="chatbubbles-outline" size={22} color="#2563EB" />
           </View>
           <View style={styles.myInfoText}>
-            <Text style={styles.myInfoTitle}>Yordam</Text>
+            <Text style={styles.myInfoTitle}>{t('profile.help')}</Text>
             <Text style={styles.myInfoSubtitle} numberOfLines={1}>
-              Asosiy admin bilan yozishma
+              {t('profile.helpSubtitle')}
             </Text>
           </View>
           {unreadChatCount > 0 ? (
@@ -212,6 +224,25 @@ export default function ProfilScreen() {
               </Text>
             </View>
           ) : null}
+          <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => setLanguageModalOpen(true)}
+          style={({ pressed }) => [
+            styles.myInfoButton,
+            pressed && styles.myInfoButtonPressed,
+          ]}
+        >
+          <View style={[styles.myInfoIcon, styles.languageIcon]}>
+            <Ionicons name="language-outline" size={22} color="#D97706" />
+          </View>
+          <View style={styles.myInfoText}>
+            <Text style={styles.myInfoTitle}>{t('profile.appLanguage')}</Text>
+            <Text style={styles.myInfoSubtitle} numberOfLines={1}>
+              {selectedLanguageLabel}
+            </Text>
+          </View>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
         </Pressable>
 
@@ -226,13 +257,14 @@ export default function ProfilScreen() {
             <Ionicons name="wallet-outline" size={22} color="#059669" />
           </View>
           <View style={styles.myInfoText}>
-            <Text style={styles.myInfoTitle}>Balans</Text>
+            <Text style={styles.myInfoTitle}>{t('profile.balance')}</Text>
             <Text style={styles.myInfoSubtitle} numberOfLines={1}>
-              Joriy oyning to‘langan cargo mablag‘i
+              {t('profile.balanceSubtitle')}
             </Text>
           </View>
           <Text style={styles.monthlyBalanceText} numberOfLines={1}>
-            {monthlyBalance.toLocaleString('uz-UZ')} so‘m
+            {monthlyBalance.toLocaleString(localeForLanguage(language))}{' '}
+            {t('common.sum')}
           </Text>
           <Ionicons name="chevron-forward" size={21} color="#A78BFA" />
         </Pressable>
@@ -244,6 +276,10 @@ export default function ProfilScreen() {
         profile={displayProfile}
         onClose={() => setInfoModalOpen(false)}
         onSaved={setDisplayProfile}
+      />
+      <LanguageModal
+        visible={languageModalOpen}
+        onClose={() => setLanguageModalOpen(false)}
       />
     </ScreenShell>
   );
@@ -399,6 +435,9 @@ const styles = StyleSheet.create({
   },
   helpIcon: {
     backgroundColor: '#DBEAFE',
+  },
+  languageIcon: {
+    backgroundColor: '#FEF3C7',
   },
   balanceIcon: {
     backgroundColor: '#D1FAE5',

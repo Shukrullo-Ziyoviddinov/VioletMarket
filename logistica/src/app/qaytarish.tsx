@@ -9,9 +9,11 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import { GlobalConfirmModal } from '@/components/GlobalConfirmModal';
 import { ScreenShell } from '@/components/ScreenShell';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import {
@@ -34,10 +36,6 @@ type ReturnItem = {
   status: string;
 };
 
-function formatMoney(value: number) {
-  return `${Math.max(0, value || 0).toLocaleString('uz-UZ')} so'm`;
-}
-
 function mergeUnique(prev: ReturnItem[], next: ReturnItem[]) {
   const map = new Map<string, ReturnItem>();
   for (const row of prev) map.set(row.id, row);
@@ -54,7 +52,12 @@ function ReturnCard({
   tone: 'pending' | 'approved';
   onPress?: () => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
   const interactive = Boolean(onPress);
+  const formatMoney = (value: number) =>
+    `${Math.max(0, value || 0).toLocaleString(locale)} ${t('common.sum')}`;
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -67,7 +70,7 @@ function ReturnCard({
     >
       <View style={styles.cardTop}>
         <Text style={styles.code} numberOfLines={1}>
-          {item.requestCode || item.productCode || '—'}
+          {item.requestCode || item.productCode || t('account.dash')}
         </Text>
         <Text
           style={[
@@ -75,28 +78,32 @@ function ReturnCard({
             tone === 'pending' ? styles.badgePending : styles.badgeApproved,
           ]}
         >
-          {tone === 'pending' ? 'Admin kutmoqda' : 'Tasdiqlangan'}
+          {tone === 'pending'
+            ? t('returns.statusPending')
+            : t('returns.statusApproved')}
         </Text>
       </View>
       <Text style={styles.title} numberOfLines={2}>
         {item.productTitle}
       </Text>
       <Text style={styles.meta}>
-        {item.storeName || 'Siller'} · #{item.orderId}
+        {item.storeName || t('account.sellerFallback')} · #{item.orderId}
       </Text>
       <Text style={styles.meta}>
-        {item.cargoCountryLabel || 'Cargo'} · {formatMoney(item.amount)}
+        {item.cargoCountryLabel || t('account.cargoFallback')} ·{' '}
+        {formatMoney(item.amount)}
       </Text>
       {tone === 'approved' ? (
-        <Text style={styles.hint}>Bosib «Ha» bilan yakunlang</Text>
+        <Text style={styles.hint}>{t('returns.hintApproved')}</Text>
       ) : (
-        <Text style={styles.hint}>Asosiy admin tasdiqlashini kuting</Text>
+        <Text style={styles.hint}>{t('returns.hintPending')}</Text>
       )}
     </Pressable>
   );
 }
 
 export default function QaytarishScreen() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [pending, setPending] = useState<ReturnItem[]>([]);
   const [approved, setApproved] = useState<ReturnItem[]>([]);
@@ -118,7 +125,7 @@ export default function QaytarishScreen() {
         setPending([]);
         setApproved([]);
         setLoading(false);
-        setError('Avtorizatsiya talab qilinadi');
+        setError(t('account.authRequired'));
         return;
       }
 
@@ -142,7 +149,7 @@ export default function QaytarishScreen() {
         setError(
           err instanceof ApiError
             ? err.message
-            : 'Ro‘yxatni yuklab bo‘lmadi',
+            : t('returns.loadListFailed'),
         );
         if (mode === 'initial') {
           setPending([]);
@@ -153,7 +160,7 @@ export default function QaytarishScreen() {
         setRefreshing(false);
       }
     },
-    [token],
+    [t, token],
   );
 
   useEffect(() => {
@@ -175,7 +182,7 @@ export default function QaytarishScreen() {
       setPendingTotalPages(data.pending.totalPages);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Yana yuklab bo‘lmadi',
+        err instanceof ApiError ? err.message : t('account.loadMoreFailed'),
       );
     } finally {
       setLoadingMorePending(false);
@@ -199,7 +206,7 @@ export default function QaytarishScreen() {
       setApprovedTotalPages(data.approved.totalPages);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Yana yuklab bo‘lmadi',
+        err instanceof ApiError ? err.message : t('account.loadMoreFailed'),
       );
     } finally {
       setLoadingMoreApproved(false);
@@ -215,7 +222,7 @@ export default function QaytarishScreen() {
       await load('refresh');
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Qaytarib bo‘lmadi',
+        err instanceof ApiError ? err.message : t('returns.confirmFailed'),
       );
     } finally {
       setConfirmLoading(false);
@@ -225,14 +232,14 @@ export default function QaytarishScreen() {
   const empty = pending.length === 0 && approved.length === 0;
 
   return (
-    <ScreenShell title="Qaytarish">
+    <ScreenShell title={t('returns.title')}>
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator color={ACCENT} size="large" />
         </View>
       ) : error && empty ? (
         <View style={styles.centered}>
-          <Text style={styles.errorTitle}>Yuklanmadi</Text>
+          <Text style={styles.errorTitle}>{t('account.loadFailed')}</Text>
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
@@ -240,7 +247,7 @@ export default function QaytarishScreen() {
               void load();
             }}
           >
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
       ) : empty ? (
@@ -248,11 +255,8 @@ export default function QaytarishScreen() {
           <View style={styles.emptyIconWrap}>
             <Ionicons name="return-down-back-outline" size={58} color="#C4B5FD" />
           </View>
-          <Text style={styles.emptyTitle}>Qaytarish yo‘q</Text>
-          <Text style={styles.emptyText}>
-            So‘rov yuborilganda «Admin kutmoqda»da, tasdiqdan keyin yakunlash
-            uchun shu yerda chiqadi.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('returns.emptyTitle')}</Text>
+          <Text style={styles.emptyText}>{t('returns.emptyText')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -271,9 +275,11 @@ export default function QaytarishScreen() {
         >
           {error ? <Text style={styles.inlineError}>{error}</Text> : null}
 
-          <Text style={styles.sectionTitle}>Admin kutmoqda</Text>
+          <Text style={styles.sectionTitle}>{t('returns.sectionPending')}</Text>
           {pending.length === 0 ? (
-            <Text style={styles.sectionEmpty}>Kutilayotgan so‘rov yo‘q</Text>
+            <Text style={styles.sectionEmpty}>
+              {t('returns.sectionPendingEmpty')}
+            </Text>
           ) : (
             pending.map((item) => (
               <ReturnCard key={`p-${item.id}`} item={item} tone="pending" />
@@ -293,17 +299,17 @@ export default function QaytarishScreen() {
               {loadingMorePending ? (
                 <ActivityIndicator color={ACCENT} />
               ) : (
-                <Text style={styles.moreText}>Yana yuklash</Text>
+                <Text style={styles.moreText}>{t('account.loadMore')}</Text>
               )}
             </Pressable>
           ) : null}
 
           <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>
-            Tasdiqlangan
+            {t('returns.sectionApproved')}
           </Text>
           {approved.length === 0 ? (
             <Text style={styles.sectionEmpty}>
-              Yakunlash uchun tasdiqlangan mahsulot yo‘q
+              {t('returns.sectionApprovedEmpty')}
             </Text>
           ) : (
             approved.map((item) => (
@@ -329,7 +335,7 @@ export default function QaytarishScreen() {
               {loadingMoreApproved ? (
                 <ActivityIndicator color={ACCENT} />
               ) : (
-                <Text style={styles.moreText}>Yana yuklash</Text>
+                <Text style={styles.moreText}>{t('account.loadMore')}</Text>
               )}
             </Pressable>
           ) : null}
@@ -338,14 +344,14 @@ export default function QaytarishScreen() {
 
       <GlobalConfirmModal
         open={Boolean(selected)}
-        title="Qaytarishni tasdiqlaysizmi?"
+        title={t('returns.confirmTitle')}
         message={
           selected
-            ? `${selected.productTitle} sillerga qaytariladi (Yaroqsiz — omborga kirmaydi).`
+            ? t('returns.confirmMessage', { title: selected.productTitle })
             : ''
         }
-        confirmText="Ha"
-        cancelText="Yo'q"
+        confirmText={t('common.yes')}
+        cancelText={t('common.no')}
         loading={confirmLoading}
         onConfirm={() => {
           void handleConfirm();

@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
+
+import type { WeightLabel } from '@/types/shipment';
 
 type Props = {
   productCount: number;
-  weightLabel: string;
+  weightLabel: WeightLabel | string;
   weightKg: number;
   warehouseAddress: string;
   note: string;
@@ -17,6 +20,15 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function translateWeightLabel(
+  t: (key: string) => string,
+  label: WeightLabel | string,
+) {
+  return String(label) === "Og'irlik"
+    ? t('shipments.weight.exact')
+    : t('shipments.weight.estimated');
+}
+
 export function ShipmentRequestInfo({
   productCount,
   weightLabel,
@@ -24,17 +36,28 @@ export function ShipmentRequestInfo({
   warehouseAddress,
   note,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>So‘rov ma’lumotlari</Text>
+      <Text style={styles.title}>{t('shipments.detail.requestInfo')}</Text>
       <View style={styles.card}>
-        <InfoRow label="Mahsulot soni" value={`${productCount} ta`} />
+        <InfoRow
+          label={t('shipments.detail.productCount')}
+          value={t('shipments.detail.productCountValue', { count: productCount })}
+        />
         <View style={styles.line} />
-        <InfoRow label={weightLabel} value={`${weightKg} kg`} />
+        <InfoRow
+          label={translateWeightLabel(t, weightLabel)}
+          value={`${weightKg} kg`}
+        />
         <View style={styles.line} />
-        <InfoRow label="Xitoy ombori manzili" value={warehouseAddress} />
+        <InfoRow
+          label={t('shipments.detail.chinaWarehouse')}
+          value={warehouseAddress}
+        />
         <View style={styles.line} />
-        <InfoRow label="Izoh" value={note} />
+        <InfoRow label={t('shipments.detail.note')} value={note} />
       </View>
     </View>
   );

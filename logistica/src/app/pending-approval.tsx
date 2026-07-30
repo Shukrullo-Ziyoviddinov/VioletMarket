@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -20,6 +21,7 @@ function stringParam(value: string | string[] | undefined) {
 
 export default function PendingApprovalScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ email?: string }>();
   const email = stringParam(params.email);
   const [message, setMessage] = useState('');
@@ -32,21 +34,19 @@ export default function PendingApprovalScreen() {
     try {
       const result = await getApprovalStatus(email);
       if (result.status === 'active') {
-        setMessage(
-          'So‘rovingiz tasdiqlandi. Endi Gmail orqali kirishingiz mumkin.',
-        );
+        setMessage(t('auth.pending.approved'));
         return;
       }
       if (result.status === 'pending') {
-        setMessage('Hali ham admin tasdiqlashi kutilmoqda.');
+        setMessage(t('auth.pending.stillPending'));
         return;
       }
-      setMessage(
-        'So‘rov topilmadi yoki bekor qilingan. Qayta ro‘yxatdan o‘tishingiz mumkin.',
-      );
+      setMessage(t('auth.pending.notFound'));
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : 'Holatni tekshirib bo‘lmadi',
+        error instanceof Error
+          ? error.message
+          : t('auth.errors.statusCheckFailed'),
       );
     } finally {
       setIsChecking(false);
@@ -60,11 +60,8 @@ export default function PendingApprovalScreen() {
           <View style={styles.iconCircle}>
             <Ionicons name="time-outline" size={36} color={ACCENT} />
           </View>
-          <Text style={styles.title}>Admin tasdiqlashini kuting</Text>
-          <Text style={styles.description}>
-            Ro‘yxatdan o‘tish so‘rovingiz asosiy adminga yuborildi. Tasdiqlangach
-            shu Gmail orqali hisobingizga kira olasiz.
-          </Text>
+          <Text style={styles.title}>{t('auth.pending.title')}</Text>
+          <Text style={styles.description}>{t('auth.pending.description')}</Text>
           {email ? <Text style={styles.email}>{email}</Text> : null}
 
           {message ? <Text style={styles.message}>{message}</Text> : null}
@@ -81,7 +78,9 @@ export default function PendingApprovalScreen() {
             {isChecking ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.primaryButtonText}>Holatni tekshirish</Text>
+              <Text style={styles.primaryButtonText}>
+                {t('auth.pending.checkStatus')}
+              </Text>
             )}
           </Pressable>
 
@@ -92,7 +91,9 @@ export default function PendingApprovalScreen() {
             ]}
             onPress={() => router.replace('/register')}
           >
-            <Text style={styles.secondaryButtonText}>Kirish sahifasiga</Text>
+            <Text style={styles.secondaryButtonText}>
+              {t('auth.pending.goToLogin')}
+            </Text>
           </Pressable>
         </View>
       </View>

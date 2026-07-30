@@ -14,6 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LogisticaChatComposer } from '@/components/yordam/LogisticaChatComposer';
@@ -33,6 +34,7 @@ import {
 import type { LogisticaChatMessage } from '@/types/logistica-chat';
 
 export default function YordamScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { token, profile, isLoading } = useAuth();
   const listRef = useRef<ScrollView | null>(null);
@@ -62,8 +64,8 @@ export default function YordamScreen() {
       } catch (error) {
         if (!cancelled) {
           Alert.alert(
-            'Xato',
-            error instanceof Error ? error.message : 'Chat yuklanmadi',
+            t('common.error'),
+            error instanceof Error ? error.message : t('help.loadFailed'),
           );
         }
       } finally {
@@ -107,7 +109,7 @@ export default function YordamScreen() {
       unsubscribe();
       unsubscribeRead();
     };
-  }, [token, profile?.id]);
+  }, [profile?.id, t, token]);
 
   async function handleSend() {
     if (!token || sending) return;
@@ -124,8 +126,8 @@ export default function YordamScreen() {
       });
     } catch (error) {
       Alert.alert(
-        'Xato',
-        error instanceof Error ? error.message : 'Xabar yuborilmadi',
+        t('common.error'),
+        error instanceof Error ? error.message : t('help.sendFailed'),
       );
     } finally {
       setSending(false);
@@ -138,8 +140,8 @@ export default function YordamScreen() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(
-        'Galereya ruxsati',
-        'Rasm yuborish uchun galereya ruxsatini yoqing.',
+        t('help.galleryPermissionTitle'),
+        t('help.galleryPermissionText'),
       );
       return;
     }
@@ -164,7 +166,7 @@ export default function YordamScreen() {
       });
 
       if (!saved.base64) {
-        throw new Error('Rasmni o‘qib bo‘lmadi');
+        throw new Error(t('help.imageReadFailed'));
       }
 
       const data = await sendLogisticaChatImageMessage(
@@ -177,8 +179,8 @@ export default function YordamScreen() {
       });
     } catch (error) {
       Alert.alert(
-        'Xato',
-        error instanceof Error ? error.message : 'Rasm yuborilmadi',
+        t('common.error'),
+        error instanceof Error ? error.message : t('help.imageSendFailed'),
       );
     } finally {
       setSending(false);
@@ -212,8 +214,8 @@ export default function YordamScreen() {
             <Ionicons name="arrow-back" size={22} color="#4C1D95" />
           </Pressable>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Yordam</Text>
-            <Text style={styles.headerSubtitle}>Asosiy admin bilan chat</Text>
+            <Text style={styles.headerTitle}>{t('help.title')}</Text>
+            <Text style={styles.headerSubtitle}>{t('help.subtitle')}</Text>
           </View>
         </View>
 

@@ -9,9 +9,11 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { TarixBalancePanel } from '@/components/tarix/TarixBalancePanel';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import { fetchCargoHistory } from '@/services/logistica-shipments';
@@ -35,23 +37,6 @@ type HistoryItem = {
   at: string | null;
 };
 
-function formatWhen(value: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString('uz-UZ', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function formatMoney(value: number) {
-  return `${Math.max(0, value || 0).toLocaleString('uz-UZ')} so'm`;
-}
-
 function mergeUnique(prev: HistoryItem[], next: HistoryItem[]) {
   const map = new Map<string, HistoryItem>();
   for (const row of prev) map.set(row.id, row);
@@ -60,6 +45,8 @@ function mergeUnique(prev: HistoryItem[], next: HistoryItem[]) {
 }
 
 export default function TarixScreen() {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
   const { token } = useAuth();
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [page, setPage] = useState(1);
@@ -70,12 +57,28 @@ export default function TarixScreen() {
   const [error, setError] = useState('');
   const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
 
+  const formatWhen = (value: string | null) => {
+    if (!value) return t('account.dash');
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return t('account.dash');
+    return date.toLocaleString(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const formatMoney = (value: number) =>
+    `${Math.max(0, value || 0).toLocaleString(locale)} ${t('common.sum')}`;
+
   const load = useCallback(
     async (mode: 'initial' | 'refresh' = 'initial') => {
       if (!token) {
         setItems([]);
         setLoading(false);
-        setError('Avtorizatsiya talab qilinadi');
+        setError(t('account.authRequired'));
         return;
       }
 
@@ -93,9 +96,7 @@ export default function TarixScreen() {
         }
       } catch (err) {
         setError(
-          err instanceof ApiError
-            ? err.message
-            : 'Tarixni yuklab bo‘lmadi',
+          err instanceof ApiError ? err.message : t('history.loadFailed'),
         );
         if (mode === 'initial') setItems([]);
       } finally {
@@ -103,7 +104,7 @@ export default function TarixScreen() {
         setRefreshing(false);
       }
     },
-    [token],
+    [t, token],
   );
 
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function TarixScreen() {
       setTotalPages(data.totalPages);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Yana yuklab bo‘lmadi',
+        err instanceof ApiError ? err.message : t('account.loadMoreFailed'),
       );
     } finally {
       setLoadingMore(false);
@@ -129,7 +130,7 @@ export default function TarixScreen() {
   };
 
   return (
-    <ScreenShell title="Tarix">
+    <ScreenShell title={t('history.title')}>
       <TarixBalancePanel refreshKey={balanceRefreshKey} />
 
       {loading ? (
@@ -138,7 +139,7 @@ export default function TarixScreen() {
         </View>
       ) : error && items.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.errorTitle}>Yuklanmadi</Text>
+          <Text style={styles.errorTitle}>{t('account.loadFailed')}</Text>
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
@@ -146,7 +147,7 @@ export default function TarixScreen() {
               void load();
             }}
           >
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
       ) : items.length === 0 ? (
@@ -154,11 +155,8 @@ export default function TarixScreen() {
           <View style={styles.emptyIconWrap}>
             <Ionicons name="time-outline" size={58} color="#C4B5FD" />
           </View>
-          <Text style={styles.emptyTitle}>Tarix bo‘sh</Text>
-          <Text style={styles.emptyText}>
-            «To‘landi» (topshirilgan) va sillerga qaytarilganlar shu yerda
-            saqlanadi.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('history.emptyTitle')}</Text>
+          <Text style={styles.emptyText}>{t('history.emptyText')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -188,7 +186,7 @@ export default function TarixScreen() {
               >
                 <View style={styles.cardTop}>
                   <Text style={styles.code} numberOfLines={1}>
-                    {item.requestCode || item.productCode || '—'}
+                    {item.requestCode || item.productCode || t('account.dash')}
                   </Text>
                   <Text
                     style={[
@@ -196,17 +194,20 @@ export default function TarixScreen() {
                       isReturned ? styles.badgeReturned : styles.badgeHanded,
                     ]}
                   >
-                    {isReturned ? 'Qaytarilgan' : 'Topshirilgan'}
+                    {isReturned
+                      ? t('history.statusReturned')
+                      : t('history.statusHandedOver')}
                   </Text>
                 </View>
                 <Text style={styles.title} numberOfLines={2}>
                   {item.productTitle}
                 </Text>
                 <Text style={styles.meta}>
-                  {item.storeName || 'Siller'} · #{item.orderId}
+                  {item.storeName || t('account.sellerFallback')} · #
+                  {item.orderId}
                 </Text>
                 <Text style={styles.meta}>
-                  {item.cargoCountryLabel || 'Cargo'}
+                  {item.cargoCountryLabel || t('account.cargoFallback')}
                   {item.amount > 0 ? ` · ${formatMoney(item.amount)}` : ''}
                 </Text>
                 <Text style={styles.when}>{formatWhen(item.at)}</Text>
@@ -227,7 +228,7 @@ export default function TarixScreen() {
               {loadingMore ? (
                 <ActivityIndicator color={ACCENT} />
               ) : (
-                <Text style={styles.moreText}>Yana yuklash</Text>
+                <Text style={styles.moreText}>{t('account.loadMore')}</Text>
               )}
             </Pressable>
           ) : null}

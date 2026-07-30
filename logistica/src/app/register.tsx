@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -35,6 +36,7 @@ type LoginStep = 'email' | 'code';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { signIn } = useAuth();
 
   const [tab, setTab] = useState<Tab>('register');
@@ -51,9 +53,9 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const countryLabel =
-    LOGISTICA_COUNTRY_OPTIONS.find((item) => item.key === country)?.label ||
-    'Davlatni tanlang';
+  const countryLabel = country
+    ? t(`auth.countries.${country}`)
+    : t('auth.registerScreen.selectCountry');
 
   function switchTab(next: Tab) {
     setTab(next);
@@ -65,15 +67,15 @@ export default function RegisterScreen() {
   async function onRegisterNext() {
     if (isSubmitting) return;
     if (companyName.trim().length < 2) {
-      setError('Kompaniya nomini kiriting');
+      setError(t('auth.validation.companyNameRequired'));
       return;
     }
     if (!country) {
-      setError('Logistica davlatini tanlang');
+      setError(t('auth.validation.countryRequired'));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('To‘g‘ri Gmail manzilini kiriting');
+      setError(t('auth.validation.invalidGmail'));
       return;
     }
 
@@ -108,7 +110,7 @@ export default function RegisterScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod yuborilmadi',
+          : t('auth.errors.codeNotSent'),
       );
     } finally {
       setIsSubmitting(false);
@@ -118,7 +120,7 @@ export default function RegisterScreen() {
   async function onLoginNext() {
     if (isSubmitting) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail.trim())) {
-      setError('To‘g‘ri Gmail manzilini kiriting');
+      setError(t('auth.validation.invalidGmail'));
       return;
     }
 
@@ -142,7 +144,7 @@ export default function RegisterScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod yuborilmadi',
+          : t('auth.errors.codeNotSent'),
       );
     } finally {
       setIsSubmitting(false);
@@ -153,7 +155,7 @@ export default function RegisterScreen() {
     if (isSubmitting) return;
     const code = loginCode.replace(/\D/g, '');
     if (code.length !== 6) {
-      setError('6 xonali kodni kiriting');
+      setError(t('auth.validation.codeRequired'));
       return;
     }
 
@@ -167,7 +169,7 @@ export default function RegisterScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod tasdiqlanmadi',
+          : t('auth.errors.codeNotVerified'),
       );
     } finally {
       setIsSubmitting(false);
@@ -182,7 +184,7 @@ export default function RegisterScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {tab === 'register' ? "Ro‘yxatdan o‘tish" : 'Kirish'}
+            {tab === 'register' ? t('auth.register') : t('auth.login')}
           </Text>
         </View>
 
@@ -201,7 +203,7 @@ export default function RegisterScreen() {
                   tab === 'register' && styles.tabTextActive,
                 ]}
               >
-                Ro‘yxatdan o‘tish
+                {t('auth.register')}
               </Text>
             </Pressable>
             <Pressable
@@ -211,29 +213,33 @@ export default function RegisterScreen() {
               <Text
                 style={[styles.tabText, tab === 'login' && styles.tabTextActive]}
               >
-                Kirish
+                {t('auth.login')}
               </Text>
             </Pressable>
           </View>
 
           {tab === 'register' ? (
             <>
-              <Text style={styles.title}>Logistica profili</Text>
+              <Text style={styles.title}>
+                {t('auth.registerScreen.profileTitle')}
+              </Text>
               <Text style={styles.subtitle}>
-                Kompaniya, davlat va Gmail ma’lumotlarini kiriting.
+                {t('auth.registerScreen.profileSubtitle')}
               </Text>
 
               <View style={styles.form}>
                 <FormField
-                  label="Kompaniya nomi"
+                  label={t('auth.registerScreen.companyName')}
                   value={companyName}
                   onChangeText={setCompanyName}
-                  placeholder="Kompaniya nomi"
+                  placeholder={t('auth.registerScreen.companyNamePlaceholder')}
                   autoCapitalize="words"
                 />
 
                 <View style={styles.fieldWrap}>
-                  <Text style={styles.label}>Logistica davlati</Text>
+                  <Text style={styles.label}>
+                    {t('auth.registerScreen.country')}
+                  </Text>
                   <Pressable
                     style={styles.select}
                     onPress={() => setPickerOpen(true)}
@@ -251,10 +257,10 @@ export default function RegisterScreen() {
                 </View>
 
                 <FormField
-                  label="Gmail"
+                  label={t('auth.gmail')}
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="example@gmail.com"
+                  placeholder={t('auth.gmailPlaceholder')}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -275,41 +281,51 @@ export default function RegisterScreen() {
                 {isSubmitting ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.buttonText}>Keyingisi</Text>
+                  <Text style={styles.buttonText}>{t('auth.next')}</Text>
                 )}
               </Pressable>
             </>
           ) : (
             <>
               <Text style={styles.title}>
-                {loginStep === 'email' ? 'Gmail orqali kirish' : 'Parol / kod'}
+                {loginStep === 'email'
+                  ? t('auth.registerScreen.loginTitle')
+                  : t('auth.registerScreen.codeTitle')}
               </Text>
               <Text style={styles.subtitle}>
-                {loginStep === 'email'
-                  ? 'Gmailingizni kiriting — kod yuboriladi.'
-                  : `${loginEmail.trim().toLowerCase()} manziliga yuborilgan 6 xonali kodni kiriting.`}
+                {loginStep === 'email' ? (
+                  t('auth.registerScreen.loginSubtitle')
+                ) : (
+                  <Trans
+                    i18nKey="auth.registerScreen.codeSubtitle"
+                    values={{ email: loginEmail.trim().toLowerCase() }}
+                    components={{ highlight: <Text style={styles.emailHighlight} /> }}
+                  />
+                )}
               </Text>
 
               {loginStep === 'email' ? (
                 <FormField
-                  label="Gmail"
+                  label={t('auth.gmail')}
                   value={loginEmail}
                   onChangeText={setLoginEmail}
-                  placeholder="example@gmail.com"
+                  placeholder={t('auth.gmailPlaceholder')}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
               ) : (
                 <View style={styles.fieldWrap}>
-                  <Text style={styles.label}>Parol (kod)</Text>
+                  <Text style={styles.label}>
+                    {t('auth.registerScreen.passwordCode')}
+                  </Text>
                   <TextInput
                     style={styles.codeInput}
                     value={loginCode}
                     onChangeText={(value) =>
                       setLoginCode(value.replace(/\D/g, '').slice(0, 6))
                     }
-                    placeholder="******"
+                    placeholder={t('auth.registerScreen.codePlaceholder')}
                     placeholderTextColor="#9CA3AF"
                     keyboardType="number-pad"
                     maxLength={6}
@@ -333,7 +349,7 @@ export default function RegisterScreen() {
                   {isSubmitting ? (
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
-                    <Text style={styles.buttonText}>Keyingisi</Text>
+                    <Text style={styles.buttonText}>{t('auth.next')}</Text>
                   )}
                 </Pressable>
               ) : (
@@ -350,7 +366,7 @@ export default function RegisterScreen() {
                     {isSubmitting ? (
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                      <Text style={styles.buttonText}>Tasdiqlash</Text>
+                      <Text style={styles.buttonText}>{t('auth.verify')}</Text>
                     )}
                   </Pressable>
 
@@ -362,7 +378,9 @@ export default function RegisterScreen() {
                       setError('');
                     }}
                   >
-                    <Text style={styles.linkText}>Gmailni o‘zgartirish</Text>
+                    <Text style={styles.linkText}>
+                      {t('auth.registerScreen.changeGmail')}
+                    </Text>
                   </Pressable>
                 </>
               )}
@@ -386,7 +404,9 @@ export default function RegisterScreen() {
                   setPickerOpen(false);
                 }}
               >
-                <Text style={styles.modalItemText}>{item.label}</Text>
+                <Text style={styles.modalItemText}>
+                  {t(`auth.countries.${item.key}`)}
+                </Text>
                 {country === item.key ? (
                   <Ionicons name="checkmark" size={18} color={ACCENT} />
                 ) : null}
@@ -454,6 +474,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 8,
+  },
+  emailHighlight: {
+    color: ACCENT,
+    fontWeight: '700',
   },
   form: { gap: 14 },
   fieldWrap: { gap: 8 },

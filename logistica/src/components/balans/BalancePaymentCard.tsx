@@ -1,5 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
+import { localeForLanguage } from '@/i18n';
 
 type Props = {
   requestCode: string;
@@ -11,23 +14,6 @@ type Props = {
   at: string | null;
 };
 
-function formatMoney(value: number) {
-  return `${Math.max(0, value || 0).toLocaleString('uz-UZ')} so‘m`;
-}
-
-function formatWhen(value: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString('uz-UZ', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function BalancePaymentCard({
   requestCode,
   productCode,
@@ -37,23 +23,42 @@ export function BalancePaymentCard({
   amount,
   at,
 }: Props) {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
+
+  const formatMoney = (value: number) =>
+    `${Math.max(0, value || 0).toLocaleString(locale)} ${t('common.sum')}`;
+
+  const formatWhen = (value: string | null) => {
+    if (!value) return t('account.dash');
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return t('account.dash');
+    return date.toLocaleString(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.top}>
         <View style={styles.codeWrap}>
           <Ionicons name="barcode-outline" size={18} color="#7C3AED" />
           <Text style={styles.code} numberOfLines={1}>
-            {requestCode || productCode || '—'}
+            {requestCode || productCode || t('account.dash')}
           </Text>
         </View>
         <Text style={styles.amount}>{formatMoney(amount)}</Text>
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
-        {productTitle || 'Mahsulot'}
+        {productTitle || t('common.product')}
       </Text>
       <Text style={styles.meta}>
-        {storeName || 'Siller'} · #{orderId || 0}
+        {storeName || t('account.sellerFallback')} · #{orderId || 0}
       </Text>
 
       <View style={styles.dateRow}>

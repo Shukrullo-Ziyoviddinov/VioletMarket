@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,33 +8,38 @@ const ACCENT = '#7c3aed';
 const MUTED = '#9CA3AF';
 
 const items = [
-  { label: 'Asosiy', icon: 'home-outline', activeIcon: 'home', href: '/asosiy' },
   {
-    label: 'Yuklarim',
+    labelKey: 'navigation.home',
+    icon: 'home-outline',
+    activeIcon: 'home',
+    href: '/asosiy',
+  },
+  {
+    labelKey: 'navigation.shipments',
     icon: 'cube-outline',
     activeIcon: 'cube',
     href: '/yuklarim',
   },
   {
-    label: 'UZBda',
+    labelKey: 'navigation.inUzbekistan',
     icon: 'business-outline',
     activeIcon: 'business',
     href: '/uzbda',
   },
   {
-    label: 'Qaytarish',
+    labelKey: 'navigation.returns',
     icon: 'return-down-back-outline',
     activeIcon: 'return-down-back',
     href: '/qaytarish',
   },
   {
-    label: 'Tarix',
+    labelKey: 'navigation.history',
     icon: 'time-outline',
     activeIcon: 'time',
     href: '/tarix',
   },
   {
-    label: 'Profil',
+    labelKey: 'navigation.profile',
     icon: 'person-outline',
     activeIcon: 'person',
     href: '/profil',
@@ -41,6 +47,7 @@ const items = [
 ] as const;
 
 export function BottomNavbar() {
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -53,7 +60,7 @@ export function BottomNavbar() {
 
         return (
           <Pressable
-            key={item.label}
+            key={item.labelKey}
             style={styles.item}
             onPress={() => {
               if (active) return;
@@ -65,8 +72,13 @@ export function BottomNavbar() {
               size={22}
               color={active ? ACCENT : MUTED}
             />
-            <Text style={[styles.label, active && styles.activeLabel]}>
-              {item.label}
+            <Text
+              style={[styles.label, active && styles.activeLabel]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {t(item.labelKey)}
             </Text>
           </Pressable>
         );
@@ -92,9 +104,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
+    width: '100%',
     color: MUTED,
     fontSize: 9,
     fontWeight: '600',
+    textAlign: 'center',
   },
   activeLabel: {
     color: ACCENT,

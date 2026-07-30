@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PROCESS_STEPS } from '@/constants/shipmentProcess';
@@ -19,15 +20,16 @@ export function ShipmentProcessStatus({
   selectable = false,
   onSelectStep,
 }: Props) {
+  const { t } = useTranslation();
   const highlightStep = selectedStep || activeStep;
   const activeIndex = PROCESS_STEPS.findIndex((step) => step.key === highlightStep);
   const savedIndex = PROCESS_STEPS.findIndex((step) => step.key === activeStep);
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>Jarayon holati</Text>
+      <Text style={styles.title}>{t('shipments.detail.processStatus')}</Text>
       {selectable ? (
-        <Text style={styles.hint}>Bosqichni tanlang, keyin «Holatni saqlash»</Text>
+        <Text style={styles.hint}>{t('shipments.detail.processHint')}</Text>
       ) : null}
       <View style={styles.card}>
         <View style={styles.row}>
@@ -66,7 +68,7 @@ export function ShipmentProcessStatus({
                   style={[styles.stepLabel, done && styles.stepLabelActive]}
                   numberOfLines={2}
                 >
-                  {step.label}
+                  {t(`shipments.processSteps.${step.key}`)}
                 </Text>
               </>
             );

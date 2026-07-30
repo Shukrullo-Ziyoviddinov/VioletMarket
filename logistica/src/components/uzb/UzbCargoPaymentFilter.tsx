@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export type UzbCargoPaymentFilterValue = 'all' | 'paid' | 'unpaid';
@@ -7,28 +8,23 @@ type Props = {
   onChange: (value: UzbCargoPaymentFilterValue) => void;
 };
 
-const FILTERS: Array<{
-  key: UzbCargoPaymentFilterValue;
-  label: string;
-}> = [
-  { key: 'all', label: 'Barchasi' },
-  { key: 'paid', label: 'To‘langan' },
-  { key: 'unpaid', label: 'To‘lanmagan' },
-];
+const FILTER_KEYS: UzbCargoPaymentFilterValue[] = ['all', 'paid', 'unpaid'];
 
 export function UzbCargoPaymentFilter({ value, onChange }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.filter} accessibilityRole="tablist">
-        {FILTERS.map((item) => {
-          const active = item.key === value;
+        {FILTER_KEYS.map((key) => {
+          const active = key === value;
 
           return (
             <Pressable
-              key={item.key}
+              key={key}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
-              onPress={() => onChange(item.key)}
+              onPress={() => onChange(key)}
               style={({ pressed }) => [
                 styles.option,
                 active && styles.optionActive,
@@ -36,7 +32,7 @@ export function UzbCargoPaymentFilter({ value, onChange }: Props) {
               ]}
             >
               <Text style={[styles.label, active && styles.labelActive]}>
-                {item.label}
+                {t(`shipments.filters.${key}`)}
               </Text>
             </Pressable>
           );

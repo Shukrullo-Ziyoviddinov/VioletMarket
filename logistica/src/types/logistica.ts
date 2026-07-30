@@ -40,13 +40,15 @@ export type ApprovalStatusResult = {
   status: 'pending' | 'active' | 'blocked' | 'not_found';
 };
 
+/** Stable country keys; translate labels at render via `auth.countries.<key>`. */
 export const LOGISTICA_COUNTRY_OPTIONS: {
   key: LogisticaCountry;
+  /** Fallback label when i18n is unavailable (e.g. non-auth screens). */
   label: string;
 }[] = [
   { key: 'china', label: 'China' },
-  { key: 'usa', label: 'AQSH' },
-  { key: 'turkey', label: 'Turkiya' },
-  { key: 'korea', label: 'Korea' },
-  { key: 'japan', label: 'Yaponiya' },
+  { key: 'usa', label: 'USA' },
+  { key: 'turkey', label: 'Türkiye' },
+  { key: 'korea', label: 'South Korea' },
+  { key: 'japan', label: 'Japan' },
 ];

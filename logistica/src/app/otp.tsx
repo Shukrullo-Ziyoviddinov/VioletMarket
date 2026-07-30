@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -31,6 +32,7 @@ function stringParam(value: string | string[] | undefined) {
 
 export default function OtpScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { signIn, markRegistered } = useAuth();
   const inputRef = useRef<TextInput>(null);
   const params = useLocalSearchParams<{
@@ -54,7 +56,7 @@ export default function OtpScreen() {
   async function verifyCode() {
     const verificationCode = code.replace(/\D/g, '');
     if (isSubmitting || verificationCode.length !== 6) {
-      setError('6 xonali kodni kiriting');
+      setError(t('auth.validation.codeRequired'));
       return;
     }
     setError('');
@@ -84,7 +86,7 @@ export default function OtpScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod tasdiqlanmadi',
+          : t('auth.errors.codeNotVerified'),
       );
     } finally {
       setIsSubmitting(false);
@@ -114,7 +116,7 @@ export default function OtpScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod qayta yuborilmadi',
+          : t('auth.errors.codeNotResent'),
       );
     } finally {
       setIsResending(false);
@@ -136,10 +138,13 @@ export default function OtpScreen() {
             <View style={styles.iconCircle}>
               <Ionicons name="shield-checkmark" size={35} color={ACCENT} />
             </View>
-            <Text style={styles.title}>Tasdiqlash kodi</Text>
+            <Text style={styles.title}>{t('auth.otp.title')}</Text>
             <Text style={styles.description}>
-              <Text style={styles.email}>{email}</Text> manziliga yuborilgan 6
-              xonali kodni kiriting.
+              <Trans
+                i18nKey="auth.otp.description"
+                values={{ email }}
+                components={{ highlight: <Text style={styles.email} /> }}
+              />
             </Text>
 
             <TextInput
@@ -149,7 +154,7 @@ export default function OtpScreen() {
               keyboardType="number-pad"
               maxLength={6}
               style={[styles.codeInput, error ? styles.codeInputError : null]}
-              placeholder="______"
+              placeholder={t('auth.otp.codePlaceholder')}
               placeholderTextColor="#9CA3AF"
               textAlign="center"
             />
@@ -168,7 +173,7 @@ export default function OtpScreen() {
               {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.verifyText}>Tasdiqlash</Text>
+                <Text style={styles.verifyText}>{t('auth.verify')}</Text>
               )}
             </Pressable>
 
@@ -178,7 +183,7 @@ export default function OtpScreen() {
               onPress={resendCode}
             >
               <Text style={[styles.resendText, isResending && styles.resendDisabled]}>
-                {isResending ? 'Yuborilmoqda...' : 'Kodni qayta yuborish'}
+                {isResending ? t('auth.otp.resending') : t('auth.otp.resend')}
               </Text>
             </Pressable>
           </View>

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,6 +21,7 @@ const ACCENT = '#7c3aed';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +29,7 @@ export default function LoginScreen() {
   async function onNext() {
     if (isSubmitting) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('To‘g‘ri Gmail manzilini kiriting');
+      setError(t('auth.validation.invalidGmail'));
       return;
     }
 
@@ -56,7 +58,7 @@ export default function LoginScreen() {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : 'Kod yuborilmadi',
+          : t('auth.errors.codeNotSent'),
       );
     } finally {
       setIsSubmitting(false);
@@ -73,21 +75,19 @@ export default function LoginScreen() {
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
           </Pressable>
-          <Text style={styles.headerTitle}>Kirish</Text>
+          <Text style={styles.headerTitle}>{t('auth.loginScreen.header')}</Text>
           <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Gmail orqali kirish</Text>
-          <Text style={styles.subtitle}>
-            Gmailingizga kelgan 6 xonali kod bilan kirasiz.
-          </Text>
+          <Text style={styles.title}>{t('auth.loginScreen.title')}</Text>
+          <Text style={styles.subtitle}>{t('auth.loginScreen.subtitle')}</Text>
 
           <FormField
-            label="Gmail"
+            label={t('auth.gmail')}
             value={email}
             onChangeText={setEmail}
-            placeholder="example@gmail.com"
+            placeholder={t('auth.gmailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -107,7 +107,7 @@ export default function LoginScreen() {
             {isSubmitting ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.buttonText}>Keyingisi</Text>
+              <Text style={styles.buttonText}>{t('auth.next')}</Text>
             )}
           </Pressable>
         </View>

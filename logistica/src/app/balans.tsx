@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BalanceAmountCards } from '@/components/balans/BalanceAmountCards';
@@ -20,6 +21,7 @@ import {
   type TarixBalanceMode,
 } from '@/components/tarix/TarixBalanceModeFilter';
 import { TarixBalancePeriodDropdown } from '@/components/tarix/TarixBalancePeriodDropdown';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import {
@@ -79,8 +81,71 @@ function mergeUnique(prev: PaymentItem[], next: PaymentItem[]) {
   return [...map.values()];
 }
 
+function formatMonthLabel(year: number, month: number, locale: string) {
+  return new Date(year, month - 1, 1).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatDayMonth(
+  year: number,
+  month: number,
+  day: number,
+  locale: string,
+  withYear = false,
+) {
+  return new Date(year, month - 1, day).toLocaleDateString(
+    locale,
+    withYear
+      ? { day: '2-digit', month: '2-digit', year: 'numeric' }
+      : { day: '2-digit', month: '2-digit' },
+  );
+}
+
+function formatWeekLabel(
+  weekStart: string,
+  weekEnd: string,
+  locale: string,
+  rangeTemplate: (start: string, end: string) => string,
+) {
+  const startParts = weekStart.split('-').map(Number);
+  const endParts = weekEnd.split('-').map(Number);
+  if (startParts.length !== 3 || endParts.length !== 3) {
+    return weekStart;
+  }
+  const [sy, sm, sd] = startParts;
+  const [ey, em, ed] = endParts;
+  return rangeTemplate(
+    formatDayMonth(sy, sm, sd, locale),
+    formatDayMonth(ey, em, ed, locale, true),
+  );
+}
+
+function periodLabelFromData(
+  data: CargoHistoryBalanceResponse | null,
+  locale: string,
+  rangeTemplate: (start: string, end: string) => string,
+) {
+  if (!data) return '';
+  if (data.mode === 'month' && data.selected.year && data.selected.month) {
+    return formatMonthLabel(data.selected.year, data.selected.month, locale);
+  }
+  if (data.selected.weekStart && data.selected.weekEnd) {
+    return formatWeekLabel(
+      data.selected.weekStart,
+      data.selected.weekEnd,
+      locale,
+      rangeTemplate,
+    );
+  }
+  return data.periodLabel || '';
+}
+
 export default function BalansScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
   const { token } = useAuth();
   const [mode, setMode] = useState<TarixBalanceMode>('month');
   const [monthKey, setMonthKey] = useState(currentMonthKey);
@@ -100,11 +165,16 @@ export default function BalansScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
+  const rangeTemplate = useCallback(
+    (start: string, end: string) => t('balance.weekRange', { start, end }),
+    [t],
+  );
+
   const load = useCallback(
     async (refresh = false) => {
       if (!token) {
         setLoading(false);
-        setError('Avtorizatsiya talab qilinadi');
+        setError(t('account.authRequired'));
         return;
       }
 
@@ -133,14 +203,14 @@ export default function BalansScreen() {
         setTotalPages(history.totalPages);
       } catch (err) {
         setError(
-          err instanceof ApiError ? err.message : 'Balansni yuklab bo‘lmadi',
+          err instanceof ApiError ? err.message : t('balance.loadFailed'),
         );
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [mode, monthKey, token, weekKey],
+    [mode, monthKey, t, token, weekKey],
   );
 
   useEffect(() => {
@@ -151,22 +221,29 @@ export default function BalansScreen() {
     () =>
       (monthData?.months || []).map((item) => ({
         key: item.key,
-        label: item.label,
+        label: formatMonthLabel(item.year, item.month, locale),
       })),
-    [monthData?.months],
+    [locale, monthData?.months],
   );
 
   const weekOptions = useMemo(
     () =>
       (weekData?.weeks || []).map((item) => ({
         key: item.key,
-        label: item.label,
+        label: formatWeekLabel(
+          item.weekStart,
+          item.weekEnd,
+          locale,
+          rangeTemplate,
+        ),
       })),
-    [weekData?.weeks],
+    [locale, rangeTemplate, weekData?.weeks],
   );
 
   const activePeriodLabel =
-    mode === 'month' ? monthData?.periodLabel : weekData?.periodLabel;
+    mode === 'month'
+      ? periodLabelFromData(monthData, locale, rangeTemplate)
+      : periodLabelFromData(weekData, locale, rangeTemplate);
 
   const handleModeChange = (next: TarixBalanceMode) => {
     if (next === mode) {
@@ -197,7 +274,7 @@ export default function BalansScreen() {
       setTotalPages(history.totalPages);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Yana yuklab bo‘lmadi',
+        err instanceof ApiError ? err.message : t('account.loadMoreFailed'),
       );
     } finally {
       setLoadingMore(false);
@@ -217,8 +294,8 @@ export default function BalansScreen() {
           <Ionicons name="arrow-back" size={22} color="#4C1D95" />
         </Pressable>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Balans</Text>
-          <Text style={styles.headerSubtitle}>To‘langan cargo mablag‘lari</Text>
+          <Text style={styles.headerTitle}>{t('balance.title')}</Text>
+          <Text style={styles.headerSubtitle}>{t('balance.subtitle')}</Text>
         </View>
       </View>
 
@@ -259,13 +336,13 @@ export default function BalansScreen() {
         <BalanceAmountCards
           weekBalance={weekData?.balance || 0}
           monthBalance={monthData?.balance || 0}
-          weekLabel={weekData?.periodLabel || ''}
-          monthLabel={monthData?.periodLabel || ''}
+          weekLabel={periodLabelFromData(weekData, locale, rangeTemplate)}
+          monthLabel={periodLabelFromData(monthData, locale, rangeTemplate)}
           loading={loading}
         />
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Jarayonlar</Text>
+          <Text style={styles.sectionTitle}>{t('balance.processes')}</Text>
           <Text style={styles.sectionPeriod}>{activePeriodLabel || ''}</Text>
         </View>
         <BalanceStatusCards
@@ -274,8 +351,10 @@ export default function BalansScreen() {
         />
 
         <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>To‘langan buyurtmalar</Text>
-          <Text style={styles.sectionPeriod}>{paymentsTotal} ta</Text>
+          <Text style={styles.sectionTitle}>{t('balance.paidOrders')}</Text>
+          <Text style={styles.sectionPeriod}>
+            {t('balance.paymentsCount', { count: paymentsTotal })}
+          </Text>
         </View>
 
         {loading ? (
@@ -292,16 +371,14 @@ export default function BalansScreen() {
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={styles.retryText}>Qayta urinish</Text>
+              <Text style={styles.retryText}>{t('common.retry')}</Text>
             </Pressable>
           </View>
         ) : payments.length === 0 ? (
           <View style={styles.empty}>
             <Ionicons name="wallet-outline" size={48} color="#C4B5FD" />
-            <Text style={styles.emptyTitle}>To‘lovlar topilmadi</Text>
-            <Text style={styles.emptyText}>
-              Tanlangan davrda topshirilgan buyurtma yo‘q.
-            </Text>
+            <Text style={styles.emptyTitle}>{t('balance.emptyTitle')}</Text>
+            <Text style={styles.emptyText}>{t('balance.emptyText')}</Text>
           </View>
         ) : (
           <>
@@ -321,7 +398,7 @@ export default function BalansScreen() {
                 {loadingMore ? (
                   <ActivityIndicator color="#7C3AED" />
                 ) : (
-                  <Text style={styles.moreText}>Yana ko‘rsatish</Text>
+                  <Text style={styles.moreText}>{t('account.showMore')}</Text>
                 )}
               </Pressable>
             ) : null}

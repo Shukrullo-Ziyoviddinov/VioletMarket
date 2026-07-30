@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -20,6 +21,7 @@ import { fetchPendingShipments } from '@/services/logistica-shipments';
 const ACCENT = '#7c3aed';
 
 export function AsosiyShipmentsList() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [items, setItems] = useState<ShipmentRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export function AsosiyShipmentsList() {
       if (!token) {
         setItems([]);
         setLoading(false);
-        setError('Avtorizatsiya talab qilinadi');
+        setError(t('shipments.errors.authRequired'));
         return;
       }
 
@@ -56,7 +58,7 @@ export function AsosiyShipmentsList() {
         const message =
           err instanceof ApiError
             ? err.message
-            : 'So‘rovlarni yuklab bo‘lmadi';
+            : t('shipments.errors.loadListFailed');
         setError(message);
         if (mode === 'initial') setItems([]);
       } finally {
@@ -64,7 +66,7 @@ export function AsosiyShipmentsList() {
         setRefreshing(false);
       }
     },
-    [token],
+    [t, token],
   );
 
   useEffect(() => {
@@ -82,7 +84,9 @@ export function AsosiyShipmentsList() {
   if (error && items.length === 0) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorTitle}>Yuklanmadi</Text>
+        <Text style={styles.errorTitle}>
+          {t('shipments.errors.loadFailedTitle')}
+        </Text>
         <Text style={styles.errorText}>{error}</Text>
         <Pressable
           style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
@@ -90,7 +94,7 @@ export function AsosiyShipmentsList() {
             void load('initial');
           }}
         >
-          <Text style={styles.retryText}>Qayta urinish</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </Pressable>
       </View>
     );
@@ -117,9 +121,11 @@ export function AsosiyShipmentsList() {
     >
       {items.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>Hozircha so‘rov yo‘q</Text>
+          <Text style={styles.emptyTitle}>
+            {t('shipments.empty.pendingTitle')}
+          </Text>
           <Text style={styles.emptyText}>
-            Xorij sillerlari cargoga yuborgan yuklar shu yerda chiqadi.
+            {t('shipments.empty.pendingText')}
           </Text>
         </View>
       ) : (

@@ -1,6 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import type { WeightLabel } from '@/types/shipment';
 
 export type ShipmentRequest = {
   id: string;
@@ -9,7 +12,7 @@ export type ShipmentRequest = {
   dateTime: string;
   productCount: number;
   weightKg: number;
-  weightLabel: 'Taxminiy og\'irlik' | 'Og\'irlik';
+  weightLabel: WeightLabel;
   cargoFeePaymentRequired?: boolean;
   adminCargoFeeConfirmedAt?: string | null;
 };
@@ -22,11 +25,18 @@ type Props = {
   showCargoPaymentStatus?: boolean;
 };
 
+function weightLabelKey(label: WeightLabel) {
+  return label === "Og'irlik"
+    ? 'shipments.weight.exact'
+    : 'shipments.weight.estimated';
+}
+
 export function ShipmentRequestCard({
   item,
   hrefBase = '/shipment/[id]',
   showCargoPaymentStatus = false,
 }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const showPaymentBadge =
     showCargoPaymentStatus && item.cargoFeePaymentRequired;
@@ -60,7 +70,7 @@ export function ShipmentRequestCard({
         <Text style={styles.dateTime}>{item.dateTime}</Text>
         <View style={styles.productBadge}>
           <Text style={styles.productBadgeText}>
-            {item.productCount} ta mahsulot
+            {t('common.productsCount', { count: item.productCount })}
           </Text>
         </View>
       </View>
@@ -88,11 +98,15 @@ export function ShipmentRequestCard({
                   : styles.paymentBadgeTextUnpaid,
               ]}
             >
-              {isCargoPaymentConfirmed ? 'To‘landi' : 'To‘lanmagan'}
+              {isCargoPaymentConfirmed
+                ? t('shipments.payment.paid')
+                : t('shipments.payment.unpaid')}
             </Text>
           </View>
         ) : null}
-        <Text style={styles.weightLabel}>{item.weightLabel}</Text>
+        <Text style={styles.weightLabel}>
+          {t(weightLabelKey(item.weightLabel))}
+        </Text>
         <Text style={styles.weightValue}>{item.weightKg} kg</Text>
       </View>
     </Pressable>

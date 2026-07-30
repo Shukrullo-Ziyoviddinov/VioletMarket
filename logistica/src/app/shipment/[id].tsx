@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -33,6 +34,7 @@ function stringParam(value: string | string[] | undefined) {
 
 /** Asosiy — faqat pending qabul / qaytarish */
 export default function ShipmentDetailScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -47,7 +49,11 @@ export default function ShipmentDetailScreen() {
   const load = useCallback(async () => {
     if (!token || !id) {
       setDetail(null);
-      setError(!id ? 'So‘rov topilmadi' : 'Avtorizatsiya talab qilinadi');
+      setError(
+        !id
+          ? t('shipments.errors.notFound')
+          : t('shipments.errors.authRequired'),
+      );
       setLoading(false);
       return;
     }
@@ -66,12 +72,14 @@ export default function ShipmentDetailScreen() {
     } catch (err) {
       setDetail(null);
       setError(
-        err instanceof ApiError ? err.message : 'So‘rovni yuklab bo‘lmadi',
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.errors.loadFailed'),
       );
     } finally {
       setLoading(false);
     }
-  }, [id, router, token]);
+  }, [id, router, t, token]);
 
   useEffect(() => {
     void load();
@@ -85,13 +93,18 @@ export default function ShipmentDetailScreen() {
     setActionLoading(true);
     try {
       const result = await acceptShipment(token, id);
-      Alert.alert('Qabul qilindi', 'So‘rov Yuklarim sahifasiga o‘tdi');
+      Alert.alert(
+        t('shipments.alerts.acceptedTitle'),
+        t('shipments.alerts.acceptedMessage'),
+      );
       router.replace('/yuklarim');
       return result;
     } catch (err) {
       Alert.alert(
-        'Xato',
-        err instanceof ApiError ? err.message : 'Qabul qilib bo‘lmadi',
+        t('common.error'),
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.alerts.acceptFailed'),
       );
     } finally {
       setActionLoading(false);
@@ -101,12 +114,12 @@ export default function ShipmentDetailScreen() {
   const handleReturn = () => {
     if (!token || !id || busy) return;
     Alert.alert(
-      'Sotuvchiga qaytarish',
-      'Asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz.',
+      t('shipments.alerts.returnTitle'),
+      t('shipments.alerts.returnMessage'),
       [
-        { text: 'Bekor', style: 'cancel' },
+        { text: t('shipments.actions.cancel'), style: 'cancel' },
         {
-          text: 'Yuborish',
+          text: t('shipments.actions.send'),
           style: 'destructive',
           onPress: () => {
             void (async () => {
@@ -114,16 +127,16 @@ export default function ShipmentDetailScreen() {
               try {
                 await returnShipmentToSeller(token, id);
                 Alert.alert(
-                  'So‘rov yuborildi',
-                  'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
+                  t('shipments.alerts.returnSentTitle'),
+                  t('shipments.alerts.returnSentMessage'),
                 );
                 router.back();
               } catch (err) {
                 Alert.alert(
-                  'Xato',
+                  t('common.error'),
                   err instanceof ApiError
                     ? err.message
-                    : 'So‘rov yuborib bo‘lmadi',
+                    : t('shipments.alerts.returnFailed'),
                 );
               } finally {
                 setActionLoading(false);
@@ -142,7 +155,7 @@ export default function ShipmentDetailScreen() {
           <Ionicons name="arrow-back" size={22} color="#111827" />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {detail?.requestCode || 'Yuk so‘rovi'}
+          {detail?.requestCode || t('shipments.detail.requestTitle')}
         </Text>
         <View style={styles.headerBtn} />
       </View>
@@ -153,15 +166,19 @@ export default function ShipmentDetailScreen() {
         </View>
       ) : error || !detail ? (
         <View style={styles.centered}>
-          <Text style={styles.errorTitle}>Yuklanmadi</Text>
-          <Text style={styles.errorText}>{error || 'So‘rov topilmadi'}</Text>
+          <Text style={styles.errorTitle}>
+            {t('shipments.errors.loadFailedTitle')}
+          </Text>
+          <Text style={styles.errorText}>
+            {error || t('shipments.errors.notFound')}
+          </Text>
           <Pressable
             style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
             onPress={() => {
               void load();
             }}
           >
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
       ) : (

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
@@ -16,14 +17,19 @@ type Props = {
  */
 export function GlobalConfirmModal({
   open,
-  title = 'Tasdiqlash',
+  title,
   message,
-  confirmText = 'Ha',
-  cancelText = "Yo'q",
+  confirmText,
+  cancelText,
   loading = false,
   onConfirm,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
+  const resolvedTitle = title || t('common.confirmation');
+  const resolvedConfirmText = confirmText || t('common.yes');
+  const resolvedCancelText = cancelText || t('common.no');
+
   return (
     <Modal
       visible={open}
@@ -35,7 +41,7 @@ export function GlobalConfirmModal({
     >
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{resolvedTitle}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>
             <Pressable
@@ -47,7 +53,7 @@ export function GlobalConfirmModal({
               disabled={loading}
               onPress={onCancel}
             >
-              <Text style={styles.cancelText}>{cancelText}</Text>
+              <Text style={styles.cancelText}>{resolvedCancelText}</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -60,7 +66,7 @@ export function GlobalConfirmModal({
               onPress={onConfirm}
             >
               <Text style={styles.confirmText}>
-                {loading ? '...' : confirmText}
+                {loading ? '...' : resolvedConfirmText}
               </Text>
             </Pressable>
           </View>

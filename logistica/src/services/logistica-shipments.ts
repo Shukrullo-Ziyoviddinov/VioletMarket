@@ -1,3 +1,4 @@
+import i18n from '@/i18n';
 import { apiRequest } from '@/services/api';
 import { normalizeProcessStep } from '@/constants/shipmentProcess';
 import type {
@@ -12,6 +13,10 @@ function asWeightLabel(value: unknown): WeightLabel {
   return String(value || '') === "Og'irlik"
     ? "Og'irlik"
     : "Taxminiy og'irlik";
+}
+
+function productFallbackTitle() {
+  return i18n.t('common.product');
 }
 
 function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): ShipmentListItem {
@@ -40,7 +45,7 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
   const products = Array.isArray(row.products)
     ? row.products.map((product, index) => ({
         id: String(product?.id || `${row.id || 'p'}-${index}`),
-        title: String(product?.title || 'Mahsulot'),
+        title: String(product?.title || productFallbackTitle()),
         variant: String(product?.variant || ''),
         weightKg: Math.max(0, Number(product?.weightKg) || 0),
         quantity: Math.max(1, Number(product?.quantity) || 1),
@@ -186,7 +191,7 @@ function mapReturnCard(row: Record<string, unknown>) {
     shipmentId: String(row.shipmentId || ''),
     requestCode: String(row.requestCode || ''),
     storeName: String(row.storeName || ''),
-    productTitle: String(row.productTitle || 'Mahsulot'),
+    productTitle: String(row.productTitle || productFallbackTitle()),
     productCode: String(row.productCode || ''),
     orderId: Number(row.orderId) || 0,
     amount: Math.max(0, Number(row.amount) || 0),
@@ -302,7 +307,7 @@ export async function fetchCargoHistory(
     storeName: String(row.storeName || ''),
     sellerId: String(row.sellerId || ''),
     orderId: Number(row.orderId) || 0,
-    productTitle: String(row.productTitle || 'Mahsulot'),
+    productTitle: String(row.productTitle || productFallbackTitle()),
     productCode: String(row.productCode || ''),
     amount: Math.max(0, Number(row.amount) || 0),
     cargoCountry: String(row.cargoCountry || ''),

@@ -1,5 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
+import { localeForLanguage } from '@/i18n';
 
 type Props = {
   weekBalance: number;
@@ -9,10 +12,6 @@ type Props = {
   loading?: boolean;
 };
 
-function formatMoney(value: number) {
-  return `${Math.max(0, value || 0).toLocaleString('uz-UZ')} so‘m`;
-}
-
 export function BalanceAmountCards({
   weekBalance,
   monthBalance,
@@ -20,20 +19,25 @@ export function BalanceAmountCards({
   monthLabel,
   loading = false,
 }: Props) {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
+  const formatMoney = (value: number) =>
+    `${Math.max(0, value || 0).toLocaleString(locale)} ${t('common.sum')}`;
+
   return (
     <View style={styles.row}>
       <View style={[styles.card, styles.weekCard]}>
         <View style={[styles.icon, styles.weekIcon]}>
           <Ionicons name="calendar-outline" size={20} color="#2563EB" />
         </View>
-        <Text style={styles.label}>Haftalik balans</Text>
+        <Text style={styles.label}>{t('balance.weekBalance')}</Text>
         {loading ? (
           <ActivityIndicator color="#2563EB" />
         ) : (
           <Text style={styles.amount}>{formatMoney(weekBalance)}</Text>
         )}
         <Text style={styles.period} numberOfLines={2}>
-          {weekLabel || 'Joriy hafta'}
+          {weekLabel || t('balance.currentWeek')}
         </Text>
       </View>
 
@@ -41,14 +45,14 @@ export function BalanceAmountCards({
         <View style={[styles.icon, styles.monthIcon]}>
           <Ionicons name="wallet-outline" size={20} color="#7C3AED" />
         </View>
-        <Text style={styles.label}>Oylik balans</Text>
+        <Text style={styles.label}>{t('balance.monthBalance')}</Text>
         {loading ? (
           <ActivityIndicator color="#7C3AED" />
         ) : (
           <Text style={styles.amount}>{formatMoney(monthBalance)}</Text>
         )}
         <Text style={styles.period} numberOfLines={2}>
-          {monthLabel || 'Joriy oy'}
+          {monthLabel || t('balance.currentMonth')}
         </Text>
       </View>
     </View>

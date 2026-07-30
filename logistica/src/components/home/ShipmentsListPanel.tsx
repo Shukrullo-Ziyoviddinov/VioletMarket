@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -39,6 +40,7 @@ export function ShipmentsListPanel({
   showCargoPaymentStatus = false,
   filterItems,
 }: Props) {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [items, setItems] = useState<ShipmentRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export function ShipmentsListPanel({
       if (!token) {
         setItems([]);
         setLoading(false);
-        setError('Avtorizatsiya talab qilinadi');
+        setError(t('shipments.errors.authRequired'));
         return;
       }
 
@@ -77,7 +79,7 @@ export function ShipmentsListPanel({
         const message =
           err instanceof ApiError
             ? err.message
-            : 'So‘rovlarni yuklab bo‘lmadi';
+            : t('shipments.errors.loadListFailed');
         setError(message);
         if (mode === 'initial') setItems([]);
       } finally {
@@ -85,7 +87,7 @@ export function ShipmentsListPanel({
         setRefreshing(false);
       }
     },
-    [loadShipments, token],
+    [loadShipments, t, token],
   );
 
   useEffect(() => {
@@ -108,7 +110,9 @@ export function ShipmentsListPanel({
   if (error && items.length === 0) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorTitle}>Yuklanmadi</Text>
+        <Text style={styles.errorTitle}>
+          {t('shipments.errors.loadFailedTitle')}
+        </Text>
         <Text style={styles.errorText}>{error}</Text>
         <Pressable
           style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
@@ -116,7 +120,7 @@ export function ShipmentsListPanel({
             void load('initial');
           }}
         >
-          <Text style={styles.retryText}>Qayta urinish</Text>
+          <Text style={styles.retryText}>{t('common.retry')}</Text>
         </Pressable>
       </View>
     );
@@ -153,12 +157,14 @@ export function ShipmentsListPanel({
             />
           </View>
           <Text style={styles.emptyTitle}>
-            {items.length === 0 ? emptyTitle : 'Bu filter bo‘yicha yuk yo‘q'}
+            {items.length === 0
+              ? emptyTitle
+              : t('shipments.empty.filterTitle')}
           </Text>
           <Text style={styles.emptyText}>
             {items.length === 0
               ? emptyText
-              : 'Boshqa to‘lov holatini tanlab ko‘ring.'}
+              : t('shipments.empty.filterText')}
           </Text>
         </View>
       ) : (

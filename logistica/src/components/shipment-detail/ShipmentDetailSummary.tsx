@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 type Props = {
@@ -6,17 +7,19 @@ type Props = {
 };
 
 export function ShipmentDetailSummary({ storeName, dateTime }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.card}>
       <View style={styles.col}>
-        <Text style={styles.label}>Seller</Text>
+        <Text style={styles.label}>{t('shipments.detail.seller')}</Text>
         <Text style={styles.value} numberOfLines={2}>
           {storeName}
         </Text>
       </View>
       <View style={styles.divider} />
       <View style={styles.col}>
-        <Text style={styles.label}>Sana</Text>
+        <Text style={styles.label}>{t('shipments.detail.date')}</Text>
         <Text style={styles.value}>{dateTime}</Text>
       </View>
     </View>

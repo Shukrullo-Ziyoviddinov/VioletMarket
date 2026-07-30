@@ -1,4 +1,5 @@
 import { env } from '@/config/env';
+import i18n from '@/i18n';
 
 type ApiEnvelope<T> = {
   ok: boolean;
@@ -35,6 +36,7 @@ export async function apiRequest<T>(
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
+  headers.set('Accept-Language', i18n.language || 'uz');
 
   let response: Response;
   try {
@@ -45,7 +47,7 @@ export async function apiRequest<T>(
   } catch {
     throw new ApiError(
       0,
-      'Server bilan aloqa bo‘lmadi. Internetni tekshiring.',
+      i18n.t('errors.network'),
       'NETWORK_ERROR',
     );
   }
@@ -54,7 +56,7 @@ export async function apiRequest<T>(
   if (!response.ok || !payload?.ok) {
     throw new ApiError(
       response.status,
-      payload?.message || 'Server so‘rovni bajara olmadi',
+      payload?.message || i18n.t('errors.requestFailed'),
       payload?.code,
       payload?.details,
     );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import {
   TarixBalanceModeFilter,
@@ -7,6 +8,7 @@ import {
 } from '@/components/tarix/TarixBalanceModeFilter';
 import { TarixBalancePeriodDropdown } from '@/components/tarix/TarixBalancePeriodDropdown';
 import { TarixBalanceSummary } from '@/components/tarix/TarixBalanceSummary';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import {
@@ -38,7 +40,70 @@ function currentWeekStartKey() {
   return `${y}-${m}-${d}`;
 }
 
+function formatMonthLabel(year: number, month: number, locale: string) {
+  return new Date(year, month - 1, 1).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatDayMonth(
+  year: number,
+  month: number,
+  day: number,
+  locale: string,
+  withYear = false,
+) {
+  return new Date(year, month - 1, day).toLocaleDateString(
+    locale,
+    withYear
+      ? { day: '2-digit', month: '2-digit', year: 'numeric' }
+      : { day: '2-digit', month: '2-digit' },
+  );
+}
+
+function formatWeekLabel(
+  weekStart: string,
+  weekEnd: string,
+  locale: string,
+  rangeTemplate: (start: string, end: string) => string,
+) {
+  const startParts = weekStart.split('-').map(Number);
+  const endParts = weekEnd.split('-').map(Number);
+  if (startParts.length !== 3 || endParts.length !== 3) {
+    return weekStart;
+  }
+  const [sy, sm, sd] = startParts;
+  const [ey, em, ed] = endParts;
+  return rangeTemplate(
+    formatDayMonth(sy, sm, sd, locale),
+    formatDayMonth(ey, em, ed, locale, true),
+  );
+}
+
+function periodLabelFromData(
+  data: CargoHistoryBalanceResponse | null,
+  locale: string,
+  rangeTemplate: (start: string, end: string) => string,
+) {
+  if (!data) return '';
+  if (data.mode === 'month' && data.selected.year && data.selected.month) {
+    return formatMonthLabel(data.selected.year, data.selected.month, locale);
+  }
+  if (data.selected.weekStart && data.selected.weekEnd) {
+    return formatWeekLabel(
+      data.selected.weekStart,
+      data.selected.weekEnd,
+      locale,
+      rangeTemplate,
+    );
+  }
+  return data.periodLabel || '';
+}
+
 export function TarixBalancePanel({ refreshKey = 0 }: Props) {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
   const { token } = useAuth();
   const [mode, setMode] = useState<TarixBalanceMode>('month');
   const [monthKey, setMonthKey] = useState(currentMonthKey);
@@ -48,11 +113,16 @@ export function TarixBalancePanel({ refreshKey = 0 }: Props) {
   const [error, setError] = useState('');
   const [data, setData] = useState<CargoHistoryBalanceResponse | null>(null);
 
+  const rangeTemplate = useCallback(
+    (start: string, end: string) => t('balance.weekRange', { start, end }),
+    [t],
+  );
+
   const load = useCallback(async () => {
     if (!token) {
       setData(null);
       setLoading(false);
-      setError('Avtorizatsiya talab qilinadi');
+      setError(t('account.authRequired'));
       return;
     }
 
@@ -69,12 +139,12 @@ export function TarixBalancePanel({ refreshKey = 0 }: Props) {
       setData(next);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Balansni yuklab bo‘lmadi',
+        err instanceof ApiError ? err.message : t('balance.loadFailed'),
       );
     } finally {
       setLoading(false);
     }
-  }, [mode, monthKey, token, weekKey]);
+  }, [mode, monthKey, t, token, weekKey]);
 
   useEffect(() => {
     void load();
@@ -84,18 +154,23 @@ export function TarixBalancePanel({ refreshKey = 0 }: Props) {
     () =>
       (data?.months || []).map((row) => ({
         key: row.key,
-        label: row.label,
+        label: formatMonthLabel(row.year, row.month, locale),
       })),
-    [data?.months],
+    [data?.months, locale],
   );
 
   const weekOptions = useMemo(
     () =>
       (data?.weeks || []).map((row) => ({
         key: row.key,
-        label: row.label,
+        label: formatWeekLabel(
+          row.weekStart,
+          row.weekEnd,
+          locale,
+          rangeTemplate,
+        ),
       })),
-    [data?.weeks],
+    [data?.weeks, locale, rangeTemplate],
   );
 
   const handleModeChange = (next: TarixBalanceMode) => {
@@ -135,7 +210,7 @@ export function TarixBalancePanel({ refreshKey = 0 }: Props) {
       <TarixBalanceSummary
         balance={data?.balance || 0}
         count={data?.count || 0}
-        periodLabel={data?.periodLabel || ''}
+        periodLabel={periodLabelFromData(data, locale, rangeTemplate)}
         loading={loading}
       />
 

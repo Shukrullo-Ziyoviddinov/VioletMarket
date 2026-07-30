@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -32,6 +33,7 @@ export function UzWarehouseArrivalForm({
   initialWeightKg = 0,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
   const [weightText, setWeightText] = useState(
     initialWeightKg > 0 ? String(initialWeightKg) : '',
   );
@@ -49,7 +51,10 @@ export function UzWarehouseArrivalForm({
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Ruxsat', 'Surat uchun galereya ruxsatini yoqing.');
+        Alert.alert(
+          t('shipments.uzArrival.permissionTitle'),
+          t('shipments.uzArrival.permissionMessage'),
+        );
         return;
       }
 
@@ -63,7 +68,10 @@ export function UzWarehouseArrivalForm({
       if (result.canceled || !result.assets?.[0]) return;
       const asset = result.assets[0];
       if (!asset.base64) {
-        Alert.alert('Xato', 'Rasmni o‘qib bo‘lmadi');
+        Alert.alert(
+          t('common.error'),
+          t('shipments.uzArrival.photoReadFailed'),
+        );
         return;
       }
 
@@ -74,7 +82,10 @@ export function UzWarehouseArrivalForm({
       setPhotoPreview(asset.uri);
       setPhotoBase64(`data:${mime};base64,${asset.base64}`);
     } catch {
-      Alert.alert('Xato', 'Rasm tanlab bo‘lmadi');
+      Alert.alert(
+        t('common.error'),
+        t('shipments.uzArrival.photoPickFailed'),
+      );
     } finally {
       setPicking(false);
     }
@@ -86,11 +97,17 @@ export function UzWarehouseArrivalForm({
     const cargoDeliveryFee = Number(String(feeText).replace(/\s/g, '').replace(',', '.'));
 
     if (!Number.isFinite(weightKg) || weightKg <= 0) {
-      Alert.alert('Og‘irlik', 'Og‘irlikni to‘g‘ri kiriting (kg)');
+      Alert.alert(
+        t('shipments.uzArrival.weightAlertTitle'),
+        t('shipments.uzArrival.weightAlertMessage'),
+      );
       return;
     }
     if (!Number.isFinite(cargoDeliveryFee) || cargoDeliveryFee < 0) {
-      Alert.alert('Summa', 'Og‘irlik summasini to‘g‘ri kiriting');
+      Alert.alert(
+        t('shipments.uzArrival.feeAlertTitle'),
+        t('shipments.uzArrival.feeAlertMessage'),
+      );
       return;
     }
 
@@ -104,11 +121,8 @@ export function UzWarehouseArrivalForm({
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>Toshkent omboriga qabul</Text>
-      <Text style={styles.hint}>
-        Og‘irlik va summani kiriting. «Clientga yuborish» bosilganda holat
-        avtomatik «Toshkent omborida» bo‘ladi.
-      </Text>
+      <Text style={styles.title}>{t('shipments.uzArrival.title')}</Text>
+      <Text style={styles.hint}>{t('shipments.uzArrival.hint')}</Text>
 
       <Pressable
         style={({ pressed }) => [
@@ -125,7 +139,9 @@ export function UzWarehouseArrivalForm({
         ) : (
           <>
             <Ionicons name="camera-outline" size={22} color={ACCENT} />
-            <Text style={styles.photoBtnText}>Surat (ixtiyoriy)</Text>
+            <Text style={styles.photoBtnText}>
+              {t('shipments.uzArrival.photoOptional')}
+            </Text>
           </>
         )}
       </Pressable>
@@ -138,38 +154,40 @@ export function UzWarehouseArrivalForm({
             setPhotoBase64(null);
           }}
         >
-          <Text style={styles.clearPhoto}>Suratni olib tashlash</Text>
+          <Text style={styles.clearPhoto}>
+            {t('shipments.uzArrival.removePhoto')}
+          </Text>
         </Pressable>
       ) : null}
 
-      <Text style={styles.label}>Og‘irlik (kg) *</Text>
+      <Text style={styles.label}>{t('shipments.uzArrival.weightLabel')}</Text>
       <TextInput
         style={styles.input}
         value={weightText}
         onChangeText={setWeightText}
         keyboardType="decimal-pad"
-        placeholder="Masalan: 2.5"
+        placeholder={t('shipments.uzArrival.weightPlaceholder')}
         placeholderTextColor="#9CA3AF"
         editable={!busy}
       />
 
-      <Text style={styles.label}>Og‘irlik summasi (so‘m) *</Text>
+      <Text style={styles.label}>{t('shipments.uzArrival.feeLabel')}</Text>
       <TextInput
         style={styles.input}
         value={feeText}
         onChangeText={setFeeText}
         keyboardType="number-pad"
-        placeholder="Masalan: 45000"
+        placeholder={t('shipments.uzArrival.feePlaceholder')}
         placeholderTextColor="#9CA3AF"
         editable={!busy}
       />
 
-      <Text style={styles.label}>Izoh (ixtiyoriy)</Text>
+      <Text style={styles.label}>{t('shipments.uzArrival.commentLabel')}</Text>
       <TextInput
         style={[styles.input, styles.comment]}
         value={comment}
         onChangeText={setComment}
-        placeholder="Qo‘shimcha izoh"
+        placeholder={t('shipments.uzArrival.commentPlaceholder')}
         placeholderTextColor="#9CA3AF"
         multiline
         editable={!busy}
@@ -187,7 +205,9 @@ export function UzWarehouseArrivalForm({
         {loading ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.submitText}>Clientga yuborish</Text>
+          <Text style={styles.submitText}>
+            {t('shipments.actions.sendToClient')}
+          </Text>
         )}
       </Pressable>
     </View>

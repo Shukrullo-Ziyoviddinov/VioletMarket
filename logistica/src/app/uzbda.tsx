@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { ShipmentsListPanel } from '@/components/home/ShipmentsListPanel';
@@ -11,6 +12,7 @@ import { fetchUzWarehouseShipments } from '@/services/logistica-shipments';
 import type { ShipmentRequest } from '@/components/home/ShipmentRequestCard';
 
 export default function UzbdaScreen() {
+  const { t } = useTranslation();
   const [paymentFilter, setPaymentFilter] =
     useState<UzbCargoPaymentFilterValue>('all');
 
@@ -30,7 +32,7 @@ export default function UzbdaScreen() {
   );
 
   return (
-    <ScreenShell title="UZBda">
+    <ScreenShell title={t('navigation.inUzbekistan')}>
       <View style={{ flex: 1 }}>
         <UzbCargoPaymentFilter
           value={paymentFilter}
@@ -40,8 +42,8 @@ export default function UzbdaScreen() {
           loadShipments={loadShipments}
           hrefBase="/ish-stoli/[id]"
           emptyIcon="business-outline"
-          emptyTitle="Toshkent omborida yuk yo‘q"
-          emptyText="«Toshkent omborida» belgilangan mahsulotlar shu yerda chiqadi. To‘landidan keyin asosiy adminga o‘tadi."
+          emptyTitle={t('shipments.empty.uzbTitle')}
+          emptyText={t('shipments.empty.uzbText')}
           showCargoPaymentStatus
           filterItems={filterItems}
         />

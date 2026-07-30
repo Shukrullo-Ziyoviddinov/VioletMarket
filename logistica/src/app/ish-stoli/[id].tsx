@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +23,7 @@ import {
   YUKLARIM_PROCESS_STEPS,
   isUzWarehouseFlowStep,
 } from '@/constants/shipmentProcess';
+import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
 import {
@@ -39,11 +41,8 @@ function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
 }
 
-function formatMoney(value: number) {
-  return `${Math.max(0, Math.round(value)).toLocaleString('uz-UZ')} so‘m`;
-}
-
 export default function IshStoliScreen() {
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -57,10 +56,20 @@ export default function IshStoliScreen() {
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [error, setError] = useState('');
 
+  const formatMoney = useCallback(
+    (value: number) =>
+      `${Math.max(0, Math.round(value)).toLocaleString(localeForLanguage(i18n.language))} ${t('common.sum')}`,
+    [i18n.language, t],
+  );
+
   const load = useCallback(async () => {
     if (!token || !id) {
       setDetail(null);
-      setError(!id ? 'So‘rov topilmadi' : 'Avtorizatsiya talab qilinadi');
+      setError(
+        !id
+          ? t('shipments.errors.notFound')
+          : t('shipments.errors.authRequired'),
+      );
       setLoading(false);
       return;
     }
@@ -73,12 +82,14 @@ export default function IshStoliScreen() {
     } catch (err) {
       setDetail(null);
       setError(
-        err instanceof ApiError ? err.message : 'So‘rovni yuklab bo‘lmadi',
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.errors.loadFailed'),
       );
     } finally {
       setLoading(false);
     }
-  }, [id, token]);
+  }, [id, t, token]);
 
   useEffect(() => {
     void load();
@@ -118,15 +129,23 @@ export default function IshStoliScreen() {
       const shipment = await saveShipmentProcessStep(token, id, nextStep);
       setDetail(shipment);
       if (nextStep === 'bojxonada') {
-        Alert.alert('Bojxonada', 'Mahsulot UZBda sahifasiga o‘tdi');
+        Alert.alert(
+          t('shipments.alerts.atCustomsTitle'),
+          t('shipments.alerts.atCustomsMessage'),
+        );
         router.replace('/uzbda');
         return;
       }
-      Alert.alert('Saqlandi', 'Jarayon holati yangilandi');
+      Alert.alert(
+        t('shipments.alerts.savedTitle'),
+        t('shipments.alerts.savedMessage'),
+      );
     } catch (err) {
       Alert.alert(
-        'Xato',
-        err instanceof ApiError ? err.message : 'Saqlab bo‘lmadi',
+        t('common.error'),
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.alerts.saveFailed'),
       );
     } finally {
       setActionLoading(false);
@@ -145,15 +164,17 @@ export default function IshStoliScreen() {
       const result = await arriveShipmentAtUzWarehouse(token, id, payload);
       setDetail(result.shipment);
       Alert.alert(
-        'Toshkent omborida',
+        t('shipments.alerts.atTashkentTitle'),
         result.alreadyArrived
-          ? 'Allaqachon belgilangan'
-          : 'Holat yangilandi. Endi «To‘landi» ni bosishingiz mumkin.',
+          ? t('shipments.alerts.alreadyArrived')
+          : t('shipments.alerts.arrivedMessage'),
       );
     } catch (err) {
       Alert.alert(
-        'Xato',
-        err instanceof ApiError ? err.message : 'Yuborib bo‘lmadi',
+        t('common.error'),
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.alerts.submitFailed'),
       );
     } finally {
       setActionLoading(false);
@@ -168,16 +189,18 @@ export default function IshStoliScreen() {
       setDetail(result.shipment);
       setPaidModalOpen(false);
       Alert.alert(
-        'To‘landi',
+        t('shipments.alerts.paidTitle'),
         result.alreadyPaid
-          ? 'Allaqachon to‘langan'
-          : 'Mahsulot asosiy admin «Xorij → UZB» ga chiqadi',
+          ? t('shipments.alerts.alreadyPaid')
+          : t('shipments.alerts.paidMessage'),
       );
       router.replace('/uzbda');
     } catch (err) {
       Alert.alert(
-        'Xato',
-        err instanceof ApiError ? err.message : 'Belgilab bo‘lmadi',
+        t('common.error'),
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.alerts.markPaidFailed'),
       );
     } finally {
       setActionLoading(false);
@@ -191,14 +214,16 @@ export default function IshStoliScreen() {
       await returnShipmentToSeller(token, id);
       setReturnModalOpen(false);
       Alert.alert(
-        'So‘rov yuborildi',
-        'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
+        t('shipments.alerts.returnSentTitle'),
+        t('shipments.alerts.returnSentMessage'),
       );
       router.replace('/yuklarim');
     } catch (err) {
       Alert.alert(
-        'Xato',
-        err instanceof ApiError ? err.message : 'So‘rov yuborib bo‘lmadi',
+        t('common.error'),
+        err instanceof ApiError
+          ? err.message
+          : t('shipments.alerts.returnFailed'),
       );
     } finally {
       setActionLoading(false);
@@ -212,7 +237,7 @@ export default function IshStoliScreen() {
           <Ionicons name="arrow-back" size={22} color="#111827" />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Ish stoli
+          {t('shipments.detail.workbench')}
         </Text>
         <View style={styles.headerBtn} />
       </View>
@@ -223,15 +248,19 @@ export default function IshStoliScreen() {
         </View>
       ) : error || !detail ? (
         <View style={styles.centered}>
-          <Text style={styles.errorTitle}>Yuklanmadi</Text>
-          <Text style={styles.errorText}>{error || 'So‘rov topilmadi'}</Text>
+          <Text style={styles.errorTitle}>
+            {t('shipments.errors.loadFailedTitle')}
+          </Text>
+          <Text style={styles.errorText}>
+            {error || t('shipments.errors.notFound')}
+          </Text>
           <Pressable
             style={({ pressed }) => [styles.retryBtn, pressed && styles.pressed]}
             onPress={() => {
               void load();
             }}
           >
-            <Text style={styles.retryText}>Qayta urinish</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
       ) : (
@@ -261,16 +290,24 @@ export default function IshStoliScreen() {
 
           {isToshkent && detail.uzArrivedAt ? (
             <View style={styles.arrivalSummary}>
-              <Text style={styles.arrivalTitle}>Toshkent omborida</Text>
-              <Text style={styles.arrivalLine}>
-                Og‘irlik: {detail.weightKg} kg
+              <Text style={styles.arrivalTitle}>
+                {t('shipments.detail.arrivalTitle')}
               </Text>
               <Text style={styles.arrivalLine}>
-                Summa: {formatMoney(detail.cargoDeliveryFee || 0)}
+                {t('shipments.detail.arrivalWeight', {
+                  weight: detail.weightKg,
+                })}
+              </Text>
+              <Text style={styles.arrivalLine}>
+                {t('shipments.detail.arrivalAmount', {
+                  amount: formatMoney(detail.cargoDeliveryFee || 0),
+                })}
               </Text>
               {detail.uzArrivalComment ? (
                 <Text style={styles.arrivalLine}>
-                  Izoh: {detail.uzArrivalComment}
+                  {t('shipments.detail.arrivalComment', {
+                    comment: detail.uzArrivalComment,
+                  })}
                 </Text>
               ) : null}
             </View>
@@ -285,7 +322,9 @@ export default function IshStoliScreen() {
           ) : null}
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tasdiqlash</Text>
+            <Text style={styles.sectionTitle}>
+              {t('shipments.detail.confirmation')}
+            </Text>
 
             <View style={styles.statusRow}>
               <Ionicons
@@ -299,7 +338,7 @@ export default function IshStoliScreen() {
                   isAccepted && styles.statusTextDone,
                 ]}
               >
-                Qabul qilindi
+                {t('shipments.detail.accepted')}
               </Text>
             </View>
 
@@ -338,7 +377,7 @@ export default function IshStoliScreen() {
                           done && styles.stepBtnTextDone,
                         ]}
                       >
-                        {row.label}
+                        {t(`shipments.processSteps.${row.key}`)}
                       </Text>
                     </Pressable>
                   );
@@ -367,7 +406,7 @@ export default function IshStoliScreen() {
                       !canMarkPaid && styles.paidBtnTextDisabled,
                     ]}
                   >
-                    To‘landi
+                    {t('shipments.actions.paid')}
                   </Text>
                 )}
               </Pressable>
@@ -376,14 +415,14 @@ export default function IshStoliScreen() {
             {showPaidButton && !canMarkPaid ? (
               <Text style={styles.paidHintMuted}>
                 {waitingAdminFeeConfirm
-                  ? 'Mijoz to‘lovi va asosiy admin tasdiqini kuting.'
-                  : 'Avval yuqorida og‘irlik/summani kiriting va «Clientga yuborish» ni bosing.'}
+                  ? t('shipments.detail.waitAdminFee')
+                  : t('shipments.detail.enterWeightFirst')}
               </Text>
             ) : null}
 
             {isPaid ? (
               <Text style={styles.paidHint}>
-                To‘lov belgilangan — asosiy admin «Xorij → UZB» da ko‘rinadi.
+                {t('shipments.detail.paidDoneHint')}
               </Text>
             ) : null}
 
@@ -402,10 +441,12 @@ export default function IshStoliScreen() {
 
       <GlobalConfirmModal
         open={paidModalOpen}
-        title="To‘lovni tasdiqlash"
-        message={`Chindan ham ${productCode} shtrix kodidagi mahsulotga to‘lov qilindimi?`}
-        confirmText="Ha"
-        cancelText="Yo'q"
+        title={t('shipments.alerts.confirmPaidTitle')}
+        message={t('shipments.alerts.confirmPaidMessage', {
+          code: productCode,
+        })}
+        confirmText={t('common.yes')}
+        cancelText={t('common.no')}
         loading={actionLoading}
         onCancel={() => {
           if (!actionLoading) setPaidModalOpen(false);
@@ -417,10 +458,10 @@ export default function IshStoliScreen() {
 
       <GlobalConfirmModal
         open={returnModalOpen}
-        title="Sotuvchiga qaytarish"
-        message="Asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz."
-        confirmText="Yuborish"
-        cancelText="Bekor"
+        title={t('shipments.alerts.returnTitle')}
+        message={t('shipments.alerts.returnMessage')}
+        confirmText={t('shipments.actions.send')}
+        cancelText={t('shipments.actions.cancel')}
         loading={actionLoading}
         onCancel={() => {
           if (!actionLoading) setReturnModalOpen(false);

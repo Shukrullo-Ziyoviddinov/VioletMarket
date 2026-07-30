@@ -1,7 +1,9 @@
 import type { RefObject } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { resolveMediaUrl } from '@/config/env';
+import { localeForLanguage } from '@/i18n';
 import type { LogisticaChatMessage } from '@/types/logistica-chat';
 
 type LogisticaChatMessageListProps = {
@@ -9,27 +11,28 @@ type LogisticaChatMessageListProps = {
   listRef?: RefObject<ScrollView | null>;
 };
 
-function formatTime(value?: string) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString('uz-UZ', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function LogisticaChatMessageList({
   messages,
   listRef,
 }: LogisticaChatMessageListProps) {
+  const { t, i18n } = useTranslation();
+  const locale = localeForLanguage(i18n.language);
+
+  const formatTime = (value?: string) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   if (!messages.length) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>Yordam xizmati</Text>
-        <Text style={styles.emptyText}>
-          Savolingizni yozing — asosiy admin tez orada javob beradi.
-        </Text>
+        <Text style={styles.emptyTitle}>{t('help.emptyTitle')}</Text>
+        <Text style={styles.emptyText}>{t('help.emptyText')}</Text>
       </View>
     );
   }

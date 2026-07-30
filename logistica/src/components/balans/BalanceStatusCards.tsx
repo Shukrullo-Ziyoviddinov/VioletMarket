@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   returnedCount: number;
@@ -10,17 +11,19 @@ export function BalanceStatusCards({
   returnedCount,
   handedOverCount,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.row}>
       <View style={[styles.card, styles.returnedCard]}>
         <Ionicons name="return-down-back-outline" size={24} color="#DC2626" />
         <Text style={styles.count}>{returnedCount}</Text>
-        <Text style={styles.label}>Qaytarildi</Text>
+        <Text style={styles.label}>{t('balance.statusReturned')}</Text>
       </View>
       <View style={[styles.card, styles.handedCard]}>
         <Ionicons name="checkmark-done-outline" size={24} color="#16A34A" />
         <Text style={styles.count}>{handedOverCount}</Text>
-        <Text style={styles.label}>Topshirildi</Text>
+        <Text style={styles.label}>{t('balance.statusHandedOver')}</Text>
       </View>
     </View>
   );
