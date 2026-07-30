@@ -6,7 +6,6 @@ import LogisticaChatThreadsGrid from '../../components/LogisticaChatThreadsGrid/
 import { useAdminToast } from '../../context/AdminToastContext';
 import {
   connectLogisticaChatSocket,
-  disconnectLogisticaChatSocket,
   onLogisticaChatThreadsUpdated,
 } from '../../socket/logisticaChatSocketClient';
 import './LogisticaChatsPage.css';
@@ -41,7 +40,6 @@ export default function LogisticaChatsPage() {
 
     return () => {
       unsubscribe();
-      disconnectLogisticaChatSocket();
     };
   }, [loadThreads]);
 

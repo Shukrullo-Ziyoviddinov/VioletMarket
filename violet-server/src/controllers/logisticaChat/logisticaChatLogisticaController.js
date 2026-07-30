@@ -5,6 +5,9 @@ const {
   emitLogisticaChatThreadsUpdated,
   emitLogisticaChatRead,
 } = require("../../socket/logisticaChatSocketEmitter");
+const {
+  notifyAdminLogisticaChatMessage,
+} = require("../../services/adminNotifications/adminNotificationService");
 
 const listMessages = asyncHandler(async (req, res) => {
   const data = await logisticaChatService.listMessagesForLogistica(
@@ -26,6 +29,12 @@ const sendMessage = asyncHandler(async (req, res) => {
     logisticaId,
     req.body || {},
   );
+
+  await notifyAdminLogisticaChatMessage({
+    logisticaId,
+    messageType: data.message?.type,
+    content: data.message?.content,
+  }).catch(() => null);
 
   emitLogisticaChatMessage({
     logisticaId,

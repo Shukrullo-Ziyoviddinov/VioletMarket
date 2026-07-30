@@ -5,6 +5,9 @@ const {
   emitSupportChatThreadsUpdated,
   emitSupportChatRead,
 } = require("../../socket/supportChatSocketEmitter");
+const {
+  notifyAdminCourierChatMessage,
+} = require("../../services/adminNotifications/adminNotificationService");
 
 const listMessages = asyncHandler(async (req, res) => {
   const data = await supportChatService.listMessagesForCourier(req.deliveryId);
@@ -22,6 +25,12 @@ const sendMessage = asyncHandler(async (req, res) => {
     deliveryId,
     req.body || {},
   );
+
+  await notifyAdminCourierChatMessage({
+    deliveryId,
+    messageType: data.message?.type,
+    content: data.message?.content,
+  }).catch(() => null);
 
   emitSupportChatMessage({
     deliveryId,

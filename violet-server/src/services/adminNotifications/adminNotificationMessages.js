@@ -17,8 +17,20 @@ function buildAdminSellerSupportChatMessage(sellerName) {
   return `${name} sizga yordam chatida xabar yozdi`;
 }
 
+function buildAdminLogisticaChatMessage(logisticaName) {
+  const name = String(logisticaName || "Logistica").trim() || "Logistica";
+  return `${name} sizga chatda xabar yozdi`;
+}
+
+function buildAdminCourierChatMessage(courierName) {
+  const name = String(courierName || "Kuryer").trim() || "Kuryer";
+  return `${name} sizga chatda xabar yozdi`;
+}
+
 module.exports = {
   buildAdminPaymentRequestSubmittedMessage,
   buildAdminReturnRequestSubmittedMessage,
   buildAdminSellerSupportChatMessage,
+  buildAdminLogisticaChatMessage,
+  buildAdminCourierChatMessage,
 };

@@ -18,6 +18,14 @@ export async function fetchLogisticaChatThreads() {
   return Array.isArray(payload?.data?.threads) ? payload.data.threads : [];
 }
 
+export async function fetchLogisticaChatUnreadCount() {
+  const threads = await fetchLogisticaChatThreads();
+  return threads.reduce(
+    (total, thread) => total + (Number(thread?.unreadCount) || 0),
+    0,
+  );
+}
+
 export async function fetchLogisticaChatMessages(logisticaId) {
   const res = await fetch(
     apiUrl(

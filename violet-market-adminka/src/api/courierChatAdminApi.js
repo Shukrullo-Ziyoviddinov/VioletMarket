@@ -18,6 +18,14 @@ export async function fetchCourierChatThreads() {
   return Array.isArray(payload?.data?.threads) ? payload.data.threads : [];
 }
 
+export async function fetchCourierChatUnreadCount() {
+  const threads = await fetchCourierChatThreads();
+  return threads.reduce(
+    (total, thread) => total + (Number(thread?.unreadCount) || 0),
+    0,
+  );
+}
+
 export async function fetchCourierChatMessages(deliveryId) {
   const res = await fetch(
     apiUrl(`/api/admin/support-chat/threads/${encodeURIComponent(deliveryId)}/messages`),

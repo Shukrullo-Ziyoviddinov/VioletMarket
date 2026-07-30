@@ -4,6 +4,7 @@ import {
   fetchAdminNotificationsUnreadCount,
   markAllAdminNotificationsRead,
 } from '../api/adminNotificationsApi';
+import { ADMIN_NOTIFICATIONS_UPDATED_EVENT } from '../constants/adminEvents';
 
 const POLL_INTERVAL_MS = 30000;
 
@@ -63,9 +64,22 @@ export function useAdminNotifications() {
 
   useEffect(() => {
     refreshUnreadCount();
+    const handleNotificationsUpdated = () => {
+      loadNotifications();
+    };
+    window.addEventListener(
+      ADMIN_NOTIFICATIONS_UPDATED_EVENT,
+      handleNotificationsUpdated,
+    );
     const timer = window.setInterval(refreshUnreadCount, POLL_INTERVAL_MS);
-    return () => window.clearInterval(timer);
-  }, [refreshUnreadCount]);
+    return () => {
+      window.removeEventListener(
+        ADMIN_NOTIFICATIONS_UPDATED_EVENT,
+        handleNotificationsUpdated,
+      );
+      window.clearInterval(timer);
+    };
+  }, [loadNotifications, refreshUnreadCount]);
 
   return {
     unreadCount,

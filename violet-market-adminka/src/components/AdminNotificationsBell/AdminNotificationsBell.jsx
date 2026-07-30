@@ -32,18 +32,28 @@ export default function AdminNotificationsBell() {
 
   const handleClose = () => {
     markDisplayedAsRead();
+    void markAllRead();
     setOpen(false);
   };
 
   const handleItemClick = (notification) => {
     setOpen(false);
     markDisplayedAsRead();
+    void markAllRead();
     if (notification?.type === 'return_request_submitted') {
       navigate('/return-requests');
       return;
     }
     if (notification?.type === 'seller_support_chat_message_received') {
       navigate('/siller-chats');
+      return;
+    }
+    if (notification?.type === 'logistica_chat_message_received') {
+      navigate('/logistica-chats');
+      return;
+    }
+    if (notification?.type === 'courier_support_chat_message_received') {
+      navigate('/courier-chats');
       return;
     }
     navigate('/payment-requests');
@@ -77,30 +87,47 @@ export default function AdminNotificationsBell() {
         ) : (
           <div className="admin-notifications-bell__list">
             {notifications.map((notification) => (
-              <button
-                key={notification.id}
-                type="button"
-                className={`admin-notifications-bell__item${
-                  notification.readAt ? '' : ' admin-notifications-bell__item--unread'
-                }`}
-                onClick={() => handleItemClick(notification)}
-              >
-                <div className="admin-notifications-bell__avatar">
-                  {notification.sellerLogoUrl ? (
-                    <img src={notification.sellerLogoUrl} alt={notification.sellerName} />
-                  ) : (
-                    <span>
-                      {notification.type === 'return_request_submitted'
-                        ? 'A'
-                        : notification.sellerName?.charAt(0)?.toUpperCase() || 'S'}
-                    </span>
-                  )}
-                </div>
-                <div className="admin-notifications-bell__content">
-                  <strong>{notification.message}</strong>
-                  <span>{formatNotificationDateTime(notification.createdAt)}</span>
-                </div>
-              </button>
+              (() => {
+                const displayName =
+                  notification.courierName ||
+                  notification.logisticaName ||
+                  notification.sellerName ||
+                  'Bildirishnoma';
+                const fallbackInitial =
+                  notification.type === 'return_request_submitted'
+                    ? 'A'
+                    : displayName.charAt(0).toUpperCase() || 'B';
+
+                return (
+                  <button
+                    key={notification.id}
+                    type="button"
+                    className={`admin-notifications-bell__item${
+                      notification.readAt
+                        ? ''
+                        : ' admin-notifications-bell__item--unread'
+                    }`}
+                    onClick={() => handleItemClick(notification)}
+                  >
+                    <div className="admin-notifications-bell__avatar">
+                      {notification.sellerLogoUrl ? (
+                        <img
+                          src={notification.sellerLogoUrl}
+                          alt={displayName}
+                        />
+                      ) : (
+                        <span>{fallbackInitial}</span>
+                      )}
+                    </div>
+                    <div className="admin-notifications-bell__content">
+                      <strong>{notification.message}</strong>
+                      <span>
+                        {formatNotificationDateTime(notification.createdAt)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })()
             ))}
           </div>
         )}

@@ -1,4 +1,6 @@
 const { AdminNotification } = require("../../models/adminNotification");
+const { DeliveryAccount } = require("../../models/deliveryAccount");
+const { LogisticaProfile } = require("../../models/logisticaProfile");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { HttpError } = require("../../utils/httpError");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
@@ -8,6 +10,8 @@ const {
   buildAdminPaymentRequestSubmittedMessage,
   buildAdminReturnRequestSubmittedMessage,
   buildAdminSellerSupportChatMessage,
+  buildAdminLogisticaChatMessage,
+  buildAdminCourierChatMessage,
 } = require("./adminNotificationMessages");
 
 const KEEP_LIMIT = 20;
@@ -41,6 +45,10 @@ function mapNotification(row) {
     sellerId: String(row.sellerId || ""),
     sellerName: String(row.sellerName || ""),
     sellerLogoUrl: String(row.sellerLogoUrl || ""),
+    logisticaId: String(row.logisticaId || ""),
+    logisticaName: String(row.logisticaName || ""),
+    courierId: String(row.courierId || ""),
+    courierName: String(row.courierName || ""),
     itemCount: toNumber(row.itemCount, 0),
     totalAmount: toNumber(row.totalAmount, 0),
     message: String(row.message || ""),
@@ -163,6 +171,101 @@ async function notifyAdminSellerSupportChatMessage({
   return notification;
 }
 
+/**
+ * Logistica yordam chatida admin'ga xabar yozganda.
+ */
+async function notifyAdminLogisticaChatMessage({
+  logisticaId,
+  messageType,
+  content,
+}) {
+  const normalizedLogisticaId = String(logisticaId || "").trim();
+  if (!normalizedLogisticaId) return null;
+
+  const profile = await LogisticaProfile.findById(normalizedLogisticaId)
+    .select({ companyName: 1 })
+    .lean();
+  if (!profile) return null;
+
+  const preview =
+    String(messageType || "") === "image"
+      ? "Rasm yuborildi"
+      : String(content || "").trim();
+  if (!preview) return null;
+
+  const logisticaName =
+    String(profile.companyName || "Logistica").trim() || "Logistica";
+  const id = await nextSequence("admin_notification_id");
+  const notification = await AdminNotification.create({
+    id,
+    type: "logistica_chat_message_received",
+    paymentRequestId: null,
+    requestCode: "",
+    sellerId: "",
+    sellerName: "",
+    sellerLogoUrl: "",
+    logisticaId: normalizedLogisticaId,
+    logisticaName,
+    itemCount: 0,
+    totalAmount: 0,
+    message: buildAdminLogisticaChatMessage(logisticaName),
+    readAt: null,
+  });
+
+  await pruneOldAdminNotifications().catch(() => null);
+  return notification;
+}
+
+/**
+ * Kuryer yordam chatida admin'ga xabar yozganda.
+ */
+async function notifyAdminCourierChatMessage({
+  deliveryId,
+  messageType,
+  content,
+}) {
+  const normalizedDeliveryId = String(deliveryId || "").trim();
+  if (!normalizedDeliveryId) return null;
+
+  const account = await DeliveryAccount.findById(normalizedDeliveryId)
+    .select({ firstName: 1, lastName: 1, profileImage: 1 })
+    .lean();
+  if (!account) return null;
+
+  const preview =
+    String(messageType || "") === "image"
+      ? "Rasm yuborildi"
+      : String(content || "").trim();
+  if (!preview) return null;
+
+  const courierName =
+    [account.firstName, account.lastName]
+      .map((part) => String(part || "").trim())
+      .filter(Boolean)
+      .join(" ") || "Kuryer";
+  const id = await nextSequence("admin_notification_id");
+  const notification = await AdminNotification.create({
+    id,
+    type: "courier_support_chat_message_received",
+    paymentRequestId: null,
+    requestCode: "",
+    sellerId: "",
+    sellerName: "",
+    sellerLogoUrl: resolvePublicAssetUrl(account.profileImage || "") || "",
+    logisticaId: "",
+    logisticaName: "",
+    courierId: normalizedDeliveryId,
+    courierName,
+    itemCount: 0,
+    totalAmount: 0,
+    message: buildAdminCourierChatMessage(courierName),
+    readAt: null,
+  });
+
+  await pruneOldAdminNotifications().catch(() => null);
+  return notification;
+}
+
 async function getUnreadCount() {
   return AdminNotification.countDocuments({ readAt: null });
 }
@@ -222,6 +325,8 @@ module.exports = {
   notifyAdminPaymentRequestSubmitted,
   notifyAdminReturnRequestSubmitted,
   notifyAdminSellerSupportChatMessage,
+  notifyAdminLogisticaChatMessage,
+  notifyAdminCourierChatMessage,
   getUnreadCount,
   listNotifications,
   markNotificationRead,

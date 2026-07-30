@@ -28,6 +28,8 @@ import {
   RollbackOutlined,
 } from '@ant-design/icons';
 import ScrollArea from '../ScrollArea/ScrollArea';
+import { useCourierChatUnread } from '../../hooks/useCourierChatUnread';
+import { useLogisticaChatUnread } from '../../hooks/useLogisticaChatUnread';
 import { useSellerSupportChatUnread } from '../../hooks/useSellerSupportChatUnread';
 import './AdminSidebar.css';
 
@@ -189,12 +191,28 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedKey = getSelectedKeyFromPath(location.pathname);
+  const courierChatUnread = useCourierChatUnread();
+  const logisticaChatUnread = useLogisticaChatUnread();
   const sellerSupportUnread = useSellerSupportChatUnread();
 
   const sidebarMenuItems = useMemo(
     () =>
       menuItems.map(({ key, icon, label, title }) => {
-        if (key !== 'siller-chats') {
+        const unreadCount =
+          key === 'courier-chats'
+            ? courierChatUnread
+            : key === 'logistica-chats'
+              ? logisticaChatUnread
+              : key === 'siller-chats'
+                ? sellerSupportUnread
+                : 0;
+
+        const hasChatBadge =
+          key === 'courier-chats' ||
+          key === 'logistica-chats' ||
+          key === 'siller-chats';
+
+        if (!unreadCount && !hasChatBadge) {
           return { key, icon, label, title };
         }
 
@@ -205,7 +223,7 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
             <span className="admin-sidebar__icon-wrap">
               {icon}
               {collapsed ? (
-                <SidebarUnreadBadge count={sellerSupportUnread} collapsed />
+                <SidebarUnreadBadge count={unreadCount} collapsed />
               ) : null}
             </span>
           ),
@@ -213,13 +231,13 @@ export default function AdminSidebar({ collapsed, onSelectSection }) {
             <span className="admin-sidebar__menu-label">
               <span>{label}</span>
               {!collapsed ? (
-                <SidebarUnreadBadge count={sellerSupportUnread} />
+                <SidebarUnreadBadge count={unreadCount} />
               ) : null}
             </span>
           ),
         };
       }),
-    [collapsed, sellerSupportUnread],
+    [collapsed, courierChatUnread, logisticaChatUnread, sellerSupportUnread],
   );
 
   const handleMenuClick = ({ key }) => {

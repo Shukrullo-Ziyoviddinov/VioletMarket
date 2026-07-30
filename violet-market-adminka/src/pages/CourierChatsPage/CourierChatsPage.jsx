@@ -6,7 +6,6 @@ import CourierChatThreadsGrid from '../../components/CourierChatThreadsGrid/Cour
 import { useAdminToast } from '../../context/AdminToastContext';
 import {
   connectCourierChatSocket,
-  disconnectCourierChatSocket,
   onCourierChatThreadsUpdated,
 } from '../../socket/courierChatSocketClient';
 import './CourierChatsPage.css';
@@ -41,7 +40,6 @@ export default function CourierChatsPage() {
 
     return () => {
       unsubscribe();
-      disconnectCourierChatSocket();
     };
   }, [loadThreads]);
 
