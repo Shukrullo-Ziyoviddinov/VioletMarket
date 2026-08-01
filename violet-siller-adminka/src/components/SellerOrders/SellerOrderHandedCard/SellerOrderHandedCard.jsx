@@ -4,6 +4,7 @@ import {
   getSellerOrderBuyerName,
   getSellerOrderBuyerPhone,
 } from '../../../utils/sellerOrdersDisplay';
+import SellerOrderGroupItems from '../SellerOrderGroupItems/SellerOrderGroupItems';
 import './SellerOrderHandedCard.css';
 
 function formatDateTime(value) {
@@ -40,42 +41,19 @@ export default function SellerOrderHandedCard({ order }) {
   return (
     <div className="seller-order-handed-card">
       {isGroup ? (
+        <>
+          <div className="seller-order-handed-card__row">
+            <span>{t('orders.card.orderCode', { defaultValue: 'Buyurtma' })}</span>
+            <strong>{order.orderCode || '—'}</strong>
+          </div>
+          <SellerOrderGroupItems order={order} />
+        </>
+      ) : (
         <div className="seller-order-handed-card__row">
-          <span>{t('orders.card.orderCode', { defaultValue: 'Buyurtma' })}</span>
-          <strong>{order.orderCode || '—'}</strong>
-        </div>
-      ) : null}
-
-      <div className="seller-order-handed-card__row">
-        <span>
-          {isGroup
-            ? t('orders.card.barcodes', { defaultValue: 'Shtrix kodlar' })
-            : t('orders.card.barcode')}
-        </span>
-        {isGroup && productCodes.length > 1 ? (
-          <ul className="seller-order-handed-card__codes">
-            {productCodes.map((code) => (
-              <li key={code}>
-                <strong>{code}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
+          <span>{t('orders.card.barcode')}</span>
           <strong>{productCodes[0] || order.productCode || '—'}</strong>
-        )}
-      </div>
-
-      {isGroup ? (
-        <div className="seller-order-handed-card__row">
-          <span>{t('orders.card.products', { defaultValue: 'Mahsulotlar' })}</span>
-          <strong>
-            {t('orders.card.productCount', {
-              count: order.productCount || items.length || productCodes.length || 1,
-              defaultValue: '{{count}} ta mahsulot',
-            })}
-          </strong>
         </div>
-      ) : null}
+      )}
 
       <div className="seller-order-handed-card__row">
         <span>{t('orders.card.buyer')}</span>

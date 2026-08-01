@@ -23,6 +23,7 @@ import SellerCargoWarehouseContacts from '../SellerCargoWarehouseContacts/Seller
 import SellerOrderCargoHandedList from '../SellerOrderCargoHandedList/SellerOrderCargoHandedList';
 import SellerOrderCollectionList from '../SellerOrderCollectionList/SellerOrderCollectionList';
 import SellerOrderCourierList from '../SellerOrderCourierList/SellerOrderCourierList';
+import SellerOrderGroupItems from '../SellerOrderGroupItems/SellerOrderGroupItems';
 import SellerOrderHandedList from '../SellerOrderHandedList/SellerOrderHandedList';
 import SellerOrderNoAnswerList from '../SellerOrderNoAnswerList/SellerOrderNoAnswerList';
 import SellerOrdersList from '../SellerOrdersList/SellerOrdersList';
@@ -603,6 +604,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
             : () => requestCancelOrder(courierOrder)
         }
         cancelOrderText={t('orders.modal.cancelOrder')}
+        extraContent={<SellerOrderGroupItems order={courierOrder} />}
       />
 
       <MiniGlobalModal
@@ -625,12 +627,15 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         }
         cancelOrderText={t('orders.modal.cancelOrder')}
         extraContent={
-          <SellerCargoWarehouseContacts
-            loading={cargoContactsLoading}
-            error={cargoContactsError}
-            sellerCountry={cargoCountry}
-            contacts={cargoContacts}
-          />
+          <>
+            <SellerOrderGroupItems order={cargoOrder} />
+            <SellerCargoWarehouseContacts
+              loading={cargoContactsLoading}
+              error={cargoContactsError}
+              sellerCountry={cargoCountry}
+              contacts={cargoContacts}
+            />
+          </>
         }
       />
 

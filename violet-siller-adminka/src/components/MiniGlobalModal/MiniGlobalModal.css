@@ -83,7 +83,9 @@
 }
 
 .mini-global-modal__dialog--with-extra {
-  width: min(100%, 480px);
+  width: min(100%, 520px);
+  max-height: min(90vh, 720px);
+  overflow: auto;
 }
 
 .mini-global-modal__dialog--confirm .mini-global-modal__title {

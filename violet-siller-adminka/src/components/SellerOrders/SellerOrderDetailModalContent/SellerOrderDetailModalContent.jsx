@@ -10,6 +10,7 @@ import {
   getSellerOrderPaymentTone,
   getSellerOrderProductTitle,
 } from '../../../utils/sellerOrdersDisplay';
+import SellerOrderGroupItems from '../SellerOrderGroupItems/SellerOrderGroupItems';
 import './SellerOrderDetailModalContent.css';
 
 function optionValue(value) {
@@ -26,39 +27,32 @@ export default function SellerOrderDetailModalContent({ order }) {
 
   const items = Array.isArray(order?.items) ? order.items : [];
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
-  const productCodes = Array.isArray(order?.productCodes)
-    ? order.productCodes.filter(Boolean)
-    : String(order?.productCode || '')
-        .split(',')
-        .map((part) => part.trim())
-        .filter(Boolean);
-
-  const productTitle = isGroup
-    ? t('orders.card.productCount', {
-        count: order.productCount || items.length || productCodes.length || 1,
-        defaultValue: '{{count}} ta mahsulot',
-      })
-    : getSellerOrderProductTitle(order, i18n.language);
-  const imageUrl = resolveAssetUrl(
-    isGroup ? items[0]?.imageUrl || order.imageUrl : order.imageUrl,
-  );
   const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
-  const codeLabel =
-    isGroup && productCodes.length
-      ? productCodes.join(', ')
-      : order.productCode || '—';
 
   return (
     <div className="seller-order-detail-modal-content">
-      <div className="seller-order-detail-modal-content__product">
-        <div className="seller-order-detail-modal-content__image">
-          {imageUrl ? <img src={imageUrl} alt={productTitle} /> : <span>—</span>}
+      {isGroup ? (
+        <SellerOrderGroupItems order={order} />
+      ) : (
+        <div className="seller-order-detail-modal-content__product">
+          <div className="seller-order-detail-modal-content__image">
+            {resolveAssetUrl(order.imageUrl) ? (
+              <img
+                src={resolveAssetUrl(order.imageUrl)}
+                alt={getSellerOrderProductTitle(order, i18n.language)}
+              />
+            ) : (
+              <span>—</span>
+            )}
+          </div>
+          <div className="seller-order-detail-modal-content__product-text">
+            <strong title={getSellerOrderProductTitle(order, i18n.language)}>
+              {getSellerOrderProductTitle(order, i18n.language)}
+            </strong>
+            <p>{order.productCode || '—'}</p>
+          </div>
         </div>
-        <div className="seller-order-detail-modal-content__product-text">
-          <strong title={productTitle}>{productTitle}</strong>
-          <p title={codeLabel}>{codeLabel}</p>
-        </div>
-      </div>
+      )}
 
       <div className="seller-order-detail-modal-content__info">
         {!isGroup ? (
@@ -108,7 +102,11 @@ export default function SellerOrderDetailModalContent({ order }) {
           </strong>
         </div>
         <div className="seller-order-detail-modal-content__row">
-          <span>{t('orders.card.amount')}</span>
+          <span>
+            {isGroup
+              ? t('orders.card.amountTotal', { defaultValue: 'Jami narx' })
+              : t('orders.card.amount')}
+          </span>
           <strong>{formatSellerOrderAmount(order.amount)}</strong>
         </div>
       </div>

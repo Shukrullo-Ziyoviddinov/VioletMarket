@@ -3,6 +3,7 @@ import {
   getAdminOrderBuyerName,
   getAdminOrderBuyerPhone,
 } from '../../../utils/adminOrdersDisplay';
+import AdminOrderGroupItems from '../AdminOrderGroupItems/AdminOrderGroupItems';
 import AdminOrderProductMeta from '../AdminOrderProductMeta/AdminOrderProductMeta';
 import AdminOrderSellerBadge from '../AdminOrderSellerBadge/AdminOrderSellerBadge';
 import AdminOrderStatusBadge from '../AdminOrderStatusBadge/AdminOrderStatusBadge';
@@ -29,6 +30,8 @@ function getCourierName(courier) {
 export default function AdminOrderHandedCard({ order, showSellerCountry = false }) {
   const courierAccepted = Boolean(order?.courierAccepted && order?.courier);
   const courierName = getCourierName(order?.courier);
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = Boolean(order?.isGroup) || items.length > 1;
 
   return (
     <div className="seller-order-handed-card">
@@ -37,7 +40,11 @@ export default function AdminOrderHandedCard({ order, showSellerCountry = false 
         className="admin-order-seller-badge--block"
         showCountry={showSellerCountry}
       />
-      <AdminOrderProductMeta order={order} compact />
+      {isGroup ? (
+        <AdminOrderGroupItems order={order} />
+      ) : (
+        <AdminOrderProductMeta order={order} compact />
+      )}
       <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
       <div className="seller-order-handed-card__row">
         <span>Xaridor</span>

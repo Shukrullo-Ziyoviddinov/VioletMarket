@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import GlobalModal from '../../GlobalModal/GlobalModal';
 import { getAdminOrderSellerName } from '../../../utils/adminOrdersDisplay';
+import AdminOrderGroupItems from '../AdminOrderGroupItems/AdminOrderGroupItems';
 import './AdminOrderHandoffModal.css';
 
 function parseCoordsInput(value) {
@@ -93,6 +94,7 @@ export default function AdminOrderHandoffModal({
               <strong>{productCode}</strong>
               {isGroup ? 'ini' : ' mahsulotini'} UZB kuryerga topshirasizmi?
             </p>
+            <AdminOrderGroupItems order={order} />
             {requireWarehousePickup ? (
               <>
                 <p className="admin-order-handoff-modal__hint">
