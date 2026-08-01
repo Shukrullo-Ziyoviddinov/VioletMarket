@@ -41,6 +41,49 @@ const handoffOrderItem = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const confirmOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await adminOrdersService.confirmAdminOrderGroup({
+    sellerId: body.sellerId,
+    orderId: req.params.orderId,
+    itemIndexes: body.itemIndexes,
+  });
+  res.json({ ok: true, data });
+});
+
+const collectOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await adminOrdersService.collectAdminOrderGroup({
+    sellerId: body.sellerId,
+    orderId: req.params.orderId,
+    itemIndexes: body.itemIndexes,
+  });
+  res.json({ ok: true, data });
+});
+
+const handoffOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await adminOrdersService.handoffAdminOrderGroup({
+    ...body,
+    sellerId: body.sellerId,
+    orderId: req.params.orderId,
+    itemIndexes: body.itemIndexes,
+  });
+  res.json({ ok: true, data });
+});
+
+const submitToCargoGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await adminOrdersService.submitAdminOrderGroupToCargo({
+    sellerId: body.sellerId,
+    orderId: req.params.orderId,
+    itemIndexes: body.itemIndexes,
+    note: body.note,
+    groupId: body.groupId,
+  });
+  res.json({ ok: true, data });
+});
+
 const cancelOrderItem = asyncHandler(async (req, res) => {
   const data = await adminOrdersService.cancelAdminOrderItem({
     sellerId: req.body?.sellerId,
@@ -80,6 +123,10 @@ module.exports = {
   confirmOrderItem,
   collectOrderItem,
   handoffOrderItem,
+  confirmOrderGroup,
+  collectOrderGroup,
+  handoffOrderGroup,
+  submitToCargoGroup,
   cancelOrderItem,
   reHandoffNoAnswer,
   reactivateNoAnswer,

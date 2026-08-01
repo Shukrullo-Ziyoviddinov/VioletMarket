@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Empty, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { groupSellerOrdersByFulfillment } from '../../../utils/sellerOrderGroups';
 import SellerOrderCargoHandedCard from '../SellerOrderCargoHandedCard/SellerOrderCargoHandedCard';
 import '../SellerOrderHandedList/SellerOrderHandedList.css';
 
@@ -10,6 +11,11 @@ export default function SellerOrderCargoHandedList({
 }) {
   const { t } = useTranslation();
 
+  const displayOrders = useMemo(
+    () => groupSellerOrdersByFulfillment(orders),
+    [orders],
+  );
+
   if (loading) {
     return (
       <div className="seller-order-handed-list__state">
@@ -18,7 +24,7 @@ export default function SellerOrderCargoHandedList({
     );
   }
 
-  if (!orders.length) {
+  if (!displayOrders.length) {
     return (
       <div className="seller-order-handed-list__state">
         <Empty description={t('orders.cargoHanded.empty')} />
@@ -28,8 +34,11 @@ export default function SellerOrderCargoHandedList({
 
   return (
     <div className="seller-order-handed-list">
-      {orders.map((order) => (
-        <SellerOrderCargoHandedCard key={order.id} order={order} />
+      {displayOrders.map((order) => (
+        <SellerOrderCargoHandedCard
+          key={order.id || order.groupKey}
+          order={order}
+        />
       ))}
     </div>
   );

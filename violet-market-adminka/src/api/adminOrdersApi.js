@@ -57,6 +57,16 @@ function normalizeOrder(row) {
     confirmedAt: row?.confirmedAt || null,
     handedToCourierAt: row?.handedToCourierAt || null,
     unitIndex: Number(row?.unitIndex) || 0,
+    groupKey: String(row?.groupKey || ''),
+    groupSize: Number(row?.groupSize) || 0,
+    groupItemCount: Number(row?.groupItemCount) || 0,
+    siblingIds: Array.isArray(row?.siblingIds)
+      ? row.siblingIds.map((id) => String(id))
+      : [],
+    visibleGroupSize: Number(row?.visibleGroupSize) || 0,
+    visibleSiblingIds: Array.isArray(row?.visibleSiblingIds)
+      ? row.visibleSiblingIds.map((id) => String(id))
+      : [],
     courierAccepted: Boolean(row?.courierAccepted),
     courier: row?.courier
       ? {
@@ -146,6 +156,56 @@ export function handoffAdminOrderItem(orderId, itemIndex, sellerId, pickup = nul
         }
       : {};
   return patchOrderItem('handoff', orderId, itemIndex, sellerId, extra);
+}
+
+async function patchOrderGroup(action, orderId, sellerId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/admin/orders/${Number(orderId)}/${action}-group`),
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sellerId: String(sellerId || ''),
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+        ...(body.note ? { note: String(body.note) } : {}),
+        ...(body.uzWarehousePickup
+          ? { uzWarehousePickup: body.uzWarehousePickup }
+          : {}),
+      }),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+export function confirmAdminOrderGroup(orderId, sellerId, body = {}) {
+  return patchOrderGroup('confirm', orderId, sellerId, body);
+}
+
+export function collectAdminOrderGroup(orderId, sellerId, body = {}) {
+  return patchOrderGroup('collect', orderId, sellerId, body);
+}
+
+/** Local yoki xorij→UZB bulk handoff. pickup — xorij ombor manzili. */
+export function handoffAdminOrderGroup(orderId, sellerId, body = {}) {
+  const pickup = body?.pickup;
+  const extra =
+    pickup && typeof pickup === 'object'
+      ? {
+          uzWarehousePickup: {
+            address: String(pickup.address || '').trim(),
+            coordinates: Array.isArray(pickup.coordinates)
+              ? pickup.coordinates
+              : undefined,
+            phone: String(pickup.phone || '').trim() || undefined,
+            label: String(pickup.label || 'Toshkent ombori').trim(),
+          },
+        }
+      : {};
+  return patchOrderGroup('handoff', orderId, sellerId, {
+    itemIndexes: body.itemIndexes,
+    ...extra,
+  });
 }
 
 export function cancelAdminOrderItem(orderId, itemIndex, sellerId) {

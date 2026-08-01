@@ -21,8 +21,28 @@ function buildVariantText(order, t) {
 
 export default function SellerOrderCollectionCard({ order, onOpen }) {
   const { t, i18n } = useTranslation();
-  const title = getSellerOrderProductTitle(order, i18n.language);
-  const variants = buildVariantText(order, t);
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const productCodes = Array.isArray(order?.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order?.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+  const title = isGroup
+    ? t('orders.card.productCount', {
+        count: order.productCount || items.length || productCodes.length || 1,
+        defaultValue: '{{count}} ta mahsulot',
+      })
+    : getSellerOrderProductTitle(order, i18n.language);
+  const codeLabel =
+    isGroup && productCodes.length
+      ? productCodes.join(', ')
+      : order.productCode || '—';
+  const variants = isGroup ? '' : buildVariantText(order, t);
+  const imageUrl = resolveAssetUrl(
+    isGroup ? items[0]?.imageUrl || order.imageUrl : order.imageUrl,
+  );
 
   return (
     <button
@@ -32,13 +52,13 @@ export default function SellerOrderCollectionCard({ order, onOpen }) {
     >
       <img
         className="seller-order-collection-card__image"
-        src={resolveAssetUrl(order.imageUrl)}
+        src={imageUrl}
         alt={title}
       />
 
       <div className="seller-order-collection-card__content">
         <strong title={title}>{title}</strong>
-        <span>{order.productCode || '—'}</span>
+        <span title={codeLabel}>{codeLabel}</span>
         {variants ? <p title={variants}>{variants}</p> : null}
       </div>
 

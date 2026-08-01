@@ -564,6 +564,80 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
 }
 
 /**
+ * Bir buyurtmani (berilgan donalarni) birga qabul qilish.
+ * Return / deliver / pickup — hali dona (assignment) bo‘yicha.
+ * units majburiy: [{ itemIndex, unitIndex }]
+ */
+async function acceptOrderGroupByCourier(deliveryId, payload = {}) {
+  const orderId = Number(payload.orderId);
+  if (!Number.isFinite(orderId) || orderId <= 0) {
+    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ORDER_ID");
+  }
+
+  const courierCoords = {
+    courierLat: payload.courierLat ?? payload.lat,
+    courierLng: payload.courierLng ?? payload.lng,
+  };
+
+  const rawUnits = Array.isArray(payload.units) ? payload.units : [];
+  const seen = new Set();
+  const uniqueUnits = [];
+  for (const unit of rawUnits) {
+    const itemIndex = Number(unit?.itemIndex);
+    const unitIndex = Math.max(0, Number(unit?.unitIndex) || 0);
+    if (!Number.isFinite(itemIndex) || itemIndex < 0) continue;
+    const key = assignmentUnitKey(orderId, itemIndex, unitIndex);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqueUnits.push({ itemIndex, unitIndex });
+  }
+
+  if (!uniqueUnits.length) {
+    throw new HttpError(
+      400,
+      "Qabul qilish uchun mahsulotlar ko‘rsatilmagan",
+      "UNITS_REQUIRED",
+    );
+  }
+
+  const updated = [];
+  const skipped = [];
+
+  for (const unit of uniqueUnits) {
+    try {
+      const row = await acceptOrderUnitByCourier(deliveryId, {
+        orderId,
+        itemIndex: unit.itemIndex,
+        unitIndex: unit.unitIndex,
+        ...courierCoords,
+      });
+      updated.push(row);
+    } catch (error) {
+      if (error instanceof HttpError && Number(error.status) === 409) {
+        skipped.push({
+          orderId,
+          itemIndex: unit.itemIndex,
+          unitIndex: unit.unitIndex,
+          code: error.code || "ORDER_TRACKING_STATUS_CONFLICT",
+          message: error.message,
+        });
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  return {
+    orderId,
+    updated,
+    skipped,
+    updatedCount: updated.length,
+    skippedCount: skipped.length,
+    assignments: updated,
+  };
+}
+
+/**
  * Kuryer "Topshirdim" — mijoz mahsulotni oldi.
  * Keyinchalik asosiy admindan ham shu holat tasdiqlanishi mumkin.
  */
@@ -857,6 +931,7 @@ module.exports = {
   RETURN_PHASE_STATUSES,
   RETURNABLE_STATUSES,
   acceptOrderUnitByCourier,
+  acceptOrderGroupByCourier,
   pickUpOrderUnitByCourier,
   advanceAssignmentStepByCourier,
   deliverOrderUnitByCourier,

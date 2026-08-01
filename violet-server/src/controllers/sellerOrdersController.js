@@ -44,6 +44,36 @@ const handoffOrderItem = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const confirmOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await sellerOrderTrackingService.confirmSellerOrderGroup(
+    req.sellerShopId,
+    req.params.orderId,
+    { itemIndexes: body.itemIndexes },
+  );
+  res.json({ ok: true, data });
+});
+
+const collectOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await sellerOrderTrackingService.collectSellerOrderGroup(
+    req.sellerShopId,
+    req.params.orderId,
+    { itemIndexes: body.itemIndexes },
+  );
+  res.json({ ok: true, data });
+});
+
+const handoffOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await sellerOrderTrackingService.handoffSellerOrderGroup(
+    req.sellerShopId,
+    req.params.orderId,
+    { itemIndexes: body.itemIndexes },
+  );
+  res.json({ ok: true, data });
+});
+
 const cancelOrderItem = asyncHandler(async (req, res) => {
   const data = await sellerOrderTrackingService.cancelSellerOrderItem(
     req.sellerShopId,
@@ -87,6 +117,16 @@ const submitToCargo = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const submitToCargoGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await cargoShipmentSellerService.submitSellerOrderGroupToCargo(
+    req.sellerShopId,
+    req.params.orderId,
+    body,
+  );
+  res.json({ ok: true, data });
+});
+
 const listCargoWarehouseContacts = asyncHandler(async (req, res) => {
   const data =
     await cargoShipmentSellerService.listSellerCargoWarehouseContacts(
@@ -101,10 +141,14 @@ module.exports = {
   confirmOrderItem,
   collectOrderItem,
   handoffOrderItem,
+  confirmOrderGroup,
+  collectOrderGroup,
+  handoffOrderGroup,
   cancelOrderItem,
   reHandoffNoAnswer,
   reactivateNoAnswer,
   deliverNoAnswer,
   submitToCargo,
+  submitToCargoGroup,
   listCargoWarehouseContacts,
 };

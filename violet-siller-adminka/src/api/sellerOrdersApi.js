@@ -54,6 +54,17 @@ function normalizeOrder(row) {
     readyForCargoAt: row?.readyForCargoAt || null,
     handedToCargoAt: row?.handedToCargoAt || null,
     unitIndex: Number(row?.unitIndex) || 0,
+    sellerId: String(row?.sellerId || ''),
+    groupKey: String(row?.groupKey || ''),
+    groupSize: Number(row?.groupSize) || 0,
+    groupItemCount: Number(row?.groupItemCount) || 0,
+    siblingIds: Array.isArray(row?.siblingIds)
+      ? row.siblingIds.map((id) => String(id))
+      : [],
+    visibleGroupSize: Number(row?.visibleGroupSize) || 0,
+    visibleSiblingIds: Array.isArray(row?.visibleSiblingIds)
+      ? row.visibleSiblingIds.map((id) => String(id))
+      : [],
     courierAccepted: Boolean(row?.courierAccepted),
     courier: row?.courier
       ? {
@@ -67,7 +78,15 @@ function normalizeOrder(row) {
     assignmentId: row?.assignmentId ? String(row.assignmentId) : null,
     cargoSubmitted: Boolean(row?.cargoSubmitted),
     cargoAccepted: Boolean(row?.cargoAccepted),
-    cargoShipment: row?.cargoShipment || null,
+    cargoShipment: row?.cargoShipment
+      ? {
+          ...row.cargoShipment,
+          id: String(row.cargoShipment.id || ''),
+          requestCode: String(row.cargoShipment.requestCode || ''),
+          groupId: String(row.cargoShipment.groupId || ''),
+          status: String(row.cargoShipment.status || ''),
+        }
+      : null,
     reasonType: String(row?.reasonType || ''),
     comment: String(row?.comment || ''),
     returnedAt: row?.returnedAt || null,
@@ -113,12 +132,54 @@ export async function confirmSellerOrderItem(token, orderId, itemIndex) {
   return payload?.data || {};
 }
 
+/**
+ * Bir guruhni tasdiqlash. itemIndexes — joriy tabdagi siblinglar.
+ */
+export async function confirmSellerOrderGroup(token, orderId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/confirm-group`),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+      }),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 export async function collectSellerOrderItem(token, orderId, itemIndex) {
   const res = await fetch(
     apiUrl(`/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/collect`),
     {
       method: 'PATCH',
       headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+/**
+ * Bir guruhni yig‘ish. itemIndexes — joriy tabdagi siblinglar.
+ */
+export async function collectSellerOrderGroup(token, orderId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/collect-group`),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+      }),
     },
   );
   const payload = await parseJson(res);
@@ -137,6 +198,28 @@ export async function handoffSellerOrderItem(token, orderId, itemIndex) {
   return payload?.data || {};
 }
 
+/**
+ * UZB — bir guruhni kuryerga topshirish.
+ * itemIndexes majburiy yuborilishi tavsiya (joriy tabdagi siblinglar).
+ */
+export async function handoffSellerOrderGroup(token, orderId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/handoff-group`),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+      }),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 export async function submitSellerOrderItemToCargo(token, orderId, itemIndex, body = {}) {
   const res = await fetch(
     apiUrl(
@@ -149,6 +232,29 @@ export async function submitSellerOrderItemToCargo(token, orderId, itemIndex, bo
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body || {}),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
+/**
+ * Xorij — bir guruhni cargoga yuborish (Variant A: N shipment + bir groupId).
+ * itemIndexes majburiy yuborilishi tavsiya.
+ */
+export async function submitSellerOrderGroupToCargo(token, orderId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/submit-to-cargo-group`),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+        note: body.note ? String(body.note) : undefined,
+      }),
     },
   );
   const payload = await parseJson(res);

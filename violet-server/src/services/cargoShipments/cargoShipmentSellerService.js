@@ -112,8 +112,58 @@ function shipmentLookupKey(orderId, itemIndex) {
   return `${Number(orderId)}:${Number(itemIndex)}`;
 }
 
+function buildCargoSubmitGroupId(orderId, sellerId, submittedAt = new Date()) {
+  return `cargo:${Number(orderId) || 0}:${cleanSellerId(sellerId)}:${submittedAt.getTime()}`;
+}
+
+function normalizeItemIndexes(rawIndexes) {
+  if (rawIndexes == null) return null;
+  if (!Array.isArray(rawIndexes)) {
+    throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+  }
+  return [
+    ...new Set(
+      rawIndexes.map((value) => {
+        const number = Number(value);
+        if (!Number.isInteger(number) || number < 0) {
+          throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+        }
+        return number;
+      }),
+    ),
+  ];
+}
+
+async function resolveSellerItemIndexesOnOrder(sellerId, orderId, itemIndexes) {
+  const order = await Order.findOne({ id: orderId }).select({ items: 1, id: 1 }).lean();
+  if (!order) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
+  }
+
+  const sellerIndexes = (Array.isArray(order.items) ? order.items : [])
+    .map((item, itemIndex) => ({ item, itemIndex }))
+    .filter(({ item }) => cleanSellerId(item?.sellerId) === sellerId)
+    .map(({ itemIndex }) => itemIndex);
+
+  if (!sellerIndexes.length) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+
+  if (itemIndexes == null) {
+    return sellerIndexes;
+  }
+
+  const allowed = new Set(sellerIndexes);
+  const missing = itemIndexes.filter((index) => !allowed.has(index));
+  if (missing.length) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+  return itemIndexes;
+}
+
 /**
  * Cargoga yuborish — so‘rov yaratadi, tracking = ready_for_cargo.
+ * payload.groupId — bir UI action bilan chiqarilgan shipmentlarni bog‘lash (Variant A).
  */
 async function submitSellerOrderItemToCargo(
   sellerId,
@@ -144,6 +194,7 @@ async function submitSellerOrderItemToCargo(
 
   const orderId = parsePositiveInteger(orderIdRaw, "orderId");
   const itemIndex = parsePositiveInteger(itemIndexRaw, "itemIndex");
+  const groupId = String(payload.groupId || "").trim();
   const order = await Order.findOne({ id: orderId });
   if (!order) {
     throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
@@ -162,6 +213,15 @@ async function submitSellerOrderItemToCargo(
       itemIndex,
       sellerId: normalizedSellerId,
     });
+    if (
+      existing &&
+      groupId &&
+      !String(existing.groupId || "").trim() &&
+      String(existing.status || "") === "pending"
+    ) {
+      existing.groupId = groupId;
+      await existing.save();
+    }
     return {
       orderId,
       itemIndex,
@@ -218,6 +278,7 @@ async function submitSellerOrderItemToCargo(
       storeName: resolveStoreName(account),
       orderId,
       itemIndex,
+      groupId,
       products,
       productCount: quantity,
       weightKg,
@@ -237,6 +298,14 @@ async function submitSellerOrderItemToCargo(
         sellerId: normalizedSellerId,
       });
       if (existing) {
+        if (
+          groupId &&
+          !String(existing.groupId || "").trim() &&
+          String(existing.status || "") === "pending"
+        ) {
+          existing.groupId = groupId;
+          await existing.save();
+        }
         item.trackingStatus = "ready_for_cargo";
         if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
         const hasReady = item.trackingHistory.some(
@@ -271,6 +340,84 @@ async function submitSellerOrderItemToCargo(
     trackingStatus: "ready_for_cargo",
     shipment: toPublicCargoShipment(shipment),
     alreadySubmitted: false,
+  };
+}
+
+/**
+ * Bir order + bir xorij siller — bir UI action bilan N ta cargo shipment (Variant A).
+ * Har biri alohida; bir xil groupId. Tayyor emaslar soft-skip.
+ * To‘lov / qaytarish / DP zanjiriga tegmaydi. Logistika qabul per-shipment qoladi.
+ */
+async function submitSellerOrderGroupToCargo(sellerId, orderIdRaw, payload = {}) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const account = await SellerAccount.findOne({ id: normalizedSellerId })
+    .select({ id: 1, sellerCountry: 1 })
+    .lean();
+  if (!account) {
+    throw new HttpError(404, "Sotuvchi topilmadi", "SELLER_NOT_FOUND");
+  }
+  if (resolveSellerPipelineMode(account.sellerCountry) !== "foreign") {
+    throw new HttpError(
+      409,
+      "Faqat xorij sillerlari cargoga yubora oladi",
+      "LOCAL_SELLER_CARGO_FORBIDDEN",
+    );
+  }
+
+  const orderId = parsePositiveInteger(orderIdRaw, "orderId");
+  const requestedIndexes = normalizeItemIndexes(payload.itemIndexes);
+  const itemIndexes = await resolveSellerItemIndexesOnOrder(
+    normalizedSellerId,
+    orderId,
+    requestedIndexes,
+  );
+
+  const submittedAt = new Date();
+  const groupId =
+    String(payload.groupId || "").trim() ||
+    buildCargoSubmitGroupId(orderId, normalizedSellerId, submittedAt);
+  const note = String(payload.note || "").trim();
+
+  const updated = [];
+  const skipped = [];
+
+  for (const itemIndex of itemIndexes) {
+    try {
+      const result = await submitSellerOrderItemToCargo(
+        normalizedSellerId,
+        orderId,
+        itemIndex,
+        { note, groupId },
+      );
+      updated.push(result);
+    } catch (error) {
+      if (error instanceof HttpError && Number(error.status) === 409) {
+        skipped.push({
+          orderId,
+          itemIndex,
+          code: error.code || "ORDER_TRACKING_STATUS_CONFLICT",
+          message: error.message,
+        });
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  return {
+    orderId,
+    sellerId: normalizedSellerId,
+    groupId,
+    groupKey: `${orderId}:${normalizedSellerId}`,
+    updated,
+    skipped,
+    updatedCount: updated.length,
+    skippedCount: skipped.length,
+    shipments: updated.map((row) => row.shipment).filter(Boolean),
   };
 }
 
@@ -336,8 +483,10 @@ async function listSellerCargoWarehouseContacts(sellerId) {
 
 module.exports = {
   submitSellerOrderItemToCargo,
+  submitSellerOrderGroupToCargo,
   listSellerCargoWarehouseContacts,
   listCargoShipmentsByOrderItems,
   shipmentLookupKey,
+  buildCargoSubmitGroupId,
   toPublicCargoShipment,
 };

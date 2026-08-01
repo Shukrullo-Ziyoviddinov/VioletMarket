@@ -151,15 +151,103 @@ async function listAvailableDeliveryOrders(deliveryId, query = {}) {
     return bTime - aTime;
   });
 
+  const grouped = groupAvailableCardsByOrderId(filtered);
+
   return {
-    total: filtered.length,
-    orders: filtered,
+    total: grouped.length,
+    unitTotal: filtered.length,
+    orders: grouped,
     region: courierRegion,
     locationUsed: Boolean(courierCoords),
   };
 }
 
+/**
+ * Bir buyurtma = bir yetkazish guruhi (bir mijoz / bir manzil).
+ * Ichida units[] — accept/return dona bo‘yicha qoladi.
+ */
+function groupAvailableCardsByOrderId(cards = []) {
+  const map = new Map();
+
+  for (const card of cards) {
+    const orderId = Number(card.orderId) || 0;
+    if (!map.has(orderId)) {
+      map.set(orderId, {
+        id: `order-${orderId}`,
+        orderId,
+        orderCode: card.orderCode,
+        region: card.region,
+        city: card.city,
+        district: card.district,
+        distanceKm: card.distanceKm,
+        isPaid: card.isPaid,
+        paymentMethod: card.paymentMethod,
+        paymentStatus: card.paymentStatus,
+        orderedAt: card.orderedAt,
+        trackingStatus: card.trackingStatus,
+        units: [],
+      });
+    }
+
+    map.get(orderId).units.push({
+      id: card.id,
+      itemIndex: card.itemIndex,
+      unitIndex: card.unitIndex,
+      productId: card.productId,
+      productCode: card.productCode,
+      barcode: card.barcode,
+      title: card.title,
+      amount: card.amount,
+      handedToCourierAt: card.handedToCourierAt,
+      trackingStatus: card.trackingStatus,
+    });
+  }
+
+  return Array.from(map.values()).map((group) => {
+    const units = group.units;
+    const productCodes = [
+      ...new Set(units.map((unit) => String(unit.productCode || "").trim()).filter(Boolean)),
+    ];
+    const amount = units.reduce((sum, unit) => sum + (Number(unit.amount) || 0), 0);
+    const handedTimes = units
+      .map((unit) => unit.handedToCourierAt)
+      .filter(Boolean)
+      .map((value) => new Date(value).getTime())
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => a - b);
+    const first = units[0] || {};
+
+    return {
+      ...group,
+      isGroup: units.length > 1,
+      productCount: units.length,
+      amount,
+      productCodes,
+      barcode:
+        productCodes.length <= 1
+          ? productCodes[0] || first.barcode || ""
+          : productCodes.join(", "),
+      productCode:
+        productCodes.length <= 1
+          ? productCodes[0] || first.productCode || ""
+          : productCodes.join(", "),
+      productId: first.productId || 0,
+      title: first.title || { uz: "", ru: "" },
+      itemIndex: first.itemIndex || 0,
+      unitIndex: first.unitIndex || 0,
+      handedToCourierAt: handedTimes.length
+        ? new Date(handedTimes[0]).toISOString()
+        : group.orderedAt,
+      acceptUnits: units.map((unit) => ({
+        itemIndex: unit.itemIndex,
+        unitIndex: unit.unitIndex,
+      })),
+    };
+  });
+}
+
 module.exports = {
   listAvailableDeliveryOrders,
+  groupAvailableCardsByOrderId,
   haversineKm,
 };

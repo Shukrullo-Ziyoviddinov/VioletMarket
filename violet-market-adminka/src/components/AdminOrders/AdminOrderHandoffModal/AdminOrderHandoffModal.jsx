@@ -28,7 +28,11 @@ export default function AdminOrderHandoffModal({
   onCancelOrder,
 }) {
   const sellerName = getAdminOrderSellerName(order);
-  const productCode = order?.productCode || '—';
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = Boolean(order?.isGroup) || items.length > 1;
+  const productCode = isGroup
+    ? `${order?.productCount || items.length || 1} ta mahsulot`
+    : order?.productCode || '—';
   const country = String(order?.seller?.sellerCountry || '').trim().toUpperCase();
   const busy = loading || cancelling;
 
@@ -43,7 +47,7 @@ export default function AdminOrderHandoffModal({
     setCoordsText('');
     setPhone('');
     setFormError('');
-  }, [open, order?.id]);
+  }, [open, order?.id, order?.groupKey]);
 
   const handleConfirm = () => {
     if (!allowHandoff || busy) return;
@@ -86,8 +90,8 @@ export default function AdminOrderHandoffModal({
             <p className="admin-order-handoff-modal__text">
               <strong>{sellerName}</strong>
               {country ? ` (${country})` : ''} sillerining{' '}
-              <strong>{productCode}</strong> mahsulotini UZB kuryerga
-              topshirasizmi?
+              <strong>{productCode}</strong>
+              {isGroup ? 'ini' : ' mahsulotini'} UZB kuryerga topshirasizmi?
             </p>
             {requireWarehousePickup ? (
               <>
@@ -140,7 +144,7 @@ export default function AdminOrderHandoffModal({
           </p>
         )}
         <div className="admin-order-handoff-modal__actions">
-          {allowHandoff && onCancelOrder ? (
+          {allowHandoff && onCancelOrder && !isGroup ? (
             <button
               type="button"
               className="admin-order-handoff-modal__cancel-order"

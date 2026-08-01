@@ -62,6 +62,31 @@ export async function acceptDeliveryOrder(
   );
 }
 
+export async function acceptDeliveryOrderGroup(
+  token: string,
+  payload: {
+    orderId: number;
+    units: Array<{ itemIndex: number; unitIndex: number }>;
+    courierLat?: number;
+    courierLng?: number;
+  },
+) {
+  return apiRequest<{
+    orderId: number;
+    updatedCount: number;
+    skippedCount: number;
+    updated: Array<{ id: string; orderId: number; itemIndex: number; unitIndex: number }>;
+    skipped: Array<{ itemIndex: number; unitIndex: number; code?: string; message?: string }>;
+  }>(
+    '/api/delivery/orders/accept-group',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+    token,
+  );
+}
+
 export async function pickUpDeliveryOrder(
   token: string,
   payload: { assignmentId: string },

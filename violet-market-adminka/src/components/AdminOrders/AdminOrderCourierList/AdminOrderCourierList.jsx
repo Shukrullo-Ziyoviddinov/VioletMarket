@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Empty, Spin } from 'antd';
+import { groupAdminOrdersByFulfillment } from '../../../utils/adminOrderGroups';
 import AdminOrderCourierCard from '../AdminOrderCourierCard/AdminOrderCourierCard';
 import './AdminOrderCourierList.css';
 
@@ -9,7 +10,13 @@ export default function AdminOrderCourierList({
   onOpenOrder,
   showSellerCountry = false,
   emptyDescription,
+  groupByFulfillment = false,
 }) {
+  const displayOrders = useMemo(() => {
+    if (!groupByFulfillment) return orders;
+    return groupAdminOrdersByFulfillment(orders);
+  }, [groupByFulfillment, orders]);
+
   if (loading) {
     return (
       <div className="seller-order-courier-list__state">
@@ -18,7 +25,7 @@ export default function AdminOrderCourierList({
     );
   }
 
-  if (!orders.length) {
+  if (!displayOrders.length) {
     return (
       <div className="seller-order-courier-list__state">
         <Empty
@@ -32,9 +39,9 @@ export default function AdminOrderCourierList({
 
   return (
     <div className="seller-order-courier-list">
-      {orders.map((order) => (
+      {displayOrders.map((order) => (
         <AdminOrderCourierCard
-          key={order.id}
+          key={order.id || order.groupKey}
           order={order}
           onOpen={onOpenOrder}
           showSellerCountry={showSellerCountry}

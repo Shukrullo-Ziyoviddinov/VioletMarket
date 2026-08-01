@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Empty, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { groupSellerOrdersByFulfillment } from '../../../utils/sellerOrderGroups';
 import SellerOrderCard from '../SellerOrderCard/SellerOrderCard';
 import './SellerOrdersList.css';
 
-export default function SellerOrdersList({ orders = [], loading = false, onOpenOrder }) {
+export default function SellerOrdersList({
+  orders = [],
+  loading = false,
+  onOpenOrder,
+  groupByFulfillment = false,
+}) {
   const { t } = useTranslation();
+
+  const displayOrders = useMemo(() => {
+    if (!groupByFulfillment) return orders;
+    return groupSellerOrdersByFulfillment(orders);
+  }, [groupByFulfillment, orders]);
 
   if (loading) {
     return (
@@ -15,7 +26,7 @@ export default function SellerOrdersList({ orders = [], loading = false, onOpenO
     );
   }
 
-  if (!orders.length) {
+  if (!displayOrders.length) {
     return (
       <div className="seller-orders-list seller-orders-list--empty">
         <Empty description={t('orders.empty')} />
@@ -25,8 +36,12 @@ export default function SellerOrdersList({ orders = [], loading = false, onOpenO
 
   return (
     <div className="seller-orders-list">
-      {orders.map((order) => (
-        <SellerOrderCard key={order.id} order={order} onOpen={onOpenOrder} />
+      {displayOrders.map((order) => (
+        <SellerOrderCard
+          key={order.id || order.groupKey}
+          order={order}
+          onOpen={onOpenOrder}
+        />
       ))}
     </div>
   );

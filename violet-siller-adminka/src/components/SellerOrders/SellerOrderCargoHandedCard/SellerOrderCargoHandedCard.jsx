@@ -21,18 +21,88 @@ function formatDateTime(value) {
 
 export default function SellerOrderCargoHandedCard({ order }) {
   const { t } = useTranslation();
-  const shipment = order?.cargoShipment || null;
-  const cargoAccepted = Boolean(
-    order?.cargoAccepted || String(order?.trackingStatus) === 'handed_to_cargo',
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const productCodes = Array.isArray(order?.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order?.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+  const sourceItems = items.length ? items : [order];
+  const requestCodes = [
+    ...new Set(
+      sourceItems
+        .map((item) => String(item?.cargoShipment?.requestCode || '').trim())
+        .filter(Boolean),
+    ),
+  ];
+  const cargoGroupIds = [
+    ...new Set(
+      sourceItems
+        .map((item) => String(item?.cargoShipment?.groupId || '').trim())
+        .filter(Boolean),
+    ),
+  ];
+  const shipment = order?.cargoShipment || sourceItems[0]?.cargoShipment || null;
+  const cargoAccepted = sourceItems.some(
+    (item) =>
+      Boolean(item?.cargoAccepted) ||
+      String(item?.trackingStatus) === 'handed_to_cargo',
   );
-  const requestCode = shipment?.requestCode || '—';
+  const allAccepted = sourceItems.every(
+    (item) =>
+      Boolean(item?.cargoAccepted) ||
+      String(item?.trackingStatus) === 'handed_to_cargo',
+  );
+  const submittedAt =
+    order.readyForCargoAt ||
+    sourceItems.find((item) => item.readyForCargoAt)?.readyForCargoAt ||
+    shipment?.submittedAt;
+  const acceptedAt =
+    order.handedToCargoAt ||
+    sourceItems.find((item) => item.handedToCargoAt)?.handedToCargoAt ||
+    shipment?.acceptedAt;
 
   return (
     <div className="seller-order-handed-card">
       <div className="seller-order-handed-card__row">
-        <span>{t('orders.card.barcode')}</span>
-        <strong>{order.productCode || '—'}</strong>
+        <span>{t('orders.card.orderCode', { defaultValue: 'Buyurtma' })}</span>
+        <strong>{order.orderCode || '—'}</strong>
       </div>
+
+      <div className="seller-order-handed-card__row">
+        <span>
+          {isGroup
+            ? t('orders.card.barcodes', { defaultValue: 'Shtrix kodlar' })
+            : t('orders.card.barcode')}
+        </span>
+        {isGroup && productCodes.length > 1 ? (
+          <ul className="seller-order-handed-card__codes">
+            {productCodes.map((code) => (
+              <li key={code}>
+                <strong>{code}</strong>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <strong>{productCodes[0] || order.productCode || '—'}</strong>
+        )}
+      </div>
+
+      {isGroup ? (
+        <div className="seller-order-handed-card__row">
+          <span>{t('orders.card.products', { defaultValue: 'Mahsulotlar' })}</span>
+          <strong>
+            {t('orders.card.productCount', {
+              count: order.productCount || items.length || productCodes.length || 1,
+              defaultValue: '{{count}} ta mahsulot',
+            })}
+          </strong>
+        </div>
+      ) : null}
+
       <div className="seller-order-handed-card__row">
         <span>{t('orders.card.buyer')}</span>
         <strong>{getSellerOrderBuyerName(order.buyer)}</strong>
@@ -43,13 +113,29 @@ export default function SellerOrderCargoHandedCard({ order }) {
       </div>
       <div className="seller-order-handed-card__row">
         <span>{t('orders.cargoHanded.requestCode')}</span>
-        <strong>{requestCode}</strong>
+        {requestCodes.length > 1 ? (
+          <ul className="seller-order-handed-card__codes">
+            {requestCodes.map((code) => (
+              <li key={code}>
+                <strong>{code}</strong>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <strong>{requestCodes[0] || shipment?.requestCode || '—'}</strong>
+        )}
       </div>
+      {cargoGroupIds.length ? (
+        <div className="seller-order-handed-card__row">
+          <span>
+            {t('orders.cargoHanded.cargoGroup', { defaultValue: 'Cargo guruh' })}
+          </span>
+          <strong>{cargoGroupIds[0]}</strong>
+        </div>
+      ) : null}
       <div className="seller-order-handed-card__row">
         <span>{t('orders.cargoHanded.submittedAt')}</span>
-        <strong>
-          {formatDateTime(order.readyForCargoAt || shipment?.submittedAt)}
-        </strong>
+        <strong>{formatDateTime(submittedAt)}</strong>
       </div>
 
       <div
@@ -61,13 +147,17 @@ export default function SellerOrderCargoHandedCard({ order }) {
           <>
             <div className="seller-order-handed-card__row">
               <span>{t('orders.cargoHanded.status')}</span>
-              <strong>{t('orders.cargoHanded.accepted')}</strong>
+              <strong>
+                {allAccepted
+                  ? t('orders.cargoHanded.accepted')
+                  : t('orders.cargoHanded.partialAccepted', {
+                      defaultValue: 'Qisman qabul qilingan',
+                    })}
+              </strong>
             </div>
             <div className="seller-order-handed-card__row">
               <span>{t('orders.cargoHanded.acceptedAt')}</span>
-              <strong>
-                {formatDateTime(order.handedToCargoAt || shipment?.acceptedAt)}
-              </strong>
+              <strong>{formatDateTime(acceptedAt)}</strong>
             </div>
           </>
         ) : (

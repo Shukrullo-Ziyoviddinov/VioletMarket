@@ -142,9 +142,29 @@ router.patch(
   sellerOrdersController.handoffOrderItem,
 );
 router.patch(
+  "/seller-auth/orders/:orderId/confirm-group",
+  sellerAuthMiddleware,
+  sellerOrdersController.confirmOrderGroup,
+);
+router.patch(
+  "/seller-auth/orders/:orderId/collect-group",
+  sellerAuthMiddleware,
+  sellerOrdersController.collectOrderGroup,
+);
+router.patch(
+  "/seller-auth/orders/:orderId/handoff-group",
+  sellerAuthMiddleware,
+  sellerOrdersController.handoffOrderGroup,
+);
+router.patch(
   "/seller-auth/orders/:orderId/items/:itemIndex/submit-to-cargo",
   sellerAuthMiddleware,
   sellerOrdersController.submitToCargo,
+);
+router.patch(
+  "/seller-auth/orders/:orderId/submit-to-cargo-group",
+  sellerAuthMiddleware,
+  sellerOrdersController.submitToCargoGroup,
 );
 router.patch(
   "/seller-auth/orders/:orderId/items/:itemIndex/cancel",

@@ -17,7 +17,18 @@ export default function SellerOrderCard({ order, onOpen }) {
   if (!order) return null;
 
   const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
-  const productCode = String(order.productCode || '').trim() || '—';
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const productCodes = Array.isArray(order?.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order?.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+  const productCode =
+    isGroup && productCodes.length > 1
+      ? productCodes.join(', ')
+      : productCodes[0] || String(order.productCode || '').trim() || '—';
 
   return (
     <button
@@ -27,9 +38,29 @@ export default function SellerOrderCard({ order, onOpen }) {
     >
       <div className="seller-order-card__fields">
         <div className="seller-order-card__field">
-          <span className="seller-order-card__label">{t('orders.card.barcode')}</span>
-          <strong className="seller-order-card__value">{productCode}</strong>
+          <span className="seller-order-card__label">
+            {isGroup
+              ? t('orders.card.barcodes', { defaultValue: 'Shtrix kodlar' })
+              : t('orders.card.barcode')}
+          </span>
+          <strong className="seller-order-card__value" title={productCode}>
+            {productCode}
+          </strong>
         </div>
+
+        {isGroup ? (
+          <div className="seller-order-card__field">
+            <span className="seller-order-card__label">
+              {t('orders.card.products', { defaultValue: 'Mahsulotlar' })}
+            </span>
+            <strong className="seller-order-card__value">
+              {t('orders.card.productCount', {
+                count: order.productCount || items.length || productCodes.length || 1,
+                defaultValue: '{{count}} ta mahsulot',
+              })}
+            </strong>
+          </div>
+        ) : null}
 
         <div className="seller-order-card__field">
           <span className="seller-order-card__label">{t('orders.card.orderId')}</span>

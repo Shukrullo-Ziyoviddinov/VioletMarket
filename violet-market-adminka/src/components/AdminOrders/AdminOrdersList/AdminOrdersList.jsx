@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Empty, Spin } from 'antd';
+import { groupAdminOrdersByFulfillment } from '../../../utils/adminOrderGroups';
 import AdminOrderCard from '../AdminOrderCard/AdminOrderCard';
 import './AdminOrdersList.css';
 
-export default function AdminOrdersList({ orders = [], loading = false, onOpenOrder }) {
+export default function AdminOrdersList({
+  orders = [],
+  loading = false,
+  onOpenOrder,
+  groupByFulfillment = false,
+}) {
+  const displayOrders = useMemo(() => {
+    if (!groupByFulfillment) return orders;
+    return groupAdminOrdersByFulfillment(orders);
+  }, [groupByFulfillment, orders]);
+
   if (loading) {
     return (
       <div className="seller-orders-list seller-orders-list--loading">
@@ -12,7 +23,7 @@ export default function AdminOrdersList({ orders = [], loading = false, onOpenOr
     );
   }
 
-  if (!orders.length) {
+  if (!displayOrders.length) {
     return (
       <div className="seller-orders-list seller-orders-list--empty">
         <Empty description="Hozircha buyurtmalar yo'q" />
@@ -22,8 +33,12 @@ export default function AdminOrdersList({ orders = [], loading = false, onOpenOr
 
   return (
     <div className="seller-orders-list">
-      {orders.map((order) => (
-        <AdminOrderCard key={order.id} order={order} onOpen={onOpenOrder} />
+      {displayOrders.map((order) => (
+        <AdminOrderCard
+          key={order.id || order.groupKey}
+          order={order}
+          onOpen={onOpenOrder}
+        />
       ))}
     </div>
   );

@@ -4,8 +4,16 @@ import { getAdminOrderProductTitle } from '../../../utils/adminOrdersDisplay';
 import './AdminOrderProductMeta.css';
 
 export default function AdminOrderProductMeta({ order, compact = false }) {
-  const title = getAdminOrderProductTitle(order);
+  const isGroup = Boolean(order?.isGroup) || (Array.isArray(order?.items) && order.items.length > 1);
+  const title = isGroup
+    ? `${order.productCount || order.items?.length || 1} ta mahsulot`
+    : getAdminOrderProductTitle(order);
   const imageUrl = resolveProductImageUrl(order?.imageUrl);
+  const codeLabel = isGroup
+    ? (Array.isArray(order?.productCodes) && order.productCodes.length
+        ? order.productCodes.join(', ')
+        : order?.productCode || '—')
+    : order?.productCode || '—';
 
   return (
     <div className={`admin-order-product-meta${compact ? ' admin-order-product-meta--compact' : ''}`}>
@@ -19,7 +27,7 @@ export default function AdminOrderProductMeta({ order, compact = false }) {
       />
       <div className="admin-order-product-meta__text">
         <strong title={title}>{title}</strong>
-        <span>{order?.productCode || '—'}</span>
+        <span title={codeLabel}>{codeLabel}</span>
       </div>
     </div>
   );

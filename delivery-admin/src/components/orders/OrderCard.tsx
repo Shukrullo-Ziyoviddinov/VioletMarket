@@ -26,10 +26,30 @@ function formatDistance(value: number | null) {
 }
 
 export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps) {
+  const isGroup = Boolean(order.isGroup) || (order.productCount || 1) > 1;
+  const productCodes = Array.isArray(order.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order.barcode || order.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+
   return (
     <View style={styles.card}>
       <View style={styles.topRow}>
-        <Text style={styles.barcode}>{order.barcode || order.productCode}</Text>
+        <View style={styles.codesWrap}>
+          {isGroup && productCodes.length > 1 ? (
+            productCodes.map((code) => (
+              <Text key={code} style={styles.barcode}>
+                {code}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.barcode}>
+              {productCodes[0] || order.barcode || order.productCode}
+            </Text>
+          )}
+        </View>
         <View style={styles.districtWrap}>
           <Ionicons name="location" size={14} color="#6d32c5" />
           <Text style={styles.district} numberOfLines={1}>
@@ -41,6 +61,10 @@ export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps
           <Text style={styles.distance}>{formatDistance(order.distanceKm)}</Text>
         </View>
       </View>
+
+      {isGroup ? (
+        <Text style={styles.orderCode}>{order.orderCode || `Buyurtma #${order.orderId}`}</Text>
+      ) : null}
 
       <View style={styles.middleRow}>
         <View style={styles.countWrap}>
@@ -69,7 +93,9 @@ export function OrderCard({ order, accepting = false, onAccept }: OrderCardProps
           {accepting ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-            <Text style={styles.acceptText}>Qabul qilish</Text>
+            <Text style={styles.acceptText}>
+              {isGroup ? 'Hammasini qabul qilish' : 'Qabul qilish'}
+            </Text>
           )}
         </Pressable>
       </View>
@@ -91,13 +117,23 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
   },
+  codesWrap: {
+    gap: 2,
+    maxWidth: '42%',
+  },
   barcode: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#111827',
+  },
+  orderCode: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: -6,
   },
   districtWrap: {
     flex: 1,
@@ -105,6 +141,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     minWidth: 0,
+    paddingTop: 2,
   },
   district: {
     flex: 1,
@@ -116,6 +153,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
+    paddingTop: 2,
   },
   distance: {
     color: '#6d32c5',

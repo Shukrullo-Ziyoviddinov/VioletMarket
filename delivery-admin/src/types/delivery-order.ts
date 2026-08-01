@@ -1,3 +1,16 @@
+export type DeliveryAvailableOrderUnit = {
+  id: string;
+  itemIndex: number;
+  unitIndex: number;
+  productId: number;
+  productCode: string;
+  barcode: string;
+  title: { uz: string; ru: string };
+  amount: number;
+  handedToCourierAt?: string | null;
+  trackingStatus?: string;
+};
+
 export type DeliveryAvailableOrder = {
   id: string;
   orderId: number;
@@ -20,6 +33,11 @@ export type DeliveryAvailableOrder = {
   orderedAt: string | null;
   handedToCourierAt: string | null;
   trackingStatus: string;
+  /** Bir orderId guruhi (2+ dona) */
+  isGroup?: boolean;
+  productCodes?: string[];
+  units?: DeliveryAvailableOrderUnit[];
+  acceptUnits?: Array<{ itemIndex: number; unitIndex: number }>;
 };
 
 export type DeliveryAddressDetails = {

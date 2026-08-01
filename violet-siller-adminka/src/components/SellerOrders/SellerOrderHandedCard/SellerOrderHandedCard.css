@@ -25,6 +25,19 @@
   text-overflow: ellipsis;
 }
 
+.seller-order-handed-card__codes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seller-order-handed-card__codes strong {
+  white-space: nowrap;
+}
+
 .seller-order-handed-card__courier {
   margin-top: 4px;
   padding-top: 12px;

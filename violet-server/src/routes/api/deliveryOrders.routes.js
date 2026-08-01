@@ -35,6 +35,12 @@ router.post(
 );
 
 router.post(
+  "/delivery/orders/accept-group",
+  deliveryAuthMiddleware,
+  deliveryOrdersController.acceptOrderGroup,
+);
+
+router.post(
   "/delivery/orders/pickup",
   deliveryAuthMiddleware,
   deliveryOrdersController.pickUpOrder,

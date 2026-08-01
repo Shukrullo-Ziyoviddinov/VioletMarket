@@ -6,6 +6,8 @@ const { toNumber } = require("../adminSales/salesStatisticsHelpers");
 const {
   buildSellerOrderItemCards,
   formatOrderCode,
+  annotateVisibleFulfillmentGroups,
+  sliceKeepingFulfillmentGroups,
 } = require("../../productManagement/sellerOrders");
 const {
   listAssignmentsByKeys,
@@ -16,10 +18,11 @@ const sellerOrderTrackingService = require("../sellerOrders/sellerOrderTrackingS
 const {
   resolveSellerPipelineMode,
 } = require("../../productManagement/sellerPipelineMode");
+const cargoShipmentSellerService = require("../cargoShipments/cargoShipmentSellerService");
 const {
   listCargoShipmentsByOrderItems,
   shipmentLookupKey,
-} = require("../cargoShipments/cargoShipmentSellerService");
+} = cargoShipmentSellerService;
 const foreignUzCourierBridgeService = require("../cargoShipments/foreignUzCourierBridgeService");
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -318,9 +321,11 @@ async function listAdminOrders(query = {}) {
       .filter((card) => card.uzWarehouseReady);
   }
 
+  filteredCards = annotateVisibleFulfillmentGroups(filteredCards);
+
   const total = filteredCards.length;
   const start = (page - 1) * limit;
-  let orders = filteredCards.slice(start, start + limit);
+  let orders = sliceKeepingFulfillmentGroups(filteredCards, start, limit);
 
   if (requestedTrackingStatus === "handed_to_courier" && orders.length) {
     const assignments = await listAssignmentsByKeys(
@@ -417,6 +422,63 @@ async function handoffAdminOrderItem(payload = {}) {
   );
 }
 
+async function confirmAdminOrderGroup(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return sellerOrderTrackingService.confirmSellerOrderGroup(
+    sellerId,
+    payload.orderId,
+    { itemIndexes: payload.itemIndexes },
+  );
+}
+
+async function collectAdminOrderGroup(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return sellerOrderTrackingService.collectSellerOrderGroup(
+    sellerId,
+    payload.orderId,
+    { itemIndexes: payload.itemIndexes },
+  );
+}
+
+/**
+ * Local UZB yoki xorij→UZB bulk handoff.
+ * Xorij: bir xil ombor pickup + soft-skip.
+ */
+async function handoffAdminOrderGroup(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  const account = await SellerAccount.findOne({ id: sellerId })
+    .select({ sellerCountry: 1 })
+    .lean();
+  const pipelineMode = resolveSellerPipelineMode(account?.sellerCountry);
+
+  if (pipelineMode === "foreign") {
+    return foreignUzCourierBridgeService.handoffForeignOrderGroupToUzCourier(
+      sellerId,
+      payload.orderId,
+      payload,
+    );
+  }
+
+  return sellerOrderTrackingService.handoffSellerOrderGroup(
+    sellerId,
+    payload.orderId,
+    { itemIndexes: payload.itemIndexes },
+  );
+}
+
+async function submitAdminOrderGroupToCargo(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return cargoShipmentSellerService.submitSellerOrderGroupToCargo(
+    sellerId,
+    payload.orderId,
+    {
+      itemIndexes: payload.itemIndexes,
+      note: payload.note,
+      groupId: payload.groupId,
+    },
+  );
+}
+
 async function cancelAdminOrderItem(payload = {}) {
   const sellerId = cleanSellerId(payload.sellerId);
   return sellerOrderTrackingService.cancelSellerOrderItem(
@@ -432,5 +494,9 @@ module.exports = {
   confirmAdminOrderItem,
   collectAdminOrderItem,
   handoffAdminOrderItem,
+  confirmAdminOrderGroup,
+  collectAdminOrderGroup,
+  handoffAdminOrderGroup,
+  submitAdminOrderGroupToCargo,
   cancelAdminOrderItem,
 };

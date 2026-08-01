@@ -152,8 +152,173 @@ async function handoffForeignItemToUzCourier(
   };
 }
 
+function normalizeItemIndexes(rawIndexes) {
+  if (rawIndexes == null) return null;
+  if (!Array.isArray(rawIndexes)) {
+    throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+  }
+  return [
+    ...new Set(
+      rawIndexes.map((value) => {
+        const number = Number(value);
+        if (!Number.isInteger(number) || number < 0) {
+          throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+        }
+        return number;
+      }),
+    ),
+  ];
+}
+
+/**
+ * Bir order + bir xorij siller — Toshkent omboridan UZB kuryerga bulk handoff.
+ * Bir xil ombor pickup; tayyor emaslar soft-skip.
+ * To‘lov / qaytarish / DP zanjiriga tegmaydi.
+ */
+async function handoffForeignOrderGroupToUzCourier(
+  sellerId,
+  orderIdRaw,
+  options = {},
+) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  await loadForeignSellerAccount(normalizedSellerId);
+
+  const orderId = parsePositiveInteger(orderIdRaw, "orderId");
+  const warehousePickup = normalizeUzWarehousePickupInput(options);
+  const requestedIndexes = normalizeItemIndexes(options.itemIndexes);
+
+  const order = await Order.findOne({ id: orderId });
+  if (!order) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
+  }
+
+  const sellerIndexes = (Array.isArray(order.items) ? order.items : [])
+    .map((item, itemIndex) => ({ item, itemIndex }))
+    .filter(({ item }) => cleanSellerId(item?.sellerId) === normalizedSellerId)
+    .map(({ itemIndex }) => itemIndex);
+
+  if (!sellerIndexes.length) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+
+  let itemIndexes = sellerIndexes;
+  if (requestedIndexes != null) {
+    const allowed = new Set(sellerIndexes);
+    const missing = requestedIndexes.filter((index) => !allowed.has(index));
+    if (missing.length) {
+      throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+    }
+    itemIndexes = requestedIndexes;
+  }
+
+  const shipments = await CargoShipment.find({
+    orderId,
+    sellerId: normalizedSellerId,
+    itemIndex: { $in: itemIndexes },
+  }).lean();
+  const shipmentByItem = new Map(
+    shipments.map((row) => [Number(row.itemIndex) || 0, row]),
+  );
+
+  const updated = [];
+  const skipped = [];
+  const handedAt = new Date();
+  let dirty = false;
+
+  for (const itemIndex of itemIndexes) {
+    const item = order.items?.[itemIndex];
+    if (!item || cleanSellerId(item.sellerId) !== normalizedSellerId) {
+      skipped.push({
+        orderId,
+        itemIndex,
+        code: "ORDER_ITEM_NOT_FOUND",
+        message: "Buyurtma mahsuloti topilmadi",
+      });
+      continue;
+    }
+
+    const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+
+    if (currentStatus === "handed_to_courier") {
+      item.uzWarehousePickup = warehousePickup;
+      dirty = true;
+      const handedEntry = (Array.isArray(item.trackingHistory)
+        ? item.trackingHistory
+        : []
+      ).find((entry) => String(entry?.status || "") === "handed_to_courier");
+      updated.push({
+        orderId,
+        itemIndex,
+        trackingStatus: "handed_to_courier",
+        handedToCourierAt: handedEntry?.at || null,
+        uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
+        alreadyHanded: true,
+      });
+      continue;
+    }
+
+    if (currentStatus !== "handed_to_cargo") {
+      skipped.push({
+        orderId,
+        itemIndex,
+        code: "FOREIGN_NOT_READY_FOR_UZ_COURIER",
+        message: "Avval cargo logistica orqali Toshkent omboriga yetkazilishi kerak",
+      });
+      continue;
+    }
+
+    const shipment = shipmentByItem.get(itemIndex);
+    if (!isShipmentReadyForUzCourier(shipment)) {
+      skipped.push({
+        orderId,
+        itemIndex,
+        code: "FOREIGN_NOT_READY_FOR_UZ_COURIER",
+        message: "Cargo Toshkent omborida bo‘lishi va To‘landi belgilanishi kerak",
+      });
+      continue;
+    }
+
+    item.trackingStatus = "handed_to_courier";
+    item.uzWarehousePickup = warehousePickup;
+    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+    item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
+    dirty = true;
+
+    updated.push({
+      orderId,
+      itemIndex,
+      trackingStatus: "handed_to_courier",
+      handedToCourierAt: handedAt,
+      uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
+      alreadyHanded: false,
+    });
+  }
+
+  if (dirty) {
+    order.markModified("items");
+    await order.save();
+  }
+
+  return {
+    orderId,
+    sellerId: normalizedSellerId,
+    groupKey: `${orderId}:${normalizedSellerId}`,
+    action: "foreign_uz_handoff",
+    uzWarehousePickup: snapshotUzWarehousePickup(warehousePickup),
+    updated,
+    skipped,
+    updatedCount: updated.length,
+    skippedCount: skipped.length,
+  };
+}
+
 module.exports = {
   handoffForeignItemToUzCourier,
+  handoffForeignOrderGroupToUzCourier,
   isShipmentReadyForUzCourier,
   UZ_WAREHOUSE_READY_PROCESS_STEP,
 };

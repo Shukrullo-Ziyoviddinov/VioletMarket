@@ -17,6 +17,13 @@ router.patch(
   "/admin/orders/:orderId/items/:itemIndex/handoff",
   controller.handoffOrderItem,
 );
+router.patch("/admin/orders/:orderId/confirm-group", controller.confirmOrderGroup);
+router.patch("/admin/orders/:orderId/collect-group", controller.collectOrderGroup);
+router.patch("/admin/orders/:orderId/handoff-group", controller.handoffOrderGroup);
+router.patch(
+  "/admin/orders/:orderId/submit-to-cargo-group",
+  controller.submitToCargoGroup,
+);
 router.patch(
   "/admin/orders/:orderId/items/:itemIndex/cancel",
   controller.cancelOrderItem,

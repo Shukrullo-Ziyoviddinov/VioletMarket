@@ -4,6 +4,7 @@ import {
   cancelAdminOrderItem,
   deliverAdminNoAnswerOrder,
   fetchAdminOrders,
+  handoffAdminOrderGroup,
   handoffAdminOrderItem,
   reactivateAdminNoAnswerOrder,
   reHandoffAdminNoAnswerOrder,
@@ -33,6 +34,13 @@ const FOREIGN_FILTER_STATUS = {
   noAnswer: 'no_answer',
 };
 
+function resolveItemIndexes(order) {
+  if (Array.isArray(order?.itemIndexes) && order.itemIndexes.length) {
+    return [...new Set(order.itemIndexes.map((value) => Number(value) || 0))];
+  }
+  return [Number(order?.itemIndex) || 0];
+}
+
 export default function AdminOrdersWorkspace({
   filter = 'confirmation',
   onStatusChanged,
@@ -59,7 +67,7 @@ export default function AdminOrdersWorkspace({
       const trackingStatus = statusMap[filter] || FILTER_STATUS[filter] || 'accepted';
       const data = await fetchAdminOrders({
         page: 1,
-        limit: 100,
+        limit: 200,
         trackingStatus,
         ...(pipeline ? { pipeline } : {}),
         ...(pipeline === 'foreign' && filter === 'courier'
@@ -95,10 +103,15 @@ export default function AdminOrdersWorkspace({
   }, [filter, pipeline]);
 
   const openOrderDetail = (order, mode) => {
+    const productLabel = order?.isGroup
+      ? `${order.productCount || order.items?.length || 1} ta mahsulot`
+      : order?.productCode || '';
     openAdminModal({
       key: 'admin-order-detail',
       label: order?.orderCode
-        ? `Buyurtma #${order.orderCode} · ${order?.seller?.name || order?.sellerId || 'Siller'}`
+        ? `Buyurtma ${order.orderCode} · ${order?.seller?.name || order?.sellerId || 'Siller'}${
+            productLabel ? ` · ${productLabel}` : ''
+          }`
         : 'Buyurtma tafsiloti',
       order,
       mode,
@@ -109,16 +122,51 @@ export default function AdminOrdersWorkspace({
   const handleCourierHandoff = async (pickup) => {
     if (!allowHandoff || !courierOrder || handingOff || cancelling) return;
 
+    const itemIndexes = resolveItemIndexes(courierOrder);
+    const isGroup =
+      Boolean(courierOrder.isGroup) || itemIndexes.length > 1;
+    const requireWarehousePickup = pipeline === 'foreign';
+
     setHandingOff(true);
     try {
-      await handoffAdminOrderItem(
-        courierOrder.orderId,
-        courierOrder.itemIndex,
-        courierOrder.sellerId,
-        pickup,
-      );
+      let updatedCount = 0;
+      let skippedCount = 0;
+
+      if (isGroup || requireWarehousePickup) {
+        // Local group yoki xorij (1+): server group bridge — bir xil ombor pickup.
+        const result = await handoffAdminOrderGroup(
+          courierOrder.orderId,
+          courierOrder.sellerId,
+          {
+            itemIndexes,
+            ...(requireWarehousePickup ? { pickup } : {}),
+          },
+        );
+        updatedCount = Number(result?.updatedCount) || 0;
+        skippedCount = Number(result?.skippedCount) || 0;
+      } else {
+        await handoffAdminOrderItem(
+          courierOrder.orderId,
+          itemIndexes[0],
+          courierOrder.sellerId,
+          pickup,
+        );
+        updatedCount = 1;
+      }
+
+      if (updatedCount <= 0) {
+        message.warning('Topshirish uchun tayyor mahsulot yo‘q');
+        await refreshAfterStatusChange();
+        return;
+      }
+
+      const base = `${courierOrder?.seller?.name || 'Siller'} · ${
+        isGroup ? 'mahsulotlar' : 'mahsulot'
+      } kuryerga topshirildi`;
       message.success(
-        `${courierOrder?.seller?.name || 'Siller'} · mahsulot kuryerga topshirildi`,
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
       );
       setCourierOrder(null);
       await refreshAfterStatusChange();
@@ -131,6 +179,11 @@ export default function AdminOrdersWorkspace({
 
   const handleCancelOrder = async () => {
     if (!courierOrder || handingOff || cancelling) return;
+    const itemIndexes = resolveItemIndexes(courierOrder);
+    if (itemIndexes.length > 1 || courierOrder.isGroup) {
+      message.warning('Guruh buyurtmani alohida bekor qilib bo‘lmaydi');
+      return;
+    }
 
     setCancelling(true);
     try {
@@ -190,6 +243,7 @@ export default function AdminOrdersWorkspace({
         orders={orders}
         loading={loading}
         onOpenOrder={(order) => openOrderDetail(order, 'confirm')}
+        groupByFulfillment
       />
     );
   } else if (filter === 'collection') {
@@ -198,6 +252,7 @@ export default function AdminOrdersWorkspace({
         orders={orders}
         loading={loading}
         onOpenOrder={(order) => openOrderDetail(order, 'collect')}
+        groupByFulfillment
       />
     );
   } else if (filter === 'courier') {
@@ -207,6 +262,7 @@ export default function AdminOrdersWorkspace({
         loading={loading}
         onOpenOrder={setCourierOrder}
         showSellerCountry={showSellerCountry}
+        groupByFulfillment
         emptyDescription={
           pipeline === 'foreign'
             ? 'To‘langan (Toshkent ombori) xorij mahsulotlari yo‘q'
@@ -220,6 +276,7 @@ export default function AdminOrdersWorkspace({
         orders={orders}
         loading={loading}
         showSellerCountry={showSellerCountry}
+        groupByFulfillment
       />
     );
   } else if (filter === 'noAnswer') {
@@ -234,6 +291,10 @@ export default function AdminOrdersWorkspace({
       />
     );
   }
+
+  const courierIsGroup =
+    Boolean(courierOrder?.isGroup) ||
+    resolveItemIndexes(courierOrder).length > 1;
 
   return (
     <div className="seller-orders-workspace">
@@ -251,7 +312,7 @@ export default function AdminOrdersWorkspace({
         }}
         onConfirm={handleCourierHandoff}
         onCancelOrder={
-          allowHandoff
+          allowHandoff && !courierIsGroup
             ? () => {
                 if (!handingOff && !cancelling) setCancelConfirmOpen(true);
               }

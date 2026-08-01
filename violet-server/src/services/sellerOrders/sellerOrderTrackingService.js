@@ -194,6 +194,142 @@ async function handoffSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   };
 }
 
+function normalizeItemIndexes(rawIndexes) {
+  if (rawIndexes == null) return null;
+  if (!Array.isArray(rawIndexes)) {
+    throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+  }
+  const indexes = [
+    ...new Set(
+      rawIndexes.map((value) => {
+        const number = Number(value);
+        if (!Number.isInteger(number) || number < 0) {
+          throw new HttpError(400, "itemIndexes noto'g'ri", "VALIDATION_ERROR");
+        }
+        return number;
+      }),
+    ),
+  ];
+  return indexes;
+}
+
+async function resolveSellerItemIndexesOnOrder(sellerId, orderId, itemIndexes) {
+  const order = await Order.findOne({ id: orderId }).select({ items: 1, id: 1 }).lean();
+  if (!order) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
+  }
+
+  const sellerIndexes = (Array.isArray(order.items) ? order.items : [])
+    .map((item, itemIndex) => ({ item, itemIndex }))
+    .filter(({ item }) => cleanSellerId(item?.sellerId) === sellerId)
+    .map(({ itemIndex }) => itemIndex);
+
+  if (!sellerIndexes.length) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+
+  if (itemIndexes == null) {
+    return { orderId, itemIndexes: sellerIndexes };
+  }
+
+  const allowed = new Set(sellerIndexes);
+  const missing = itemIndexes.filter((index) => !allowed.has(index));
+  if (missing.length) {
+    throw new HttpError(
+      404,
+      "Buyurtma mahsuloti topilmadi",
+      "ORDER_ITEM_NOT_FOUND",
+    );
+  }
+
+  return { orderId, itemIndexes };
+}
+
+/**
+ * Bir order + bir siller guruhi bo‘yicha confirm/collect/handoff.
+ * Tayyor bo‘lmagan itemlar soft-skip; per-item logika o‘zgarmaydi.
+ * To‘lov / qaytarish / DP zanjiriga tegmaydi.
+ */
+async function runSellerOrderItemGroup(sellerId, orderIdRaw, action, options = {}) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const runners = {
+    confirm: confirmSellerOrderItem,
+    collect: collectSellerOrderItem,
+    handoff: handoffSellerOrderItem,
+  };
+  const runner = runners[action];
+  if (!runner) {
+    throw new HttpError(400, "Amallar noto'g'ri", "VALIDATION_ERROR");
+  }
+
+  if (action === "handoff") {
+    const pipelineMode = await resolveSellerPipelineModeBySellerId(normalizedSellerId);
+    if (pipelineMode === "foreign") {
+      throw new HttpError(
+        409,
+        "Xorij sillerlari kuryerga topshira olmaydi — cargoga yuborish kerak",
+        "FOREIGN_SELLER_COURIER_HANDOFF_FORBIDDEN",
+      );
+    }
+  }
+
+  const orderId = parsePositiveInteger(orderIdRaw, "orderId");
+  const requestedIndexes = normalizeItemIndexes(options.itemIndexes);
+  const resolved = await resolveSellerItemIndexesOnOrder(
+    normalizedSellerId,
+    orderId,
+    requestedIndexes,
+  );
+
+  const updated = [];
+  const skipped = [];
+
+  for (const itemIndex of resolved.itemIndexes) {
+    try {
+      const result = await runner(normalizedSellerId, orderId, itemIndex);
+      updated.push(result);
+    } catch (error) {
+      if (error instanceof HttpError && Number(error.status) === 409) {
+        skipped.push({
+          orderId,
+          itemIndex,
+          code: error.code || "ORDER_TRACKING_STATUS_CONFLICT",
+          message: error.message,
+        });
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  return {
+    orderId,
+    sellerId: normalizedSellerId,
+    groupKey: `${orderId}:${normalizedSellerId}`,
+    action,
+    updated,
+    skipped,
+    updatedCount: updated.length,
+    skippedCount: skipped.length,
+  };
+}
+
+async function confirmSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
+  return runSellerOrderItemGroup(sellerId, orderIdRaw, "confirm", options);
+}
+
+async function collectSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
+  return runSellerOrderItemGroup(sellerId, orderIdRaw, "collect", options);
+}
+
+async function handoffSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
+  return runSellerOrderItemGroup(sellerId, orderIdRaw, "handoff", options);
+}
+
 /**
  * Mijoz olishdan voz kechganda — omborga qaytarish (Qayta aktiv ombor effekti).
  * Faqat accepted | seller_confirmed | collected.
@@ -274,6 +410,9 @@ module.exports = {
   confirmSellerOrderItem,
   collectSellerOrderItem,
   handoffSellerOrderItem,
+  confirmSellerOrderGroup,
+  collectSellerOrderGroup,
+  handoffSellerOrderGroup,
   cancelSellerOrderItem,
   CANCELABLE_TRACKING_STATUSES,
 };

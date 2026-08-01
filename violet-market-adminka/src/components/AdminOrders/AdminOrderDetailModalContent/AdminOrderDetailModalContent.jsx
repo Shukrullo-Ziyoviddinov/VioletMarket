@@ -23,9 +23,19 @@ export default function AdminOrderDetailModalContent({ order }) {
     return <p className="seller-order-detail-modal-content__empty">Ma’lumot yo‘q</p>;
   }
 
-  const productTitle = getAdminOrderProductTitle(order);
+  const items = Array.isArray(order.items) ? order.items : [];
+  const isGroup = Boolean(order.isGroup) || items.length > 1;
+  const productTitle = isGroup
+    ? `${order.productCount || items.length || 1} ta mahsulot`
+    : getAdminOrderProductTitle(order);
   const imageUrl = resolveProductImageUrl(order.imageUrl);
   const paymentTone = getAdminOrderPaymentTone(order.paymentMethod);
+  const productCodes = Array.isArray(order.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
 
   return (
     <div className="seller-order-detail-modal-content">
@@ -48,27 +58,53 @@ export default function AdminOrderDetailModalContent({ order }) {
         </div>
         <div className="seller-order-detail-modal-content__product-text">
           <strong title={productTitle}>{productTitle}</strong>
-          <p>{order.productCode || '—'}</p>
+          <p>
+            {isGroup && productCodes.length > 1
+              ? productCodes.join(', ')
+              : order.productCode || '—'}
+          </p>
         </div>
       </div>
 
+      {isGroup && items.length ? (
+        <div className="seller-order-detail-modal-content__info">
+          {items.map((item) => (
+            <div
+              className="seller-order-detail-modal-content__row"
+              key={item.id || `${item.itemIndex}-${item.unitIndex}`}
+            >
+              <span>{item.productCode || 'Mahsulot'}</span>
+              <strong>
+                {[item.color, item.size, item.storage, item.model]
+                  .map((value) => String(value || '').trim())
+                  .filter(Boolean)
+                  .join(' · ') || formatAdminOrderAmount(item.amount)}
+              </strong>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="seller-order-detail-modal-content__info">
+          <div className="seller-order-detail-modal-content__row">
+            <span>Rang</span>
+            <strong>{optionValue(order.color)}</strong>
+          </div>
+          <div className="seller-order-detail-modal-content__row">
+            <span>O‘lcham</span>
+            <strong>{optionValue(order.size)}</strong>
+          </div>
+          <div className="seller-order-detail-modal-content__row">
+            <span>Xotira</span>
+            <strong>{optionValue(order.storage)}</strong>
+          </div>
+          <div className="seller-order-detail-modal-content__row">
+            <span>Model</span>
+            <strong>{optionValue(order.model)}</strong>
+          </div>
+        </div>
+      )}
+
       <div className="seller-order-detail-modal-content__info">
-        <div className="seller-order-detail-modal-content__row">
-          <span>Rang</span>
-          <strong>{optionValue(order.color)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>O‘lcham</span>
-          <strong>{optionValue(order.size)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>Xotira</span>
-          <strong>{optionValue(order.storage)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>Model</span>
-          <strong>{optionValue(order.model)}</strong>
-        </div>
         <div className="seller-order-detail-modal-content__row">
           <span>Buyurtma ID</span>
           <strong>{order.orderCode || '—'}</strong>

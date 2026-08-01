@@ -27,6 +27,102 @@ function cleanSellerId(value) {
   return String(value || "").trim();
 }
 
+/**
+ * Bir checkout + bir siller fulfillment guruhi (UI blok kaliti).
+ * To‘lov / qaytarish / DP zanjiriga tegmaydi.
+ */
+function buildFulfillmentGroupKey(orderId, sellerId) {
+  return `${Number(orderId) || 0}:${cleanSellerId(sellerId)}`;
+}
+
+function stampFulfillmentGroupFields(cards, orderId, sellerId) {
+  const list = Array.isArray(cards) ? cards : [];
+  if (!list.length) return list;
+
+  const groupKey = buildFulfillmentGroupKey(orderId, sellerId);
+  const siblingIds = list.map((card) => card.id);
+  const groupItemIndexes = [
+    ...new Set(list.map((card) => Number(card.itemIndex) || 0)),
+  ];
+
+  return list.map((card) => ({
+    ...card,
+    sellerId: cleanSellerId(sellerId),
+    groupKey,
+    groupSize: siblingIds.length,
+    groupItemCount: groupItemIndexes.length,
+    siblingIds,
+  }));
+}
+
+/**
+ * Status filterdan keyin: joriy listda shu guruhdan nechta sibling bor.
+ */
+function annotateVisibleFulfillmentGroups(cards) {
+  const list = Array.isArray(cards) ? cards : [];
+  if (!list.length) return list;
+
+  const byKey = new Map();
+  for (const card of list) {
+    const key =
+      String(card?.groupKey || "").trim() ||
+      buildFulfillmentGroupKey(card?.orderId, card?.sellerId);
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(card.id);
+  }
+
+  return list.map((card) => {
+    const key =
+      String(card?.groupKey || "").trim() ||
+      buildFulfillmentGroupKey(card?.orderId, card?.sellerId);
+    const visibleSiblingIds = byKey.get(key) || [card.id];
+    return {
+      ...card,
+      groupKey: key,
+      visibleGroupSize: visibleSiblingIds.length,
+      visibleSiblingIds,
+    };
+  });
+}
+
+/**
+ * Flat pagination oynasini guruh chegarasiga kengaytiradi —
+ * bir groupKey siblinglari sahifa chetida bo‘linib qolmasin.
+ * Natija limit dan biroz katta bo‘lishi mumkin.
+ */
+function sliceKeepingFulfillmentGroups(cards, start, limit) {
+  const list = Array.isArray(cards) ? cards : [];
+  if (!list.length || limit <= 0) return [];
+  if (start >= list.length) return [];
+
+  let from = Math.max(0, Math.floor(Number(start) || 0));
+  let to = Math.min(list.length, from + Math.max(1, Math.floor(Number(limit) || 1)));
+
+  const keyAt = (index) => {
+    const card = list[index];
+    return (
+      String(card?.groupKey || "").trim() ||
+      buildFulfillmentGroupKey(card?.orderId, card?.sellerId)
+    );
+  };
+
+  if (from > 0) {
+    const edgeKey = keyAt(from);
+    while (from > 0 && keyAt(from - 1) === edgeKey) {
+      from -= 1;
+    }
+  }
+
+  if (to > from && to < list.length) {
+    const edgeKey = keyAt(to - 1);
+    while (to < list.length && keyAt(to) === edgeKey) {
+      to += 1;
+    }
+  }
+
+  return list.slice(from, to);
+}
+
 function formatOrderCode(orderId) {
   const id = Math.max(0, Math.floor(toNumber(orderId, 0)));
   return `#${String(id).padStart(4, "0")}`;
@@ -164,7 +260,7 @@ function buildSellerOrderItemCards(order, user, sellerId) {
     }
   });
 
-  return cards;
+  return stampFulfillmentGroupFields(cards, orderId, sellerId);
 }
 
 /** @deprecated Use buildSellerOrderItemCards — kept for export stability */
@@ -212,7 +308,7 @@ async function listSellerOrders(sellerId, query = {}) {
   }
 
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
-  const limit = Math.min(100, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
+  const limit = Math.min(200, Math.max(1, Math.floor(toNumber(query.limit, DEFAULT_PAGE_SIZE))));
 
   const match = { "items.sellerId": normalizedSellerId };
 
@@ -231,13 +327,15 @@ async function listSellerOrders(sellerId, query = {}) {
   const allCards = rows.flatMap((row) =>
     buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
   );
-  const filteredCards = requestedTrackingStatus
-    ? allCards.filter((card) => card.trackingStatus === requestedTrackingStatus)
-    : allCards;
+  const filteredCards = annotateVisibleFulfillmentGroups(
+    requestedTrackingStatus
+      ? allCards.filter((card) => card.trackingStatus === requestedTrackingStatus)
+      : allCards,
+  );
 
   const total = filteredCards.length;
   const start = (page - 1) * limit;
-  let orders = filteredCards.slice(start, start + limit);
+  let orders = sliceKeepingFulfillmentGroups(filteredCards, start, limit);
 
   // Kuryerga topshirilgan kartochkalarga qabul qilgan kuryer malumotini ulash
   if (requestedTrackingStatus === "handed_to_courier" && orders.length) {
@@ -333,6 +431,10 @@ module.exports = {
   normalizePaymentMethod,
   formatOrderCode,
   formatProductCode,
+  buildFulfillmentGroupKey,
+  stampFulfillmentGroupFields,
+  annotateVisibleFulfillmentGroups,
+  sliceKeepingFulfillmentGroups,
   buildSellerOrderCard,
   buildSellerOrderItemCards,
   listSellerOrders,

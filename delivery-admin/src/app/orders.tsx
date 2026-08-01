@@ -31,6 +31,7 @@ import {
 } from '@/services/courier-location';
 import {
   acceptDeliveryOrder,
+  acceptDeliveryOrderGroup,
   fetchAvailableDeliveryOrders,
 } from '@/services/delivery-orders';
 import {
@@ -376,19 +377,80 @@ export default function OrdersScreen() {
     }
     setAcceptingId(order.id);
     try {
-      await acceptDeliveryOrder(token, {
-        orderId: order.orderId,
-        itemIndex: order.itemIndex,
-        unitIndex: order.unitIndex,
-      });
+      const units =
+        Array.isArray(order.acceptUnits) && order.acceptUnits.length
+          ? order.acceptUnits
+          : Array.isArray(order.units) && order.units.length
+            ? order.units.map((unit) => ({
+                itemIndex: unit.itemIndex,
+                unitIndex: unit.unitIndex,
+              }))
+            : [
+                {
+                  itemIndex: order.itemIndex,
+                  unitIndex: order.unitIndex,
+                },
+              ];
+
+      const isGroup = Boolean(order.isGroup) || units.length > 1;
+
+      if (isGroup) {
+        const result = await acceptDeliveryOrderGroup(token, {
+          orderId: order.orderId,
+          units,
+          courierLat: courierCoords?.latitude,
+          courierLng: courierCoords?.longitude,
+        });
+        const updatedCount = Number(result.updatedCount) || 0;
+        const skippedCount = Number(result.skippedCount) || 0;
+
+        if (updatedCount <= 0) {
+          Alert.alert(
+            'Qabul',
+            'Qabul qilish uchun bo‘sh mahsulot yo‘q (boshqa kuryer olgan bo‘lishi mumkin).',
+          );
+          await loadOrders(courierCoords);
+          return;
+        }
+
+        // Qisman: qolgan unitlar pool’da qoladi — kartani olib tashlamaymiz, ro‘yxatni yangilaymiz.
+        if (skippedCount > 0) {
+          await loadOrders(courierCoords);
+          Alert.alert(
+            'Qisman qabul',
+            `${updatedCount} ta qabul qilindi, ${skippedCount} ta qolmadi (boshqa kuryer olgan bo‘lishi mumkin). Qolganlari ro‘yxatda.`,
+            [
+              {
+                text: 'Bosh sahifa',
+                onPress: () => router.push('/home'),
+              },
+              { text: 'OK' },
+            ],
+          );
+          return;
+        }
+      } else {
+        await acceptDeliveryOrder(token, {
+          orderId: order.orderId,
+          itemIndex: units[0].itemIndex,
+          unitIndex: units[0].unitIndex,
+        });
+      }
+
       setAllOrders((prev) => prev.filter((item) => item.id !== order.id));
-      Alert.alert('Qabul qilindi', 'Buyurtma bosh sahifaga o‘tdi.', [
-        {
-          text: 'Bosh sahifa',
-          onPress: () => router.push('/home'),
-        },
-        { text: 'OK' },
-      ]);
+      Alert.alert(
+        'Qabul qilindi',
+        isGroup
+          ? 'Buyurtma mahsulotlari bosh sahifaga o‘tdi.'
+          : 'Buyurtma bosh sahifaga o‘tdi.',
+        [
+          {
+            text: 'Bosh sahifa',
+            onPress: () => router.push('/home'),
+          },
+          { text: 'OK' },
+        ],
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Qabul qilib bo‘lmadi';

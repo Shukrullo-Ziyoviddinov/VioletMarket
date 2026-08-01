@@ -2,13 +2,22 @@ import React, { useState } from 'react';
 import { message } from 'antd';
 import {
   cancelAdminOrderItem,
+  collectAdminOrderGroup,
   collectAdminOrderItem,
+  confirmAdminOrderGroup,
   confirmAdminOrderItem,
 } from '../../../api/adminOrdersApi';
 import { useAdminModal } from '../../../context/AdminModalContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import AdminOrderDetailModalContent from '../AdminOrderDetailModalContent/AdminOrderDetailModalContent';
 import '../AdminOrderDetailModal/AdminOrderDetailModal.css';
+
+function resolveItemIndexes(order) {
+  if (Array.isArray(order?.itemIndexes) && order.itemIndexes.length) {
+    return [...new Set(order.itemIndexes.map((value) => Number(value) || 0))];
+  }
+  return [Number(order?.itemIndex) || 0];
+}
 
 export default function AdminOrderDetailSectionContent({
   visible,
@@ -23,9 +32,15 @@ export default function AdminOrderDetailSectionContent({
 
   if (!visible || !order) return null;
 
-  const showConfirm = mode === 'confirm' && order.trackingStatus === 'accepted';
-  const showCollect = mode === 'collect' && order.trackingStatus === 'seller_confirmed';
-  const showCancelOrder = showConfirm || showCollect;
+  const itemIndexes = resolveItemIndexes(order);
+  const isGroup = Boolean(order.isGroup) || itemIndexes.length > 1;
+  const showConfirm =
+    mode === 'confirm' &&
+    (isGroup || order.trackingStatus === 'accepted');
+  const showCollect =
+    mode === 'collect' &&
+    (isGroup || order.trackingStatus === 'seller_confirmed');
+  const showCancelOrder = !isGroup && (showConfirm || showCollect);
   const actionsBusy = busy || cancelling;
 
   const finishSuccess = (text) => {
@@ -38,8 +53,30 @@ export default function AdminOrderDetailSectionContent({
     if (actionsBusy) return;
     setBusy(true);
     try {
-      await confirmAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
-      finishSuccess('Buyurtma tasdiqlandi');
+      let result;
+      if (isGroup) {
+        result = await confirmAdminOrderGroup(order.orderId, order.sellerId, {
+          itemIndexes,
+        });
+      } else {
+        await confirmAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+        result = { updatedCount: 1 };
+      }
+
+      if (Number(result?.updatedCount) <= 0) {
+        message.warning('Tasdiqlash uchun tayyor mahsulot yo‘q');
+        onSuccess?.();
+        return;
+      }
+      const skippedCount = Number(result?.skippedCount) || 0;
+      const base = isGroup
+        ? 'Buyurtma mahsulotlari tasdiqlandi'
+        : 'Buyurtma tasdiqlandi';
+      finishSuccess(
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
+      );
     } catch (error) {
       message.error(error?.message || 'Tasdiqlab bo‘lmadi');
     } finally {
@@ -51,8 +88,30 @@ export default function AdminOrderDetailSectionContent({
     if (actionsBusy) return;
     setBusy(true);
     try {
-      await collectAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
-      finishSuccess("Mahsulot yig'ilgani tasdiqlandi");
+      let result;
+      if (isGroup) {
+        result = await collectAdminOrderGroup(order.orderId, order.sellerId, {
+          itemIndexes,
+        });
+      } else {
+        await collectAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+        result = { updatedCount: 1 };
+      }
+
+      if (Number(result?.updatedCount) <= 0) {
+        message.warning('Yig‘ish uchun tayyor mahsulot yo‘q');
+        onSuccess?.();
+        return;
+      }
+      const skippedCount = Number(result?.skippedCount) || 0;
+      const base = isGroup
+        ? "Mahsulotlar yig'ilgani tasdiqlandi"
+        : "Mahsulot yig'ilgani tasdiqlandi";
+      finishSuccess(
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
+      );
     } catch (error) {
       message.error(error?.message || 'Yig‘ib bo‘lmadi');
     } finally {
@@ -61,7 +120,7 @@ export default function AdminOrderDetailSectionContent({
   };
 
   const handleCancelOrder = async () => {
-    if (actionsBusy) return;
+    if (actionsBusy || isGroup) return;
     setCancelling(true);
     try {
       await cancelAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
@@ -98,7 +157,11 @@ export default function AdminOrderDetailSectionContent({
               disabled={actionsBusy}
               onClick={handleConfirm}
             >
-              {busy ? 'Tasdiqlanmoqda...' : 'Tasdiqlash'}
+              {busy
+                ? 'Tasdiqlanmoqda...'
+                : isGroup
+                  ? 'Hammasini tasdiqlash'
+                  : 'Tasdiqlash'}
             </button>
           ) : null}
           {showCollect ? (
@@ -108,7 +171,11 @@ export default function AdminOrderDetailSectionContent({
               disabled={actionsBusy}
               onClick={handleCollect}
             >
-              {busy ? 'Tasdiqlanmoqda...' : "Mahsulot yig'ilganligini tasdiqlash"}
+              {busy
+                ? 'Tasdiqlanmoqda...'
+                : isGroup
+                  ? "Barcha mahsulotlarni yig'ilgan deb belgilash"
+                  : "Mahsulot yig'ilganligini tasdiqlash"}
             </button>
           ) : null}
         </div>

@@ -48,8 +48,8 @@ export default function ForeignOrdersPage() {
         <h1 className="admin-orders-page__title">Xorij → UZB</h1>
         <p className="admin-orders-page__subtitle">
           Xorij sillerlar — logistica «To‘landi» dan keyin Toshkent omboridan UZB
-          kuryerga topshirish, topshirilgan va javob bermadi. Har kartada siller
-          va davlat ko‘rinadi.
+          kuryerga topshirish, topshirilgan va javob bermadi. Bir mijoz / bir
+          buyurtma mahsulotlari bitta blokda chiqadi va birga topshiriladi.
         </p>
       </div>
       <AdminOrdersFilter

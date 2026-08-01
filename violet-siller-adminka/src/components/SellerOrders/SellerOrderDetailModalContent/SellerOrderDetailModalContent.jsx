@@ -24,9 +24,29 @@ export default function SellerOrderDetailModalContent({ order }) {
     return <p className="seller-order-detail-modal-content__empty">{t('orders.modal.empty')}</p>;
   }
 
-  const productTitle = getSellerOrderProductTitle(order, i18n.language);
-  const imageUrl = resolveAssetUrl(order.imageUrl);
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const productCodes = Array.isArray(order?.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order?.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+  const productTitle = isGroup
+    ? t('orders.card.productCount', {
+        count: order.productCount || items.length || productCodes.length || 1,
+        defaultValue: '{{count}} ta mahsulot',
+      })
+    : getSellerOrderProductTitle(order, i18n.language);
+  const imageUrl = resolveAssetUrl(
+    isGroup ? items[0]?.imageUrl || order.imageUrl : order.imageUrl,
+  );
   const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
+  const codeLabel =
+    isGroup && productCodes.length
+      ? productCodes.join(', ')
+      : order.productCode || '—';
 
   return (
     <div className="seller-order-detail-modal-content">
@@ -36,27 +56,31 @@ export default function SellerOrderDetailModalContent({ order }) {
         </div>
         <div className="seller-order-detail-modal-content__product-text">
           <strong title={productTitle}>{productTitle}</strong>
-          <p>{order.productCode || '—'}</p>
+          <p title={codeLabel}>{codeLabel}</p>
         </div>
       </div>
 
       <div className="seller-order-detail-modal-content__info">
-        <div className="seller-order-detail-modal-content__row">
-          <span>{t('orders.modal.color')}</span>
-          <strong>{optionValue(order.color)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>{t('orders.modal.size')}</span>
-          <strong>{optionValue(order.size)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>{t('orders.modal.storage')}</span>
-          <strong>{optionValue(order.storage)}</strong>
-        </div>
-        <div className="seller-order-detail-modal-content__row">
-          <span>{t('orders.modal.model')}</span>
-          <strong>{optionValue(order.model)}</strong>
-        </div>
+        {!isGroup ? (
+          <>
+            <div className="seller-order-detail-modal-content__row">
+              <span>{t('orders.modal.color')}</span>
+              <strong>{optionValue(order.color)}</strong>
+            </div>
+            <div className="seller-order-detail-modal-content__row">
+              <span>{t('orders.modal.size')}</span>
+              <strong>{optionValue(order.size)}</strong>
+            </div>
+            <div className="seller-order-detail-modal-content__row">
+              <span>{t('orders.modal.storage')}</span>
+              <strong>{optionValue(order.storage)}</strong>
+            </div>
+            <div className="seller-order-detail-modal-content__row">
+              <span>{t('orders.modal.model')}</span>
+              <strong>{optionValue(order.model)}</strong>
+            </div>
+          </>
+        ) : null}
         <div className="seller-order-detail-modal-content__row">
           <span>{t('orders.card.orderId')}</span>
           <strong>{order.orderCode || '—'}</strong>
