@@ -83,6 +83,16 @@ const cancelOrderItem = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const cancelOrderGroup = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await sellerOrderTrackingService.cancelSellerOrderGroup(
+    req.sellerShopId,
+    req.params.orderId,
+    { itemIndexes: body.itemIndexes },
+  );
+  res.json({ ok: true, data });
+});
+
 const reHandoffNoAnswer = asyncHandler(async (req, res) => {
   const data = await noAnswerOrderActionsService.reHandoffNoAnswerOrder(
     req.params.returnedOrderId,
@@ -145,6 +155,7 @@ module.exports = {
   collectOrderGroup,
   handoffOrderGroup,
   cancelOrderItem,
+  cancelOrderGroup,
   reHandoffNoAnswer,
   reactivateNoAnswer,
   deliverNoAnswer,

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
+  cancelSellerOrderGroup,
   cancelSellerOrderItem,
   collectSellerOrderGroup,
   collectSellerOrderItem,
@@ -415,10 +416,43 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     const order = cancelTarget;
     if (!token || !order || cancelling) return;
 
+    const orderId = Number(order.orderId) || 0;
+    const itemIndexes = Array.isArray(order.itemIndexes)
+      ? order.itemIndexes
+      : [Number(order.itemIndex) || 0];
+    const uniqueIndexes = [...new Set(itemIndexes.map((value) => Number(value) || 0))];
+    const isGroup = uniqueIndexes.length > 1 || Boolean(order.isGroup);
+
     setCancelling(true);
     try {
-      await cancelSellerOrderItem(token, order.orderId, order.itemIndex);
-      message.success(t('orders.cancel.success'));
+      let result;
+      if (isGroup) {
+        result = await cancelSellerOrderGroup(token, orderId, {
+          itemIndexes: uniqueIndexes,
+        });
+      } else {
+        await cancelSellerOrderItem(token, orderId, uniqueIndexes[0]);
+        result = { updatedCount: 1, skippedCount: 0 };
+      }
+
+      const updatedCount = Number(result?.updatedCount);
+      const skippedCount = Number(result?.skippedCount) || 0;
+      if (Number.isFinite(updatedCount) && updatedCount <= 0) {
+        message.warning(
+          t('orders.cancel.noneReady', {
+            defaultValue: 'Bekor qilish uchun tayyor mahsulot yo‘q',
+          }),
+        );
+        await loadOrders();
+        return;
+      }
+
+      const base = t('orders.cancel.success');
+      message.success(
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
+      );
       setCancelTarget(null);
       setActiveOrder(null);
       setCourierOrder(null);
@@ -571,16 +605,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         }
         collecting={collecting}
         onCollect={handleCollect}
-        showCancelOrder={
-          !(
-            activeOrder?.isGroup ||
-            (Array.isArray(activeOrder?.itemIndexes) &&
-              activeOrder.itemIndexes.length > 1)
-          ) &&
-          ((filter === 'confirmation' && activeOrder?.trackingStatus === 'accepted') ||
-            (filter === 'collection' &&
-              activeOrder?.trackingStatus === 'seller_confirmed'))
-        }
+        showCancelOrder={filter === 'confirmation' || filter === 'collection'}
         cancelling={cancelling}
         onCancelOrder={() => requestCancelOrder(activeOrder)}
       />
@@ -598,11 +623,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
           if (!handingOff && !cancelling) setCourierOrder(null);
         }}
         onConfirm={handleCourierHandoff}
-        onCancelOrder={
-          courierOrder?.isGroup || (courierOrder?.itemIndexes || []).length > 1
-            ? undefined
-            : () => requestCancelOrder(courierOrder)
-        }
+        onCancelOrder={() => requestCancelOrder(courierOrder)}
         cancelOrderText={t('orders.modal.cancelOrder')}
         extraContent={<SellerOrderGroupItems order={courierOrder} />}
       />
@@ -620,11 +641,7 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
           if (!submittingCargo && !cancelling) setCargoOrder(null);
         }}
         onConfirm={handleCargoSubmit}
-        onCancelOrder={
-          cargoOrder?.isGroup || (cargoOrder?.itemIndexes || []).length > 1
-            ? undefined
-            : () => requestCancelOrder(cargoOrder)
-        }
+        onCancelOrder={() => requestCancelOrder(cargoOrder)}
         cancelOrderText={t('orders.modal.cancelOrder')}
         extraContent={
           <>

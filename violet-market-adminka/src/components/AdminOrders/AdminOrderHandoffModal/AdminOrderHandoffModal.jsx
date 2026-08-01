@@ -146,7 +146,7 @@ export default function AdminOrderHandoffModal({
           </p>
         )}
         <div className="admin-order-handoff-modal__actions">
-          {allowHandoff && onCancelOrder && !isGroup ? (
+          {allowHandoff && onCancelOrder ? (
             <button
               type="button"
               className="admin-order-handoff-modal__cancel-order"

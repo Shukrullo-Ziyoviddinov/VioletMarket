@@ -296,6 +296,24 @@ export async function cancelSellerOrderItem(token, orderId, itemIndex) {
   return payload?.data || {};
 }
 
+export async function cancelSellerOrderGroup(token, orderId, body = {}) {
+  const res = await fetch(
+    apiUrl(`/api/seller-auth/orders/${Number(orderId)}/cancel-group`),
+    {
+      method: 'PATCH',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+      }),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 async function postNoAnswerAction(token, returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

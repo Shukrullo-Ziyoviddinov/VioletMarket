@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import {
+  cancelAdminOrderGroup,
   cancelAdminOrderItem,
   deliverAdminNoAnswerOrder,
   fetchAdminOrders,
@@ -180,19 +181,42 @@ export default function AdminOrdersWorkspace({
   const handleCancelOrder = async () => {
     if (!courierOrder || handingOff || cancelling) return;
     const itemIndexes = resolveItemIndexes(courierOrder);
-    if (itemIndexes.length > 1 || courierOrder.isGroup) {
-      message.warning('Guruh buyurtmani alohida bekor qilib bo‘lmaydi');
-      return;
-    }
+    const isGroup =
+      Boolean(courierOrder.isGroup) || itemIndexes.length > 1;
 
     setCancelling(true);
     try {
-      await cancelAdminOrderItem(
-        courierOrder.orderId,
-        courierOrder.itemIndex,
-        courierOrder.sellerId,
+      let result;
+      if (isGroup) {
+        result = await cancelAdminOrderGroup(
+          courierOrder.orderId,
+          courierOrder.sellerId,
+          { itemIndexes },
+        );
+      } else {
+        await cancelAdminOrderItem(
+          courierOrder.orderId,
+          itemIndexes[0],
+          courierOrder.sellerId,
+        );
+        result = { updatedCount: 1, skippedCount: 0 };
+      }
+
+      if (Number(result?.updatedCount) <= 0) {
+        message.warning('Bekor qilish uchun tayyor mahsulot yo‘q');
+        await refreshAfterStatusChange();
+        return;
+      }
+
+      const skippedCount = Number(result?.skippedCount) || 0;
+      const base = isGroup
+        ? 'Mahsulotlar bekor qilindi, omborga qaytdi'
+        : 'Buyurtma bekor qilindi, mahsulot omborga qaytdi';
+      message.success(
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
       );
-      message.success('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
       setCancelConfirmOpen(false);
       setCourierOrder(null);
       await refreshAfterStatusChange();
@@ -292,10 +316,6 @@ export default function AdminOrdersWorkspace({
     );
   }
 
-  const courierIsGroup =
-    Boolean(courierOrder?.isGroup) ||
-    resolveItemIndexes(courierOrder).length > 1;
-
   return (
     <div className="seller-orders-workspace">
       {listNode}
@@ -312,7 +332,7 @@ export default function AdminOrdersWorkspace({
         }}
         onConfirm={handleCourierHandoff}
         onCancelOrder={
-          allowHandoff && !courierIsGroup
+          allowHandoff
             ? () => {
                 if (!handingOff && !cancelling) setCancelConfirmOpen(true);
               }

@@ -171,6 +171,11 @@ router.patch(
   sellerAuthMiddleware,
   sellerOrdersController.cancelOrderItem,
 );
+router.patch(
+  "/seller-auth/orders/:orderId/cancel-group",
+  sellerAuthMiddleware,
+  sellerOrdersController.cancelOrderGroup,
+);
 router.post(
   "/seller-auth/orders/no-answer/:returnedOrderId/re-handoff",
   sellerAuthMiddleware,

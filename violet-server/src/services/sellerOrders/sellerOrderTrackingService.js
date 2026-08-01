@@ -246,7 +246,7 @@ async function resolveSellerItemIndexesOnOrder(sellerId, orderId, itemIndexes) {
 }
 
 /**
- * Bir order + bir siller guruhi bo‘yicha confirm/collect/handoff.
+ * Bir order + bir siller guruhi bo‘yicha confirm/collect/handoff/cancel.
  * Tayyor bo‘lmagan itemlar soft-skip; per-item logika o‘zgarmaydi.
  * To‘lov / qaytarish / DP zanjiriga tegmaydi.
  */
@@ -260,6 +260,7 @@ async function runSellerOrderItemGroup(sellerId, orderIdRaw, action, options = {
     confirm: confirmSellerOrderItem,
     collect: collectSellerOrderItem,
     handoff: handoffSellerOrderItem,
+    cancel: cancelSellerOrderItem,
   };
   const runner = runners[action];
   if (!runner) {
@@ -328,6 +329,10 @@ async function collectSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
 
 async function handoffSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
   return runSellerOrderItemGroup(sellerId, orderIdRaw, "handoff", options);
+}
+
+async function cancelSellerOrderGroup(sellerId, orderIdRaw, options = {}) {
+  return runSellerOrderItemGroup(sellerId, orderIdRaw, "cancel", options);
 }
 
 /**
@@ -413,6 +418,7 @@ module.exports = {
   confirmSellerOrderGroup,
   collectSellerOrderGroup,
   handoffSellerOrderGroup,
+  cancelSellerOrderGroup,
   cancelSellerOrderItem,
   CANCELABLE_TRACKING_STATUSES,
 };

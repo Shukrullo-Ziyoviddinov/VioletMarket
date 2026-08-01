@@ -212,6 +212,10 @@ export function cancelAdminOrderItem(orderId, itemIndex, sellerId) {
   return patchOrderItem('cancel', orderId, itemIndex, sellerId);
 }
 
+export function cancelAdminOrderGroup(orderId, sellerId, body = {}) {
+  return patchOrderGroup('cancel', orderId, sellerId, body);
+}
+
 async function postNoAnswerAction(returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

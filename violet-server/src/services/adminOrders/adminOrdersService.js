@@ -488,6 +488,15 @@ async function cancelAdminOrderItem(payload = {}) {
   );
 }
 
+async function cancelAdminOrderGroup(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return sellerOrderTrackingService.cancelSellerOrderGroup(
+    sellerId,
+    payload.orderId,
+    { itemIndexes: payload.itemIndexes },
+  );
+}
+
 module.exports = {
   listAdminOrders,
   getAdminOrderCounts,
@@ -499,4 +508,5 @@ module.exports = {
   handoffAdminOrderGroup,
   submitAdminOrderGroupToCargo,
   cancelAdminOrderItem,
+  cancelAdminOrderGroup,
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { message } from 'antd';
 import {
+  cancelAdminOrderGroup,
   cancelAdminOrderItem,
   collectAdminOrderGroup,
   collectAdminOrderItem,
@@ -40,7 +41,7 @@ export default function AdminOrderDetailSectionContent({
   const showCollect =
     mode === 'collect' &&
     (isGroup || order.trackingStatus === 'seller_confirmed');
-  const showCancelOrder = !isGroup && (showConfirm || showCollect);
+  const showCancelOrder = showConfirm || showCollect;
   const actionsBusy = busy || cancelling;
 
   const finishSuccess = (text) => {
@@ -120,12 +121,35 @@ export default function AdminOrderDetailSectionContent({
   };
 
   const handleCancelOrder = async () => {
-    if (actionsBusy || isGroup) return;
+    if (actionsBusy) return;
     setCancelling(true);
     try {
-      await cancelAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+      let result;
+      if (isGroup) {
+        result = await cancelAdminOrderGroup(order.orderId, order.sellerId, {
+          itemIndexes,
+        });
+      } else {
+        await cancelAdminOrderItem(order.orderId, order.itemIndex, order.sellerId);
+        result = { updatedCount: 1, skippedCount: 0 };
+      }
+
+      if (Number(result?.updatedCount) <= 0) {
+        message.warning('Bekor qilish uchun tayyor mahsulot yo‘q');
+        onSuccess?.();
+        return;
+      }
+
+      const skippedCount = Number(result?.skippedCount) || 0;
+      const base = isGroup
+        ? 'Mahsulotlar bekor qilindi, omborga qaytdi'
+        : 'Buyurtma bekor qilindi, mahsulot omborga qaytdi';
       setCancelConfirmOpen(false);
-      finishSuccess('Buyurtma bekor qilindi, mahsulot omborga qaytdi');
+      finishSuccess(
+        skippedCount > 0
+          ? `${base} (${skippedCount} ta o‘tkazib yuborildi)`
+          : base,
+      );
     } catch (error) {
       message.error(error?.message || 'Buyurtmani bekor qilib bo‘lmadi');
     } finally {
