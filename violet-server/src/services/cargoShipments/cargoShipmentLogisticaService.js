@@ -123,7 +123,7 @@ function toLogisticaShipmentCard(doc) {
  * Bir checkout (orderId) + bir siller → bitta UI kartochka.
  * Turli mijoz (turli orderId) → alohida.
  */
-function groupPendingShipmentCards(cards = []) {
+function groupLogisticaShipmentCards(cards = []) {
   const map = new Map();
 
   for (const card of cards) {
@@ -137,13 +137,15 @@ function groupPendingShipmentCards(cards = []) {
     map.get(key).push(card);
   }
 
+  const resolveTime = (card) => {
+    const raw = card.acceptedAt || card.submittedAt || card.updatedAt || null;
+    const time = raw ? new Date(raw).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+  };
+
   const grouped = [];
   for (const units of map.values()) {
-    const sorted = [...units].sort((a, b) => {
-      const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-      const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
-      return bTime - aTime;
-    });
+    const sorted = [...units].sort((a, b) => resolveTime(b) - resolveTime(a));
     const primary = sorted[0];
     const siblingIds = sorted.map((unit) => String(unit.id));
     const requestCodes = [
@@ -175,12 +177,7 @@ function groupPendingShipmentCards(cards = []) {
     });
   }
 
-  grouped.sort((a, b) => {
-    const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-    const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
-    return bTime - aTime;
-  });
-
+  grouped.sort((a, b) => resolveTime(b) - resolveTime(a));
   return grouped;
 }
 
@@ -257,7 +254,27 @@ async function loadPendingSiblingShipments(shipment) {
   return rows;
 }
 
-function mergePendingGroupDetail(primaryRow, siblingRows = []) {
+async function loadAcceptedSiblingShipments(shipment, logisticaId) {
+  const orderId = Number(shipment.orderId) || 0;
+  const sellerId = String(shipment.sellerId || "").trim();
+  const lid = String(logisticaId || "").trim();
+  if (!orderId || !sellerId || !lid) return [];
+
+  const rows = await CargoShipment.find({
+    orderId,
+    sellerId,
+    status: "accepted",
+    logisticaId: lid,
+    paidAt: null,
+    _id: { $ne: shipment._id },
+  })
+    .sort({ acceptedAt: -1, submittedAt: -1 })
+    .lean();
+
+  return rows;
+}
+
+function mergeGroupDetail(primaryRow, siblingRows = []) {
   const detail = toLogisticaShipmentDetail(primaryRow);
   if (!siblingRows.length) return detail;
 
@@ -336,7 +353,7 @@ async function listPendingShipmentsForLogistica(logisticaId, query = {}) {
     .limit(500)
     .lean();
 
-  const grouped = groupPendingShipmentCards(rows.map(toLogisticaShipmentCard));
+  const grouped = groupLogisticaShipmentCards(rows.map(toLogisticaShipmentCard));
   const total = grouped.length;
   const start = (page - 1) * limit;
   const pageItems = grouped.slice(start, start + limit);
@@ -358,7 +375,7 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
 
   if (status === "pending") {
     const siblings = await loadPendingSiblingShipments(shipment);
-    return { shipment: mergePendingGroupDetail(row, siblings) };
+    return { shipment: mergeGroupDetail(row, siblings) };
   }
 
   if (
@@ -366,7 +383,8 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
     row.logisticaId &&
     String(row.logisticaId) === String(logisticaId)
   ) {
-    return { shipment: toLogisticaShipmentDetail(row) };
+    const siblings = await loadAcceptedSiblingShipments(shipment, logisticaId);
+    return { shipment: mergeGroupDetail(row, siblings) };
   }
 
   if (
@@ -427,8 +445,23 @@ async function updateShipmentProcessStepForLogistica(
     );
   }
   await applyYuklarimProcessStep(shipment, processStepRaw);
+
+  const siblingRows = await loadAcceptedSiblingShipments(shipment, logisticaId);
+  for (const siblingRow of siblingRows) {
+    const sibling = await CargoShipment.findById(siblingRow._id);
+    if (!sibling) continue;
+    try {
+      await applyYuklarimProcessStep(sibling, processStepRaw);
+    } catch (error) {
+      if (Number(error?.status) === 409) continue;
+      throw error;
+    }
+  }
+
+  const lean = shipment.toObject ? shipment.toObject() : shipment;
+  const siblings = await loadAcceptedSiblingShipments(shipment, logisticaId);
   return {
-    shipment: toLogisticaShipmentDetail(shipment.toObject()),
+    shipment: mergeGroupDetail(lean, siblings),
   };
 }
 
@@ -436,6 +469,7 @@ async function updateShipmentProcessStepForLogistica(
  * UZB ish stoli — Clientga yuborish:
  * og‘irlik + summa → processStep = toshkent_omborida.
  * Mijozga so‘rov yuborish — keyingi qadam.
+ * Guruh siblinglari ham birga o‘tadi (bir xil payload).
  */
 async function arriveShipmentAtUzWarehouseForLogistica(
   logisticaId,
@@ -447,8 +481,23 @@ async function arriveShipmentAtUzWarehouseForLogistica(
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
   const result = await applyUzWarehouseArrival(shipment, payload);
+
+  const siblingRows = await loadAcceptedSiblingShipments(shipment, logisticaId);
+  for (const siblingRow of siblingRows) {
+    const sibling = await CargoShipment.findById(siblingRow._id);
+    if (!sibling) continue;
+    try {
+      await applyUzWarehouseArrival(sibling, payload);
+    } catch (error) {
+      if (Number(error?.status) === 409) continue;
+      throw error;
+    }
+  }
+
+  const lean = shipment.toObject ? shipment.toObject() : shipment;
+  const siblings = await loadAcceptedSiblingShipments(shipment, logisticaId);
   return {
-    shipment: toLogisticaShipmentDetail(shipment.toObject()),
+    shipment: mergeGroupDetail(lean, siblings),
     alreadyArrived: Boolean(result.alreadyArrived),
   };
 }
@@ -498,21 +547,22 @@ async function listAcceptedShipmentsForLogistica(logisticaId, query = {}) {
     ],
   };
 
-  const [total, rows] = await Promise.all([
-    CargoShipment.countDocuments(filter),
-    CargoShipment.find(filter)
-      .sort({ acceptedAt: -1, submittedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  const rows = await CargoShipment.find(filter)
+    .sort({ acceptedAt: -1, submittedAt: -1 })
+    .limit(500)
+    .lean();
+
+  const grouped = groupLogisticaShipmentCards(rows.map(toLogisticaShipmentCard));
+  const total = grouped.length;
+  const start = (page - 1) * limit;
+  const pageItems = grouped.slice(start, start + limit);
 
   return {
     page,
     limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    shipments: rows.map(toLogisticaShipmentCard),
+    shipments: pageItems,
   };
 }
 
@@ -530,21 +580,22 @@ async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
     paidAt: null,
   };
 
-  const [total, rows] = await Promise.all([
-    CargoShipment.countDocuments(filter),
-    CargoShipment.find(filter)
-      .sort({ updatedAt: -1, acceptedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  const rows = await CargoShipment.find(filter)
+    .sort({ updatedAt: -1, acceptedAt: -1 })
+    .limit(500)
+    .lean();
+
+  const grouped = groupLogisticaShipmentCards(rows.map(toLogisticaShipmentCard));
+  const total = grouped.length;
+  const start = (page - 1) * limit;
+  const pageItems = grouped.slice(start, start + limit);
 
   return {
     page,
     limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    shipments: rows.map(toLogisticaShipmentCard),
+    shipments: pageItems,
   };
 }
 
