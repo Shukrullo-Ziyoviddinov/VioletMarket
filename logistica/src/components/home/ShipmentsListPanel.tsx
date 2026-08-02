@@ -73,6 +73,8 @@ export function ShipmentsListPanel({
             weightLabel: row.weightLabel,
             cargoFeePaymentRequired: row.cargoFeePaymentRequired,
             adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt,
+            isGroup: row.isGroup,
+            siblingIds: row.siblingIds,
           })),
         );
       } catch (err) {

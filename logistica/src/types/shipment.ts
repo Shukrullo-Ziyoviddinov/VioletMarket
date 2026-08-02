@@ -37,6 +37,11 @@ export type ShipmentListItem = {
   adminCargoFeeConfirmedAt?: string | null;
   paidAt?: string | null;
   submittedAt?: string | null;
+  orderId?: number;
+  sellerId?: string;
+  groupKey?: string;
+  isGroup?: boolean;
+  siblingIds?: string[];
 };
 
 export type ShipmentDetail = {
@@ -56,6 +61,9 @@ export type ShipmentDetail = {
   sellerCountry?: string;
   orderId?: number;
   itemIndex?: number;
+  groupKey?: string;
+  isGroup?: boolean;
+  siblingIds?: string[];
   cargoDeliveryFee?: number;
   uzArrivalPhotoUrl?: string;
   uzArrivalComment?: string;

@@ -111,7 +111,6 @@ export default function SellerOrderDetailModal({
                     })}
               </button>
             ) : null}
-            {!showCancelOrder && !showUnavailable ? <span /> : null}
           </div>
           {showConfirm ? (
             <button

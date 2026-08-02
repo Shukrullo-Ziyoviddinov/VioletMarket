@@ -15,6 +15,8 @@ export type ShipmentRequest = {
   weightLabel: WeightLabel;
   cargoFeePaymentRequired?: boolean;
   adminCargoFeeConfirmedAt?: string | null;
+  isGroup?: boolean;
+  siblingIds?: string[];
 };
 
 const CARDBOARD = '#C4A484';

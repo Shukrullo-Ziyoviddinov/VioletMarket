@@ -1,19 +1,19 @@
 .seller-order-detail-modal__actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid #eee9f3;
-  flex-wrap: wrap;
 }
 
 .seller-order-detail-modal__secondary {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .seller-order-detail-modal__cancel-order {
@@ -39,6 +39,7 @@
 
 .seller-order-detail-modal__unavailable {
   min-width: 128px;
+  margin-left: auto;
   padding: 10px 16px;
   border: 1px solid #fbbf24;
   border-radius: 9px;
@@ -59,9 +60,10 @@
 }
 
 .seller-order-detail-modal__confirm {
-  min-width: 128px;
-  margin-left: auto;
-  padding: 10px 20px;
+  width: 100%;
+  min-width: 0;
+  margin-left: 0;
+  padding: 12px 20px;
   border: 0;
   border-radius: 9px;
   background: #6f35bc;

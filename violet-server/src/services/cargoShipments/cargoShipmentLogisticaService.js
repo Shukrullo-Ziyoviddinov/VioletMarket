@@ -29,6 +29,10 @@ const { resolveProductTitle } = require("./cargoShipmentDisplayHelpers");
 
 const DEFAULT_PAGE_SIZE = 20;
 
+function buildFulfillmentGroupKey(orderId, sellerId) {
+  return `${Number(orderId) || 0}:${String(sellerId || "").trim()}`;
+}
+
 function assertActiveLogistica(profile) {
   if (!profile) {
     throw new HttpError(404, "Logistica akkaunt topilmadi", "ACCOUNT_NOT_FOUND");
@@ -87,6 +91,8 @@ function assertShipmentCountryAccess(profile, row) {
 
 function toLogisticaShipmentCard(doc) {
   const row = doc || {};
+  const orderId = Number(row.orderId) || 0;
+  const sellerId = String(row.sellerId || "").trim();
   return {
     id: String(row._id),
     requestCode: String(row.requestCode || ""),
@@ -103,11 +109,85 @@ function toLogisticaShipmentCard(doc) {
     adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt || null,
     paidAt: row.paidAt || null,
     submittedAt: row.submittedAt || row.createdAt || null,
+    orderId,
+    sellerId,
+    itemIndex: Number(row.itemIndex) || 0,
+    groupId: row.groupId ? String(row.groupId) : null,
+    groupKey: buildFulfillmentGroupKey(orderId, sellerId),
+    isGroup: false,
+    siblingIds: [],
   };
+}
+
+/**
+ * Bir checkout (orderId) + bir siller → bitta UI kartochka.
+ * Turli mijoz (turli orderId) → alohida.
+ */
+function groupPendingShipmentCards(cards = []) {
+  const map = new Map();
+
+  for (const card of cards) {
+    if (!card) continue;
+    const key =
+      String(card.groupKey || "").trim() ||
+      buildFulfillmentGroupKey(card.orderId, card.sellerId);
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+    map.get(key).push(card);
+  }
+
+  const grouped = [];
+  for (const units of map.values()) {
+    const sorted = [...units].sort((a, b) => {
+      const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+      const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+      return bTime - aTime;
+    });
+    const primary = sorted[0];
+    const siblingIds = sorted.map((unit) => String(unit.id));
+    const requestCodes = [
+      ...new Set(
+        sorted
+          .map((unit) => String(unit.requestCode || "").trim())
+          .filter(Boolean),
+      ),
+    ];
+
+    grouped.push({
+      ...primary,
+      requestCode:
+        requestCodes.length <= 1
+          ? requestCodes[0] || primary.requestCode
+          : requestCodes.join(", "),
+      productCount: sorted.reduce(
+        (sum, unit) => sum + (Math.max(0, Number(unit.productCount) || 0)),
+        0,
+      ),
+      weightKg: Number(
+        sorted
+          .reduce((sum, unit) => sum + (Math.max(0, Number(unit.weightKg) || 0)), 0)
+          .toFixed(2),
+      ),
+      isGroup: sorted.length > 1,
+      siblingIds,
+      groupKey: primary.groupKey,
+    });
+  }
+
+  grouped.sort((a, b) => {
+    const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+    const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  return grouped;
 }
 
 function toLogisticaShipmentDetail(doc) {
   const row = doc || {};
+  const orderId = Number(row.orderId) || 0;
+  const sellerId = String(row.sellerId || "").trim();
   const products = (Array.isArray(row.products) ? row.products : []).map(
     (product, index) => ({
       id: `${row._id}-${Number(product.unitIndex) || index}`,
@@ -138,10 +218,13 @@ function toLogisticaShipmentDetail(doc) {
     products,
     activeProcessStep: row.processStep || null,
     status: String(row.status || "pending"),
-    sellerId: String(row.sellerId || ""),
+    sellerId,
     sellerCountry: String(row.sellerCountry || ""),
-    orderId: Number(row.orderId) || 0,
+    orderId,
     itemIndex: Number(row.itemIndex) || 0,
+    groupKey: buildFulfillmentGroupKey(orderId, sellerId),
+    siblingIds: [],
+    isGroup: false,
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
@@ -154,6 +237,65 @@ function toLogisticaShipmentDetail(doc) {
     returnedAt: row.returnedAt || null,
     paidAt: row.paidAt || null,
     canMarkPaid: canLogisticaMarkPaid(row),
+  };
+}
+
+async function loadPendingSiblingShipments(shipment) {
+  const orderId = Number(shipment.orderId) || 0;
+  const sellerId = String(shipment.sellerId || "").trim();
+  if (!orderId || !sellerId) return [];
+
+  const rows = await CargoShipment.find({
+    orderId,
+    sellerId,
+    status: "pending",
+    _id: { $ne: shipment._id },
+  })
+    .sort({ submittedAt: -1, createdAt: -1 })
+    .lean();
+
+  return rows;
+}
+
+function mergePendingGroupDetail(primaryRow, siblingRows = []) {
+  const detail = toLogisticaShipmentDetail(primaryRow);
+  if (!siblingRows.length) return detail;
+
+  const allRows = [primaryRow, ...siblingRows];
+  const products = [];
+  const requestCodes = [];
+
+  for (const row of allRows) {
+    const code = String(row.requestCode || "").trim();
+    if (code) requestCodes.push(code);
+    const mapped = toLogisticaShipmentDetail(row).products;
+    for (const product of mapped) {
+      products.push({
+        ...product,
+        id: `${row._id}-${product.id}`,
+      });
+    }
+  }
+
+  const uniqueCodes = [...new Set(requestCodes)];
+  const siblingIds = allRows.map((row) => String(row._id));
+
+  return {
+    ...detail,
+    requestCode:
+      uniqueCodes.length <= 1 ? uniqueCodes[0] || detail.requestCode : uniqueCodes.join(", "),
+    products,
+    productCount: products.reduce(
+      (sum, product) => sum + (Math.max(1, Number(product.quantity) || 1)),
+      0,
+    ),
+    weightKg: Number(
+      allRows
+        .reduce((sum, row) => sum + (Math.max(0, Number(row.weightKg) || 0)), 0)
+        .toFixed(2),
+    ),
+    siblingIds,
+    isGroup: siblingIds.length > 1,
   };
 }
 
@@ -188,14 +330,16 @@ async function listPendingShipmentsForLogistica(logisticaId, query = {}) {
     sellerCountry: { $in: countryValues.length ? countryValues : ["__none__"] },
   };
 
-  const [total, rows] = await Promise.all([
-    CargoShipment.countDocuments(filter),
-    CargoShipment.find(filter)
-      .sort({ submittedAt: -1, createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  // Guruhlash uchun barcha pending; keyin groupKey bo‘yicha paginate
+  const rows = await CargoShipment.find(filter)
+    .sort({ submittedAt: -1, createdAt: -1 })
+    .limit(500)
+    .lean();
+
+  const grouped = groupPendingShipmentCards(rows.map(toLogisticaShipmentCard));
+  const total = grouped.length;
+  const start = (page - 1) * limit;
+  const pageItems = grouped.slice(start, start + limit);
 
   return {
     page,
@@ -203,7 +347,7 @@ async function listPendingShipmentsForLogistica(logisticaId, query = {}) {
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
     logisticaCountry: normalizeCargoCountry(profile.logisticaCountry),
-    shipments: rows.map(toLogisticaShipmentCard),
+    shipments: pageItems,
   };
 }
 
@@ -213,7 +357,8 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
   const status = String(row.status || "");
 
   if (status === "pending") {
-    return { shipment: toLogisticaShipmentDetail(row) };
+    const siblings = await loadPendingSiblingShipments(shipment);
+    return { shipment: mergePendingGroupDetail(row, siblings) };
   }
 
   if (
@@ -237,13 +382,30 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
 
 /**
  * Qabul: pending → accepted; order item → handed_to_cargo.
+ * Bir orderId+sellerId pending siblinglar ham birga qabul qilinadi.
  */
 async function acceptShipmentForLogistica(logisticaId, shipmentIdRaw) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
   const result = await applyAcceptShipment(shipment, logisticaId);
+
+  const siblingRows = await loadPendingSiblingShipments(shipment);
+  let acceptedSiblings = 0;
+  for (const siblingRow of siblingRows) {
+    const sibling = await CargoShipment.findById(siblingRow._id);
+    if (!sibling) continue;
+    try {
+      await applyAcceptShipment(sibling, logisticaId);
+      acceptedSiblings += 1;
+    } catch (error) {
+      if (Number(error?.status) === 409) continue;
+      throw error;
+    }
+  }
+
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
     alreadyAccepted: Boolean(result.alreadyAccepted),
+    acceptedSiblingCount: acceptedSiblings,
   };
 }
 

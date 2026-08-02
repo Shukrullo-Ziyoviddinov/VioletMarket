@@ -20,6 +20,10 @@ function productFallbackTitle() {
 }
 
 function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): ShipmentListItem {
+  const siblingIds = Array.isArray(row.siblingIds)
+    ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
+    : [];
+
   return {
     id: String(row.id || ''),
     requestCode: String(row.requestCode || ''),
@@ -38,6 +42,11 @@ function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): 
       (row.adminCargoFeeConfirmedAt as string | null | undefined) ?? null,
     paidAt: (row.paidAt as string | null | undefined) ?? null,
     submittedAt: row.submittedAt ?? null,
+    orderId: Number(row.orderId) || 0,
+    sellerId: row.sellerId ? String(row.sellerId) : undefined,
+    groupKey: row.groupKey ? String(row.groupKey) : undefined,
+    isGroup: Boolean(row.isGroup) || siblingIds.length > 1,
+    siblingIds,
   };
 }
 
@@ -76,6 +85,11 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
     sellerCountry: row.sellerCountry ? String(row.sellerCountry) : undefined,
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
+    groupKey: row.groupKey ? String(row.groupKey) : undefined,
+    isGroup: Boolean(row.isGroup),
+    siblingIds: Array.isArray(row.siblingIds)
+      ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
+      : [],
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ''),
     uzArrivalComment: String(row.uzArrivalComment || ''),
