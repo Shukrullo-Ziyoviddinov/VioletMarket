@@ -473,11 +473,17 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setCancelTarget(targetOrder);
   };
 
-  const requestMarkUnavailable = (itemIndex) => {
+  const requestMarkUnavailable = (itemIndexes) => {
     if (!activeOrder || cancelling || markingUnavailable) return;
-    const index = Number(itemIndex);
-    if (!Number.isInteger(index) || index < 0) return;
-    setUnavailableTarget({ order: activeOrder, itemIndex: index });
+    const indexes = [
+      ...new Set(
+        (Array.isArray(itemIndexes) ? itemIndexes : [itemIndexes])
+          .map((value) => Number(value))
+          .filter((value) => Number.isInteger(value) && value >= 0),
+      ),
+    ];
+    if (!indexes.length) return;
+    setUnavailableTarget({ order: activeOrder, itemIndexes: indexes });
   };
 
   const handleMarkUnavailable = async () => {
@@ -485,13 +491,21 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     if (!token || !target?.order || markingUnavailable) return;
 
     const orderId = Number(target.order.orderId) || 0;
-    const itemIndex = Number(target.itemIndex);
-    if (!orderId || !Number.isInteger(itemIndex) || itemIndex < 0) return;
+    const itemIndexes = Array.isArray(target.itemIndexes) ? target.itemIndexes : [];
+    if (!orderId || !itemIndexes.length) return;
 
     setMarkingUnavailable(true);
     try {
-      const result = await markUnavailableSellerOrderItem(token, orderId, itemIndex);
-      const refundHint = result?.refundCreated
+      let refundCreated = false;
+      for (const itemIndex of itemIndexes) {
+        const result = await markUnavailableSellerOrderItem(
+          token,
+          orderId,
+          itemIndex,
+        );
+        if (result?.refundCreated) refundCreated = true;
+      }
+      const refundHint = refundCreated
         ? t('orders.unavailable.refundQueued', {
             defaultValue: ' To‘lov qaytarish admin sahifasiga tushdi.',
           })

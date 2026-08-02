@@ -21,9 +21,16 @@ function resolveItemIndexes(order) {
   return [Number(order?.itemIndex) || 0];
 }
 
-function resolveDefaultItemIndex(order) {
+function resolveDefaultItemIndexes(order) {
   const indexes = resolveItemIndexes(order);
-  return indexes.length === 1 ? indexes[0] : null;
+  return indexes.length === 1 ? indexes : [];
+}
+
+function toggleIndex(list, index) {
+  const value = Number(index);
+  if (!Number.isInteger(value) || value < 0) return list;
+  if (list.includes(value)) return list.filter((item) => item !== value);
+  return [...list, value];
 }
 
 export default function AdminOrderDetailSectionContent({
@@ -38,7 +45,7 @@ export default function AdminOrderDetailSectionContent({
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [markingUnavailable, setMarkingUnavailable] = useState(false);
   const [unavailableConfirmOpen, setUnavailableConfirmOpen] = useState(false);
-  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [selectedItemIndexes, setSelectedItemIndexes] = useState([]);
 
   const itemIndexes = resolveItemIndexes(order);
   const isGroup = Boolean(order?.isGroup) || itemIndexes.length > 1;
@@ -55,17 +62,17 @@ export default function AdminOrderDetailSectionContent({
   const unavailableReady = useMemo(() => {
     if (!showUnavailable) return false;
     if (!isGroup) return true;
-    return selectedItemIndex != null && Number.isInteger(Number(selectedItemIndex));
-  }, [showUnavailable, isGroup, selectedItemIndex]);
+    return selectedItemIndexes.length > 0;
+  }, [showUnavailable, isGroup, selectedItemIndexes]);
 
   useEffect(() => {
     if (!visible) {
-      setSelectedItemIndex(null);
+      setSelectedItemIndexes([]);
       setCancelConfirmOpen(false);
       setUnavailableConfirmOpen(false);
       return;
     }
-    setSelectedItemIndex(resolveDefaultItemIndex(order));
+    setSelectedItemIndexes(resolveDefaultItemIndexes(order));
   }, [visible, order]);
 
   if (!visible || !order) return null;
@@ -185,19 +192,30 @@ export default function AdminOrderDetailSectionContent({
 
   const handleMarkUnavailable = async () => {
     if (actionsBusy) return;
-    const itemIndex = isGroup
-      ? Number(selectedItemIndex)
-      : Number(order.itemIndex) || 0;
-    if (!Number.isInteger(itemIndex) || itemIndex < 0) return;
+    const indexes = isGroup
+      ? selectedItemIndexes
+      : [Number(order.itemIndex) || 0];
+    const uniqueIndexes = [
+      ...new Set(
+        indexes
+          .map((value) => Number(value))
+          .filter((value) => Number.isInteger(value) && value >= 0),
+      ),
+    ];
+    if (!uniqueIndexes.length) return;
 
     setMarkingUnavailable(true);
     try {
-      const result = await markUnavailableAdminOrderItem(
-        order.orderId,
-        itemIndex,
-        order.sellerId,
-      );
-      const refundHint = result?.refundCreated
+      let refundCreated = false;
+      for (const itemIndex of uniqueIndexes) {
+        const result = await markUnavailableAdminOrderItem(
+          order.orderId,
+          itemIndex,
+          order.sellerId,
+        );
+        if (result?.refundCreated) refundCreated = true;
+      }
+      const refundHint = refundCreated
         ? ' To‘lov qaytarish sahifasiga tushdi.'
         : '';
       setUnavailableConfirmOpen(false);
@@ -216,8 +234,10 @@ export default function AdminOrderDetailSectionContent({
       <AdminOrderDetailModalContent
         order={order}
         selectableUnavailable={showUnavailable && isGroup}
-        selectedItemIndex={selectedItemIndex}
-        onSelectItemIndex={setSelectedItemIndex}
+        selectedItemIndexes={selectedItemIndexes}
+        onToggleItemIndex={(itemIndex) => {
+          setSelectedItemIndexes((prev) => toggleIndex(prev, itemIndex));
+        }}
       />
       {showConfirm || showCollect ? (
         <div className="seller-order-detail-modal__actions">

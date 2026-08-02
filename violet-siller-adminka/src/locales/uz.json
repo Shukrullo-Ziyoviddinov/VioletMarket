@@ -226,7 +226,7 @@
       "cancelling": "Bekor qilinmoqda...",
       "markUnavailable": "Mavjud emas",
       "markingUnavailable": "Belgilanmoqda...",
-      "selectUnavailableHint": "«Mavjud emas» uchun mahsulotni tanlang"
+      "selectUnavailableHint": "«Mavjud emas» uchun mahsulotlarni tanlang (bir nechta mumkin)"
     },
     "unavailable": {
       "success": "Mahsulot mavjud emas deb belgilandi (omborga qaytarilmadi)",

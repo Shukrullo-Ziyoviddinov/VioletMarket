@@ -226,7 +226,7 @@
       "cancelling": "取消中...",
       "markUnavailable": "无货",
       "markingUnavailable": "处理中...",
-      "selectUnavailableHint": "请选择「无货」的商品"
+      "selectUnavailableHint": "请选择「无货」商品（可多选）"
     },
     "unavailable": {
       "success": "已标记为无货（不会退回库存）",

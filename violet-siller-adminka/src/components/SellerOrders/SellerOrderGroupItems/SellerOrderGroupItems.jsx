@@ -22,12 +22,17 @@ export default function SellerOrderGroupItems({
   order,
   showWhenSingle = false,
   selectable = false,
-  selectedItemIndex = null,
-  onSelectItemIndex,
+  selectedItemIndexes = [],
+  onToggleItemIndex,
 }) {
   const { t, i18n } = useTranslation();
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const selectedSet = new Set(
+    (Array.isArray(selectedItemIndexes) ? selectedItemIndexes : []).map(
+      (value) => Number(value),
+    ),
+  );
 
   if (!items.length) return null;
   if (!isGroup && !showWhenSingle) return null;
@@ -37,7 +42,7 @@ export default function SellerOrderGroupItems({
       {selectable && isGroup ? (
         <p className="seller-order-group-items__hint">
           {t('orders.modal.selectUnavailableHint', {
-            defaultValue: '«Mavjud emas» uchun mahsulotni tanlang',
+            defaultValue: '«Mavjud emas» uchun mahsulotlarni tanlang (bir nechta mumkin)',
           })}
         </p>
       ) : null}
@@ -47,7 +52,7 @@ export default function SellerOrderGroupItems({
         const itemIndex = Number(item.itemIndex);
         const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
         const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
-        const selected = selectable && selectedItemIndex === resolvedIndex;
+        const selected = selectable && selectedSet.has(resolvedIndex);
 
         return (
           <article
@@ -58,20 +63,15 @@ export default function SellerOrderGroupItems({
           >
             <div className="seller-order-group-items__product">
               {selectable ? (
-                <label className="seller-order-group-items__radio">
-                  <input
-                    type="radio"
-                    name="seller-unavailable-item"
-                    checked={selected}
-                    onChange={() => {
-                      /* controlled; toggle onClick da */
-                    }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onSelectItemIndex?.(selected ? null : resolvedIndex);
-                    }}
-                  />
-                </label>
+                <button
+                  type="button"
+                  className={`seller-order-group-items__check${
+                    selected ? ' seller-order-group-items__check--on' : ''
+                  }`}
+                  aria-pressed={selected}
+                  aria-label={title}
+                  onClick={() => onToggleItemIndex?.(resolvedIndex)}
+                />
               ) : null}
               <div className="seller-order-group-items__image">
                 {imageUrl ? <img src={imageUrl} alt={title} /> : <span>—</span>}

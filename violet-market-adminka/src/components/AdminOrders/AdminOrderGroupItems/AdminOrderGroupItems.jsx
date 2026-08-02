@@ -21,11 +21,16 @@ export default function AdminOrderGroupItems({
   order,
   showWhenSingle = false,
   selectable = false,
-  selectedItemIndex = null,
-  onSelectItemIndex,
+  selectedItemIndexes = [],
+  onToggleItemIndex,
 }) {
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const selectedSet = new Set(
+    (Array.isArray(selectedItemIndexes) ? selectedItemIndexes : []).map(
+      (value) => Number(value),
+    ),
+  );
 
   if (!items.length) return null;
   if (!isGroup && !showWhenSingle) return null;
@@ -34,7 +39,7 @@ export default function AdminOrderGroupItems({
     <div className="admin-order-group-items">
       {selectable && isGroup ? (
         <p className="admin-order-group-items__hint">
-          «Mavjud emas» uchun mahsulotni tanlang
+          «Mavjud emas» uchun mahsulotlarni tanlang (bir nechta mumkin)
         </p>
       ) : null}
       {items.map((item, index) => {
@@ -43,7 +48,7 @@ export default function AdminOrderGroupItems({
         const itemIndex = Number(item.itemIndex);
         const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
         const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
-        const selected = selectable && selectedItemIndex === resolvedIndex;
+        const selected = selectable && selectedSet.has(resolvedIndex);
 
         return (
           <article
@@ -54,20 +59,15 @@ export default function AdminOrderGroupItems({
           >
             <div className="admin-order-group-items__product">
               {selectable ? (
-                <label className="admin-order-group-items__radio">
-                  <input
-                    type="radio"
-                    name="admin-unavailable-item"
-                    checked={selected}
-                    onChange={() => {
-                      /* controlled; toggle onClick da */
-                    }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onSelectItemIndex?.(selected ? null : resolvedIndex);
-                    }}
-                  />
-                </label>
+                <button
+                  type="button"
+                  className={`admin-order-group-items__check${
+                    selected ? ' admin-order-group-items__check--on' : ''
+                  }`}
+                  aria-pressed={selected}
+                  aria-label={title}
+                  onClick={() => onToggleItemIndex?.(resolvedIndex)}
+                />
               ) : null}
               <div className="admin-order-group-items__image">
                 {imageUrl ? (

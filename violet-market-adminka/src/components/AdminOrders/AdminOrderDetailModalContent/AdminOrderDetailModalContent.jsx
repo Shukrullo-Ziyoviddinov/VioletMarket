@@ -22,8 +22,8 @@ function optionValue(value) {
 export default function AdminOrderDetailModalContent({
   order,
   selectableUnavailable = false,
-  selectedItemIndex = null,
-  onSelectItemIndex,
+  selectedItemIndexes = [],
+  onToggleItemIndex,
 }) {
   if (!order) {
     return <p className="seller-order-detail-modal-content__empty">Ma’lumot yo‘q</p>;
@@ -44,8 +44,8 @@ export default function AdminOrderDetailModalContent({
         <AdminOrderGroupItems
           order={order}
           selectable={selectableUnavailable}
-          selectedItemIndex={selectedItemIndex}
-          onSelectItemIndex={onSelectItemIndex}
+          selectedItemIndexes={selectedItemIndexes}
+          onToggleItemIndex={onToggleItemIndex}
         />
       ) : (
         <>

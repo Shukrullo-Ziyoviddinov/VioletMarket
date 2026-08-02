@@ -226,7 +226,7 @@
       "cancelling": "Cancelling...",
       "markUnavailable": "Unavailable",
       "markingUnavailable": "Marking...",
-      "selectUnavailableHint": "Select a product for «Unavailable»"
+      "selectUnavailableHint": "Select products for «Unavailable» (multiple allowed)"
     },
     "unavailable": {
       "success": "Product marked unavailable (not returned to stock)",

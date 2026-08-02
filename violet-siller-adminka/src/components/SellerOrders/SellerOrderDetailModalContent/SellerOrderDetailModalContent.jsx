@@ -21,8 +21,8 @@ function optionValue(value) {
 export default function SellerOrderDetailModalContent({
   order,
   selectableUnavailable = false,
-  selectedItemIndex = null,
-  onSelectItemIndex,
+  selectedItemIndexes = [],
+  onToggleItemIndex,
 }) {
   const { t, i18n } = useTranslation();
 
@@ -40,8 +40,8 @@ export default function SellerOrderDetailModalContent({
         <SellerOrderGroupItems
           order={order}
           selectable={selectableUnavailable}
-          selectedItemIndex={selectedItemIndex}
-          onSelectItemIndex={onSelectItemIndex}
+          selectedItemIndexes={selectedItemIndexes}
+          onToggleItemIndex={onToggleItemIndex}
         />
       ) : (
         <div className="seller-order-detail-modal-content__product">

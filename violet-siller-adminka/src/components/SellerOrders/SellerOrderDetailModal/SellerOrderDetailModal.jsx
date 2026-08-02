@@ -4,12 +4,19 @@ import GlobalModal from '../../GlobalModal/GlobalModal';
 import SellerOrderDetailModalContent from '../SellerOrderDetailModalContent/SellerOrderDetailModalContent';
 import './SellerOrderDetailModal.css';
 
-function resolveDefaultItemIndex(order) {
+function resolveDefaultItemIndexes(order) {
   const indexes = Array.isArray(order?.itemIndexes)
     ? order.itemIndexes
     : [Number(order?.itemIndex) || 0];
   const unique = [...new Set(indexes.map((value) => Number(value) || 0))];
-  return unique.length === 1 ? unique[0] : null;
+  return unique.length === 1 ? unique : [];
+}
+
+function toggleIndex(list, index) {
+  const value = Number(index);
+  if (!Number.isInteger(value) || value < 0) return list;
+  if (list.includes(value)) return list.filter((item) => item !== value);
+  return [...list, value];
 }
 
 export default function SellerOrderDetailModal({
@@ -39,14 +46,14 @@ export default function SellerOrderDetailModal({
     (Array.isArray(order?.items) && order.items.length > 1) ||
     (Array.isArray(order?.itemIndexes) && order.itemIndexes.length > 1);
 
-  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [selectedItemIndexes, setSelectedItemIndexes] = useState([]);
 
   useEffect(() => {
     if (!open) {
-      setSelectedItemIndex(null);
+      setSelectedItemIndexes([]);
       return;
     }
-    setSelectedItemIndex(resolveDefaultItemIndex(order));
+    setSelectedItemIndexes(resolveDefaultItemIndexes(order));
   }, [open, order]);
 
   const busy = confirming || collecting || cancelling || markingUnavailable;
@@ -54,16 +61,18 @@ export default function SellerOrderDetailModal({
   const unavailableReady = useMemo(() => {
     if (!showUnavailable) return false;
     if (!isGroup) return true;
-    return selectedItemIndex != null && Number.isInteger(Number(selectedItemIndex));
-  }, [showUnavailable, isGroup, selectedItemIndex]);
+    return selectedItemIndexes.length > 0;
+  }, [showUnavailable, isGroup, selectedItemIndexes]);
 
   return (
     <GlobalModal open={open} title={title} onClose={onClose}>
       <SellerOrderDetailModalContent
         order={order}
         selectableUnavailable={showUnavailable && isGroup}
-        selectedItemIndex={selectedItemIndex}
-        onSelectItemIndex={setSelectedItemIndex}
+        selectedItemIndexes={selectedItemIndexes}
+        onToggleItemIndex={(itemIndex) => {
+          setSelectedItemIndexes((prev) => toggleIndex(prev, itemIndex));
+        }}
       />
       {showActions ? (
         <div className="seller-order-detail-modal__actions">
@@ -88,8 +97,8 @@ export default function SellerOrderDetailModal({
                 onClick={() =>
                   onMarkUnavailable?.(
                     isGroup
-                      ? Number(selectedItemIndex)
-                      : Number(order?.itemIndex) || 0,
+                      ? selectedItemIndexes
+                      : [Number(order?.itemIndex) || 0],
                   )
                 }
               >
