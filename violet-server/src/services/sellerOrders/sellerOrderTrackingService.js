@@ -5,9 +5,12 @@ const {
   normalizeOrderTrackingStatus,
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
-const { releaseToWarehouse } = require("../../inventory");
+const { releaseToWarehouse, discardReserved } = require("../../inventory");
 const { normalizeVariant } = require("../../productManagement/variantStockAdjust");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
+const {
+  createCustomerRefundForSellerUnavailable,
+} = require("../customerRefund/customerRefundService");
 
 /** Bekor qilish mumkin: Tasdiqlash / Yig‘ish / Kuryerga topshirish bosqichlari */
 const CANCELABLE_TRACKING_STATUSES = new Set([
@@ -15,6 +18,26 @@ const CANCELABLE_TRACKING_STATUSES = new Set([
   "seller_confirmed",
   "collected",
 ]);
+
+/**
+ * Mavjud emas — faqat Tasdiqlash / Mahsulotni yig‘ish.
+ * collected+ da yo‘q (kuryer/cargo zanjiriga tegmasin).
+ */
+const UNAVAILABLE_TRACKING_STATUSES = new Set([
+  "accepted",
+  "seller_confirmed",
+]);
+
+/** Item yakunlangan: bekor yoki mavjud emas */
+function isClosedTrackingStatus(status) {
+  return status === "cancelled" || status === "unavailable";
+}
+
+function formatProductCode(productId) {
+  const id = Math.max(0, Math.floor(Number(productId) || 0));
+  if (!id) return "";
+  return `#${String(id).padStart(4, "0")}`;
+}
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -392,10 +415,10 @@ async function cancelSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
   item.trackingHistory.push({ status: "cancelled", at: cancelledAt });
 
-  const allCancelled = (Array.isArray(order.items) ? order.items : []).every(
-    (row) => normalizeOrderTrackingStatus(row?.trackingStatus) === "cancelled",
+  const allClosed = (Array.isArray(order.items) ? order.items : []).every(
+    (row) => isClosedTrackingStatus(normalizeOrderTrackingStatus(row?.trackingStatus)),
   );
-  if (allCancelled && String(order.status) !== "cancelled") {
+  if (allClosed && String(order.status) !== "cancelled") {
     order.status = "cancelled";
   }
 
@@ -411,6 +434,112 @@ async function cancelSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   };
 }
 
+/**
+ * Sillerda mahsulot yo‘q: rezerv discard (ombor qty qaytmaydi), sotilgan deb yozilmaydi.
+ * Cancel dan alohida — releaseToWarehouse chaqirilmaydi.
+ * To‘langan bo‘lsa — admin «Pul qaytarish»ga pending so‘rov.
+ */
+async function markUnavailableSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
+  const normalizedSellerId = cleanSellerId(sellerId);
+  if (!normalizedSellerId) {
+    throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
+  }
+
+  const orderId = parsePositiveInteger(orderIdRaw, "orderId");
+  const itemIndex = parsePositiveInteger(itemIndexRaw, "itemIndex");
+  const order = await Order.findOne({ id: orderId });
+
+  if (!order) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ORDER_NOT_FOUND");
+  }
+
+  const item = order.items?.[itemIndex];
+  if (!item || cleanSellerId(item.sellerId) !== normalizedSellerId) {
+    throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
+  }
+
+  const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
+  if (currentStatus === "unavailable") {
+    return {
+      orderId,
+      itemIndex,
+      trackingStatus: "unavailable",
+      unavailableAt: null,
+      alreadyUnavailable: true,
+      refundCreated: false,
+    };
+  }
+
+  if (currentStatus === "cancelled") {
+    throw new HttpError(
+      409,
+      "Mahsulot allaqachon bekor qilingan",
+      "ORDER_ALREADY_CANCELLED",
+    );
+  }
+
+  if (!UNAVAILABLE_TRACKING_STATUSES.has(currentStatus)) {
+    throw new HttpError(
+      409,
+      "Bu bosqichda «Mavjud emas» qilib bo‘lmaydi",
+      "ORDER_UNAVAILABLE_NOT_ALLOWED",
+    );
+  }
+
+  const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  const productId = Number(item.productId) || 0;
+  if (!productId) {
+    throw new HttpError(409, "Mahsulot ID topilmadi", "PRODUCT_ID_MISSING");
+  }
+
+  // Ombor qty qaytmaydi — faqat reserved ochiladi (checkout da qty allaqachon kamaygan)
+  const variant = variantFromOrderItem(item);
+  await discardReserved(productId, qty, variant);
+
+  const unavailableAt = new Date();
+  item.trackingStatus = "unavailable";
+  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+  item.trackingHistory.push({ status: "unavailable", at: unavailableAt });
+
+  const allClosed = (Array.isArray(order.items) ? order.items : []).every(
+    (row) => isClosedTrackingStatus(normalizeOrderTrackingStatus(row?.trackingStatus)),
+  );
+  if (allClosed && String(order.status) !== "cancelled") {
+    order.status = "cancelled";
+  }
+
+  order.markModified("items");
+  await order.save();
+
+  let refundCreated = false;
+  try {
+    const refund = await createCustomerRefundForSellerUnavailable({
+      order,
+      item,
+      itemIndex,
+      productCode: formatProductCode(productId),
+    });
+    refundCreated = Boolean(refund);
+  } catch (error) {
+    // Inventar/status allaqachon yozilgan — refund xatosi amalni orqaga qaytarmaydi
+    console.error(
+      "[seller-unavailable] refund create failed",
+      orderId,
+      itemIndex,
+      error?.message || error,
+    );
+  }
+
+  return {
+    orderId,
+    itemIndex,
+    trackingStatus: "unavailable",
+    unavailableAt,
+    orderStatus: String(order.status || ""),
+    refundCreated,
+  };
+}
+
 module.exports = {
   confirmSellerOrderItem,
   collectSellerOrderItem,
@@ -420,5 +549,7 @@ module.exports = {
   handoffSellerOrderGroup,
   cancelSellerOrderGroup,
   cancelSellerOrderItem,
+  markUnavailableSellerOrderItem,
   CANCELABLE_TRACKING_STATUSES,
+  UNAVAILABLE_TRACKING_STATUSES,
 };

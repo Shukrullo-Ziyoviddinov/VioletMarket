@@ -29,6 +29,10 @@ router.patch(
   controller.cancelOrderItem,
 );
 router.patch("/admin/orders/:orderId/cancel-group", controller.cancelOrderGroup);
+router.patch(
+  "/admin/orders/:orderId/items/:itemIndex/unavailable",
+  controller.markUnavailableOrderItem,
+);
 router.post(
   "/admin/orders/no-answer/:returnedOrderId/re-handoff",
   controller.reHandoffNoAnswer,

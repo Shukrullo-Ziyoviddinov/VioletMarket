@@ -497,6 +497,15 @@ async function cancelAdminOrderGroup(payload = {}) {
   );
 }
 
+async function markUnavailableAdminOrderItem(payload = {}) {
+  const sellerId = cleanSellerId(payload.sellerId);
+  return sellerOrderTrackingService.markUnavailableSellerOrderItem(
+    sellerId,
+    payload.orderId,
+    payload.itemIndex,
+  );
+}
+
 module.exports = {
   listAdminOrders,
   getAdminOrderCounts,
@@ -509,4 +518,5 @@ module.exports = {
   submitAdminOrderGroupToCargo,
   cancelAdminOrderItem,
   cancelAdminOrderGroup,
+  markUnavailableAdminOrderItem,
 };

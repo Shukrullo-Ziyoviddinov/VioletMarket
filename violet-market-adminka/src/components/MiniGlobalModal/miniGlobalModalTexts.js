@@ -39,6 +39,13 @@ export const MINI_GLOBAL_MODAL_PERMISSION = {
     confirmText: 'Ha',
     cancelText: "Yo'q",
   },
+  markUnavailable: {
+    title: 'Mavjud emas',
+    getMessage: () =>
+      'Mahsulot sillerda yo‘q deb belgilansinmi? Omborga qaytarilmaydi. To‘langan bo‘lsa pul qaytarish sahifasiga tushadi.',
+    confirmText: 'Ha',
+    cancelText: "Yo'q",
+  },
   cargoMarkPaid: {
     title: "To‘landi",
     getMessage: (itemName) =>

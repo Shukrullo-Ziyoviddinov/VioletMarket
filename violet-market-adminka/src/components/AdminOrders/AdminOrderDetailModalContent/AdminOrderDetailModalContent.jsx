@@ -19,7 +19,12 @@ function optionValue(value) {
   return text || '—';
 }
 
-export default function AdminOrderDetailModalContent({ order }) {
+export default function AdminOrderDetailModalContent({
+  order,
+  selectableUnavailable = false,
+  selectedItemIndex = null,
+  onSelectItemIndex,
+}) {
   if (!order) {
     return <p className="seller-order-detail-modal-content__empty">Ma’lumot yo‘q</p>;
   }
@@ -36,7 +41,12 @@ export default function AdminOrderDetailModalContent({ order }) {
       <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
 
       {isGroup ? (
-        <AdminOrderGroupItems order={order} />
+        <AdminOrderGroupItems
+          order={order}
+          selectable={selectableUnavailable}
+          selectedItemIndex={selectedItemIndex}
+          onSelectItemIndex={onSelectItemIndex}
+        />
       ) : (
         <>
           <div className="seller-order-detail-modal-content__product">

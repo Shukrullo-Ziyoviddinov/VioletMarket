@@ -95,6 +95,8 @@ export function getAdminOrderStatusLabel(trackingStatus) {
   if (status === 'collected') return 'Kuryerga topshirish';
   if (status === 'handed_to_courier') return 'Kuryerga topshirilgan';
   if (status === 'no_answer') return 'Javob bermadi';
+  if (status === 'cancelled') return 'Bekor qilingan';
+  if (status === 'unavailable') return 'Mavjud emas';
   return status || '—';
 }
 
@@ -105,5 +107,7 @@ export function getAdminOrderStatusTone(trackingStatus) {
   if (status === 'collected') return 'courier';
   if (status === 'handed_to_courier') return 'handed';
   if (status === 'no_answer') return 'no-answer';
+  if (status === 'cancelled') return 'cancelled';
+  if (status === 'unavailable') return 'unavailable';
   return 'unknown';
 }

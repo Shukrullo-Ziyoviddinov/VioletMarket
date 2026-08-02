@@ -40,7 +40,12 @@ const UZB_CUSTOMER_TRACKING_STEPS = [
 /** UZB_SELLER_COUNTRY — eski importlar uchun alias */
 const UZB_SELLER_COUNTRY = LOCAL_SELLER_COUNTRY;
 
-const TERMINAL_TRACKING_STATUSES = ["cancelled", "returned_to_seller"];
+/** cancelled = omborga qaytarildi; unavailable = sillerda yo‘q (qty qaytmaydi) */
+const TERMINAL_TRACKING_STATUSES = [
+  "cancelled",
+  "unavailable",
+  "returned_to_seller",
+];
 
 /**
  * Order.items.trackingStatus enum — local + foreign + terminal.

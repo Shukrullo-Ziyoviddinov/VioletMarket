@@ -33,6 +33,7 @@ const ITEM_TRACKING_STATUS_SET = new Set([
   "handed_to_courier",
   "delivered",
   "cancelled",
+  "unavailable",
   "returned_to_seller",
 ]);
 
@@ -40,7 +41,13 @@ function normalizeItemTrackingStatus(raw) {
   const status = String(raw || "")
     .trim()
     .toLowerCase();
-  if (status === "cancelled" || status === "returned_to_seller") return status;
+  if (
+    status === "cancelled" ||
+    status === "unavailable" ||
+    status === "returned_to_seller"
+  ) {
+    return status;
+  }
   return ITEM_TRACKING_STATUS_SET.has(status) ? status : "accepted";
 }
 
@@ -61,6 +68,13 @@ function resolveForeignCustomerTrackingStatus(item, shipment) {
 
   if (trackingStatus === "delivered") return "delivered";
   if (trackingStatus === "handed_to_courier") return "handed_to_courier";
+  if (
+    trackingStatus === "cancelled" ||
+    trackingStatus === "unavailable" ||
+    trackingStatus === "returned_to_seller"
+  ) {
+    return trackingStatus;
+  }
 
   const processStep = String(shipment?.processStep || "")
     .trim()

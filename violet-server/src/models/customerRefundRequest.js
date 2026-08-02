@@ -2,15 +2,20 @@ const mongoose = require("mongoose");
 
 /**
  * Mijozga pul qaytarish so‘rovlari.
- * Ombor/qaytarish zanjiridan alohida — faqat to‘langan return|defective.
+ * Ombor/qaytarish zanjiridan alohida:
+ *   - to‘langan return|defective (kuryer/cargo)
+ *   - to‘langan seller_unavailable (siller «Mavjud emas»)
  */
 const customerRefundRequestSchema = new mongoose.Schema(
   {
     returnedOrderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CourierReturnedOrder",
-      required: true,
+      required: false,
+      default: null,
+      // sparse: seller_unavailable da null bo‘lishi mumkin
       unique: true,
+      sparse: true,
       index: true,
     },
     assignmentId: {
@@ -34,7 +39,7 @@ const customerRefundRequestSchema = new mongoose.Schema(
     imageUrl: { type: String, default: "" },
     reasonType: {
       type: String,
-      enum: ["return", "defective"],
+      enum: ["return", "defective", "unavailable"],
       required: true,
       index: true,
     },
@@ -50,12 +55,13 @@ const customerRefundRequestSchema = new mongoose.Schema(
       email: { type: String, default: "" },
     },
     /**
-     * courier — UZB kuryer Ajdaniya.
+     * courier — UZB kuryer qaytarishi.
      * cargo — xorij logistica sillerga qaytargan.
+     * seller_unavailable — siller/admin «Mavjud emas» (ombor qty qaytmaydi).
      */
     source: {
       type: String,
-      enum: ["courier", "cargo"],
+      enum: ["courier", "cargo", "seller_unavailable"],
       default: "courier",
       index: true,
     },

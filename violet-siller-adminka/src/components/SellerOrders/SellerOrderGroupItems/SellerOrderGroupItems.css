@@ -5,6 +5,13 @@
   margin: 0 0 16px;
 }
 
+.seller-order-group-items__hint {
+  margin: 0;
+  color: #6b5b7a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .seller-order-group-items__card {
   display: flex;
   flex-direction: column;
@@ -13,6 +20,26 @@
   border: 1px solid #ece7f3;
   border-radius: 12px;
   background: #fbfaff;
+}
+
+.seller-order-group-items__card--selected {
+  border-color: #c4a4ef;
+  background: #f6f0ff;
+}
+
+.seller-order-group-items__radio {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 22px;
+  cursor: pointer;
+}
+
+.seller-order-group-items__radio input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6f35bc;
+  cursor: pointer;
 }
 
 .seller-order-group-items__product {

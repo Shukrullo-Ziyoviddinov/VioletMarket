@@ -18,7 +18,12 @@ function optionValue(value) {
   return text || '—';
 }
 
-export default function SellerOrderDetailModalContent({ order }) {
+export default function SellerOrderDetailModalContent({
+  order,
+  selectableUnavailable = false,
+  selectedItemIndex = null,
+  onSelectItemIndex,
+}) {
   const { t, i18n } = useTranslation();
 
   if (!order) {
@@ -32,7 +37,12 @@ export default function SellerOrderDetailModalContent({ order }) {
   return (
     <div className="seller-order-detail-modal-content">
       {isGroup ? (
-        <SellerOrderGroupItems order={order} />
+        <SellerOrderGroupItems
+          order={order}
+          selectable={selectableUnavailable}
+          selectedItemIndex={selectedItemIndex}
+          onSelectItemIndex={onSelectItemIndex}
+        />
       ) : (
         <div className="seller-order-detail-modal-content__product">
           <div className="seller-order-detail-modal-content__image">

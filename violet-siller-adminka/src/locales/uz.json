@@ -223,7 +223,15 @@
       "confirmCollected": "Mahsulot yig'ilganligini tasdiqlash",
       "collecting": "Tasdiqlanmoqda...",
       "cancelOrder": "Buyurtmani bekor qilish",
-      "cancelling": "Bekor qilinmoqda..."
+      "cancelling": "Bekor qilinmoqda...",
+      "markUnavailable": "Mavjud emas",
+      "markingUnavailable": "Belgilanmoqda...",
+      "selectUnavailableHint": "«Mavjud emas» uchun mahsulotni tanlang"
+    },
+    "unavailable": {
+      "success": "Mahsulot mavjud emas deb belgilandi (omborga qaytarilmadi)",
+      "refundQueued": " To‘lov qaytarish admin sahifasiga tushdi.",
+      "error": "Mavjud emas deb belgilab bo‘lmadi"
     }
   },
   "marketInfo": {
@@ -513,6 +521,12 @@
     "cancelOrder": {
       "title": "Buyurtmani bekor qilish",
       "message": "Chindan ham buyurtmani bekor qilmoqchimisiz? (Mahsulot qayta omborga qaytariladi)",
+      "confirm": "Ha",
+      "cancel": "Yo'q"
+    },
+    "markUnavailable": {
+      "title": "Mavjud emas",
+      "message": "Mahsulot sillerda yo‘q deb belgilansinmi? Omborga qaytarilmaydi. To‘langan bo‘lsa pul qaytarish admin sahifasiga tushadi.",
       "confirm": "Ha",
       "cancel": "Yo'q"
     }

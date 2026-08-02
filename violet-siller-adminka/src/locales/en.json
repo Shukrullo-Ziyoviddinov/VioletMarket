@@ -223,7 +223,15 @@
       "confirmCollected": "Confirm product collection",
       "collecting": "Confirming...",
       "cancelOrder": "Cancel order",
-      "cancelling": "Cancelling..."
+      "cancelling": "Cancelling...",
+      "markUnavailable": "Unavailable",
+      "markingUnavailable": "Marking...",
+      "selectUnavailableHint": "Select a product for «Unavailable»"
+    },
+    "unavailable": {
+      "success": "Product marked unavailable (not returned to stock)",
+      "refundQueued": " Refund queued for admin.",
+      "error": "Could not mark as unavailable"
     }
   },
   "marketInfo": {
@@ -513,6 +521,12 @@
     "cancelOrder": {
       "title": "Cancel order",
       "message": "Are you sure you want to cancel the order? (The product will be returned to stock)",
+      "confirm": "Yes",
+      "cancel": "No"
+    },
+    "markUnavailable": {
+      "title": "Unavailable",
+      "message": "Mark this product as unavailable at the seller? It will not return to stock. If paid, a refund request goes to admin.",
       "confirm": "Yes",
       "cancel": "No"
     }

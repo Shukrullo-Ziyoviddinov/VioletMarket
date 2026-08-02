@@ -34,7 +34,19 @@ function formatDateTime(value) {
 
 export default function CustomerRefundCard({ item, confirming = false, onConfirm }) {
   const isPending = item?.status === 'pending';
-  const reasonLabel = item?.reasonType === 'defective' ? 'Yaroqsiz' : 'Qaytarilgan';
+  const reasonLabel =
+    item?.reasonType === 'defective'
+      ? 'Yaroqsiz'
+      : item?.reasonType === 'unavailable'
+        ? 'Mavjud emas'
+        : 'Qaytarilgan';
+  const reasonBadgeClass =
+    item?.reasonType === 'defective'
+      ? 'defective'
+      : item?.reasonType === 'unavailable'
+        ? 'unavailable'
+        : 'return';
+  const source = String(item?.source || 'courier').trim().toLowerCase();
 
   return (
     <article className="customer-refund-card">
@@ -58,9 +70,7 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
           </div>
           <div className="customer-refund-card__badges">
             <span
-              className={`customer-refund-card__badge customer-refund-card__badge--${
-                item?.reasonType === 'defective' ? 'defective' : 'return'
-              }`}
+              className={`customer-refund-card__badge customer-refund-card__badge--${reasonBadgeClass}`}
             >
               {reasonLabel}
             </span>
@@ -88,7 +98,7 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
           </div>
         </div>
 
-        {item?.source === 'cargo' ? (
+        {source === 'cargo' ? (
           <div className="customer-refund-card__cargo">
             <div>
               <span className="customer-refund-card__label">Manba</span>
@@ -97,6 +107,13 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
             <div>
               <span className="customer-refund-card__label">Cargo davlati</span>
               <strong>{item?.cargoCountryLabel || item?.cargoCountry || '—'}</strong>
+            </div>
+          </div>
+        ) : source === 'seller_unavailable' ? (
+          <div className="customer-refund-card__meta customer-refund-card__meta--courier">
+            <div>
+              <span className="customer-refund-card__label">Manba</span>
+              <strong>Siller — mavjud emas</strong>
             </div>
           </div>
         ) : (
@@ -121,7 +138,9 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
             <p className="customer-refund-card__phone">{item?.customer?.phone || '—'}</p>
           </div>
           <div>
-            <span className="customer-refund-card__label">Qaytarilgan</span>
+            <span className="customer-refund-card__label">
+              {source === 'seller_unavailable' ? 'Belgilandi' : 'Qaytarilgan'}
+            </span>
             <strong>{formatDateTime(item?.returnedAt)}</strong>
           </div>
           {!isPending ? (

@@ -6,6 +6,14 @@
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid #eee9f3;
+  flex-wrap: wrap;
+}
+
+.seller-order-detail-modal__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .seller-order-detail-modal__cancel-order {
@@ -27,6 +35,27 @@
 .seller-order-detail-modal__cancel-order:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.seller-order-detail-modal__unavailable {
+  min-width: 128px;
+  padding: 10px 16px;
+  border: 1px solid #fbbf24;
+  border-radius: 9px;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seller-order-detail-modal__unavailable:hover:not(:disabled) {
+  background: #fef3c7;
+}
+
+.seller-order-detail-modal__unavailable:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .seller-order-detail-modal__confirm {

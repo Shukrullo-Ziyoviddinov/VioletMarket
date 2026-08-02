@@ -18,7 +18,13 @@ function resolveItems(order) {
   return order ? [order] : [];
 }
 
-export default function SellerOrderGroupItems({ order, showWhenSingle = false }) {
+export default function SellerOrderGroupItems({
+  order,
+  showWhenSingle = false,
+  selectable = false,
+  selectedItemIndex = null,
+  onSelectItemIndex,
+}) {
   const { t, i18n } = useTranslation();
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
@@ -28,14 +34,39 @@ export default function SellerOrderGroupItems({ order, showWhenSingle = false })
 
   return (
     <div className="seller-order-group-items">
+      {selectable && isGroup ? (
+        <p className="seller-order-group-items__hint">
+          {t('orders.modal.selectUnavailableHint', {
+            defaultValue: '«Mavjud emas» uchun mahsulotni tanlang',
+          })}
+        </p>
+      ) : null}
       {items.map((item, index) => {
         const title = getSellerOrderProductTitle(item, i18n.language);
         const imageUrl = resolveAssetUrl(item.imageUrl);
-        const key = item.id || `${item.itemIndex}-${item.unitIndex}-${index}`;
+        const itemIndex = Number(item.itemIndex);
+        const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
+        const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
+        const selected = selectable && selectedItemIndex === resolvedIndex;
 
         return (
-          <article key={key} className="seller-order-group-items__card">
+          <article
+            key={key}
+            className={`seller-order-group-items__card${
+              selected ? ' seller-order-group-items__card--selected' : ''
+            }`}
+          >
             <div className="seller-order-group-items__product">
+              {selectable ? (
+                <label className="seller-order-group-items__radio">
+                  <input
+                    type="radio"
+                    name="seller-unavailable-item"
+                    checked={selected}
+                    onChange={() => onSelectItemIndex?.(resolvedIndex)}
+                  />
+                </label>
+              ) : null}
               <div className="seller-order-group-items__image">
                 {imageUrl ? <img src={imageUrl} alt={title} /> : <span>—</span>}
               </div>

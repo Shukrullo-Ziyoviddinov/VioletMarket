@@ -93,6 +93,15 @@ const cancelOrderGroup = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const markUnavailableOrderItem = asyncHandler(async (req, res) => {
+  const data = await sellerOrderTrackingService.markUnavailableSellerOrderItem(
+    req.sellerShopId,
+    req.params.orderId,
+    req.params.itemIndex,
+  );
+  res.json({ ok: true, data });
+});
+
 const reHandoffNoAnswer = asyncHandler(async (req, res) => {
   const data = await noAnswerOrderActionsService.reHandoffNoAnswerOrder(
     req.params.returnedOrderId,
@@ -156,6 +165,7 @@ module.exports = {
   handoffOrderGroup,
   cancelOrderItem,
   cancelOrderGroup,
+  markUnavailableOrderItem,
   reHandoffNoAnswer,
   reactivateNoAnswer,
   deliverNoAnswer,

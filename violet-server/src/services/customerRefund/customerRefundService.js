@@ -4,11 +4,13 @@
  * Yaratiladi:
  *   - kuryer sotuvchiga topshirgach (return|defective + isPaid)
  *   - cargo logistica «Ha» (defective + isPaid)
+ *   - siller/admin «Mavjud emas» (unavailable + isPaid) — returnedOrderId yo‘q
  * Tasdiqlanadi: asosiy admin «Mijozga summa qaytarildi».
  */
 
 const { CustomerRefundRequest } = require("../../models/customerRefundRequest");
 const { SellerAccount } = require("../../models/sellerAccount");
+const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
   SELLER_RETURNED_LIST_REASON_TYPES,
@@ -22,6 +24,10 @@ const {
   normalizeCargoCountry,
   cargoCountryDisplayLabel,
 } = require("../../utils/cargoCountryNormalize");
+const {
+  isOrderPaid,
+  resolvePeriodKeys,
+} = require("../deliveryOrders/courierReturnOrderService");
 
 const REFUND_STATUSES = new Set(["pending", "refunded", "all"]);
 const REFUNDABLE_REASON_TYPES = new Set(SELLER_RETURNED_LIST_REASON_TYPES);
@@ -159,6 +165,106 @@ async function createCustomerRefundRequestIfNeeded(returnedDoc) {
     {
       $setOnInsert: payload,
     },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
+  );
+
+  return saved;
+}
+
+/**
+ * Siller «Mavjud emas» — to‘langan (Payme/Click) bo‘lsa pending refund.
+ * Cancel / return zanjiriga tegmaydi. Idempotent: orderId+itemIndex+unitIndex.
+ */
+async function createCustomerRefundForSellerUnavailable({
+  order,
+  item,
+  itemIndex,
+  productCode = "",
+} = {}) {
+  if (!order || !item) return null;
+  if (!isOrderPaid(order)) return null;
+
+  const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  const amount = Math.max(
+    0,
+    Number(item.lineTotal) ||
+      Number(item.price) * qty ||
+      0,
+  );
+  if (amount <= 0) return null;
+
+  const orderId = Number(order.id) || 0;
+  const index = Number(itemIndex);
+  if (!orderId || !Number.isInteger(index) || index < 0) return null;
+
+  const unitIndex = 0;
+  const now = new Date();
+  const periods = resolvePeriodKeys(now);
+
+  let customer = {
+    firstName: "",
+    lastName: "",
+    phone: "",
+  };
+  if (order.userId) {
+    const user = await User.findById(order.userId)
+      .select("firstName lastName phone")
+      .lean();
+    if (user) {
+      customer = {
+        firstName: String(user.firstName || ""),
+        lastName: String(user.lastName || ""),
+        phone: String(user.phone || ""),
+      };
+    }
+  }
+
+  const titleRaw = item.title;
+  const title =
+    titleRaw && typeof titleRaw === "object"
+      ? {
+          uz: String(titleRaw.uz || ""),
+          ru: String(titleRaw.ru || ""),
+        }
+      : {
+          uz: String(titleRaw || ""),
+          ru: "",
+        };
+
+  const payload = {
+    returnedOrderId: null,
+    assignmentId: null,
+    shipmentId: null,
+    source: "seller_unavailable",
+    cargoCountry: "",
+    orderId,
+    itemIndex: index,
+    unitIndex,
+    productId: Number(item.productId) || 0,
+    productCode: String(productCode || item.productCode || ""),
+    sellerId: String(item.sellerId || "").trim(),
+    title,
+    amount,
+    quantity: qty,
+    imageUrl: String(item.image || item.imageUrl || ""),
+    reasonType: "unavailable",
+    customer,
+    courier: {
+      firstName: "",
+      lastName: "",
+      phone: "",
+      email: "",
+    },
+    status: "pending",
+    returnedAt: now,
+    dateKey: periods.dateKey,
+    weekKey: periods.weekKey,
+    monthKey: periods.monthKey,
+  };
+
+  const saved = await CustomerRefundRequest.findOneAndUpdate(
+    { orderId, itemIndex: index, unitIndex },
+    { $setOnInsert: payload },
     { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
 
@@ -341,6 +447,7 @@ async function markCustomerRefundRefunded(id, adminId = "") {
 
 module.exports = {
   createCustomerRefundRequestIfNeeded,
+  createCustomerRefundForSellerUnavailable,
   loadRefundSummaryByReturnedOrderIds,
   listAdminCustomerRefundRequests,
   markCustomerRefundRefunded,

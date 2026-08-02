@@ -5,7 +5,7 @@
  *   reserveOnCheckout   → checkout (−qty, +reserved)
  *   keepReserved        → Javob bermadi (Product o‘zgarmaydi)
  *   releaseToWarehouse  → oddiy qaytarish / Qayta aktiv (+qty, −reserved)
- *   discardReserved     → Yaroqsiz (−reserved, ombor/algoritmga tegmaydi)
+ *   discardReserved     → Yaroqsiz / Mavjud emas (−reserved, ombor qty qaytmaydi)
  *   reReserveForCourier → qayta kuryerga (release aksini)
  *
  * Variant ± : variantStockAdjust.js
@@ -137,7 +137,7 @@ async function keepReserved(productIdRaw, qtyRaw = 1, variantRaw = {}) {
 }
 
 /**
- * Yaroqsiz: rezervni yechadi, ombor quantity / variant qaytmaydi.
+ * Yaroqsiz / Mavjud emas: rezervni yechadi, ombor quantity / variant qaytmaydi.
  * Sotildi / ranking chaqirilmaydi — shunchaki yo‘qolgan rezerv.
  */
 async function discardReserved(productIdRaw, qtyRaw = 1, _variantRaw = {}) {

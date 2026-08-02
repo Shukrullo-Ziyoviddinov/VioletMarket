@@ -29,6 +29,7 @@ function MiniGlobalModalConfirm({
     'courierHandoff',
     'cargoHandoff',
     'cancelOrder',
+    'markUnavailable',
   ].includes(permissionKey)
     ? permissionKey
     : 'default';

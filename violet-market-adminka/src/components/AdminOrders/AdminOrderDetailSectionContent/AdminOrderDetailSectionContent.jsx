@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { message } from 'antd';
 import {
   cancelAdminOrderGroup,
@@ -7,6 +7,7 @@ import {
   collectAdminOrderItem,
   confirmAdminOrderGroup,
   confirmAdminOrderItem,
+  markUnavailableAdminOrderItem,
 } from '../../../api/adminOrdersApi';
 import { useAdminModal } from '../../../context/AdminModalContext';
 import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
@@ -20,6 +21,11 @@ function resolveItemIndexes(order) {
   return [Number(order?.itemIndex) || 0];
 }
 
+function resolveDefaultItemIndex(order) {
+  const indexes = resolveItemIndexes(order);
+  return indexes.length === 1 ? indexes[0] : null;
+}
+
 export default function AdminOrderDetailSectionContent({
   visible,
   order,
@@ -30,19 +36,39 @@ export default function AdminOrderDetailSectionContent({
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
-
-  if (!visible || !order) return null;
+  const [markingUnavailable, setMarkingUnavailable] = useState(false);
+  const [unavailableConfirmOpen, setUnavailableConfirmOpen] = useState(false);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
 
   const itemIndexes = resolveItemIndexes(order);
-  const isGroup = Boolean(order.isGroup) || itemIndexes.length > 1;
+  const isGroup = Boolean(order?.isGroup) || itemIndexes.length > 1;
   const showConfirm =
     mode === 'confirm' &&
-    (isGroup || order.trackingStatus === 'accepted');
+    (isGroup || order?.trackingStatus === 'accepted');
   const showCollect =
     mode === 'collect' &&
-    (isGroup || order.trackingStatus === 'seller_confirmed');
+    (isGroup || order?.trackingStatus === 'seller_confirmed');
   const showCancelOrder = showConfirm || showCollect;
-  const actionsBusy = busy || cancelling;
+  const showUnavailable = showConfirm || showCollect;
+  const actionsBusy = busy || cancelling || markingUnavailable;
+
+  const unavailableReady = useMemo(() => {
+    if (!showUnavailable) return false;
+    if (!isGroup) return true;
+    return selectedItemIndex != null && Number.isInteger(Number(selectedItemIndex));
+  }, [showUnavailable, isGroup, selectedItemIndex]);
+
+  useEffect(() => {
+    if (!visible) {
+      setSelectedItemIndex(null);
+      setCancelConfirmOpen(false);
+      setUnavailableConfirmOpen(false);
+      return;
+    }
+    setSelectedItemIndex(resolveDefaultItemIndex(order));
+  }, [visible, order]);
+
+  if (!visible || !order) return null;
 
   const finishSuccess = (text) => {
     message.success(text);
@@ -157,23 +183,66 @@ export default function AdminOrderDetailSectionContent({
     }
   };
 
+  const handleMarkUnavailable = async () => {
+    if (actionsBusy) return;
+    const itemIndex = isGroup
+      ? Number(selectedItemIndex)
+      : Number(order.itemIndex) || 0;
+    if (!Number.isInteger(itemIndex) || itemIndex < 0) return;
+
+    setMarkingUnavailable(true);
+    try {
+      const result = await markUnavailableAdminOrderItem(
+        order.orderId,
+        itemIndex,
+        order.sellerId,
+      );
+      const refundHint = result?.refundCreated
+        ? ' To‘lov qaytarish sahifasiga tushdi.'
+        : '';
+      setUnavailableConfirmOpen(false);
+      finishSuccess(
+        `Mahsulot mavjud emas deb belgilandi (omborga qaytarilmadi).${refundHint}`,
+      );
+    } catch (error) {
+      message.error(error?.message || 'Mavjud emas deb belgilab bo‘lmadi');
+    } finally {
+      setMarkingUnavailable(false);
+    }
+  };
+
   return (
     <div>
-      <AdminOrderDetailModalContent order={order} />
+      <AdminOrderDetailModalContent
+        order={order}
+        selectableUnavailable={showUnavailable && isGroup}
+        selectedItemIndex={selectedItemIndex}
+        onSelectItemIndex={setSelectedItemIndex}
+      />
       {showConfirm || showCollect ? (
         <div className="seller-order-detail-modal__actions">
-          {showCancelOrder ? (
-            <button
-              type="button"
-              className="seller-order-detail-modal__cancel-order"
-              disabled={actionsBusy}
-              onClick={() => setCancelConfirmOpen(true)}
-            >
-              Buyurtmani bekor qilish
-            </button>
-          ) : (
-            <span />
-          )}
+          <div className="seller-order-detail-modal__secondary">
+            {showCancelOrder ? (
+              <button
+                type="button"
+                className="seller-order-detail-modal__cancel-order"
+                disabled={actionsBusy}
+                onClick={() => setCancelConfirmOpen(true)}
+              >
+                Buyurtmani bekor qilish
+              </button>
+            ) : null}
+            {showUnavailable ? (
+              <button
+                type="button"
+                className="seller-order-detail-modal__unavailable"
+                disabled={actionsBusy || !unavailableReady}
+                onClick={() => setUnavailableConfirmOpen(true)}
+              >
+                {markingUnavailable ? 'Belgilanmoqda...' : 'Mavjud emas'}
+              </button>
+            ) : null}
+          </div>
           {showConfirm ? (
             <button
               type="button"
@@ -213,6 +282,17 @@ export default function AdminOrderDetailSectionContent({
         onConfirm={handleCancelOrder}
         onCancel={() => {
           if (!cancelling) setCancelConfirmOpen(false);
+        }}
+      />
+
+      <MiniGlobalModal
+        open={unavailableConfirmOpen}
+        mode="confirm"
+        permissionKey="markUnavailable"
+        loading={markingUnavailable}
+        onConfirm={handleMarkUnavailable}
+        onCancel={() => {
+          if (!markingUnavailable) setUnavailableConfirmOpen(false);
         }}
       />
     </div>

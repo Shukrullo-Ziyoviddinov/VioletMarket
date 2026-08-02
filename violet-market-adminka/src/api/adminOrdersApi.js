@@ -216,6 +216,21 @@ export function cancelAdminOrderGroup(orderId, sellerId, body = {}) {
   return patchOrderGroup('cancel', orderId, sellerId, body);
 }
 
+export async function markUnavailableAdminOrderItem(orderId, itemIndex, sellerId) {
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/orders/${Number(orderId)}/items/${Number(itemIndex)}/unavailable`,
+    ),
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sellerId: String(sellerId || '') }),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 async function postNoAnswerAction(returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

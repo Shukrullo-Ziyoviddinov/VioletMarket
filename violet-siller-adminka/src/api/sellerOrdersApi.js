@@ -314,6 +314,20 @@ export async function cancelSellerOrderGroup(token, orderId, body = {}) {
   return payload?.data || {};
 }
 
+export async function markUnavailableSellerOrderItem(token, orderId, itemIndex) {
+  const res = await fetch(
+    apiUrl(
+      `/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/unavailable`,
+    ),
+    {
+      method: 'PATCH',
+      headers: authHeaders(token),
+    },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || {};
+}
+
 async function postNoAnswerAction(token, returnedOrderId, action) {
   const res = await fetch(
     apiUrl(

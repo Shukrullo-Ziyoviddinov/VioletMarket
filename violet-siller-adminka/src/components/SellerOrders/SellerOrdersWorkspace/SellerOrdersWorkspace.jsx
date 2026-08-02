@@ -13,6 +13,7 @@ import {
   fetchSellerOrders,
   handoffSellerOrderGroup,
   handoffSellerOrderItem,
+  markUnavailableSellerOrderItem,
   reactivateSellerNoAnswerOrder,
   reHandoffSellerNoAnswerOrder,
   submitSellerOrderGroupToCargo,
@@ -91,6 +92,8 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   const [submittingCargo, setSubmittingCargo] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null);
+  const [markingUnavailable, setMarkingUnavailable] = useState(false);
+  const [unavailableTarget, setUnavailableTarget] = useState(null);
   const [cargoContactsLoading, setCargoContactsLoading] = useState(false);
   const [cargoContactsError, setCargoContactsError] = useState('');
   const [cargoContacts, setCargoContacts] = useState([]);
@@ -466,8 +469,51 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
   };
 
   const requestCancelOrder = (targetOrder) => {
-    if (!targetOrder || cancelling || handingOff || submittingCargo) return;
+    if (!targetOrder || cancelling || markingUnavailable || handingOff || submittingCargo) return;
     setCancelTarget(targetOrder);
+  };
+
+  const requestMarkUnavailable = (itemIndex) => {
+    if (!activeOrder || cancelling || markingUnavailable) return;
+    const index = Number(itemIndex);
+    if (!Number.isInteger(index) || index < 0) return;
+    setUnavailableTarget({ order: activeOrder, itemIndex: index });
+  };
+
+  const handleMarkUnavailable = async () => {
+    const target = unavailableTarget;
+    if (!token || !target?.order || markingUnavailable) return;
+
+    const orderId = Number(target.order.orderId) || 0;
+    const itemIndex = Number(target.itemIndex);
+    if (!orderId || !Number.isInteger(itemIndex) || itemIndex < 0) return;
+
+    setMarkingUnavailable(true);
+    try {
+      const result = await markUnavailableSellerOrderItem(token, orderId, itemIndex);
+      const refundHint = result?.refundCreated
+        ? t('orders.unavailable.refundQueued', {
+            defaultValue: ' To‘lov qaytarish admin sahifasiga tushdi.',
+          })
+        : '';
+      message.success(
+        `${t('orders.unavailable.success', {
+          defaultValue: 'Mahsulot mavjud emas deb belgilandi (omborga qaytarilmadi)',
+        })}${refundHint}`,
+      );
+      setUnavailableTarget(null);
+      setActiveOrder(null);
+      await loadOrders();
+    } catch (error) {
+      message.error(
+        error?.message ||
+          t('orders.unavailable.error', {
+            defaultValue: 'Mavjud emas deb belgilab bo‘lmadi',
+          }),
+      );
+    } finally {
+      setMarkingUnavailable(false);
+    }
   };
 
   const handleNoAnswerReHandoff = async (order) => {
@@ -608,6 +654,9 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
         showCancelOrder={filter === 'confirmation' || filter === 'collection'}
         cancelling={cancelling}
         onCancelOrder={() => requestCancelOrder(activeOrder)}
+        showUnavailable={filter === 'confirmation' || filter === 'collection'}
+        markingUnavailable={markingUnavailable}
+        onMarkUnavailable={requestMarkUnavailable}
       />
 
       <MiniGlobalModal
@@ -664,6 +713,16 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
           if (!cancelling) setCancelTarget(null);
         }}
         onConfirm={handleCancelOrder}
+      />
+
+      <MiniGlobalModal
+        open={Boolean(unavailableTarget)}
+        permissionKey="markUnavailable"
+        loading={markingUnavailable}
+        onClose={() => {
+          if (!markingUnavailable) setUnavailableTarget(null);
+        }}
+        onConfirm={handleMarkUnavailable}
       />
     </div>
   );

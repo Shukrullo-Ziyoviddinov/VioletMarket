@@ -17,7 +17,13 @@ function resolveItems(order) {
   return order ? [order] : [];
 }
 
-export default function AdminOrderGroupItems({ order, showWhenSingle = false }) {
+export default function AdminOrderGroupItems({
+  order,
+  showWhenSingle = false,
+  selectable = false,
+  selectedItemIndex = null,
+  onSelectItemIndex,
+}) {
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
 
@@ -26,14 +32,37 @@ export default function AdminOrderGroupItems({ order, showWhenSingle = false }) 
 
   return (
     <div className="admin-order-group-items">
+      {selectable && isGroup ? (
+        <p className="admin-order-group-items__hint">
+          «Mavjud emas» uchun mahsulotni tanlang
+        </p>
+      ) : null}
       {items.map((item, index) => {
         const title = getAdminOrderProductTitle(item);
         const imageUrl = resolveProductImageUrl(item.imageUrl);
-        const key = item.id || `${item.itemIndex}-${item.unitIndex}-${index}`;
+        const itemIndex = Number(item.itemIndex);
+        const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
+        const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
+        const selected = selectable && selectedItemIndex === resolvedIndex;
 
         return (
-          <article key={key} className="admin-order-group-items__card">
+          <article
+            key={key}
+            className={`admin-order-group-items__card${
+              selected ? ' admin-order-group-items__card--selected' : ''
+            }`}
+          >
             <div className="admin-order-group-items__product">
+              {selectable ? (
+                <label className="admin-order-group-items__radio">
+                  <input
+                    type="radio"
+                    name="admin-unavailable-item"
+                    checked={selected}
+                    onChange={() => onSelectItemIndex?.(resolvedIndex)}
+                  />
+                </label>
+              ) : null}
               <div className="admin-order-group-items__image">
                 {imageUrl ? (
                   <img

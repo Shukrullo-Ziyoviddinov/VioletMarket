@@ -223,7 +223,15 @@
       "confirmCollected": "确认商品已备好",
       "collecting": "确认中...",
       "cancelOrder": "取消订单",
-      "cancelling": "取消中..."
+      "cancelling": "取消中...",
+      "markUnavailable": "无货",
+      "markingUnavailable": "处理中...",
+      "selectUnavailableHint": "请选择「无货」的商品"
+    },
+    "unavailable": {
+      "success": "已标记为无货（不会退回库存）",
+      "refundQueued": " 退款申请已进入管理员页面。",
+      "error": "无法标记为无货"
     }
   },
   "marketInfo": {
@@ -513,6 +521,12 @@
     "cancelOrder": {
       "title": "取消订单",
       "message": "确定要取消订单吗？（商品将退回库存）",
+      "confirm": "是",
+      "cancel": "否"
+    },
+    "markUnavailable": {
+      "title": "无货",
+      "message": "将该商品标记为卖家无货？不会退回库存。若已付款，退款申请将进入管理员页面。",
       "confirm": "是",
       "cancel": "否"
     }
