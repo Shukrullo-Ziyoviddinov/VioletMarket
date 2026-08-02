@@ -63,7 +63,13 @@ export default function SellerOrderGroupItems({
                     type="radio"
                     name="seller-unavailable-item"
                     checked={selected}
-                    onChange={() => onSelectItemIndex?.(resolvedIndex)}
+                    onChange={() => {
+                      /* controlled; toggle onClick da */
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSelectItemIndex?.(selected ? null : resolvedIndex);
+                    }}
                   />
                 </label>
               ) : null}

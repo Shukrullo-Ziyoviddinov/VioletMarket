@@ -59,7 +59,13 @@ export default function AdminOrderGroupItems({
                     type="radio"
                     name="admin-unavailable-item"
                     checked={selected}
-                    onChange={() => onSelectItemIndex?.(resolvedIndex)}
+                    onChange={() => {
+                      /* controlled; toggle onClick da */
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSelectItemIndex?.(selected ? null : resolvedIndex);
+                    }}
                   />
                 </label>
               ) : null}
