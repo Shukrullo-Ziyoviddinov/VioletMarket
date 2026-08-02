@@ -85,6 +85,26 @@ export type DeliveryAssignmentStatus =
   | 'arrived_return_at_seller'
   | 'returned';
 
+export type DeliveryAcceptedOrderUnit = {
+  id: string;
+  itemIndex: number;
+  unitIndex: number;
+  productId: number;
+  productCode: string;
+  barcode: string;
+  title: { uz: string; ru: string };
+  amount: number;
+  imageUrl?: string;
+  color?: string;
+  size?: string;
+  storage?: string;
+  model?: string;
+  status: DeliveryAssignmentStatus | string;
+  sellerId?: string;
+  pickupKind?: 'seller' | 'warehouse';
+  sellerPickup?: DeliverySellerPickup | null;
+};
+
 export type DeliveryAcceptedOrder = {
   id: string;
   orderId: number;
@@ -127,6 +147,11 @@ export type DeliveryAcceptedOrder = {
   paymentMethod?: string;
   paymentStatus?: string;
   orderedAt?: string | null;
+  /** Bir orderId guruhi (2+ dona) */
+  isGroup?: boolean;
+  productCodes?: string[];
+  units?: DeliveryAcceptedOrderUnit[];
+  siblingIds?: string[];
 };
 
 export type DeliveryHistoryStats = {

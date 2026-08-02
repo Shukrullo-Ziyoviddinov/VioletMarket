@@ -898,7 +898,68 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
   const [publicRow] = await attachSellerPickup([
     toPublicAssignment(assignment, payment),
   ]);
-  return publicRow;
+
+  const siblingRows = await CourierOrderAssignment.find({
+    deliveryId,
+    orderId: Number(assignment.orderId) || 0,
+    status: { $in: ACTIVE_ASSIGNMENT_STATUSES },
+  })
+    .sort({ itemIndex: 1, unitIndex: 1 })
+    .lean();
+
+  const siblingPublic = await attachSellerPickup(
+    siblingRows.map((row) =>
+      toPublicAssignment(row, paymentMap.get(Number(row.orderId)) || payment),
+    ),
+  );
+
+  const units = siblingPublic.map((row) => ({
+    id: String(row.id || ""),
+    itemIndex: Number(row.itemIndex) || 0,
+    unitIndex: Number(row.unitIndex) || 0,
+    productId: Number(row.productId) || 0,
+    productCode: String(row.productCode || ""),
+    barcode: String(row.barcode || row.productCode || ""),
+    title: row.title || { uz: "", ru: "" },
+    amount: Math.max(0, Number(row.amount) || 0),
+    imageUrl: String(row.imageUrl || ""),
+    color: String(row.color || ""),
+    size: String(row.size || ""),
+    storage: String(row.storage || ""),
+    model: String(row.model || ""),
+    status: String(row.status || "accepted"),
+    sellerId: String(row.sellerId || ""),
+    pickupKind: row.pickupKind || "seller",
+    sellerPickup: row.sellerPickup || null,
+  }));
+
+  const productCodes = [
+    ...new Set(
+      units.map((unit) => String(unit.productCode || "").trim()).filter(Boolean),
+    ),
+  ];
+  const amount = units.reduce(
+    (sum, unit) => sum + (Math.max(0, Number(unit.amount) || 0)),
+    0,
+  );
+
+  return {
+    ...publicRow,
+    isGroup: units.length > 1,
+    productCount: Math.max(1, units.length),
+    amount: units.length ? amount : publicRow.amount,
+    productCodes,
+    barcode:
+      productCodes.length <= 1
+        ? productCodes[0] || publicRow.barcode || publicRow.productCode || ""
+        : productCodes.join(", "),
+    productCode:
+      productCodes.length <= 1
+        ? productCodes[0] || publicRow.productCode || ""
+        : productCodes.join(", "),
+    units,
+    siblingIds: units.map((unit) => unit.id).filter(Boolean),
+  };
 }
 
 async function listAssignmentsByKeys(keys = []) {

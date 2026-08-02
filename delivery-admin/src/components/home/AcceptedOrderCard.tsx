@@ -17,6 +17,13 @@ export function AcceptedOrderCard({
 }: AcceptedOrderCardProps) {
   const sellerPhase = isSellerPhase(order);
   const seller = order.sellerPickup;
+  const isGroup = Boolean(order.isGroup) || (order.productCount || 1) > 1;
+  const productCodes = Array.isArray(order.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order.barcode || order.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
   const address = order.deliveryAddress || {
     city: '',
     district: '',
@@ -39,9 +46,19 @@ export function AcceptedOrderCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       onPress={() => onStartWork(order)}>
       <View style={styles.topRow}>
-        <Text style={styles.barcode} numberOfLines={1}>
-          {order.barcode || order.productCode}
-        </Text>
+        <View style={styles.codesWrap}>
+          {isGroup && productCodes.length > 1 ? (
+            productCodes.map((code) => (
+              <Text key={code} style={styles.barcode}>
+                {code}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.barcode} numberOfLines={1}>
+              {productCodes[0] || order.barcode || order.productCode}
+            </Text>
+          )}
+        </View>
         <OrderPaymentAmount
           amount={order.amount}
           isPaid={order.isPaid}
@@ -50,6 +67,12 @@ export function AcceptedOrderCard({
           size="sm"
         />
       </View>
+
+      {isGroup ? (
+        <Text style={styles.productCount}>
+          {order.productCount || productCodes.length || 1} ta mahsulot
+        </Text>
+      ) : null}
 
       <DeliveryStepBadge order={order} />
 
@@ -99,15 +122,23 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
   },
-  barcode: {
+  codesWrap: {
     flex: 1,
+    gap: 2,
+  },
+  barcode: {
     fontSize: 16,
     fontWeight: '800',
     color: '#111827',
+  },
+  productCount: {
+    color: '#6d32c5',
+    fontSize: 13,
+    fontWeight: '700',
   },
   sellerName: {
     color: '#56337d',

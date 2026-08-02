@@ -54,14 +54,30 @@ import {
 import { resolveOrderPaid } from '@/utils/orderPayment';
 
 const BRAND = '#6d32c5';
-function productTitle(order: DeliveryAcceptedOrder) {
+function unitProductTitle(unit: {
+  title?: { uz?: string; ru?: string };
+  barcode?: string;
+  productCode?: string;
+}) {
   return (
-    String(order.title?.uz || '').trim() ||
-    String(order.title?.ru || '').trim() ||
-    order.barcode ||
-    order.productCode ||
+    String(unit.title?.uz || '').trim() ||
+    String(unit.title?.ru || '').trim() ||
+    unit.barcode ||
+    unit.productCode ||
     'Mahsulot'
   );
+}
+
+/** Bir xil statusdagi siblinglar — advance/pickup/deliver birga. */
+function sameStatusAssignmentIds(order: DeliveryAcceptedOrder): string[] {
+  const units = Array.isArray(order.units) ? order.units : [];
+  if (units.length <= 1) return [order.id];
+  const status = String(order.status || '');
+  const ids = units
+    .filter((unit) => String(unit.status || '') === status)
+    .map((unit) => String(unit.id || '').trim())
+    .filter(Boolean);
+  return ids.length ? ids : [order.id];
 }
 
 function orderBarcode(order: DeliveryAcceptedOrder | null) {
@@ -246,25 +262,29 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
+      const ids = sameStatusAssignmentIds(order);
       const isReturnAdvance =
         action === 'go_return_to_seller' || action === 'arrive_return_seller';
-      const data = isReturnAdvance
-        ? await advanceReturnDeliveryStep(token, {
-            assignmentId: order.id,
-            action,
-          })
-        : await advanceDeliveryOrderStep(token, {
-            assignmentId: order.id,
-            action: action as
-              | 'go_to_seller'
-              | 'arrive_seller'
-              | 'go_to_customer'
-              | 'arrive_customer',
-          });
-      setOrder(data);
+      let last = order;
+      for (const id of ids) {
+        last = isReturnAdvance
+          ? await advanceReturnDeliveryStep(token, {
+              assignmentId: id,
+              action,
+            })
+          : await advanceDeliveryOrderStep(token, {
+              assignmentId: id,
+              action: action as
+                | 'go_to_seller'
+                | 'arrive_seller'
+                | 'go_to_customer'
+                | 'arrive_customer',
+            });
+      }
+      await loadOrder();
       if (shouldOpenRouteOnAdvance(action)) {
         try {
-          await openRoute(data);
+          await openRoute(last);
         } catch {
           // Marshrut ochilmasa ham status yangilangan — xato chiqarmaymiz
         }
@@ -273,6 +293,11 @@ export default function OrderDetailsScreen() {
       const message =
         error instanceof Error ? error.message : 'Bosqichni yangilab bo‘lmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setActionLoading(false);
     }
@@ -282,19 +307,27 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
-      const data = await pickUpDeliveryOrder(token, {
-        assignmentId: order.id,
-      });
-      setOrder(data);
+      const ids = sameStatusAssignmentIds(order);
+      for (const id of ids) {
+        await pickUpDeliveryOrder(token, { assignmentId: id });
+      }
+      await loadOrder();
       setPickupConfirmOpen(false);
       Alert.alert(
         'Mahsulot olindi',
-        'Endi mijozga yetkazish mumkin — «Mijozga borish» ni bosing.',
+        ids.length > 1
+          ? 'Mahsulotlar olindi — endi mijozga yetkazish mumkin.'
+          : 'Endi mijozga yetkazish mumkin — «Mijozga borish» ni bosing.',
       );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Mahsulotni olishda xatolik';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setActionLoading(false);
     }
@@ -304,19 +337,28 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
+      const ids = sameStatusAssignmentIds(order);
       const location = await requestCourierLocation();
-      const data = await deliverDeliveryOrder(token, {
-        assignmentId: order.id,
-        courierLat: location.coords?.latitude,
-        courierLng: location.coords?.longitude,
-      });
+      let last = order;
+      for (const id of ids) {
+        last = await deliverDeliveryOrder(token, {
+          assignmentId: id,
+          courierLat: location.coords?.latitude,
+          courierLng: location.coords?.longitude,
+        });
+      }
       setDeliverConfirmOpen(false);
-      setDeliveredSnapshot(data);
+      setDeliveredSnapshot(last);
       setSuccessOpen(true);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Topshirish amalga oshmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setActionLoading(false);
     }
@@ -728,44 +770,71 @@ export default function OrderDetailsScreen() {
 
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Mahsulotlar</Text>
-                <View style={styles.productRow}>
-                  <Text style={styles.productName}>
-                    1. {productTitle(order)}
-                  </Text>
-                  <Text style={styles.productQty}>
-                    {order.productCount} dona
-                  </Text>
-                </View>
-                <View style={styles.metaList}>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Kod</Text>
-                    <Text style={styles.metaValue}>{orderBarcode(order)}</Text>
+                {(Array.isArray(order.units) && order.units.length
+                  ? order.units
+                  : [
+                      {
+                        id: order.id,
+                        title: order.title,
+                        barcode: order.barcode,
+                        productCode: order.productCode,
+                        amount: order.amount,
+                        color: order.color,
+                        size: order.size,
+                        storage: order.storage,
+                        model: order.model,
+                      },
+                    ]
+                ).map((unit, index) => (
+                  <View
+                    key={unit.id || `${unit.productCode}-${index}`}
+                    style={styles.productBlock}>
+                    <View style={styles.productRow}>
+                      <Text style={styles.productName}>
+                        {index + 1}. {unitProductTitle(unit)}
+                      </Text>
+                      <Text style={styles.productQty}>1 dona</Text>
+                    </View>
+                    <View style={styles.metaList}>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Kod</Text>
+                        <Text style={styles.metaValue}>
+                          {displayOrDash(unit.barcode || unit.productCode)}
+                        </Text>
+                      </View>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Narx</Text>
+                        <Text style={styles.metaValue}>
+                          {Number(unit.amount || 0).toLocaleString('uz-UZ')} so‘m
+                        </Text>
+                      </View>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Rang</Text>
+                        <Text style={styles.metaValue}>
+                          {displayOrDash(unit.color)}
+                        </Text>
+                      </View>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>O‘lcham</Text>
+                        <Text style={styles.metaValue}>
+                          {displayOrDash(unit.size)}
+                        </Text>
+                      </View>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Xotira</Text>
+                        <Text style={styles.metaValue}>
+                          {displayOrDash(unit.storage)}
+                        </Text>
+                      </View>
+                      <View style={styles.metaItem}>
+                        <Text style={styles.metaLabel}>Model</Text>
+                        <Text style={styles.metaValue}>
+                          {displayOrDash(unit.model)}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Rang</Text>
-                    <Text style={styles.metaValue}>
-                      {displayOrDash(order.color)}
-                    </Text>
-                  </View>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>O‘lcham</Text>
-                    <Text style={styles.metaValue}>
-                      {displayOrDash(order.size)}
-                    </Text>
-                  </View>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Xotira</Text>
-                    <Text style={styles.metaValue}>
-                      {displayOrDash(order.storage)}
-                    </Text>
-                  </View>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Model</Text>
-                    <Text style={styles.metaValue}>
-                      {displayOrDash(order.model)}
-                    </Text>
-                  </View>
-                </View>
+                ))}
               </View>
             </ScrollView>
 
@@ -1059,6 +1128,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  productBlock: {
+    gap: 10,
+    paddingTop: 4,
   },
   productName: {
     flex: 1,
