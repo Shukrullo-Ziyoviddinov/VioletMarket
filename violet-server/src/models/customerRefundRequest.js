@@ -12,10 +12,7 @@ const customerRefundRequestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "CourierReturnedOrder",
       required: false,
-      default: null,
-      // sparse: seller_unavailable da null bo‘lishi mumkin
-      unique: true,
-      sparse: true,
+      // seller_unavailable da maydon yo‘q — partial unique index (pastda)
       index: true,
     },
     assignmentId: {
@@ -97,6 +94,17 @@ customerRefundRequestSchema.index({ sellerId: 1, status: 1, returnedAt: -1 });
 customerRefundRequestSchema.index(
   { orderId: 1, itemIndex: 1, unitIndex: 1 },
   { unique: true },
+);
+// Faqat haqiqiy returnedOrderId bo‘lganda unique — null/yo‘q maydonlar cheklanmaydi
+customerRefundRequestSchema.index(
+  { returnedOrderId: 1 },
+  {
+    unique: true,
+    name: "returnedOrderId_partial_unique",
+    partialFilterExpression: {
+      returnedOrderId: { $exists: true, $type: "objectId" },
+    },
+  },
 );
 
 const CustomerRefundRequest =

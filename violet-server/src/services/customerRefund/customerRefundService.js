@@ -32,6 +32,95 @@ const {
 const REFUND_STATUSES = new Set(["pending", "refunded", "all"]);
 const REFUNDABLE_REASON_TYPES = new Set(SELLER_RETURNED_LIST_REASON_TYPES);
 
+let refundIndexesReady = null;
+let missingUnavailableRepairReady = null;
+
+/**
+ * Eski returnedOrderId unique (null ham unique) indexni olib tashlaydi.
+ * Aks holda 2-chi seller_unavailable refund duplicate key bilan yiqiladi.
+ */
+async function ensureCustomerRefundIndexes() {
+  if (refundIndexesReady) return refundIndexesReady;
+
+  refundIndexesReady = (async () => {
+    try {
+      await CustomerRefundRequest.syncIndexes();
+    } catch (error) {
+      // Eski unique index bilan conflict bo‘lsa — drop qilib qayta sync
+      try {
+        const indexes = await CustomerRefundRequest.collection.indexes();
+        for (const index of indexes) {
+          const keys = index?.key && typeof index.key === "object" ? index.key : {};
+          const keyNames = Object.keys(keys);
+          const isReturnedOrderIdOnly =
+            keyNames.length === 1 && keyNames[0] === "returnedOrderId";
+          const isPartial =
+            Boolean(index?.partialFilterExpression) ||
+            String(index?.name || "") === "returnedOrderId_partial_unique";
+          if (isReturnedOrderIdOnly && index.unique && !isPartial && index.name) {
+            await CustomerRefundRequest.collection.dropIndex(index.name);
+          }
+        }
+        await CustomerRefundRequest.syncIndexes();
+      } catch (inner) {
+        console.error(
+          "[customer-refund] index ensure failed",
+          inner?.message || inner,
+        );
+      }
+    }
+  })();
+
+  return refundIndexesReady;
+}
+
+function formatProductCode(productId) {
+  const id = Math.max(0, Math.floor(Number(productId) || 0));
+  if (!id) return "";
+  return `#${String(id).padStart(4, "0")}`;
+}
+
+/**
+ * Allaqachon unavailable, lekin unique-null bug tufayli refundsiz qolganlarni to‘ldiradi.
+ */
+async function repairMissingSellerUnavailableRefundsOnce() {
+  if (missingUnavailableRepairReady) return missingUnavailableRepairReady;
+
+  missingUnavailableRepairReady = (async () => {
+    await ensureCustomerRefundIndexes();
+    try {
+      const { Order } = require("../../models/order");
+      const rows = await Order.find({ "items.trackingStatus": "unavailable" })
+        .sort({ updatedAt: -1, paidAt: -1 })
+        .limit(300)
+        .lean();
+
+      for (const order of rows) {
+        if (!isOrderPaid(order)) continue;
+        const items = Array.isArray(order.items) ? order.items : [];
+        for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+          const item = items[itemIndex];
+          if (String(item?.trackingStatus || "") !== "unavailable") continue;
+          await createCustomerRefundForSellerUnavailable({
+            order,
+            item,
+            itemIndex,
+            productCode: formatProductCode(item?.productId),
+            _skipEnsure: true,
+          });
+        }
+      }
+    } catch (error) {
+      console.error(
+        "[customer-refund] unavailable repair failed",
+        error?.message || error,
+      );
+    }
+  })();
+
+  return missingUnavailableRepairReady;
+}
+
 function pickSellerName(account) {
   if (!account?.name) return "";
   if (typeof account.name === "string") return account.name;
@@ -180,6 +269,7 @@ async function createCustomerRefundForSellerUnavailable({
   item,
   itemIndex,
   productCode = "",
+  _skipEnsure = false,
 } = {}) {
   if (!order || !item) return null;
   if (!isOrderPaid(order)) return null;
@@ -232,7 +322,6 @@ async function createCustomerRefundForSellerUnavailable({
         };
 
   const payload = {
-    returnedOrderId: null,
     assignmentId: null,
     shipmentId: null,
     source: "seller_unavailable",
@@ -262,6 +351,11 @@ async function createCustomerRefundForSellerUnavailable({
     monthKey: periods.monthKey,
   };
 
+  // returnedOrderId umuman yozilmaydi — unique null conflict bo‘lmasin.
+  // Har bir mahsulot orderId+itemIndex+unitIndex bo‘yicha alohida kartochka.
+  if (!_skipEnsure) {
+    await ensureCustomerRefundIndexes();
+  }
   const saved = await CustomerRefundRequest.findOneAndUpdate(
     { orderId, itemIndex: index, unitIndex },
     { $setOnInsert: payload },
@@ -347,6 +441,9 @@ function buildSearchMatch(searchRaw) {
 }
 
 async function listAdminCustomerRefundRequests(query = {}) {
+  await ensureCustomerRefundIndexes();
+  await repairMissingSellerUnavailableRefundsOnce();
+
   const filterOptions = await buildReturnedProductsFilterOptions();
   const filters = resolveSelectedFilters(query, filterOptions);
   const listPeriod = resolveReturnedListPeriod(query, filters);

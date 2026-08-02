@@ -460,13 +460,30 @@ async function markUnavailableSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw
 
   const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
   if (currentStatus === "unavailable") {
+    let refundCreated = false;
+    try {
+      const refund = await createCustomerRefundForSellerUnavailable({
+        order,
+        item,
+        itemIndex,
+        productCode: formatProductCode(Number(item.productId) || 0),
+      });
+      refundCreated = Boolean(refund);
+    } catch (error) {
+      console.error(
+        "[seller-unavailable] refund create failed (already unavailable)",
+        orderId,
+        itemIndex,
+        error?.message || error,
+      );
+    }
     return {
       orderId,
       itemIndex,
       trackingStatus: "unavailable",
       unavailableAt: null,
       alreadyUnavailable: true,
-      refundCreated: false,
+      refundCreated,
     };
   }
 
