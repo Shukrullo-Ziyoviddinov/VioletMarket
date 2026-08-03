@@ -80,5 +80,39 @@ check("multi-item: A open no_answer blocks order", () => {
   assert.strictEqual(allOk, false);
 });
 
+check("BUGFIX: item aggregate delivered + open no_answer sibling → NOT settled", () => {
+  const item = {
+    quantity: 2,
+    trackingStatus: "delivered",
+    units: [
+      { unitIndex: 0, trackingStatus: "delivered", trackingHistory: [] },
+      { unitIndex: 1, trackingStatus: "returned_to_seller", trackingHistory: [] },
+    ],
+  };
+  assert.strictEqual(
+    isItemSettledForOrderDelivery(item, {
+      unresolvedNoAnswerUnitIndexes: new Set([1]),
+    }),
+    false,
+  );
+});
+
+check("item aggregate delivered + both units closed (empty unresolved) → settled", () => {
+  const item = {
+    quantity: 2,
+    trackingStatus: "delivered",
+    units: [
+      { unitIndex: 0, trackingStatus: "delivered", trackingHistory: [] },
+      { unitIndex: 1, trackingStatus: "delivered", trackingHistory: [] },
+    ],
+  };
+  assert.strictEqual(
+    isItemSettledForOrderDelivery(item, {
+      unresolvedNoAnswerUnitIndexes: new Set(),
+    }),
+    true,
+  );
+});
+
 console.log("\nPassed", passed, "checks");
 if (!process.exitCode) console.log("Verification PASSED");

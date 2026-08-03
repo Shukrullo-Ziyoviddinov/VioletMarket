@@ -239,7 +239,15 @@ function areAllItemUnitsSettledForDelivery(
 /** Order.status=delivered: item delivered / unavailable / cancelled / terminal returned. */
 function isItemSettledForOrderDelivery(item, options = {}) {
   const status = normalizeOrderTrackingStatus(item?.trackingStatus);
-  if (status === "delivered") return true;
+  const hasUnresolvedOption = options?.unresolvedNoAnswerUnitIndexes != null;
+
+  // Aggregate «delivered» qty≥2 da ochiq no_answer sibling bilan chalkashishi mumkin
+  // (Topshirdim + Ajdaniya). Options berilsa — faqat donalar bo‘yicha.
+  if (status === "delivered") {
+    if (!hasUnresolvedOption) return true;
+    return areAllItemUnitsSettledForDelivery(item, new Set(), options);
+  }
+
   if (isUnitSkippedForCustomerDelivery(status)) return true;
 
   if (status === "returned_to_seller") {
@@ -261,7 +269,7 @@ function isItemSettledForOrderDelivery(item, options = {}) {
   }
 
   // Aggregate lag: options berilgan bo‘lsa donalar bo‘yicha
-  if (options?.unresolvedNoAnswerUnitIndexes != null) {
+  if (hasUnresolvedOption) {
     return areAllItemUnitsSettledForDelivery(item, new Set(), options);
   }
 
