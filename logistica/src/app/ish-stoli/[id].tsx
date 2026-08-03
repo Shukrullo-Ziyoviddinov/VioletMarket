@@ -17,6 +17,7 @@ import { GlobalConfirmModal } from '@/components/GlobalConfirmModal';
 import { ShipmentActionButtons } from '@/components/shipment-detail/ShipmentActionButtons';
 import { ShipmentDetailSummary } from '@/components/shipment-detail/ShipmentDetailSummary';
 import { ShipmentProductsList } from '@/components/shipment-detail/ShipmentProductsList';
+import type { ReturnUnitSelection } from '@/components/shipment-detail/ShipmentProductsList';
 import { ShipmentRequestInfo } from '@/components/shipment-detail/ShipmentRequestInfo';
 import { UzWarehouseArrivalForm } from '@/components/shipment-detail/UzWarehouseArrivalForm';
 import {
@@ -33,12 +34,33 @@ import {
   returnShipmentToSeller,
   saveShipmentProcessStep,
 } from '@/services/logistica-shipments';
-import type { ProcessStepKey, ShipmentDetail } from '@/types/shipment';
+import type { ProcessStepKey, ShipmentDetail, ShipmentProduct } from '@/types/shipment';
 
 const ACCENT = '#7c3aed';
 
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
+}
+
+function unitKey(shipmentId: string, unitIndex: number) {
+  return `${shipmentId}:${unitIndex}`;
+}
+
+function isReturnableProduct(product: ShipmentProduct) {
+  const status = String(product.returnStatus || 'active').toLowerCase();
+  return status === 'active';
+}
+
+function listReturnableUnits(detail: ShipmentDetail | null): ReturnUnitSelection[] {
+  if (!detail) return [];
+  const products = Array.isArray(detail.products) ? detail.products : [];
+  return products
+    .filter(isReturnableProduct)
+    .map((product) => ({
+      shipmentId: String(product.shipmentId || detail.id || '').trim(),
+      unitIndex: Number(product.unitIndex) || 0,
+    }))
+    .filter((row) => Boolean(row.shipmentId));
 }
 
 export default function IshStoliScreen() {
@@ -55,6 +77,7 @@ export default function IshStoliScreen() {
   const [paidModalOpen, setPaidModalOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [error, setError] = useState('');
+  const [selectedUnits, setSelectedUnits] = useState<ReturnUnitSelection[]>([]);
 
   const formatMoney = useCallback(
     (value: number) =>
@@ -79,6 +102,7 @@ export default function IshStoliScreen() {
     try {
       const data = await fetchShipmentDetail(token, id);
       setDetail(data);
+      setSelectedUnits([]);
     } catch (err) {
       setDetail(null);
       setError(
@@ -113,6 +137,24 @@ export default function IshStoliScreen() {
   const showPaidButton = isAccepted && isUzFlow && !isPaid;
   /** Sotuvchiga qaytarish — faqat Yuklarim (UZBda yo‘q) */
   const showReturnRequest = isAccepted && !isUzFlow && !isPaid;
+
+  const returnableUnits = useMemo(() => listReturnableUnits(detail), [detail]);
+  const canSelectReturn = showReturnRequest && returnableUnits.length > 1;
+
+  const toggleUnit = useCallback((shipmentId: string, unitIndex: number) => {
+    const key = unitKey(shipmentId, unitIndex);
+    setSelectedUnits((prev) => {
+      const exists = prev.some(
+        (row) => unitKey(row.shipmentId, row.unitIndex) === key,
+      );
+      if (exists) {
+        return prev.filter(
+          (row) => unitKey(row.shipmentId, row.unitIndex) !== key,
+        );
+      }
+      return [...prev, { shipmentId, unitIndex }];
+    });
+  }, []);
 
   const productCode = useMemo(() => {
     const first = detail?.products?.[0];
@@ -209,10 +251,24 @@ export default function IshStoliScreen() {
 
   const handleConfirmReturnRequest = async () => {
     if (!token || !id || actionLoading) return;
+
+    const unitsToReturn = canSelectReturn
+      ? selectedUnits
+      : returnableUnits.length
+        ? returnableUnits
+        : [{ shipmentId: id, unitIndex: 0 }];
+
+    if (canSelectReturn && unitsToReturn.length === 0) {
+      setReturnModalOpen(false);
+      Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
+      return;
+    }
+
     setActionLoading(true);
     try {
-      await returnShipmentToSeller(token, id);
+      await returnShipmentToSeller(token, id, { selections: unitsToReturn });
       setReturnModalOpen(false);
+      setSelectedUnits([]);
       Alert.alert(
         t('shipments.alerts.returnSentTitle'),
         t('shipments.alerts.returnSentMessage'),
@@ -286,7 +342,12 @@ export default function IshStoliScreen() {
             note={detail.note}
           />
 
-          <ShipmentProductsList products={detail.products} />
+          <ShipmentProductsList
+            products={detail.products}
+            selectable={canSelectReturn}
+            selectedUnits={selectedUnits}
+            onToggleUnit={toggleUnit}
+          />
 
           {isToshkent && detail.uzArrivedAt ? (
             <View style={styles.arrivalSummary}>
@@ -430,7 +491,15 @@ export default function IshStoliScreen() {
               <View style={styles.returnWrap}>
                 <ShipmentActionButtons
                   onReturnToSeller={() => {
-                    if (!actionLoading) setReturnModalOpen(true);
+                    if (actionLoading) return;
+                    if (canSelectReturn && selectedUnits.length === 0) {
+                      Alert.alert(
+                        t('common.error'),
+                        t('shipments.alerts.returnSelectRequired'),
+                      );
+                      return;
+                    }
+                    setReturnModalOpen(true);
                   }}
                 />
               </View>

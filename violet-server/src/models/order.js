@@ -18,6 +18,26 @@ const orderTrackingHistorySchema = new mongoose.Schema(
   { _id: false },
 );
 
+/**
+ * Dona holati — quantity > 1 da partial «Mavjud emas» uchun.
+ * Yo‘q bo‘lsa: items[].trackingStatus item-level (eski buyurtmalar).
+ */
+const orderItemUnitSchema = new mongoose.Schema(
+  {
+    unitIndex: { type: Number, required: true, min: 0, default: 0 },
+    trackingStatus: {
+      type: String,
+      enum: TRACKING_STATUSES,
+      default: "accepted",
+    },
+    trackingHistory: {
+      type: [orderTrackingHistorySchema],
+      default: [],
+    },
+  },
+  { _id: false },
+);
+
 /** Xorij → UZB: admin kiritgan ombor pickup (faqat foreign handoff) */
 const uzWarehousePickupSchema = new mongoose.Schema(
   {
@@ -51,6 +71,10 @@ const orderItemSchema = new mongoose.Schema(
     trackingHistory: {
       type: [orderTrackingHistorySchema],
       default: [],
+    },
+    units: {
+      type: [orderItemUnitSchema],
+      default: undefined,
     },
     uzWarehousePickup: {
       type: uzWarehousePickupSchema,

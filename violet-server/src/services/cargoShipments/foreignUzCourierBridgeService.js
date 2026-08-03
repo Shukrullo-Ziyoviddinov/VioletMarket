@@ -15,6 +15,9 @@ const {
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
 const {
+  applyItemPipelineStatus,
+} = require("../../productManagement/orderItemUnitPipelineSync");
+const {
   isUzWarehouseReadyProcessStep,
   UZ_WAREHOUSE_READY_PROCESS_STEP,
 } = require("../../productManagement/foreignOrderTracking");
@@ -135,17 +138,15 @@ async function handoffForeignItemToUzCourier(
   }
 
   const handedAt = new Date();
-  item.trackingStatus = "handed_to_courier";
   item.uzWarehousePickup = warehousePickup;
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
+  applyItemPipelineStatus(item, "handed_to_courier", handedAt);
   order.markModified("items");
   await order.save();
 
   return {
     orderId,
     itemIndex,
-    trackingStatus: "handed_to_courier",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "handed_to_courier",
     handedToCourierAt: handedAt,
     uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
     alreadyHanded: false,
@@ -282,16 +283,14 @@ async function handoffForeignOrderGroupToUzCourier(
       continue;
     }
 
-    item.trackingStatus = "handed_to_courier";
     item.uzWarehousePickup = warehousePickup;
-    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-    item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
+    applyItemPipelineStatus(item, "handed_to_courier", handedAt);
     dirty = true;
 
     updated.push({
       orderId,
       itemIndex,
-      trackingStatus: "handed_to_courier",
+      trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "handed_to_courier",
       handedToCourierAt: handedAt,
       uzWarehousePickup: snapshotUzWarehousePickup(item.uzWarehousePickup),
       alreadyHanded: false,

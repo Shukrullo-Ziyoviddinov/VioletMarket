@@ -6,6 +6,10 @@ const {
 const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
+const {
+  isClosedUnitStatus,
+  resolveUnitTrackingStatus,
+} = require("../../productManagement/orderItemUnitTracking");
 const { haversineKm } = require("../../utils/geoDistance");
 const { isOrderPaid } = require("./courierReturnOrderService");
 const {
@@ -77,7 +81,7 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     paymentStatus: String(order?.status || ""),
     orderedAt: order?.paidAt || order?.createdAt || null,
     handedToCourierAt: handedEntry?.at || null,
-    trackingStatus: normalizeOrderTrackingStatus(item?.trackingStatus),
+    trackingStatus: resolveUnitTrackingStatus(item, unitIndex),
   };
 }
 
@@ -107,6 +111,10 @@ async function listAvailableDeliveryOrders(deliveryId, query = {}) {
       }
       const unitCount = Math.max(1, Number(item.quantity) || 1);
       for (let unitIndex = 0; unitIndex < unitCount; unitIndex += 1) {
+        // Partial «mavjud emas» / bekor — yopiq dona kuryer pooliga chiqmasin
+        if (isClosedUnitStatus(resolveUnitTrackingStatus(item, unitIndex))) {
+          continue;
+        }
         cards.push(
           buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoords),
         );

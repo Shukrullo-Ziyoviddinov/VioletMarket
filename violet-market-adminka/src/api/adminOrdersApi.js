@@ -216,7 +216,25 @@ export function cancelAdminOrderGroup(orderId, sellerId, body = {}) {
   return patchOrderGroup('cancel', orderId, sellerId, body);
 }
 
-export async function markUnavailableAdminOrderItem(orderId, itemIndex, sellerId) {
+export async function markUnavailableAdminOrderItem(
+  orderId,
+  itemIndex,
+  sellerId,
+  options = {},
+) {
+  const unitIndexes = Array.isArray(options.unitIndexes)
+    ? [
+        ...new Set(
+          options.unitIndexes
+            .map((value) => Math.floor(Number(value)))
+            .filter((value) => Number.isInteger(value) && value >= 0),
+        ),
+      ]
+    : null;
+
+  const body = { sellerId: String(sellerId || '') };
+  if (unitIndexes?.length) body.unitIndexes = unitIndexes;
+
   const res = await fetch(
     apiUrl(
       `/api/admin/orders/${Number(orderId)}/items/${Number(itemIndex)}/unavailable`,
@@ -224,7 +242,7 @@ export async function markUnavailableAdminOrderItem(orderId, itemIndex, sellerId
     {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sellerId: String(sellerId || '') }),
+      body: JSON.stringify(body),
     },
   );
   const payload = await parseJson(res);

@@ -44,6 +44,10 @@ export const shipmentTranslations = {
         chinaWarehouse: 'Xitoy ombori manzili',
         note: 'Izoh',
         products: 'Mahsulotlar',
+        selectReturnHint:
+          'Brak / qaytariladigan donalarni tanlang (bir nechtasini mumkin). Yaroqlilarni tanlamang.',
+        unitReturned: 'Qaytarilgan',
+        unitInReturn: 'Qaytarish oqimida',
         processStatus: 'Jarayon holati',
         processHint: 'Bosqichni tanlang, keyin «Holatni saqlash»',
         confirmation: 'Tasdiqlash',
@@ -79,7 +83,8 @@ export const shipmentTranslations = {
         acceptFailed: 'Qabul qilib bo‘lmadi',
         returnTitle: 'Sotuvchiga qaytarish',
         returnMessage:
-          'Asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz.',
+          'Tanlangan mahsulotlar uchun asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz. Mijoz to‘lagan bo‘lsa — «Mijozga pul qaytarish»ga chiqadi.',
+        returnSelectRequired: 'Avval qaytariladigan mahsulotni tanlang',
         returnSentTitle: 'So‘rov yuborildi',
         returnSentMessage:
           'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
@@ -169,6 +174,10 @@ export const shipmentTranslations = {
         chinaWarehouse: 'China warehouse address',
         note: 'Note',
         products: 'Products',
+        selectReturnHint:
+          'Select defective units to return (multiple allowed). Leave good ones unselected.',
+        unitReturned: 'Returned',
+        unitInReturn: 'In return flow',
         processStatus: 'Process status',
         processHint: 'Select a step, then «Save status»',
         confirmation: 'Confirmation',
@@ -204,7 +213,8 @@ export const shipmentTranslations = {
         acceptFailed: 'Could not accept',
         returnTitle: 'Return to seller',
         returnMessage:
-          'Send a request to the main admin? After approval you will finish it on the Returns page.',
+          'Send a request to the main admin for the selected products? After approval you will finish it on the Returns page. If the customer paid, it will appear under Customer refunds.',
+        returnSelectRequired: 'Select at least one product to return',
         returnSentTitle: 'Request sent',
         returnSentMessage:
           'Wait for main admin approval. After approval it moves to the Returns page.',
@@ -293,6 +303,10 @@ export const shipmentTranslations = {
         chinaWarehouse: '中国仓库地址',
         note: '备注',
         products: '商品',
+        selectReturnHint:
+          '请选择要退回的残次单件（可多选）。完好的不要勾选。',
+        unitReturned: '已退回',
+        unitInReturn: '退货流程中',
         processStatus: '流程状态',
         processHint: '选择步骤，然后点击「保存状态」',
         confirmation: '确认',
@@ -325,7 +339,8 @@ export const shipmentTranslations = {
         acceptFailed: '无法接收',
         returnTitle: '退回卖家',
         returnMessage:
-          '是否向主管理员发送请求？批准后您将在「退货」页面完成。',
+          '是否为所选商品向主管理员发送请求？批准后您将在「退货」页面完成。若客户已付款，将出现在「向客户退款」。',
+        returnSelectRequired: '请先选择要退回的商品',
         returnSentTitle: '请求已发送',
         returnSentMessage:
           '请等待主管理员批准。批准后将转到「退货」页面。',

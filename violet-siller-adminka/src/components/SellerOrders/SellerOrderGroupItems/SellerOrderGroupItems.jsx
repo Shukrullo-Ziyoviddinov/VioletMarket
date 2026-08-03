@@ -18,19 +18,23 @@ function resolveItems(order) {
   return order ? [order] : [];
 }
 
+function unitKey(itemIndex, unitIndex) {
+  return `${Number(itemIndex) || 0}:${Number(unitIndex) || 0}`;
+}
+
 export default function SellerOrderGroupItems({
   order,
   showWhenSingle = false,
   selectable = false,
-  selectedItemIndexes = [],
-  onToggleItemIndex,
+  selectedUnits = [],
+  onToggleUnit,
 }) {
   const { t, i18n } = useTranslation();
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
   const selectedSet = new Set(
-    (Array.isArray(selectedItemIndexes) ? selectedItemIndexes : []).map(
-      (value) => Number(value),
+    (Array.isArray(selectedUnits) ? selectedUnits : []).map((row) =>
+      unitKey(row.itemIndex, row.unitIndex),
     ),
   );
 
@@ -42,7 +46,8 @@ export default function SellerOrderGroupItems({
       {selectable && isGroup ? (
         <p className="seller-order-group-items__hint">
           {t('orders.modal.selectUnavailableHint', {
-            defaultValue: '«Mavjud emas» uchun mahsulotlarni tanlang (bir nechta mumkin)',
+            defaultValue:
+              '«Mavjud emas» uchun donalarni tanlang (bir nechtasini mumkin)',
           })}
         </p>
       ) : null}
@@ -51,8 +56,10 @@ export default function SellerOrderGroupItems({
         const imageUrl = resolveAssetUrl(item.imageUrl);
         const itemIndex = Number(item.itemIndex);
         const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
-        const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
-        const selected = selectable && selectedSet.has(resolvedIndex);
+        const unitIndex = Number(item.unitIndex) || 0;
+        const key = item.id || `${resolvedIndex}-${unitIndex}-${index}`;
+        const selected =
+          selectable && selectedSet.has(unitKey(resolvedIndex, unitIndex));
 
         return (
           <article
@@ -70,7 +77,7 @@ export default function SellerOrderGroupItems({
                   }`}
                   aria-pressed={selected}
                   aria-label={title}
-                  onClick={() => onToggleItemIndex?.(resolvedIndex)}
+                  onClick={() => onToggleUnit?.(resolvedIndex, unitIndex)}
                 />
               ) : null}
               <div className="seller-order-group-items__image">

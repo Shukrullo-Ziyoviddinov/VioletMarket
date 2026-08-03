@@ -54,6 +54,9 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
   const products = Array.isArray(row.products)
     ? row.products.map((product, index) => ({
         id: String(product?.id || `${row.id || 'p'}-${index}`),
+        shipmentId: String(
+          product?.shipmentId || row.id || '',
+        ).trim() || undefined,
         title: String(product?.title || productFallbackTitle()),
         variant: String(product?.variant || ''),
         weightKg: Math.max(0, Number(product?.weightKg) || 0),
@@ -65,6 +68,7 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
         model: String(product?.model || ''),
         image: String(product?.image || '/img/no-image.png'),
         unitIndex: Number(product?.unitIndex) || 0,
+        returnStatus: String(product?.returnStatus || 'active'),
       }))
     : [];
 
@@ -174,7 +178,45 @@ export async function acceptShipment(token: string, shipmentId: string) {
   };
 }
 
-export async function returnShipmentToSeller(token: string, shipmentId: string) {
+export async function returnShipmentToSeller(
+  token: string,
+  shipmentId: string,
+  options?: {
+    shipmentIds?: string[];
+    unitIndexes?: number[];
+    selections?: { shipmentId: string; unitIndex: number }[];
+  },
+) {
+  const selections = Array.isArray(options?.selections)
+    ? options.selections
+        .map((row) => ({
+          shipmentId: String(row.shipmentId || '').trim(),
+          unitIndex: Math.max(0, Math.floor(Number(row.unitIndex) || 0)),
+        }))
+        .filter((row) => Boolean(row.shipmentId))
+    : undefined;
+
+  const shipmentIds = Array.isArray(options?.shipmentIds)
+    ? [...new Set(options.shipmentIds.map(String).filter(Boolean))]
+    : undefined;
+
+  const unitIndexes = Array.isArray(options?.unitIndexes)
+    ? [
+        ...new Set(
+          options.unitIndexes
+            .map((value) => Math.floor(Number(value)))
+            .filter((value) => Number.isInteger(value) && value >= 0),
+        ),
+      ]
+    : undefined;
+
+  const body: Record<string, unknown> = {};
+  if (selections?.length) body.selections = selections;
+  else {
+    if (shipmentIds?.length) body.shipmentIds = shipmentIds;
+    if (unitIndexes?.length) body.unitIndexes = unitIndexes;
+  }
+
   const data = await apiRequest<{
     shipment: ShipmentDetail;
     request?: Record<string, unknown>;
@@ -182,7 +224,10 @@ export async function returnShipmentToSeller(token: string, shipmentId: string) 
     alreadyReturned?: boolean;
   }>(
     `/api/logistica-auth/shipments/${encodeURIComponent(shipmentId)}/return-to-seller`,
-    { method: 'POST' },
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
     token,
   );
   return {

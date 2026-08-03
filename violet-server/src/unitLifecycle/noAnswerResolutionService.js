@@ -30,6 +30,16 @@ const {
 } = require("../productManagement/variantStockAdjust");
 const { RESOLUTION_TYPES } = require("./constants");
 const { resolveOptionLabel } = require("./optionLabel");
+const {
+  ensureItemUnits,
+  getItemUnit,
+  areAllItemUnitsSettledForDelivery,
+  isItemSettledForOrderDelivery,
+  markItemUnitDelivered,
+} = require("../productManagement/orderItemUnitTracking");
+const {
+  normalizeOrderTrackingStatus,
+} = require("../productManagement/orderTracking");
 
 function isBadVariantLabel(value) {
   const text = String(value || "").trim();
@@ -151,6 +161,8 @@ async function deleteAssignmentForReturned(doc) {
 
 /**
  * Qayta kuryerga topshirish.
+ * Item agregat + shu dona units[unitIndex] → handed_to_courier
+ * (aks holda pool/accept yopiq returned_to_seller ni rad etadi).
  */
 async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
@@ -172,9 +184,27 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   }
 
   const now = new Date();
+  const unitIndex = Number(doc.unitIndex) || 0;
+  ensureItemUnits(item, now);
+
+  const unit = getItemUnit(item, unitIndex);
+  if (unit) {
+    const prevUnit = normalizeOrderTrackingStatus(unit.trackingStatus);
+    if (prevUnit !== "handed_to_courier") {
+      unit.trackingStatus = "handed_to_courier";
+      if (!Array.isArray(unit.trackingHistory)) unit.trackingHistory = [];
+      unit.trackingHistory.push({ status: "handed_to_courier", at: now });
+    }
+  }
+
+  // Pool: item.trackingStatus === handed_to_courier + ochiq unit
   item.trackingStatus = "handed_to_courier";
   if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "handed_to_courier", at: now });
+  const lastHistory = item.trackingHistory[item.trackingHistory.length - 1];
+  if (String(lastHistory?.status || "") !== "handed_to_courier") {
+    item.trackingHistory.push({ status: "handed_to_courier", at: now });
+  }
+
   order.markModified("items");
   await order.save();
 
@@ -270,7 +300,10 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
 
   const item = Array.isArray(order.items) ? order.items[Number(doc.itemIndex)] : null;
   if (item) {
-    const unitCount = Math.max(1, Number(item.quantity) || 1);
+    const thisUnitIndex = Number(doc.unitIndex) || 0;
+    // no_answer «Sotildi» — dona returned_to_seller dan delivered ga
+    markItemUnitDelivered(item, thisUnitIndex, soldAt);
+
     const unitRows = await CourierOrderAssignment.find({
       orderId: doc.orderId,
       itemIndex: doc.itemIndex,
@@ -294,18 +327,15 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
         .filter((row) => String(row.status) === "delivered")
         .map((row) => Number(row.unitIndex) || 0),
       ...soldViaNoAnswer.map((row) => Number(row.unitIndex) || 0),
-      Number(doc.unitIndex) || 0,
+      thisUnitIndex,
     ]);
 
-    let allUnitsDelivered = true;
-    for (let i = 0; i < unitCount; i += 1) {
-      if (!deliveredUnits.has(i)) {
-        allUnitsDelivered = false;
-        break;
-      }
-    }
+    const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
+      item,
+      deliveredUnits,
+    );
 
-    const currentStatus = String(item.trackingStatus || "");
+    const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
     if (allUnitsDelivered && currentStatus !== "delivered") {
       item.trackingStatus = "delivered";
       if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
@@ -313,7 +343,7 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     }
 
     const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
-      (row) => String(row.trackingStatus || "") === "delivered",
+      (row) => isItemSettledForOrderDelivery(row),
     );
     if (allItemsDelivered && String(order.status) !== "delivered") {
       order.status = "delivered";

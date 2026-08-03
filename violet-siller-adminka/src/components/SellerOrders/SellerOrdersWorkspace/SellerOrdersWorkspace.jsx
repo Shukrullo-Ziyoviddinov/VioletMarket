@@ -473,17 +473,18 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     setCancelTarget(targetOrder);
   };
 
-  const requestMarkUnavailable = (itemIndexes) => {
+  const requestMarkUnavailable = (units) => {
     if (!activeOrder || cancelling || markingUnavailable) return;
-    const indexes = [
-      ...new Set(
-        (Array.isArray(itemIndexes) ? itemIndexes : [itemIndexes])
-          .map((value) => Number(value))
-          .filter((value) => Number.isInteger(value) && value >= 0),
-      ),
-    ];
-    if (!indexes.length) return;
-    setUnavailableTarget({ order: activeOrder, itemIndexes: indexes });
+    const list = (Array.isArray(units) ? units : [])
+      .map((row) => ({
+        itemIndex: Number(row?.itemIndex),
+        unitIndex: Number(row?.unitIndex) || 0,
+      }))
+      .filter(
+        (row) => Number.isInteger(row.itemIndex) && row.itemIndex >= 0,
+      );
+    if (!list.length) return;
+    setUnavailableTarget({ order: activeOrder, units: list });
   };
 
   const handleMarkUnavailable = async () => {
@@ -491,17 +492,28 @@ export default function SellerOrdersWorkspace({ filter = 'confirmation' }) {
     if (!token || !target?.order || markingUnavailable) return;
 
     const orderId = Number(target.order.orderId) || 0;
-    const itemIndexes = Array.isArray(target.itemIndexes) ? target.itemIndexes : [];
-    if (!orderId || !itemIndexes.length) return;
+    const units = Array.isArray(target.units) ? target.units : [];
+    if (!orderId || !units.length) return;
+
+    const byItemIndex = new Map();
+    for (const unit of units) {
+      const itemIndex = Number(unit.itemIndex);
+      const unitIndex = Number(unit.unitIndex) || 0;
+      if (!Number.isInteger(itemIndex) || itemIndex < 0) continue;
+      if (!byItemIndex.has(itemIndex)) byItemIndex.set(itemIndex, []);
+      byItemIndex.get(itemIndex).push(unitIndex);
+    }
+    if (!byItemIndex.size) return;
 
     setMarkingUnavailable(true);
     try {
       let refundCreated = false;
-      for (const itemIndex of itemIndexes) {
+      for (const [itemIndex, unitIndexes] of byItemIndex.entries()) {
         const result = await markUnavailableSellerOrderItem(
           token,
           orderId,
           itemIndex,
+          { unitIndexes },
         );
         if (result?.refundCreated) refundCreated = true;
       }

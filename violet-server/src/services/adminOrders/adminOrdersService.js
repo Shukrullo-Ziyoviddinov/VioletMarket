@@ -503,6 +503,7 @@ async function markUnavailableAdminOrderItem(payload = {}) {
     sellerId,
     payload.orderId,
     payload.itemIndex,
+    { unitIndexes: payload.unitIndexes },
   );
 }
 

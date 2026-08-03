@@ -12,6 +12,9 @@ const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
 const {
+  applyItemPipelineStatus,
+} = require("../../productManagement/orderItemUnitPipelineSync");
+const {
   normalizeCargoCountry,
 } = require("../../utils/cargoCountryNormalize");
 const {
@@ -60,9 +63,7 @@ async function markOrderItemHandedToCargo(orderId, itemIndex, sellerId, at) {
     );
   }
 
-  item.trackingStatus = "handed_to_cargo";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "handed_to_cargo", at });
+  applyItemPipelineStatus(item, "handed_to_cargo", at);
   order.markModified("items");
   await order.save();
   return { order, item, already: false };

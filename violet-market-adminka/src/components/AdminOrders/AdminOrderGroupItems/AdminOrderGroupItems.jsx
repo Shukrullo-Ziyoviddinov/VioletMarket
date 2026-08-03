@@ -17,18 +17,22 @@ function resolveItems(order) {
   return order ? [order] : [];
 }
 
+function unitKey(itemIndex, unitIndex) {
+  return `${Number(itemIndex) || 0}:${Number(unitIndex) || 0}`;
+}
+
 export default function AdminOrderGroupItems({
   order,
   showWhenSingle = false,
   selectable = false,
-  selectedItemIndexes = [],
-  onToggleItemIndex,
+  selectedUnits = [],
+  onToggleUnit,
 }) {
   const items = resolveItems(order);
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
   const selectedSet = new Set(
-    (Array.isArray(selectedItemIndexes) ? selectedItemIndexes : []).map(
-      (value) => Number(value),
+    (Array.isArray(selectedUnits) ? selectedUnits : []).map((row) =>
+      unitKey(row.itemIndex, row.unitIndex),
     ),
   );
 
@@ -39,7 +43,7 @@ export default function AdminOrderGroupItems({
     <div className="admin-order-group-items">
       {selectable && isGroup ? (
         <p className="admin-order-group-items__hint">
-          «Mavjud emas» uchun mahsulotlarni tanlang (bir nechta mumkin)
+          «Mavjud emas» uchun donalarni tanlang (bir nechtasini mumkin)
         </p>
       ) : null}
       {items.map((item, index) => {
@@ -47,8 +51,10 @@ export default function AdminOrderGroupItems({
         const imageUrl = resolveProductImageUrl(item.imageUrl);
         const itemIndex = Number(item.itemIndex);
         const resolvedIndex = Number.isInteger(itemIndex) ? itemIndex : index;
-        const key = item.id || `${resolvedIndex}-${item.unitIndex}-${index}`;
-        const selected = selectable && selectedSet.has(resolvedIndex);
+        const unitIndex = Number(item.unitIndex) || 0;
+        const key = item.id || `${resolvedIndex}-${unitIndex}-${index}`;
+        const selected =
+          selectable && selectedSet.has(unitKey(resolvedIndex, unitIndex));
 
         return (
           <article
@@ -66,7 +72,7 @@ export default function AdminOrderGroupItems({
                   }`}
                   aria-pressed={selected}
                   aria-label={title}
-                  onClick={() => onToggleItemIndex?.(resolvedIndex)}
+                  onClick={() => onToggleUnit?.(resolvedIndex, unitIndex)}
                 />
               ) : null}
               <div className="admin-order-group-items__image">

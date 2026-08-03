@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ShipmentActionButtons } from '@/components/shipment-detail/ShipmentActionButtons';
 import { ShipmentDetailSummary } from '@/components/shipment-detail/ShipmentDetailSummary';
 import { ShipmentProductsList } from '@/components/shipment-detail/ShipmentProductsList';
+import type { ReturnUnitSelection } from '@/components/shipment-detail/ShipmentProductsList';
 import { ShipmentRequestInfo } from '@/components/shipment-detail/ShipmentRequestInfo';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
@@ -24,12 +25,33 @@ import {
   fetchShipmentDetail,
   returnShipmentToSeller,
 } from '@/services/logistica-shipments';
-import type { ShipmentDetail } from '@/types/shipment';
+import type { ShipmentDetail, ShipmentProduct } from '@/types/shipment';
 
 const ACCENT = '#7c3aed';
 
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
+}
+
+function unitKey(shipmentId: string, unitIndex: number) {
+  return `${shipmentId}:${unitIndex}`;
+}
+
+function isReturnableProduct(product: ShipmentProduct) {
+  const status = String(product.returnStatus || 'active').toLowerCase();
+  return status === 'active';
+}
+
+function listReturnableUnits(detail: ShipmentDetail | null): ReturnUnitSelection[] {
+  if (!detail) return [];
+  const products = Array.isArray(detail.products) ? detail.products : [];
+  return products
+    .filter(isReturnableProduct)
+    .map((product) => ({
+      shipmentId: String(product.shipmentId || detail.id || '').trim(),
+      unitIndex: Number(product.unitIndex) || 0,
+    }))
+    .filter((row) => Boolean(row.shipmentId));
 }
 
 /** Asosiy — faqat pending qabul / qaytarish */
@@ -45,6 +67,7 @@ export default function ShipmentDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedUnits, setSelectedUnits] = useState<ReturnUnitSelection[]>([]);
 
   const load = useCallback(async () => {
     if (!token || !id) {
@@ -63,6 +86,7 @@ export default function ShipmentDetailScreen() {
     try {
       const data = await fetchShipmentDetail(token, id);
       setDetail(data);
+      setSelectedUnits([]);
       if (data.status === 'accepted') {
         router.replace({
           pathname: '/ish-stoli/[id]',
@@ -87,6 +111,23 @@ export default function ShipmentDetailScreen() {
 
   const isPending = detail?.status === 'pending';
   const busy = actionLoading || loading;
+  const returnableUnits = useMemo(() => listReturnableUnits(detail), [detail]);
+  const canSelectReturn = returnableUnits.length > 1;
+
+  const toggleUnit = useCallback((shipmentId: string, unitIndex: number) => {
+    const key = unitKey(shipmentId, unitIndex);
+    setSelectedUnits((prev) => {
+      const exists = prev.some(
+        (row) => unitKey(row.shipmentId, row.unitIndex) === key,
+      );
+      if (exists) {
+        return prev.filter(
+          (row) => unitKey(row.shipmentId, row.unitIndex) !== key,
+        );
+      }
+      return [...prev, { shipmentId, unitIndex }];
+    });
+  }, []);
 
   const handleAccept = async () => {
     if (!token || !id || busy) return;
@@ -113,6 +154,18 @@ export default function ShipmentDetailScreen() {
 
   const handleReturn = () => {
     if (!token || !id || busy) return;
+
+    const unitsToReturn = canSelectReturn
+      ? selectedUnits
+      : returnableUnits.length
+        ? returnableUnits
+        : [{ shipmentId: id, unitIndex: 0 }];
+
+    if (canSelectReturn && unitsToReturn.length === 0) {
+      Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
+      return;
+    }
+
     Alert.alert(
       t('shipments.alerts.returnTitle'),
       t('shipments.alerts.returnMessage'),
@@ -125,7 +178,9 @@ export default function ShipmentDetailScreen() {
             void (async () => {
               setActionLoading(true);
               try {
-                await returnShipmentToSeller(token, id);
+                await returnShipmentToSeller(token, id, {
+                  selections: unitsToReturn,
+                });
                 Alert.alert(
                   t('shipments.alerts.returnSentTitle'),
                   t('shipments.alerts.returnSentMessage'),
@@ -203,7 +258,12 @@ export default function ShipmentDetailScreen() {
             note={detail.note}
           />
 
-          <ShipmentProductsList products={detail.products} />
+          <ShipmentProductsList
+            products={detail.products}
+            selectable={isPending && canSelectReturn}
+            selectedUnits={selectedUnits}
+            onToggleUnit={toggleUnit}
+          />
 
           {isPending ? (
             <ShipmentActionButtons

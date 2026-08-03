@@ -14,6 +14,18 @@ import MiniGlobalModal from '../../MiniGlobalModal/MiniGlobalModal';
 import AdminOrderDetailModalContent from '../AdminOrderDetailModalContent/AdminOrderDetailModalContent';
 import '../AdminOrderDetailModal/AdminOrderDetailModal.css';
 
+function unitKey(itemIndex, unitIndex) {
+  return `${Number(itemIndex) || 0}:${Number(unitIndex) || 0}`;
+}
+
+function parseUnitKey(key) {
+  const [itemPart, unitPart] = String(key || '').split(':');
+  return {
+    itemIndex: Number(itemPart) || 0,
+    unitIndex: Number(unitPart) || 0,
+  };
+}
+
 function resolveItemIndexes(order) {
   if (Array.isArray(order?.itemIndexes) && order.itemIndexes.length) {
     return [...new Set(order.itemIndexes.map((value) => Number(value) || 0))];
@@ -21,16 +33,37 @@ function resolveItemIndexes(order) {
   return [Number(order?.itemIndex) || 0];
 }
 
-function resolveDefaultItemIndexes(order) {
-  const indexes = resolveItemIndexes(order);
-  return indexes.length === 1 ? indexes : [];
+function resolveOrderUnits(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (items.length) {
+    return items.map((item, index) => ({
+      itemIndex: Number.isInteger(Number(item?.itemIndex))
+        ? Number(item.itemIndex)
+        : index,
+      unitIndex: Number(item?.unitIndex) || 0,
+    }));
+  }
+  if (!order) return [];
+  return [
+    {
+      itemIndex: Number(order.itemIndex) || 0,
+      unitIndex: Number(order.unitIndex) || 0,
+    },
+  ];
 }
 
-function toggleIndex(list, index) {
-  const value = Number(index);
-  if (!Number.isInteger(value) || value < 0) return list;
-  if (list.includes(value)) return list.filter((item) => item !== value);
-  return [...list, value];
+function resolveDefaultUnitKeys(order) {
+  const units = resolveOrderUnits(order);
+  if (units.length === 1) {
+    return [unitKey(units[0].itemIndex, units[0].unitIndex)];
+  }
+  return [];
+}
+
+function toggleUnitKey(list, itemIndex, unitIndex) {
+  const key = unitKey(itemIndex, unitIndex);
+  if (list.includes(key)) return list.filter((row) => row !== key);
+  return [...list, key];
 }
 
 export default function AdminOrderDetailSectionContent({
@@ -45,10 +78,14 @@ export default function AdminOrderDetailSectionContent({
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [markingUnavailable, setMarkingUnavailable] = useState(false);
   const [unavailableConfirmOpen, setUnavailableConfirmOpen] = useState(false);
-  const [selectedItemIndexes, setSelectedItemIndexes] = useState([]);
+  const [selectedUnitKeys, setSelectedUnitKeys] = useState([]);
 
   const itemIndexes = resolveItemIndexes(order);
-  const isGroup = Boolean(order?.isGroup) || itemIndexes.length > 1;
+  const orderUnits = useMemo(() => resolveOrderUnits(order), [order]);
+  const isGroup =
+    Boolean(order?.isGroup) ||
+    orderUnits.length > 1 ||
+    itemIndexes.length > 1;
   const showConfirm =
     mode === 'confirm' &&
     (isGroup || order?.trackingStatus === 'accepted');
@@ -59,20 +96,25 @@ export default function AdminOrderDetailSectionContent({
   const showUnavailable = showConfirm || showCollect;
   const actionsBusy = busy || cancelling || markingUnavailable;
 
+  const selectedUnits = useMemo(
+    () => selectedUnitKeys.map(parseUnitKey),
+    [selectedUnitKeys],
+  );
+
   const unavailableReady = useMemo(() => {
     if (!showUnavailable) return false;
     if (!isGroup) return true;
-    return selectedItemIndexes.length > 0;
-  }, [showUnavailable, isGroup, selectedItemIndexes]);
+    return selectedUnitKeys.length > 0;
+  }, [showUnavailable, isGroup, selectedUnitKeys]);
 
   useEffect(() => {
     if (!visible) {
-      setSelectedItemIndexes([]);
+      setSelectedUnitKeys([]);
       setCancelConfirmOpen(false);
       setUnavailableConfirmOpen(false);
       return;
     }
-    setSelectedItemIndexes(resolveDefaultItemIndexes(order));
+    setSelectedUnitKeys(resolveDefaultUnitKeys(order));
   }, [visible, order]);
 
   if (!visible || !order) return null;
@@ -192,26 +234,34 @@ export default function AdminOrderDetailSectionContent({
 
   const handleMarkUnavailable = async () => {
     if (actionsBusy) return;
-    const indexes = isGroup
-      ? selectedItemIndexes
-      : [Number(order.itemIndex) || 0];
-    const uniqueIndexes = [
-      ...new Set(
-        indexes
-          .map((value) => Number(value))
-          .filter((value) => Number.isInteger(value) && value >= 0),
-      ),
-    ];
-    if (!uniqueIndexes.length) return;
+    const units = isGroup
+      ? selectedUnits
+      : [
+          {
+            itemIndex: Number(order.itemIndex) || 0,
+            unitIndex: Number(order.unitIndex) || 0,
+          },
+        ];
+
+    const byItemIndex = new Map();
+    for (const unit of units) {
+      const itemIndex = Number(unit.itemIndex);
+      const unitIndex = Number(unit.unitIndex) || 0;
+      if (!Number.isInteger(itemIndex) || itemIndex < 0) continue;
+      if (!byItemIndex.has(itemIndex)) byItemIndex.set(itemIndex, []);
+      byItemIndex.get(itemIndex).push(unitIndex);
+    }
+    if (!byItemIndex.size) return;
 
     setMarkingUnavailable(true);
     try {
       let refundCreated = false;
-      for (const itemIndex of uniqueIndexes) {
+      for (const [itemIndex, unitIndexes] of byItemIndex.entries()) {
         const result = await markUnavailableAdminOrderItem(
           order.orderId,
           itemIndex,
           order.sellerId,
+          { unitIndexes },
         );
         if (result?.refundCreated) refundCreated = true;
       }
@@ -234,9 +284,11 @@ export default function AdminOrderDetailSectionContent({
       <AdminOrderDetailModalContent
         order={order}
         selectableUnavailable={showUnavailable && isGroup}
-        selectedItemIndexes={selectedItemIndexes}
-        onToggleItemIndex={(itemIndex) => {
-          setSelectedItemIndexes((prev) => toggleIndex(prev, itemIndex));
+        selectedUnits={selectedUnits}
+        onToggleUnit={(itemIndex, unitIndex) => {
+          setSelectedUnitKeys((prev) =>
+            toggleUnitKey(prev, itemIndex, unitIndex),
+          );
         }}
       />
       {showConfirm || showCollect ? (

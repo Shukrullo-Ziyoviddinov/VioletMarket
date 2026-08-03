@@ -185,9 +185,11 @@ function toLogisticaShipmentDetail(doc) {
   const row = doc || {};
   const orderId = Number(row.orderId) || 0;
   const sellerId = String(row.sellerId || "").trim();
+  const shipmentId = String(row._id || "");
   const products = (Array.isArray(row.products) ? row.products : []).map(
     (product, index) => ({
-      id: `${row._id}-${Number(product.unitIndex) || index}`,
+      id: `${shipmentId}-${Number(product.unitIndex) || index}`,
+      shipmentId,
       title: resolveProductTitle(product.title),
       variant: buildVariantLabel(product),
       weightKg: Math.max(0, Number(product.weightKg) || 0),
@@ -198,7 +200,10 @@ function toLogisticaShipmentDetail(doc) {
       storage: String(product.storage || ""),
       model: String(product.model || ""),
       image: String(product.image || "/img/no-image.png"),
-      unitIndex: Number(product.unitIndex) || 0,
+      unitIndex: Number.isInteger(Number(product.unitIndex))
+        ? Number(product.unitIndex)
+        : index,
+      returnStatus: String(product.returnStatus || "active"),
     }),
   );
 
@@ -287,10 +292,7 @@ function mergeGroupDetail(primaryRow, siblingRows = []) {
     if (code) requestCodes.push(code);
     const mapped = toLogisticaShipmentDetail(row).products;
     for (const product of mapped) {
-      products.push({
-        ...product,
-        id: `${row._id}-${product.id}`,
-      });
+      products.push(product);
     }
   }
 
@@ -502,21 +504,138 @@ async function arriveShipmentAtUzWarehouseForLogistica(
   };
 }
 
+function normalizeSelectedShipmentIds(primaryId, payload = {}) {
+  const primary = String(primaryId || "").trim();
+  const raw = Array.isArray(payload.shipmentIds) ? payload.shipmentIds : [];
+  const selected = [
+    ...new Set(
+      raw
+        .map((value) => String(value || "").trim())
+        .filter((id) => mongoose.isValidObjectId(id)),
+    ),
+  ];
+  if (!selected.length && mongoose.isValidObjectId(primary)) {
+    return [primary];
+  }
+  return selected;
+}
+
+function normalizeReturnSelections(primaryId, payload = {}) {
+  const rawSelections = Array.isArray(payload.selections) ? payload.selections : null;
+  if (rawSelections?.length) {
+    return rawSelections
+      .map((row) => ({
+        shipmentId: String(row?.shipmentId || "").trim(),
+        unitIndex: Math.max(0, Math.floor(Number(row?.unitIndex) || 0)),
+      }))
+      .filter((row) => mongoose.isValidObjectId(row.shipmentId));
+  }
+
+  const shipmentIds = normalizeSelectedShipmentIds(primaryId, payload);
+  const unitRaw = payload.unitIndexes ?? payload.unitIndex;
+  const hasUnitHint = unitRaw != null && !(Array.isArray(unitRaw) && !unitRaw.length);
+
+  // unitIndexes faqat primary shipmentga; siblinglar — birinchi faol dona
+  if (hasUnitHint && shipmentIds.length === 1) {
+    const indexes = Array.isArray(unitRaw) ? unitRaw : [unitRaw];
+    return indexes.map((unitIndex) => ({
+      shipmentId: shipmentIds[0],
+      unitIndex: Math.max(0, Math.floor(Number(unitIndex) || 0)),
+    }));
+  }
+
+  if (hasUnitHint && shipmentIds[0] === String(primaryId)) {
+    const indexes = Array.isArray(unitRaw) ? unitRaw : [unitRaw];
+    const primaryUnits = indexes.map((unitIndex) => ({
+      shipmentId: String(primaryId),
+      unitIndex: Math.max(0, Math.floor(Number(unitIndex) || 0)),
+    }));
+    const siblingUnits = shipmentIds
+      .filter((id) => id !== String(primaryId))
+      .map((shipmentId) => ({ shipmentId, unitIndex: null }));
+    return [...primaryUnits, ...siblingUnits];
+  }
+
+  return shipmentIds.map((shipmentId) => ({
+    shipmentId,
+    unitIndex: null,
+  }));
+}
+
 /**
  * Sotuvchiga qaytarish so‘rovi — asosiy admin tasdiqlamaguncha yakunlanmaydi.
+ * Tanlash: selections[{ shipmentId, unitIndex }] yoki shipmentIds (+ ixtiyoriy unitIndexes).
  * Yakunlash: cargoReturnRequestService.confirmCargoReturnByLogistica
+ * To‘langan buyurtma → confirm dan keyin «Mijozga pul qaytarish».
  */
 async function returnShipmentToSellerForLogistica(logisticaId, shipmentIdRaw, payload = {}) {
-  const result = await createCargoReturnRequestForLogistica(
+  const { shipment: primary } = await loadShipmentForLogistica(
     logisticaId,
     shipmentIdRaw,
-    payload,
   );
-  const lean = await CargoShipment.findById(result.shipment.id).lean();
+  const primaryId = String(primary._id);
+  const status = String(primary.status || "");
+
+  const allowedIds = new Set([primaryId]);
+  if (status === "pending") {
+    const siblings = await loadPendingSiblingShipments(primary);
+    for (const row of siblings) allowedIds.add(String(row._id));
+  } else if (
+    status === "accepted" ||
+    status === "return_request_pending" ||
+    status === "return_approved"
+  ) {
+    const siblings = await loadAcceptedSiblingShipments(primary, logisticaId);
+    for (const row of siblings) allowedIds.add(String(row._id));
+  }
+
+  const selections = normalizeReturnSelections(primaryId, payload);
+  if (!selections.length) {
+    throw new HttpError(
+      400,
+      "Qaytariladigan mahsulotni tanlang",
+      "RETURN_SELECTION_REQUIRED",
+    );
+  }
+
+  for (const row of selections) {
+    if (!allowedIds.has(row.shipmentId)) {
+      throw new HttpError(
+        400,
+        "Tanlangan yuk bu guruhga tegishli emas",
+        "RETURN_SELECTION_INVALID",
+      );
+    }
+  }
+
+  const comment = String(payload.comment || "").trim();
+  const results = [];
+  for (const row of selections) {
+    const unitPayload =
+      row.unitIndex == null
+        ? { comment }
+        : { comment, unitIndex: row.unitIndex };
+    const result = await createCargoReturnRequestForLogistica(
+      logisticaId,
+      row.shipmentId,
+      unitPayload,
+    );
+    results.push(result);
+  }
+
+  const first = results[0];
+  const returnedId = String(
+    first?.shipment?.id || selections[0]?.shipmentId || primaryId,
+  );
+  const lean = await CargoShipment.findById(returnedId).lean();
   return {
-    request: result.request,
-    shipment: toLogisticaShipmentDetail(lean),
-    alreadyRequested: Boolean(result.alreadyRequested),
+    request: first.request,
+    requests: results.map((row) => row.request),
+    shipment: toLogisticaShipmentDetail(lean || primary.toObject?.() || primary),
+    returnedShipmentIds: [
+      ...new Set(selections.map((row) => row.shipmentId)),
+    ],
+    alreadyRequested: results.every((row) => Boolean(row.alreadyRequested)),
   };
 }
 

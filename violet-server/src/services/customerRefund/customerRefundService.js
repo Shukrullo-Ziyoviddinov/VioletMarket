@@ -90,7 +90,17 @@ async function repairMissingSellerUnavailableRefundsOnce() {
     await ensureCustomerRefundIndexes();
     try {
       const { Order } = require("../../models/order");
-      const rows = await Order.find({ "items.trackingStatus": "unavailable" })
+      const {
+        resolveUnitTrackingStatus,
+        resolveItemQuantity,
+      } = require("../../productManagement/orderItemUnitTracking");
+
+      const rows = await Order.find({
+        $or: [
+          { "items.trackingStatus": "unavailable" },
+          { "items.units.trackingStatus": "unavailable" },
+        ],
+      })
         .sort({ updatedAt: -1, paidAt: -1 })
         .limit(300)
         .lean();
@@ -100,14 +110,38 @@ async function repairMissingSellerUnavailableRefundsOnce() {
         const items = Array.isArray(order.items) ? order.items : [];
         for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
           const item = items[itemIndex];
+          const qty = resolveItemQuantity(item);
+          const hasUnits = Array.isArray(item?.units) && item.units.length > 0;
+
+          if (hasUnits) {
+            for (let unitIndex = 0; unitIndex < qty; unitIndex += 1) {
+              if (resolveUnitTrackingStatus(item, unitIndex) !== "unavailable") {
+                continue;
+              }
+              await createCustomerRefundForSellerUnavailable({
+                order,
+                item,
+                itemIndex,
+                unitIndex,
+                productCode: formatProductCode(item?.productId),
+                _skipEnsure: true,
+              });
+            }
+            continue;
+          }
+
           if (String(item?.trackingStatus || "") !== "unavailable") continue;
-          await createCustomerRefundForSellerUnavailable({
-            order,
-            item,
-            itemIndex,
-            productCode: formatProductCode(item?.productId),
-            _skipEnsure: true,
-          });
+          // Eski yozuv: units yo‘q — har dona uchun (yoki unitIndex 0 full legacy)
+          for (let unitIndex = 0; unitIndex < qty; unitIndex += 1) {
+            await createCustomerRefundForSellerUnavailable({
+              order,
+              item,
+              itemIndex,
+              unitIndex,
+              productCode: formatProductCode(item?.productId),
+              _skipEnsure: true,
+            });
+          }
         }
       }
     } catch (error) {
@@ -263,22 +297,29 @@ async function createCustomerRefundRequestIfNeeded(returnedDoc) {
 /**
  * Siller «Mavjud emas» — to‘langan (Payme/Click) bo‘lsa pending refund.
  * Cancel / return zanjiriga tegmaydi. Idempotent: orderId+itemIndex+unitIndex.
+ * unitIndex berilmasa 0 (eski chaqiriqlar). Miqdor doim 1 dona summasi.
  */
 async function createCustomerRefundForSellerUnavailable({
   order,
   item,
   itemIndex,
+  unitIndex: unitIndexRaw = 0,
   productCode = "",
   _skipEnsure = false,
 } = {}) {
   if (!order || !item) return null;
   if (!isOrderPaid(order)) return null;
 
-  const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  const lineQty = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  const unitIndex = Math.max(0, Math.floor(Number(unitIndexRaw) || 0));
+  if (unitIndex >= lineQty) return null;
+
+  const unitPrice = Math.max(0, Number(item.price) || 0);
+  const lineTotal = Math.max(0, Number(item.lineTotal) || 0);
   const amount = Math.max(
     0,
-    Number(item.lineTotal) ||
-      Number(item.price) * qty ||
+    unitPrice ||
+      (lineQty > 0 ? Math.round(lineTotal / lineQty) : 0) ||
       0,
   );
   if (amount <= 0) return null;
@@ -287,7 +328,6 @@ async function createCustomerRefundForSellerUnavailable({
   const index = Number(itemIndex);
   if (!orderId || !Number.isInteger(index) || index < 0) return null;
 
-  const unitIndex = 0;
   const now = new Date();
   const periods = resolvePeriodKeys(now);
 
@@ -334,7 +374,7 @@ async function createCustomerRefundForSellerUnavailable({
     sellerId: String(item.sellerId || "").trim(),
     title,
     amount,
-    quantity: qty,
+    quantity: 1,
     imageUrl: String(item.image || item.imageUrl || ""),
     reasonType: "unavailable",
     customer,
@@ -352,7 +392,7 @@ async function createCustomerRefundForSellerUnavailable({
   };
 
   // returnedOrderId umuman yozilmaydi — unique null conflict bo‘lmasin.
-  // Har bir mahsulot orderId+itemIndex+unitIndex bo‘yicha alohida kartochka.
+  // Har bir dona orderId+itemIndex+unitIndex bo‘yicha alohida kartochka.
   if (!_skipEnsure) {
     await ensureCustomerRefundIndexes();
   }

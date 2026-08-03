@@ -8,6 +8,8 @@ export type ProcessStepKey =
 
 export type ShipmentProduct = {
   id: string;
+  /** Qaysi cargo shipment ga tegishli (guruhda tanlash uchun) */
+  shipmentId?: string;
   title: string;
   variant: string;
   weightKg: number;
@@ -19,6 +21,8 @@ export type ShipmentProduct = {
   model?: string;
   image?: string;
   unitIndex?: number;
+  /** active | return_request_pending | return_approved | returned */
+  returnStatus?: string;
 };
 
 export type ShipmentListItem = {

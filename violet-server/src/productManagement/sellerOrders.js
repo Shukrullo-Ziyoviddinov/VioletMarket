@@ -10,6 +10,10 @@ const {
 } = require("./paymentMethods");
 const { normalizeOrderTrackingStatus } = require("./orderTracking");
 const {
+  resolveUnitTrackingStatus,
+  resolveUnitTrackingHistory,
+} = require("./orderItemUnitTracking");
+const {
   listAssignmentsByKeys,
   assignmentLookupKey,
 } = require("../services/deliveryOrders/courierOrderAssignmentService");
@@ -190,6 +194,7 @@ function mapSellerOrderItems(items, sellerId) {
         lineTotal,
         trackingStatus: normalizeOrderTrackingStatus(item?.trackingStatus),
         trackingHistory: Array.isArray(item?.trackingHistory) ? item.trackingHistory : [],
+        units: Array.isArray(item?.units) ? item.units : undefined,
       };
     });
 }
@@ -218,6 +223,9 @@ function buildSellerOrderItemCards(order, user, sellerId) {
     const unitPrice = unitCount > 0 ? Math.max(0, Number(item.price) || 0) : 0;
 
     for (let unitIndex = 0; unitIndex < unitCount; unitIndex += 1) {
+      const unitTrackingStatus = resolveUnitTrackingStatus(item, unitIndex);
+      const unitHistory = resolveUnitTrackingHistory(item, unitIndex);
+
       cards.push({
         id: `${orderId}-${item.productId}-${item.itemIndex}-${unitIndex}`,
         orderId,
@@ -238,21 +246,21 @@ function buildSellerOrderItemCards(order, user, sellerId) {
         amount: unitPrice,
         originalPrice: item.originalPrice,
         quantity: 1,
-        trackingStatus: item.trackingStatus,
+        trackingStatus: unitTrackingStatus,
         confirmedAt:
-          item.trackingHistory.find(
+          unitHistory.find(
             (entry) => String(entry?.status || "") === "seller_confirmed",
           )?.at || null,
         handedToCourierAt:
-          item.trackingHistory.find(
+          unitHistory.find(
             (entry) => String(entry?.status || "") === "handed_to_courier",
           )?.at || null,
         readyForCargoAt:
-          item.trackingHistory.find(
+          unitHistory.find(
             (entry) => String(entry?.status || "") === "ready_for_cargo",
           )?.at || null,
         handedToCargoAt:
-          item.trackingHistory.find(
+          unitHistory.find(
             (entry) => String(entry?.status || "") === "handed_to_cargo",
           )?.at || null,
         unitIndex,

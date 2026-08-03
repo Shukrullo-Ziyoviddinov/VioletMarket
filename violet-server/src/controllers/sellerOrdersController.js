@@ -94,10 +94,14 @@ const cancelOrderGroup = asyncHandler(async (req, res) => {
 });
 
 const markUnavailableOrderItem = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
   const data = await sellerOrderTrackingService.markUnavailableSellerOrderItem(
     req.sellerShopId,
     req.params.orderId,
     req.params.itemIndex,
+    {
+      unitIndexes: body.unitIndexes ?? body.unitIndex,
+    },
   );
   res.json({ ok: true, data });
 });

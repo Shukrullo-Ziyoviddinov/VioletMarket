@@ -85,8 +85,9 @@ const cargoReturnRequestSchema = new mongoose.Schema(
 );
 
 cargoReturnRequestSchema.index({ status: 1, createdAt: -1 });
+/** Bir shipmentdan bir nechta dona parallel pending bo‘lishi mumkin */
 cargoReturnRequestSchema.index(
-  { shipmentId: 1, status: 1 },
+  { shipmentId: 1, unitIndex: 1, status: 1 },
   { unique: true, partialFilterExpression: { status: "pending" } },
 );
 cargoReturnRequestSchema.index({ logisticaId: 1, status: 1, reviewedAt: -1 });
@@ -95,4 +96,21 @@ const CargoReturnRequest =
   mongoose.models.CargoReturnRequest ||
   mongoose.model("CargoReturnRequest", cargoReturnRequestSchema);
 
-module.exports = { CargoReturnRequest };
+let cargoReturnIndexReady = null;
+
+async function ensureCargoReturnRequestIndexes() {
+  if (cargoReturnIndexReady) return cargoReturnIndexReady;
+  cargoReturnIndexReady = (async () => {
+    try {
+      const collection = mongoose.connection.collection("cargo_return_requests");
+      // Eski: bitta shipment = bitta pending
+      await collection.dropIndex("shipmentId_1_status_1").catch(() => null);
+    } catch (_) {
+      /* ignore */
+    }
+    await CargoReturnRequest.syncIndexes();
+  })();
+  return cargoReturnIndexReady;
+}
+
+module.exports = { CargoReturnRequest, ensureCargoReturnRequestIndexes };

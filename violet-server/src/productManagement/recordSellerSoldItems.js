@@ -2,6 +2,9 @@ const { SellerSoldItem } = require("../models/sellerSoldItem");
 const { nextSequence } = require("../models/autoIncrement");
 const { toNumber } = require("../services/adminSales/salesStatisticsHelpers");
 const { getPeriodKeysFromPaidAt } = require("./recordSellerSales");
+const {
+  isUnitExcludedFromSoldSync,
+} = require("./orderItemUnitTracking");
 
 const PAID_STATUSES = ["delivered"];
 
@@ -30,6 +33,11 @@ async function upsertSellerSoldItemUnit(filter, fields) {
   );
 }
 
+/**
+ * Order delivered bo‘lganda SellerSoldItem sync.
+ * unavailable / cancelled / returned_to_seller donalar yozilmaydi.
+ * Haqiqiy topshirish: recordSalesOnDelivery (assignment bo‘yicha) — o‘zgarmagan.
+ */
 async function recordSellerSoldItemsFromOrder(order) {
   if (!order || !PAID_STATUSES.includes(String(order.status || ""))) {
     return [];
@@ -56,6 +64,10 @@ async function recordSellerSoldItemsFromOrder(order) {
       : unitPrice;
 
     for (let unitIndex = 0; unitIndex < quantity; unitIndex += 1) {
+      if (isUnitExcludedFromSoldSync(item, unitIndex)) {
+        continue;
+      }
+
       const row = await upsertSellerSoldItemUnit(
         {
           orderId: Number(order.id),

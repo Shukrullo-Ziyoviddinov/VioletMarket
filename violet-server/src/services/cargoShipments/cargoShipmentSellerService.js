@@ -18,6 +18,14 @@ const {
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
 const {
+  applyItemPipelineStatus,
+} = require("../../productManagement/orderItemUnitPipelineSync");
+const {
+  ensureItemUnits,
+  isClosedUnitStatus,
+  resolveUnitTrackingStatus,
+} = require("../../productManagement/orderItemUnitTracking");
+const {
   normalizeCargoCountry,
   cargoCountryMatchValues,
   cargoCountryDisplayLabel,
@@ -25,6 +33,21 @@ const {
 const {
   toSellerLogisticaContactView,
 } = require("./cargoShipmentDisplayHelpers");
+
+/**
+ * Cargo products[] — faqat ochiq donalar (unavailable/cancelled/returned_to_seller skip).
+ * unitIndex order items[].units[] bilan bir xil qoladi (renumber yo‘q).
+ */
+function listOpenUnitIndexesForCargo(item) {
+  ensureItemUnits(item);
+  const quantity = Math.max(1, Math.floor(Number(item?.quantity) || 1));
+  const open = [];
+  for (let unitIndex = 0; unitIndex < quantity; unitIndex += 1) {
+    if (isClosedUnitStatus(resolveUnitTrackingStatus(item, unitIndex))) continue;
+    open.push(unitIndex);
+  }
+  return open;
+}
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -239,28 +262,35 @@ async function submitSellerOrderItemToCargo(
     );
   }
 
-  const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  const openUnitIndexes = listOpenUnitIndexesForCargo(item);
+  if (!openUnitIndexes.length) {
+    throw new HttpError(
+      409,
+      "Cargoga yuborish uchun ochiq dona yo‘q",
+      "ORDER_UNIT_CLOSED",
+    );
+  }
+
+  const openCount = openUnitIndexes.length;
   const productId = Number(item.productId) || 0;
   const productDoc = productId
     ? await Product.findOne({ id: productId }).select({ weight: 1, id: 1 }).lean()
     : null;
-  const { weightKg, estimated } = resolveWeightKg(productDoc, quantity);
+  const { weightKg, estimated } = resolveWeightKg(productDoc, openCount);
+  const unitWeightKg = Number((weightKg / openCount).toFixed(3));
 
-  const products = [];
-  for (let unitIndex = 0; unitIndex < quantity; unitIndex += 1) {
-    products.push({
-      productId,
-      title: resolveTitle(item.title),
-      image: String(item.image || "/img/no-image.png"),
-      color: String(item.color || ""),
-      size: String(item.size || ""),
-      storage: String(item.storage || ""),
-      model: String(item.model || ""),
-      quantity: 1,
-      weightKg: Number((weightKg / quantity).toFixed(3)),
-      unitIndex,
-    });
-  }
+  const products = openUnitIndexes.map((unitIndex) => ({
+    productId,
+    title: resolveTitle(item.title),
+    image: String(item.image || "/img/no-image.png"),
+    color: String(item.color || ""),
+    size: String(item.size || ""),
+    storage: String(item.storage || ""),
+    model: String(item.model || ""),
+    quantity: 1,
+    weightKg: unitWeightKg,
+    unitIndex,
+  }));
 
   const note = String(payload.note || "").trim();
   const submittedAt = new Date();
@@ -280,7 +310,7 @@ async function submitSellerOrderItemToCargo(
       itemIndex,
       groupId,
       products,
-      productCount: quantity,
+      productCount: products.length,
       weightKg,
       weightLabel: estimated ? "Taxminiy og'irlik" : "Og'irlik",
       warehouseAddress: String(account.address || "").trim(),
@@ -306,20 +336,13 @@ async function submitSellerOrderItemToCargo(
           existing.groupId = groupId;
           await existing.save();
         }
-        item.trackingStatus = "ready_for_cargo";
-        if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-        const hasReady = item.trackingHistory.some(
-          (entry) => String(entry?.status || "") === "ready_for_cargo",
-        );
-        if (!hasReady) {
-          item.trackingHistory.push({ status: "ready_for_cargo", at: submittedAt });
-        }
+        applyItemPipelineStatus(item, "ready_for_cargo", submittedAt);
         order.markModified("items");
         await order.save();
         return {
           orderId,
           itemIndex,
-          trackingStatus: "ready_for_cargo",
+          trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "ready_for_cargo",
           shipment: toPublicCargoShipment(existing),
           alreadySubmitted: true,
         };
@@ -328,16 +351,14 @@ async function submitSellerOrderItemToCargo(
     throw error;
   }
 
-  item.trackingStatus = "ready_for_cargo";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "ready_for_cargo", at: submittedAt });
+  applyItemPipelineStatus(item, "ready_for_cargo", submittedAt);
   order.markModified("items");
   await order.save();
 
   return {
     orderId,
     itemIndex,
-    trackingStatus: "ready_for_cargo",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "ready_for_cargo",
     shipment: toPublicCargoShipment(shipment),
     alreadySubmitted: false,
   };
@@ -488,5 +509,6 @@ module.exports = {
   listCargoShipmentsByOrderItems,
   shipmentLookupKey,
   buildCargoSubmitGroupId,
+  listOpenUnitIndexesForCargo,
   toPublicCargoShipment,
 };

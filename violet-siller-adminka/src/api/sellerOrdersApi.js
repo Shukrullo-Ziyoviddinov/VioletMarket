@@ -314,14 +314,35 @@ export async function cancelSellerOrderGroup(token, orderId, body = {}) {
   return payload?.data || {};
 }
 
-export async function markUnavailableSellerOrderItem(token, orderId, itemIndex) {
+export async function markUnavailableSellerOrderItem(
+  token,
+  orderId,
+  itemIndex,
+  options = {},
+) {
+  const unitIndexes = Array.isArray(options.unitIndexes)
+    ? [
+        ...new Set(
+          options.unitIndexes
+            .map((value) => Math.floor(Number(value)))
+            .filter((value) => Number.isInteger(value) && value >= 0),
+        ),
+      ]
+    : null;
+
   const res = await fetch(
     apiUrl(
       `/api/seller-auth/orders/${Number(orderId)}/items/${Number(itemIndex)}/unavailable`,
     ),
     {
       method: 'PATCH',
-      headers: authHeaders(token),
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        unitIndexes?.length ? { unitIndexes } : {},
+      ),
     },
   );
   const payload = await parseJson(res);

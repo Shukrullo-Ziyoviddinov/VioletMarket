@@ -38,6 +38,12 @@ const { resolveOptionLabel } = require("./optionLabel");
 const {
   createCustomerRefundRequestIfNeeded,
 } = require("../services/customerRefund/customerRefundService");
+const {
+  ensureItemUnits,
+  getItemUnit,
+  resolveUnitTrackingStatus,
+  isClosedUnitStatus,
+} = require("../productManagement/orderItemUnitTracking");
 
 
 /**
@@ -778,7 +784,15 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 }
 
 /**
- * Itemdagi barcha donalar qaytarilgan bo‘lsa trackingStatus ni yangilaydi.
+ * Itemdagi barcha ochiq donalar kuryer orqali qaytarilgan bo‘lsa
+ * trackingStatus = returned_to_seller.
+ *
+ * Assignment yo‘q yopiq donalar (unavailable / cancelled) «qanoatlantirilgan»
+ * deb hisoblanadi — partial unavailable keyin qolgan donani qaytarish
+ * itemni bloklamasligi kerak.
+ *
+ * Muhim: sibling hali ochiq bo‘lsa ham joriy donaning units[] yozuvi
+ * saqlanadi (agregat returned_to_seller ga o‘tmaydi — ochiq dona poolda qoladi).
  */
 async function markOrderItemReturnedToSeller(assignment, returnedAt) {
   const order = await Order.findOne({ id: assignment.orderId });
@@ -788,6 +802,20 @@ async function markOrderItemReturnedToSeller(assignment, returnedAt) {
     ? order.items[Number(assignment.itemIndex)]
     : null;
   if (!item) return;
+
+  const at = returnedAt instanceof Date ? returnedAt : new Date(returnedAt || Date.now());
+  ensureItemUnits(item, at);
+
+  const thisUnitIndex = Number(assignment.unitIndex) || 0;
+  const thisUnit = getItemUnit(item, thisUnitIndex);
+  if (thisUnit) {
+    const prev = resolveUnitTrackingStatus(item, thisUnitIndex);
+    if (prev !== "returned_to_seller") {
+      thisUnit.trackingStatus = "returned_to_seller";
+      if (!Array.isArray(thisUnit.trackingHistory)) thisUnit.trackingHistory = [];
+      thisUnit.trackingHistory.push({ status: "returned_to_seller", at });
+    }
+  }
 
   const unitCount = Math.max(1, Number(item.quantity) || 1);
   const unitRows = await CourierOrderAssignment.find({
@@ -800,20 +828,33 @@ async function markOrderItemReturnedToSeller(assignment, returnedAt) {
   const statusByUnit = new Map(
     unitRows.map((row) => [Number(row.unitIndex) || 0, String(row.status || "")]),
   );
-  statusByUnit.set(Number(assignment.unitIndex) || 0, "returned");
+  statusByUnit.set(thisUnitIndex, "returned");
 
+  let allSatisfied = true;
   for (let i = 0; i < unitCount; i += 1) {
-    if (String(statusByUnit.get(i) || "") !== "returned") {
-      return;
+    if (String(statusByUnit.get(i) || "") === "returned") continue;
+
+    const unitStatus = resolveUnitTrackingStatus(item, i);
+    // Assignment bo‘lmasa ham: yopiq dona (unavailable / cancelled / returned_to_seller) OK
+    if (isClosedUnitStatus(unitStatus)) {
+      continue;
+    }
+    allSatisfied = false;
+    break;
+  }
+
+  // Faqat hammasi qanoatlantirilganda item agregat — aks holda ochiq sibling
+  // handed_to_courier qoladi (kuryer pool item statusiga tayanadi).
+  if (allSatisfied) {
+    const current = String(item.trackingStatus || "");
+    if (current !== "returned_to_seller") {
+      item.trackingStatus = "returned_to_seller";
+      if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+      item.trackingHistory.push({ status: "returned_to_seller", at });
     }
   }
 
-  const current = String(item.trackingStatus || "");
-  if (current === "returned_to_seller") return;
-
-  item.trackingStatus = "returned_to_seller";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "returned_to_seller", at: returnedAt });
+  // Har doim saqlash: partial qaytarishda ham units[i] yo‘qolmasin
   order.markModified("items");
   await order.save();
 }

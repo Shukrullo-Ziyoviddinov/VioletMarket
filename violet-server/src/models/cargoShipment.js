@@ -28,6 +28,16 @@ const cargoShipmentProductSchema = new mongoose.Schema(
     quantity: { type: Number, default: 1, min: 1 },
     weightKg: { type: Number, default: 0 },
     unitIndex: { type: Number, default: 0 },
+    /**
+     * Dona qaytarish holati (soft). Yo‘q / active = yukda.
+     * products[] o‘chirilmaydi.
+     */
+    returnStatus: {
+      type: String,
+      enum: ["active", "return_request_pending", "return_approved", "returned"],
+      default: "active",
+    },
+    returnedAt: { type: Date, default: null },
   },
   { _id: false },
 );

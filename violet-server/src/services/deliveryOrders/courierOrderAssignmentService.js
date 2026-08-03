@@ -7,6 +7,13 @@ const {
   normalizeOrderTrackingStatus,
 } = require("../../productManagement/orderTracking");
 const {
+  isClosedUnitStatus,
+  resolveUnitTrackingStatus,
+  areAllItemUnitsSettledForDelivery,
+  isItemSettledForOrderDelivery,
+  markItemUnitDelivered,
+} = require("../../productManagement/orderItemUnitTracking");
+const {
   normalizeDeliveryAddress,
 } = require("../../utils/normalizeDeliveryAddress");
 const {
@@ -435,6 +442,15 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     throw new HttpError(400, "Dona indeksi noto‘g‘ri", "INVALID_UNIT_INDEX");
   }
 
+  const unitTrackingStatus = resolveUnitTrackingStatus(item, unitIndex);
+  if (isClosedUnitStatus(unitTrackingStatus)) {
+    throw new HttpError(
+      409,
+      "Bu dona mavjud emas yoki bekor qilingan — qabul qilib bo‘lmaydi",
+      "ORDER_UNIT_CLOSED",
+    );
+  }
+
   const handedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : []).find(
     (entry) => String(entry?.status || "") === "handed_to_courier",
   );
@@ -710,7 +726,10 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
   if (order) {
     const item = Array.isArray(order.items) ? order.items[assignment.itemIndex] : null;
     if (item) {
-      const unitCount = Math.max(1, Number(item.quantity) || 1);
+      const thisUnitIndex = Number(assignment.unitIndex) || 0;
+      // Dona tracking — unavailable/cancelled ga tegilmaydi
+      markItemUnitDelivered(item, thisUnitIndex, deliveredAt);
+
       const unitAssignments = await CourierOrderAssignment.find({
         orderId: assignment.orderId,
         itemIndex: assignment.itemIndex,
@@ -723,14 +742,14 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
           .filter((row) => String(row.status) === "delivered")
           .map((row) => Number(row.unitIndex) || 0),
       );
+      deliveredUnits.add(thisUnitIndex);
 
-      let allUnitsDelivered = true;
-      for (let i = 0; i < unitCount; i += 1) {
-        if (!deliveredUnits.has(i)) {
-          allUnitsDelivered = false;
-          break;
-        }
-      }
+      // unavailable/cancelled assignment yo‘q — «qanoatlantirilgan»
+      // returned_to_seller hisobga olinmaydi (qayta kuryer hali mumkin)
+      const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
+        item,
+        deliveredUnits,
+      );
 
       const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
       if (allUnitsDelivered && currentStatus !== "delivered") {
@@ -740,12 +759,13 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
       }
 
       const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
-        (row) => normalizeOrderTrackingStatus(row.trackingStatus) === "delivered",
+        (row) => isItemSettledForOrderDelivery(row),
       );
       if (allItemsDelivered && String(order.status) !== "delivered") {
         order.status = "delivered";
       }
 
+      order.markModified("items");
       await order.save();
 
       // Sotuv/daromad — faqat topshirilganda (siller + asosiy admin)

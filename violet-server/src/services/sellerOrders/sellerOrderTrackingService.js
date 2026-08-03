@@ -5,6 +5,18 @@ const {
   normalizeOrderTrackingStatus,
   resolveSellerPipelineMode,
 } = require("../../productManagement/orderTracking");
+const {
+  ensureItemUnits,
+  getItemUnit,
+  resolveTargetUnitIndexes,
+  recomputeItemTrackingStatusFromUnits,
+  resolveItemQuantity,
+} = require("../../productManagement/orderItemUnitTracking");
+const {
+  applyItemPipelineStatus,
+  cancelOpenItemUnits,
+  countOpenItemUnits,
+} = require("../../productManagement/orderItemUnitPipelineSync");
 const { releaseToWarehouse, discardReserved } = require("../../inventory");
 const { normalizeVariant } = require("../../productManagement/variantStockAdjust");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
@@ -97,10 +109,16 @@ async function confirmSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
 
   if (currentStatus === "accepted") {
     const confirmedAt = new Date();
-    item.trackingStatus = "seller_confirmed";
-    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-    item.trackingHistory.push({ status: "seller_confirmed", at: confirmedAt });
+    applyItemPipelineStatus(item, "seller_confirmed", confirmedAt);
+    order.markModified("items");
     await order.save();
+  } else if (currentStatus === "seller_confirmed") {
+    // Idempotent: ochiq donalar sync bo‘lmagan bo‘lsa to‘ldirish
+    const sync = applyItemPipelineStatus(item, "seller_confirmed", new Date());
+    if (sync.changed) {
+      order.markModified("items");
+      await order.save();
+    }
   }
 
   const confirmedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : [])
@@ -109,7 +127,7 @@ async function confirmSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   return {
     orderId,
     itemIndex,
-    trackingStatus: "seller_confirmed",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "seller_confirmed",
     confirmedAt: confirmedEntry?.at || null,
   };
 }
@@ -144,10 +162,15 @@ async function collectSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
 
   if (currentStatus === "seller_confirmed") {
     const collectedAt = new Date();
-    item.trackingStatus = "collected";
-    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-    item.trackingHistory.push({ status: "collected", at: collectedAt });
+    applyItemPipelineStatus(item, "collected", collectedAt);
+    order.markModified("items");
     await order.save();
+  } else if (currentStatus === "collected") {
+    const sync = applyItemPipelineStatus(item, "collected", new Date());
+    if (sync.changed) {
+      order.markModified("items");
+      await order.save();
+    }
   }
 
   const collectedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : [])
@@ -156,7 +179,7 @@ async function collectSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   return {
     orderId,
     itemIndex,
-    trackingStatus: "collected",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "collected",
     collectedAt: collectedEntry?.at || null,
   };
 }
@@ -200,10 +223,15 @@ async function handoffSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
 
   if (currentStatus === "collected") {
     const handedAt = new Date();
-    item.trackingStatus = "handed_to_courier";
-    if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-    item.trackingHistory.push({ status: "handed_to_courier", at: handedAt });
+    applyItemPipelineStatus(item, "handed_to_courier", handedAt);
+    order.markModified("items");
     await order.save();
+  } else if (currentStatus === "handed_to_courier") {
+    const sync = applyItemPipelineStatus(item, "handed_to_courier", new Date());
+    if (sync.changed) {
+      order.markModified("items");
+      await order.save();
+    }
   }
 
   const handedEntry = (Array.isArray(item.trackingHistory) ? item.trackingHistory : [])
@@ -212,7 +240,7 @@ async function handoffSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   return {
     orderId,
     itemIndex,
-    trackingStatus: "handed_to_courier",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "handed_to_courier",
     handedToCourierAt: handedEntry?.at || null,
   };
 }
@@ -401,19 +429,26 @@ async function cancelSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
     );
   }
 
-  const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
   const productId = Number(item.productId) || 0;
   if (!productId) {
     throw new HttpError(409, "Mahsulot ID topilmadi", "PRODUCT_ID_MISSING");
   }
 
+  const openCount = countOpenItemUnits(item);
+  if (openCount <= 0) {
+    throw new HttpError(
+      409,
+      "Bekor qilish uchun ochiq dona yo‘q",
+      "ORDER_CANCEL_NO_OPEN_UNITS",
+    );
+  }
+
   const variant = variantFromOrderItem(item);
-  await releaseToWarehouse(productId, qty, variant);
+  // Partial unavailable: discard allaqachon qilingan — faqat ochiq donalar omborga
+  await releaseToWarehouse(productId, openCount, variant);
 
   const cancelledAt = new Date();
-  item.trackingStatus = "cancelled";
-  if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "cancelled", at: cancelledAt });
+  const cancelResult = cancelOpenItemUnits(item, cancelledAt);
 
   const allClosed = (Array.isArray(order.items) ? order.items : []).every(
     (row) => isClosedTrackingStatus(normalizeOrderTrackingStatus(row?.trackingStatus)),
@@ -428,8 +463,10 @@ async function cancelSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
   return {
     orderId,
     itemIndex,
-    trackingStatus: "cancelled",
+    trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus) || "cancelled",
     cancelledAt,
+    cancelledCount: cancelResult.cancelledCount,
+    skippedClosedCount: cancelResult.skippedClosedCount,
     orderStatus: String(order.status || ""),
   };
 }
@@ -438,8 +475,16 @@ async function cancelSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
  * Sillerda mahsulot yo‘q: rezerv discard (ombor qty qaytmaydi), sotilgan deb yozilmaydi.
  * Cancel dan alohida — releaseToWarehouse chaqirilmaydi.
  * To‘langan bo‘lsa — admin «Pul qaytarish»ga pending so‘rov.
+ *
+ * options.unitIndexes — ixtiyoriy. Berilmasa: butun qator (eski API).
+ * Berilsa: faqat shu donalar; item.trackingStatus agregat qayta hisoblanadi.
  */
-async function markUnavailableSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw) {
+async function markUnavailableSellerOrderItem(
+  sellerId,
+  orderIdRaw,
+  itemIndexRaw,
+  options = {},
+) {
   const normalizedSellerId = cleanSellerId(sellerId);
   if (!normalizedSellerId) {
     throw new HttpError(400, "Seller ID topilmadi", "VALIDATION_ERROR");
@@ -458,65 +503,107 @@ async function markUnavailableSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw
     throw new HttpError(404, "Buyurtma mahsuloti topilmadi", "ORDER_ITEM_NOT_FOUND");
   }
 
-  const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
-  if (currentStatus === "unavailable") {
-    let refundCreated = false;
-    try {
-      const refund = await createCustomerRefundForSellerUnavailable({
-        order,
-        item,
-        itemIndex,
-        productCode: formatProductCode(Number(item.productId) || 0),
-      });
-      refundCreated = Boolean(refund);
-    } catch (error) {
-      console.error(
-        "[seller-unavailable] refund create failed (already unavailable)",
-        orderId,
-        itemIndex,
-        error?.message || error,
+  const productId = Number(item.productId) || 0;
+  if (!productId) {
+    throw new HttpError(409, "Mahsulot ID topilmadi", "PRODUCT_ID_MISSING");
+  }
+
+  const targetUnitIndexes = resolveTargetUnitIndexes(item, options.unitIndexes);
+  if (!targetUnitIndexes.length) {
+    throw new HttpError(
+      400,
+      "Qaytariladigan donani tanlang",
+      "UNIT_INDEXES_REQUIRED",
+    );
+  }
+
+  ensureItemUnits(item);
+  const unavailableAt = new Date();
+  const newlyMarked = [];
+  const alreadyUnavailable = [];
+
+  for (const unitIndex of targetUnitIndexes) {
+    const unit = getItemUnit(item, unitIndex);
+    if (!unit) {
+      throw new HttpError(404, "Dona topilmadi", "ORDER_UNIT_NOT_FOUND");
+    }
+
+    const unitStatus = normalizeOrderTrackingStatus(unit.trackingStatus);
+    if (unitStatus === "unavailable") {
+      alreadyUnavailable.push(unitIndex);
+      continue;
+    }
+
+    if (unitStatus === "cancelled") {
+      throw new HttpError(
+        409,
+        "Mahsulot allaqachon bekor qilingan",
+        "ORDER_ALREADY_CANCELLED",
       );
     }
+
+    if (!UNAVAILABLE_TRACKING_STATUSES.has(unitStatus)) {
+      throw new HttpError(
+        409,
+        "Bu bosqichda «Mavjud emas» qilib bo‘lmaydi",
+        "ORDER_UNAVAILABLE_NOT_ALLOWED",
+      );
+    }
+
+    unit.trackingStatus = "unavailable";
+    if (!Array.isArray(unit.trackingHistory)) unit.trackingHistory = [];
+    unit.trackingHistory.push({ status: "unavailable", at: unavailableAt });
+    newlyMarked.push(unitIndex);
+  }
+
+  if (!newlyMarked.length) {
+    let refundCreated = false;
+    for (const unitIndex of alreadyUnavailable) {
+      try {
+        const refund = await createCustomerRefundForSellerUnavailable({
+          order,
+          item,
+          itemIndex,
+          unitIndex,
+          productCode: formatProductCode(productId),
+        });
+        if (refund) refundCreated = true;
+      } catch (error) {
+        console.error(
+          "[seller-unavailable] refund create failed (already unavailable)",
+          orderId,
+          itemIndex,
+          unitIndex,
+          error?.message || error,
+        );
+      }
+    }
+
     return {
       orderId,
       itemIndex,
-      trackingStatus: "unavailable",
+      unitIndexes: alreadyUnavailable,
+      trackingStatus: normalizeOrderTrackingStatus(item.trackingStatus),
       unavailableAt: null,
       alreadyUnavailable: true,
       refundCreated,
     };
   }
 
-  if (currentStatus === "cancelled") {
-    throw new HttpError(
-      409,
-      "Mahsulot allaqachon bekor qilingan",
-      "ORDER_ALREADY_CANCELLED",
-    );
-  }
-
-  if (!UNAVAILABLE_TRACKING_STATUSES.has(currentStatus)) {
-    throw new HttpError(
-      409,
-      "Bu bosqichda «Mavjud emas» qilib bo‘lmaydi",
-      "ORDER_UNAVAILABLE_NOT_ALLOWED",
-    );
-  }
-
-  const qty = Math.max(1, Math.floor(Number(item.quantity) || 1));
-  const productId = Number(item.productId) || 0;
-  if (!productId) {
-    throw new HttpError(409, "Mahsulot ID topilmadi", "PRODUCT_ID_MISSING");
-  }
-
-  // Ombor qty qaytmaydi — faqat reserved ochiladi (checkout da qty allaqachon kamaygan)
   const variant = variantFromOrderItem(item);
-  await discardReserved(productId, qty, variant);
+  await discardReserved(productId, newlyMarked.length, variant);
 
-  const unavailableAt = new Date();
-  item.trackingStatus = "unavailable";
+  const previousAggregate = normalizeOrderTrackingStatus(item.trackingStatus);
+  recomputeItemTrackingStatusFromUnits(item);
+  const nextAggregate = normalizeOrderTrackingStatus(item.trackingStatus);
+
   if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-  item.trackingHistory.push({ status: "unavailable", at: unavailableAt });
+  if (
+    nextAggregate === "unavailable" &&
+    previousAggregate !== "unavailable"
+  ) {
+    item.trackingHistory.push({ status: "unavailable", at: unavailableAt });
+  }
 
   const allClosed = (Array.isArray(order.items) ? order.items : []).every(
     (row) => isClosedTrackingStatus(normalizeOrderTrackingStatus(row?.trackingStatus)),
@@ -529,31 +616,37 @@ async function markUnavailableSellerOrderItem(sellerId, orderIdRaw, itemIndexRaw
   await order.save();
 
   let refundCreated = false;
-  try {
-    const refund = await createCustomerRefundForSellerUnavailable({
-      order,
-      item,
-      itemIndex,
-      productCode: formatProductCode(productId),
-    });
-    refundCreated = Boolean(refund);
-  } catch (error) {
-    // Inventar/status allaqachon yozilgan — refund xatosi amalni orqaga qaytarmaydi
-    console.error(
-      "[seller-unavailable] refund create failed",
-      orderId,
-      itemIndex,
-      error?.message || error,
-    );
+  for (const unitIndex of newlyMarked) {
+    try {
+      const refund = await createCustomerRefundForSellerUnavailable({
+        order,
+        item,
+        itemIndex,
+        unitIndex,
+        productCode: formatProductCode(productId),
+      });
+      if (refund) refundCreated = true;
+    } catch (error) {
+      console.error(
+        "[seller-unavailable] refund create failed",
+        orderId,
+        itemIndex,
+        unitIndex,
+        error?.message || error,
+      );
+    }
   }
 
   return {
     orderId,
     itemIndex,
-    trackingStatus: "unavailable",
+    unitIndexes: newlyMarked,
+    quantity: resolveItemQuantity(item),
+    trackingStatus: nextAggregate,
     unavailableAt,
     orderStatus: String(order.status || ""),
     refundCreated,
+    alreadyUnavailable: false,
   };
 }
 

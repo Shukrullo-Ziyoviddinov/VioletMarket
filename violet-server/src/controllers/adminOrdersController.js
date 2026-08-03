@@ -104,10 +104,12 @@ const cancelOrderGroup = asyncHandler(async (req, res) => {
 });
 
 const markUnavailableOrderItem = asyncHandler(async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
   const data = await adminOrdersService.markUnavailableAdminOrderItem({
-    sellerId: req.body?.sellerId,
+    sellerId: body.sellerId,
     orderId: req.params.orderId,
     itemIndex: req.params.itemIndex,
+    unitIndexes: body.unitIndexes ?? body.unitIndex,
   });
   res.json({ ok: true, data });
 });

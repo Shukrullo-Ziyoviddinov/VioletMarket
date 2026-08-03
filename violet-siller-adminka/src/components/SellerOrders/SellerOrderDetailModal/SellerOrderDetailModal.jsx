@@ -4,19 +4,49 @@ import GlobalModal from '../../GlobalModal/GlobalModal';
 import SellerOrderDetailModalContent from '../SellerOrderDetailModalContent/SellerOrderDetailModalContent';
 import './SellerOrderDetailModal.css';
 
-function resolveDefaultItemIndexes(order) {
-  const indexes = Array.isArray(order?.itemIndexes)
-    ? order.itemIndexes
-    : [Number(order?.itemIndex) || 0];
-  const unique = [...new Set(indexes.map((value) => Number(value) || 0))];
-  return unique.length === 1 ? unique : [];
+function unitKey(itemIndex, unitIndex) {
+  return `${Number(itemIndex) || 0}:${Number(unitIndex) || 0}`;
 }
 
-function toggleIndex(list, index) {
-  const value = Number(index);
-  if (!Number.isInteger(value) || value < 0) return list;
-  if (list.includes(value)) return list.filter((item) => item !== value);
-  return [...list, value];
+function parseUnitKey(key) {
+  const [itemPart, unitPart] = String(key || '').split(':');
+  return {
+    itemIndex: Number(itemPart) || 0,
+    unitIndex: Number(unitPart) || 0,
+  };
+}
+
+function resolveOrderUnits(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (items.length) {
+    return items.map((item, index) => ({
+      itemIndex: Number.isInteger(Number(item?.itemIndex))
+        ? Number(item.itemIndex)
+        : index,
+      unitIndex: Number(item?.unitIndex) || 0,
+    }));
+  }
+  if (!order) return [];
+  return [
+    {
+      itemIndex: Number(order.itemIndex) || 0,
+      unitIndex: Number(order.unitIndex) || 0,
+    },
+  ];
+}
+
+function resolveDefaultUnitKeys(order) {
+  const units = resolveOrderUnits(order);
+  if (units.length === 1) {
+    return [unitKey(units[0].itemIndex, units[0].unitIndex)];
+  }
+  return [];
+}
+
+function toggleUnitKey(list, itemIndex, unitIndex) {
+  const key = unitKey(itemIndex, unitIndex);
+  if (list.includes(key)) return list.filter((row) => row !== key);
+  return [...list, key];
 }
 
 export default function SellerOrderDetailModal({
@@ -41,19 +71,20 @@ export default function SellerOrderDetailModal({
     ? t('orders.modal.titleWithCode', { code: order.orderCode })
     : t('orders.modal.title');
 
+  const orderUnits = useMemo(() => resolveOrderUnits(order), [order]);
   const isGroup =
     Boolean(order?.isGroup) ||
-    (Array.isArray(order?.items) && order.items.length > 1) ||
+    orderUnits.length > 1 ||
     (Array.isArray(order?.itemIndexes) && order.itemIndexes.length > 1);
 
-  const [selectedItemIndexes, setSelectedItemIndexes] = useState([]);
+  const [selectedUnitKeys, setSelectedUnitKeys] = useState([]);
 
   useEffect(() => {
     if (!open) {
-      setSelectedItemIndexes([]);
+      setSelectedUnitKeys([]);
       return;
     }
-    setSelectedItemIndexes(resolveDefaultItemIndexes(order));
+    setSelectedUnitKeys(resolveDefaultUnitKeys(order));
   }, [open, order]);
 
   const busy = confirming || collecting || cancelling || markingUnavailable;
@@ -61,17 +92,24 @@ export default function SellerOrderDetailModal({
   const unavailableReady = useMemo(() => {
     if (!showUnavailable) return false;
     if (!isGroup) return true;
-    return selectedItemIndexes.length > 0;
-  }, [showUnavailable, isGroup, selectedItemIndexes]);
+    return selectedUnitKeys.length > 0;
+  }, [showUnavailable, isGroup, selectedUnitKeys]);
+
+  const selectedUnits = useMemo(
+    () => selectedUnitKeys.map(parseUnitKey),
+    [selectedUnitKeys],
+  );
 
   return (
     <GlobalModal open={open} title={title} onClose={onClose}>
       <SellerOrderDetailModalContent
         order={order}
         selectableUnavailable={showUnavailable && isGroup}
-        selectedItemIndexes={selectedItemIndexes}
-        onToggleItemIndex={(itemIndex) => {
-          setSelectedItemIndexes((prev) => toggleIndex(prev, itemIndex));
+        selectedUnits={selectedUnits}
+        onToggleUnit={(itemIndex, unitIndex) => {
+          setSelectedUnitKeys((prev) =>
+            toggleUnitKey(prev, itemIndex, unitIndex),
+          );
         }}
       />
       {showActions ? (
@@ -94,13 +132,17 @@ export default function SellerOrderDetailModal({
                 type="button"
                 className="seller-order-detail-modal__unavailable"
                 disabled={busy || !unavailableReady}
-                onClick={() =>
-                  onMarkUnavailable?.(
-                    isGroup
-                      ? selectedItemIndexes
-                      : [Number(order?.itemIndex) || 0],
-                  )
-                }
+                onClick={() => {
+                  const units = isGroup
+                    ? selectedUnits
+                    : [
+                        {
+                          itemIndex: Number(order?.itemIndex) || 0,
+                          unitIndex: Number(order?.unitIndex) || 0,
+                        },
+                      ];
+                  onMarkUnavailable?.(units);
+                }}
               >
                 {markingUnavailable
                   ? t('orders.modal.markingUnavailable', {
