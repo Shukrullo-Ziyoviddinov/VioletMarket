@@ -41,8 +41,49 @@ const {
 } = require("../productManagement/orderTracking");
 const {
   loadUnresolvedNoAnswerUnitIndexes,
-  areAllOrderItemsSettledForDelivery,
+  maybeSettleOrderDelivered,
+  healNoAnswerResolvedIfUnitDelivered,
 } = require("./deliveryUnitSettlement");
+
+/**
+ * Sotildi crash: unit delivered, resolvedAt yo‘q.
+ * Reactivate / re_handoff ombor ochmasin / unit ochmasin.
+ */
+async function rejectIfAlreadySoldUnit(doc, options = {}) {
+  const heal = await healNoAnswerResolvedIfUnitDelivered(
+    doc,
+    options.resolvedBy || options.actor || "system_heal",
+  );
+  if (!heal.healed) return;
+
+  // Best-effort sotuv (Sotildi o‘rtasida crash — sales yozilmagan bo‘lishi mumkin)
+  try {
+    let assignment = doc.assignmentId
+      ? await CourierOrderAssignment.findById(doc.assignmentId)
+      : null;
+    if (!assignment) {
+      assignment = await CourierOrderAssignment.findOne(unitKeyFromReturned(doc));
+    }
+    if (assignment && heal.order) {
+      await recordSalesOnDelivery(
+        heal.order,
+        heal.returnedDoc?.resolvedAt || new Date(),
+        {
+          assignmentId: String(assignment._id),
+          allowNonDeliveredAssignment: true,
+        },
+      );
+    }
+  } catch (_) {
+    /* sales retry keyingi Sotildi da */
+  }
+
+  throw new HttpError(
+    409,
+    "Bu dona allaqachon sotildi deb belgilangan — qayta aktiv / qayta kuryer qilib bo‘lmaydi",
+    "NO_ANSWER_ALREADY_SOLD",
+  );
+}
 
 function isBadVariantLabel(value) {
   const text = String(value || "").trim();
@@ -169,6 +210,7 @@ async function deleteAssignmentForReturned(doc) {
  */
 async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
+  await rejectIfAlreadySoldUnit(doc, options);
   const variant = await resolveVariantForStockRestore(doc);
 
   if (isStockReleased(doc)) {
@@ -226,6 +268,7 @@ async function reHandoffNoAnswerOrder(returnedOrderId, options = {}) {
  */
 async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
+  await rejectIfAlreadySoldUnit(doc, options);
   const variant = await resolveVariantForStockRestore(doc);
 
   const product = await Product.findOne({ id: doc.productId }).select("id").lean();
@@ -240,9 +283,12 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
     doc.model = variant.model;
   }
 
-  await releaseToWarehouse(doc.productId, 1, variant);
-  doc.stockReleased = true;
-  await doc.save();
+  // Crash retry: ombor allaqachon ochilgan bo‘lsa qayta +1 qilmaslik
+  if (!isStockReleased(doc)) {
+    await releaseToWarehouse(doc.productId, 1, variant);
+    doc.stockReleased = true;
+    await doc.save();
+  }
 
   await deleteAssignmentForReturned(doc);
 
@@ -251,6 +297,14 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
     "reactivated",
     options.resolvedBy || options.actor || "admin",
   );
+
+  // Qayta aktiv: unit returned_to_seller qoladi, lekin no_answer yopiladi →
+  // ochiq no_answer yo‘q bo‘lsa order.status = delivered (Sotildi bilan bir xil yakun).
+  const order = await Order.findOne({ id: doc.orderId });
+  if (order && (await maybeSettleOrderDelivered(order))) {
+    await order.save();
+  }
+
   return { resolution: "reactivated", returned: publicRow };
 }
 
@@ -263,8 +317,32 @@ async function reactivateNoAnswerOrder(returnedOrderId, options = {}) {
  */
 async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
   const doc = await loadUnresolvedNoAnswer(returnedOrderId, options.sellerId);
-  const variant = await resolveVariantForStockRestore(doc);
+  const resolvedBy = options.resolvedBy || options.actor || "admin";
   const soldAt = new Date();
+
+  // Crash retry: unit allaqachon delivered, resolvedAt yo‘q → heal + sales + OK
+  const earlyHeal = await healNoAnswerResolvedIfUnitDelivered(doc, resolvedBy);
+  if (earlyHeal.healed) {
+    let assignment = doc.assignmentId
+      ? await CourierOrderAssignment.findById(doc.assignmentId)
+      : null;
+    if (!assignment) {
+      assignment = await CourierOrderAssignment.findOne(unitKeyFromReturned(doc));
+    }
+    if (assignment && earlyHeal.order) {
+      await recordSalesOnDelivery(earlyHeal.order, soldAt, {
+        assignmentId: String(assignment._id),
+        allowNonDeliveredAssignment: true,
+      });
+    }
+    return {
+      resolution: "delivered",
+      returned: toPublicReturnedOrder(earlyHeal.returnedDoc || doc),
+      healed: true,
+    };
+  }
+
+  const variant = await resolveVariantForStockRestore(doc);
 
   if (isStockReleased(doc)) {
     await reReserveForCourier(doc.productId, 1, variant);
@@ -350,12 +428,8 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
       item.trackingHistory.push({ status: "delivered", at: soldAt });
     }
 
-    if (
-      (await areAllOrderItemsSettledForDelivery(order)) &&
-      String(order.status) !== "delivered"
-    ) {
-      order.status = "delivered";
-    }
+    // Item delivered bo‘lsa settle OK (joriy unresolved dona ham deliveredUnits da)
+    await maybeSettleOrderDelivered(order);
 
     order.markModified("items");
     await order.save();
@@ -367,11 +441,7 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
     allowNonDeliveredAssignment: true,
   });
 
-  const publicRow = await markResolved(
-    doc,
-    "delivered",
-    options.resolvedBy || options.actor || "admin",
-  );
+  const publicRow = await markResolved(doc, "delivered", resolvedBy);
   return { resolution: "delivered", returned: publicRow };
 }
 

@@ -55,13 +55,36 @@ check("resolved Sotildi → skip retry", () => {
   );
 });
 
-check("unit delivered without resolvedAt → skip retry", () => {
+check("unit delivered without resolvedAt → skip retry (+ heal path)", () => {
   assert.strictEqual(
     shouldSkipCompleteReturnRetry({
       resolvedAt: null,
       unitStatus: "delivered",
     }),
     true,
+  );
+});
+
+check("crash heal sharti: no_answer + delivered + !resolvedAt", () => {
+  const shouldHeal = ({ reasonType, resolvedAt, unitStatus }) =>
+    !resolvedAt &&
+    String(reasonType) === "no_answer" &&
+    String(unitStatus) === "delivered";
+  assert.strictEqual(
+    shouldHeal({
+      reasonType: "no_answer",
+      resolvedAt: null,
+      unitStatus: "delivered",
+    }),
+    true,
+  );
+  assert.strictEqual(
+    shouldHeal({
+      reasonType: "no_answer",
+      resolvedAt: null,
+      unitStatus: "returned_to_seller",
+    }),
+    false,
   );
 });
 

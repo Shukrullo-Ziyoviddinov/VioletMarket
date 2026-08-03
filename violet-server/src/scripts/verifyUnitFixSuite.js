@@ -27,6 +27,7 @@ const scripts = [
   "verifyRound3Regression.js",
   "verifyCompleteReturnAfterSold.js",
   "verifyCargoOrderSettle.js",
+  "verifyReactivateAndSoldCrash.js",
 ];
 
 let failed = 0;

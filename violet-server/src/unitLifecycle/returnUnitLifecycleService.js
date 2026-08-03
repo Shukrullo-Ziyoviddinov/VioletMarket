@@ -50,6 +50,7 @@ const {
 } = require("../productManagement/orderTracking");
 const {
   areAllOrderItemsSettledForDelivery,
+  healNoAnswerResolvedIfUnitDelivered,
 } = require("./deliveryUnitSettlement");
 
 
@@ -582,7 +583,8 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       };
     }
 
-    // Sotildi order unit ni delivered qilgan, resolvedAt hali yozilmagan crash edge
+    // Sotildi order unit ni delivered qilgan, resolvedAt hali yozilmagan crash edge.
+    // Faqat skip emas — resolution ni delivered qilib yopamiz (qayta aktiv bloklanadi).
     const orderPeek = await Order.findOne({ id: assignment.orderId }).select("items");
     const peekItem = Array.isArray(orderPeek?.items)
       ? orderPeek.items[Number(assignment.itemIndex)]
@@ -591,8 +593,20 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       peekItem &&
       resolveUnitTrackingStatus(peekItem, unitFilter.unitIndex) === "delivered"
     ) {
+      let healedDoc = existingDoc;
+      if (
+        existingDoc &&
+        String(existingDoc.reasonType || "") === "no_answer" &&
+        !existingDoc.resolvedAt
+      ) {
+        const heal = await healNoAnswerResolvedIfUnitDelivered(
+          existingDoc,
+          "system_heal_complete_return",
+        );
+        if (heal.healed) healedDoc = heal.returnedDoc || existingDoc;
+      }
       return {
-        returned: existingDoc ? toPublicReturnedOrder(existingDoc) : null,
+        returned: healedDoc ? toPublicReturnedOrder(healedDoc) : null,
         assignment: await mapAssignmentPublic(assignment),
         alreadyResolved: true,
       };
