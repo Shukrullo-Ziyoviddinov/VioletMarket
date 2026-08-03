@@ -1,4 +1,16 @@
-const { recordProductSoldDisplayMetrics } = require("./markProductsAsSold");
+/**
+ * productManagement — public shim yo‘llar + ichki domenlar:
+ *   checkout/       payment + cart order
+ *   sales/          sotildi / statistika (live: recordSalesOnDelivery)
+ *   unitTracking/   dona + tracking
+ *   seller/         seller order cards
+ *   foreign/        xorijiy cargo oqimi
+ *   shared/         variant stock
+ * Eski require("../productManagement/orderItemUnitTracking") ishlaydi (shim).
+ */
+const {
+  recordProductSoldDisplayMetrics,
+} = require("./sales/recordProductSoldDisplayMetrics");
 const {
   reserveOnCheckout,
   releaseToWarehouse,
@@ -11,28 +23,28 @@ const {
   buildReviewCartSnapshot,
   buildPostOrderReviewPayload,
   shouldTriggerPostOrderReview,
-} = require("./postOrderCommentFlow");
+} = require("./checkout/postOrderCommentFlow");
 const {
   PAYMENT_SOURCES,
   buildOrderItemsFromCart,
   calcOrderTotalAmount,
   recordCartPayment,
-} = require("./recordCartPayment");
-const { recordSellerSalesFromOrder } = require("./recordSellerSales");
-const { recordSellerProductSalesFromOrder } = require("./recordSellerProductSales");
-const { recordCategoryProductSalesFromOrder } = require("./recordCategoryProductSales");
-const { recordCountryCategoryProductSalesFromOrder } = require("./recordCountryCategoryProductSales");
-const { recordBrandCategoryProductSalesFromOrder } = require("./recordBrandCategoryProductSales");
+} = require("./checkout/recordCartPayment");
+const { recordSellerSalesFromOrder } = require("./sales/recordSellerSales");
+const { recordSellerProductSalesFromOrder } = require("./sales/recordSellerProductSales");
+const { recordCategoryProductSalesFromOrder } = require("./sales/recordCategoryProductSales");
+const { recordCountryCategoryProductSalesFromOrder } = require("./sales/recordCountryCategoryProductSales");
+const { recordBrandCategoryProductSalesFromOrder } = require("./sales/recordBrandCategoryProductSales");
 const {
   formatOrderCode,
   formatProductCode,
   buildSellerOrderCard,
   listSellerOrders,
-} = require("./sellerOrders");
+} = require("./seller/sellerOrders");
 const {
   VALID_PAYMENT_METHODS,
   normalizePaymentMethod,
-} = require("./paymentMethods");
+} = require("./checkout/paymentMethods");
 
 module.exports = {
   reserveOnCheckout,
@@ -54,7 +66,7 @@ module.exports = {
   recordCategoryProductSalesFromOrder,
   recordCountryCategoryProductSalesFromOrder,
   recordBrandCategoryProductSalesFromOrder,
-  recordSalesOnDelivery: require("./recordSalesOnDelivery").recordSalesOnDelivery,
+  recordSalesOnDelivery: require("./sales/recordSalesOnDelivery").recordSalesOnDelivery,
   VALID_PAYMENT_METHODS,
   normalizePaymentMethod,
   formatOrderCode,

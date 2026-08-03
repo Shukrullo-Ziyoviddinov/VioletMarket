@@ -7,7 +7,7 @@ const {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
-} = require("../services/courierReturnRequest/courierReturnRequestService");
+} = require("../unitLifecycle");
 
 const createReturnRequest = asyncHandler(async (req, res) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};

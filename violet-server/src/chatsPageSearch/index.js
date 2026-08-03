@@ -6,7 +6,7 @@ const {
   mapSellerSearchResultForClient,
   scoreSellerNameMatch,
   stringsFuzzyMatch,
-} = require("./chatsPageSearchAlgoritim");
+} = require("./chatsPageSearchAlgorithm");
 
 module.exports = {
   DEFAULT_SEARCH_LIMIT,

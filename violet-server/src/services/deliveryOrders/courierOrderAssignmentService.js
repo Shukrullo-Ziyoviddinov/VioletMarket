@@ -9,12 +9,9 @@ const {
 const {
   isClosedUnitStatus,
   resolveUnitTrackingStatus,
-  areAllItemUnitsSettledForDelivery,
-  markItemUnitDelivered,
 } = require("../../productManagement/orderItemUnitTracking");
 const {
-  loadUnresolvedNoAnswerUnitIndexes,
-  areAllOrderItemsSettledForDelivery,
+  settleItemAndOrderAfterUnitDelivered,
 } = require("../../unitLifecycle/deliveryUnitSettlement");
 const {
   normalizeDeliveryAddress,
@@ -729,49 +726,13 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
   if (order) {
     const item = Array.isArray(order.items) ? order.items[assignment.itemIndex] : null;
     if (item) {
-      const thisUnitIndex = Number(assignment.unitIndex) || 0;
-      // Dona tracking — unavailable/cancelled ga tegilmaydi
-      markItemUnitDelivered(item, thisUnitIndex, deliveredAt);
-
-      const unitAssignments = await CourierOrderAssignment.find({
+      // Dona tracking + item/order settle (no_answer Sotildi bilan bir xil helper)
+      await settleItemAndOrderAfterUnitDelivered(order, item, {
         orderId: assignment.orderId,
         itemIndex: assignment.itemIndex,
-      })
-        .select("unitIndex status")
-        .lean();
-
-      const deliveredUnits = new Set(
-        unitAssignments
-          .filter((row) => String(row.status) === "delivered")
-          .map((row) => Number(row.unitIndex) || 0),
-      );
-      deliveredUnits.add(thisUnitIndex);
-
-      // unavailable/cancelled → settle; returned_to_seller faqat ochiq no_answer bo‘lmasa
-      const unresolvedNoAnswerUnitIndexes =
-        await loadUnresolvedNoAnswerUnitIndexes(
-          assignment.orderId,
-          assignment.itemIndex,
-        );
-      const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
-        item,
-        deliveredUnits,
-        { unresolvedNoAnswerUnitIndexes },
-      );
-
-      const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
-      if (allUnitsDelivered && currentStatus !== "delivered") {
-        item.trackingStatus = "delivered";
-        if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-        item.trackingHistory.push({ status: "delivered", at: deliveredAt });
-      }
-
-      if (
-        (await areAllOrderItemsSettledForDelivery(order)) &&
-        String(order.status) !== "delivered"
-      ) {
-        order.status = "delivered";
-      }
+        unitIndex: Number(assignment.unitIndex) || 0,
+        at: deliveredAt,
+      });
 
       order.markModified("items");
       await order.save();

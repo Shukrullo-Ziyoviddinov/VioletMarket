@@ -2,6 +2,6 @@ const express = require("express");
 const siteDataController = require("../../controllers/siteDataController");
 
 const router = express.Router();
-router.get("/top-sellers", siteDataController.topSillers);
+router.get("/top-sellers", siteDataController.topSellers);
 
 module.exports = router;

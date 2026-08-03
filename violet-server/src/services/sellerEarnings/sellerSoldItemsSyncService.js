@@ -5,6 +5,11 @@ const { PAID_STATUSES } = require("../adminSales/salesStatisticsHelpers");
 const { recordSellerSoldItemsFromOrder } = require("../../productManagement/recordSellerSoldItems");
 const { enrichOrderItemsWithProductData } = require("../../productManagement/salesOrderSyncService");
 
+/**
+ * BACKFILL / HEAL — SellerSoldItem yetishmagan delivered orderlar.
+ * Live yo‘l: recordSalesOnDelivery. Display metrics chaqirilmaydi.
+ */
+
 let syncInFlight = null;
 
 async function repairSellerSoldItemsWithMissingIds() {

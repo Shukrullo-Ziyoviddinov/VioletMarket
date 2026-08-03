@@ -8,7 +8,11 @@ async function list(req, res) {
 async function getById(req, res) {
   const product = await productService.findByProductId(req.params.id);
   if (!product) {
-    res.status(404).json({ error: "Mahsulot topilmadi" });
+    res.status(404).json({
+      ok: false,
+      message: "Mahsulot topilmadi",
+      code: "NOT_FOUND",
+    });
     return;
   }
   res.json(product);

@@ -1,7 +1,11 @@
 const siteContentService = require("../services/siteContentService");
 
-function notFound(res) {
-  res.status(404).json({ error: "Ma'lumot topilmadi — avval npm run seed qiling" });
+function notFound(res, message = "Ma'lumot topilmadi — avval npm run seed qiling") {
+  res.status(404).json({
+    ok: false,
+    message,
+    code: "NOT_FOUND",
+  });
 }
 
 async function categories(req, res) {
@@ -69,19 +73,21 @@ async function sellerById(req, res) {
   const { sellerId } = req.params;
   const seller = data.sellers.find((s) => String(s.id) === String(sellerId));
   if (!seller) {
-    res.status(404).json({ error: "Sotuvchi topilmadi" });
-    return;
+    return notFound(res, "Sotuvchi topilmadi");
   }
   res.json(seller);
 }
 
-const { DEFAULT_TOP_SILLERS_LIMIT } = require("../topSillers");
+const { DEFAULT_TOP_SELLERS_LIMIT } = require("../topSellers");
 
-async function topSillers(req, res) {
-  const limit = Number(req.query.limit) || DEFAULT_TOP_SILLERS_LIMIT;
-  const data = await siteContentService.getTopSillers(limit);
+async function topSellers(req, res) {
+  const limit = Number(req.query.limit) || DEFAULT_TOP_SELLERS_LIMIT;
+  const data = await siteContentService.getTopSellers(limit);
   res.json(data);
 }
+
+/** @deprecated Use topSellers */
+const topSillers = topSellers;
 
 module.exports = {
   categories,
@@ -92,6 +98,7 @@ module.exports = {
   videoBanner,
   sellers,
   sellerById,
+  topSellers,
   topSillers,
   defaultProductPolicy,
   uzWarehouse,

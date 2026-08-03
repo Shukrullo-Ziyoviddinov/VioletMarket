@@ -4,7 +4,11 @@ const sellerOrderTrackingService = require("../services/sellerOrders/sellerOrder
 const {
   listSellerReturnedOrders,
 } = require("../services/sellerOrders/sellerReturnedOrdersService");
-const noAnswerOrderActionsService = require("../services/noAnswerOrders/noAnswerOrderActionsService");
+const {
+  reHandoffNoAnswerOrder,
+  reactivateNoAnswerOrder,
+  markDeliveredNoAnswerOrder,
+} = require("../unitLifecycle");
 const cargoShipmentSellerService = require("../services/cargoShipments/cargoShipmentSellerService");
 
 const listOrders = asyncHandler(async (req, res) => {
@@ -107,26 +111,26 @@ const markUnavailableOrderItem = asyncHandler(async (req, res) => {
 });
 
 const reHandoffNoAnswer = asyncHandler(async (req, res) => {
-  const data = await noAnswerOrderActionsService.reHandoffNoAnswerOrder(
-    req.params.returnedOrderId,
-    { sellerId: req.sellerShopId, resolvedBy: "seller" },
-  );
+  const data = await reHandoffNoAnswerOrder(req.params.returnedOrderId, {
+    sellerId: req.sellerShopId,
+    resolvedBy: "seller",
+  });
   res.json({ ok: true, data });
 });
 
 const reactivateNoAnswer = asyncHandler(async (req, res) => {
-  const data = await noAnswerOrderActionsService.reactivateNoAnswerOrder(
-    req.params.returnedOrderId,
-    { sellerId: req.sellerShopId, resolvedBy: "seller" },
-  );
+  const data = await reactivateNoAnswerOrder(req.params.returnedOrderId, {
+    sellerId: req.sellerShopId,
+    resolvedBy: "seller",
+  });
   res.json({ ok: true, data });
 });
 
 const deliverNoAnswer = asyncHandler(async (req, res) => {
-  const data = await noAnswerOrderActionsService.markDeliveredNoAnswerOrder(
-    req.params.returnedOrderId,
-    { sellerId: req.sellerShopId, resolvedBy: "seller" },
-  );
+  const data = await markDeliveredNoAnswerOrder(req.params.returnedOrderId, {
+    sellerId: req.sellerShopId,
+    resolvedBy: "seller",
+  });
   res.json({ ok: true, data });
 });
 

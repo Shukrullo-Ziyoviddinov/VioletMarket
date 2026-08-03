@@ -5,7 +5,7 @@ const { HttpError } = require("../../utils/httpError");
 const {
   enrichSellersByIds,
   mapSellerSearchResultForClient,
-} = require("../../chatsPageSearch/chatsPageSearchAlgoritim");
+} = require("../../chatsPageSearch/chatsPageSearchAlgorithm");
 
 const MAX_HISTORY_ITEMS = 20;
 

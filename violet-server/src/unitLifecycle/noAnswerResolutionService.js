@@ -33,16 +33,14 @@ const { resolveOptionLabel } = require("./optionLabel");
 const {
   ensureItemUnits,
   getItemUnit,
-  areAllItemUnitsSettledForDelivery,
-  markItemUnitDelivered,
 } = require("../productManagement/orderItemUnitTracking");
 const {
   normalizeOrderTrackingStatus,
 } = require("../productManagement/orderTracking");
 const {
-  loadUnresolvedNoAnswerUnitIndexes,
   maybeSettleOrderDelivered,
   healNoAnswerResolvedIfUnitDelivered,
+  settleItemAndOrderAfterUnitDelivered,
 } = require("./deliveryUnitSettlement");
 
 /**
@@ -381,55 +379,13 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
 
   const item = Array.isArray(order.items) ? order.items[Number(doc.itemIndex)] : null;
   if (item) {
-    const thisUnitIndex = Number(doc.unitIndex) || 0;
-    // no_answer «Sotildi» — dona returned_to_seller dan delivered ga
-    markItemUnitDelivered(item, thisUnitIndex, soldAt);
-
-    const unitRows = await CourierOrderAssignment.find({
+    // Dona tracking + item/order settle (kuryer Topshirdim bilan bir xil helper)
+    await settleItemAndOrderAfterUnitDelivered(order, item, {
       orderId: doc.orderId,
       itemIndex: doc.itemIndex,
-    })
-      .select("unitIndex status")
-      .lean();
-
-    // Kuryer orqali topshirilgan + sotuvchi «sotildi» deb yopgan no_answer donalar
-    const soldViaNoAnswer = await CourierReturnedOrder.find({
-      orderId: doc.orderId,
-      itemIndex: doc.itemIndex,
-      reasonType: "no_answer",
-      resolutionType: "delivered",
-      resolvedAt: { $ne: null },
-    })
-      .select("unitIndex")
-      .lean();
-
-    const deliveredUnits = new Set([
-      ...unitRows
-        .filter((row) => String(row.status) === "delivered")
-        .map((row) => Number(row.unitIndex) || 0),
-      ...soldViaNoAnswer.map((row) => Number(row.unitIndex) || 0),
-      thisUnitIndex,
-    ]);
-
-    // Ochiq no_answer sibling → settle blok; return/defective sibling → OK
-    // Joriy dona deliveredUnits da — o‘zi settle (resolvedAt hali null bo‘lsa ham)
-    const unresolvedNoAnswerUnitIndexes =
-      await loadUnresolvedNoAnswerUnitIndexes(doc.orderId, doc.itemIndex);
-    const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
-      item,
-      deliveredUnits,
-      { unresolvedNoAnswerUnitIndexes },
-    );
-
-    const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
-    if (allUnitsDelivered && currentStatus !== "delivered") {
-      item.trackingStatus = "delivered";
-      if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-      item.trackingHistory.push({ status: "delivered", at: soldAt });
-    }
-
-    // Item delivered bo‘lsa settle OK (joriy unresolved dona ham deliveredUnits da)
-    await maybeSettleOrderDelivered(order);
+      unitIndex: Number(doc.unitIndex) || 0,
+      at: soldAt,
+    });
 
     order.markModified("items");
     await order.save();

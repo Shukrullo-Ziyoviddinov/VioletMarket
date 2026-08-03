@@ -9,8 +9,9 @@
     "seed:trending": "node src/seed/repairTrendingCategory.js",
     "db:check": "node src/seed/checkDb.js",
     "test:regions": "node src/scripts/testDeliveryRegions.js",
+    "test:unit-lifecycle": "node test/verifyUnitFixSuite.js",
     "backfill:regions": "node src/scripts/backfillDeliveryRegions.js",
-    "test": "npm run test:regions"
+    "test": "npm run test:regions && npm run test:unit-lifecycle"
   },
   "keywords": [],
   "author": "",
