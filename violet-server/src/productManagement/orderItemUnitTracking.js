@@ -165,8 +165,18 @@ function isUnitSkippedForCustomerDelivery(status) {
 /**
  * Item «delivered» bo‘lishi uchun dona yakunlanganmi?
  * deliveredUnitIndexes — assignment delivered yoki no_answer «sotildi».
+ *
+ * options.unresolvedNoAnswerUnitIndexes (Set|array|null):
+ *   - berilsa: returned_to_seller + shu setda → hali ochiq no_answer (settle YO‘Q)
+ *             returned_to_seller + setda yo‘q → terminal return/defective/yopilgan (settle OK)
+ *   - berilmasa: returned_to_seller settle qilinmaydi (xavfsiz default — eski himoya)
  */
-function isUnitSettledForItemDelivery(item, unitIndexRaw, deliveredUnitIndexes) {
+function isUnitSettledForItemDelivery(
+  item,
+  unitIndexRaw,
+  deliveredUnitIndexes,
+  options = {},
+) {
   const unitIndex = Math.max(0, Math.floor(Number(unitIndexRaw) || 0));
   const deliveredSet =
     deliveredUnitIndexes instanceof Set
@@ -182,24 +192,78 @@ function isUnitSettledForItemDelivery(item, unitIndexRaw, deliveredUnitIndexes) 
   const status = resolveUnitTrackingStatus(item, unitIndex);
   if (status === "delivered") return true;
   if (isUnitSkippedForCustomerDelivery(status)) return true;
+
+  if (status === "returned_to_seller") {
+    const rawUnresolved = options?.unresolvedNoAnswerUnitIndexes;
+    if (rawUnresolved == null) {
+      // Caller DB tekshirmagan — no_answer xavfini saqlaymiz
+      return false;
+    }
+    const unresolvedSet =
+      rawUnresolved instanceof Set
+        ? rawUnresolved
+        : new Set(
+            Array.isArray(rawUnresolved)
+              ? rawUnresolved.map((value) => Number(value) || 0)
+              : [],
+          );
+    // Ochiq no_answer → settle yo‘q; terminal return/defective → settle OK
+    return !unresolvedSet.has(unitIndex);
+  }
+
   return false;
 }
 
-function areAllItemUnitsSettledForDelivery(item, deliveredUnitIndexes) {
+function areAllItemUnitsSettledForDelivery(
+  item,
+  deliveredUnitIndexes,
+  options = {},
+) {
   const qty = resolveItemQuantity(item);
   for (let unitIndex = 0; unitIndex < qty; unitIndex += 1) {
-    if (!isUnitSettledForItemDelivery(item, unitIndex, deliveredUnitIndexes)) {
+    if (
+      !isUnitSettledForItemDelivery(
+        item,
+        unitIndex,
+        deliveredUnitIndexes,
+        options,
+      )
+    ) {
       return false;
     }
   }
   return true;
 }
 
-/** Order.status=delivered: item delivered yoki butunlay unavailable/cancelled. */
-function isItemSettledForOrderDelivery(item) {
+/** Order.status=delivered: item delivered / unavailable / cancelled / terminal returned. */
+function isItemSettledForOrderDelivery(item, options = {}) {
   const status = normalizeOrderTrackingStatus(item?.trackingStatus);
   if (status === "delivered") return true;
   if (isUnitSkippedForCustomerDelivery(status)) return true;
+
+  if (status === "returned_to_seller") {
+    const rawUnresolved = options?.unresolvedNoAnswerUnitIndexes;
+    if (rawUnresolved == null) {
+      // Caller DB tekshirmagan — ochiq no_answer xavfini saqlaymiz
+      return false;
+    }
+    const unresolvedSet =
+      rawUnresolved instanceof Set
+        ? rawUnresolved
+        : new Set(
+            Array.isArray(rawUnresolved)
+              ? rawUnresolved.map((value) => Number(value) || 0)
+              : [],
+          );
+    // Shu itemda ochiq no_answer dona bo‘lsa — order hali yakunlanmasin
+    return unresolvedSet.size === 0;
+  }
+
+  // Aggregate lag: options berilgan bo‘lsa donalar bo‘yicha
+  if (options?.unresolvedNoAnswerUnitIndexes != null) {
+    return areAllItemUnitsSettledForDelivery(item, new Set(), options);
+  }
+
   return false;
 }
 

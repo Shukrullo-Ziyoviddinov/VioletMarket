@@ -21,6 +21,7 @@ const {
   markItemUnitDelivered,
   resolveUnitTrackingStatus,
   isUnitSkippedForCustomerDelivery,
+  recomputeItemTrackingStatusFromUnits,
 } = require("../productManagement/orderItemUnitTracking");
 const {
   normalizeOrderTrackingStatus,
@@ -88,13 +89,16 @@ function applyMarkReturned(item, assignmentUnitIndex, assignmentStatuses) {
   statusByUnit.set(Number(assignmentUnitIndex) || 0, "returned");
   let allSatisfied = true;
   for (let i = 0; i < unitCount; i += 1) {
-    if (String(statusByUnit.get(i) || "") === "returned") continue;
-    if (isClosedUnitStatus(resolveUnitTrackingStatus(item, i))) continue;
+    const assignStatus = String(statusByUnit.get(i) || "");
+    if (assignStatus === "returned" || assignStatus === "delivered") continue;
+    const unitStatus = resolveUnitTrackingStatus(item, i);
+    if (unitStatus === "delivered") continue;
+    if (isClosedUnitStatus(unitStatus)) continue;
     allSatisfied = false;
     break;
   }
-  if (allSatisfied && String(item.trackingStatus || "") !== "returned_to_seller") {
-    item.trackingStatus = "returned_to_seller";
+  if (allSatisfied) {
+    recomputeItemTrackingStatusFromUnits(item);
   }
   return { allSatisfied, shouldSave: true };
 }
@@ -193,7 +197,7 @@ check("C1 unavailable + deliver remaining → item/order settled", () => {
   assert.strictEqual(isItemSettledForOrderDelivery({ trackingStatus: "unavailable" }), true);
 });
 
-check("C2 returned_to_seller sibling still blocks item delivered", () => {
+check("C2 open no_answer sibling still blocks item delivered", () => {
   const item = {
     quantity: 2,
     trackingStatus: "handed_to_courier",
@@ -202,8 +206,30 @@ check("C2 returned_to_seller sibling still blocks item delivered", () => {
       { unitIndex: 1, trackingStatus: "handed_to_courier", trackingHistory: [] },
     ],
   };
-  assert.strictEqual(areAllItemUnitsSettledForDelivery(item, new Set([1])), false);
+  assert.strictEqual(
+    areAllItemUnitsSettledForDelivery(item, new Set([1]), {
+      unresolvedNoAnswerUnitIndexes: new Set([0]),
+    }),
+    false,
+  );
   assert.strictEqual(isUnitSkippedForCustomerDelivery("returned_to_seller"), false);
+});
+
+check("C3 terminal return sibling + deliver → settled", () => {
+  const item = {
+    quantity: 2,
+    trackingStatus: "handed_to_courier",
+    units: [
+      { unitIndex: 0, trackingStatus: "returned_to_seller", trackingHistory: [] },
+      { unitIndex: 1, trackingStatus: "handed_to_courier", trackingHistory: [] },
+    ],
+  };
+  assert.strictEqual(
+    areAllItemUnitsSettledForDelivery(item, new Set([1]), {
+      unresolvedNoAnswerUnitIndexes: new Set(),
+    }),
+    true,
+  );
 });
 
 // ── D) Partial Ajdaniya save ────────────────────────────────────────
@@ -241,6 +267,24 @@ check("D2 unavailable + return last → item returned_to_seller", () => {
   const result = applyMarkReturned(item, 1, { 1: "returned" });
   assert.strictEqual(result.allSatisfied, true);
   assert.strictEqual(item.trackingStatus, "returned_to_seller");
+});
+
+check("D3 delivered sibling + return → item delivered", () => {
+  const item = {
+    quantity: 2,
+    trackingStatus: "handed_to_courier",
+    trackingHistory: [],
+    units: [
+      { unitIndex: 0, trackingStatus: "delivered", trackingHistory: [] },
+      { unitIndex: 1, trackingStatus: "handed_to_courier", trackingHistory: [] },
+    ],
+  };
+  const result = applyMarkReturned(item, 1, {
+    0: "delivered",
+    1: "returned",
+  });
+  assert.strictEqual(result.allSatisfied, true);
+  assert.strictEqual(item.trackingStatus, "delivered");
 });
 
 // ── E) Sold sync + cargo / mavjud emas regressiya ────────────────────

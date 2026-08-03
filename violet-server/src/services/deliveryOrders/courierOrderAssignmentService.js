@@ -10,9 +10,12 @@ const {
   isClosedUnitStatus,
   resolveUnitTrackingStatus,
   areAllItemUnitsSettledForDelivery,
-  isItemSettledForOrderDelivery,
   markItemUnitDelivered,
 } = require("../../productManagement/orderItemUnitTracking");
+const {
+  loadUnresolvedNoAnswerUnitIndexes,
+  areAllOrderItemsSettledForDelivery,
+} = require("../../unitLifecycle/deliveryUnitSettlement");
 const {
   normalizeDeliveryAddress,
 } = require("../../utils/normalizeDeliveryAddress");
@@ -744,11 +747,16 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
       );
       deliveredUnits.add(thisUnitIndex);
 
-      // unavailable/cancelled assignment yo‘q — «qanoatlantirilgan»
-      // returned_to_seller hisobga olinmaydi (qayta kuryer hali mumkin)
+      // unavailable/cancelled → settle; returned_to_seller faqat ochiq no_answer bo‘lmasa
+      const unresolvedNoAnswerUnitIndexes =
+        await loadUnresolvedNoAnswerUnitIndexes(
+          assignment.orderId,
+          assignment.itemIndex,
+        );
       const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
         item,
         deliveredUnits,
+        { unresolvedNoAnswerUnitIndexes },
       );
 
       const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
@@ -758,10 +766,10 @@ async function deliverOrderUnitByCourier(deliveryId, payload = {}) {
         item.trackingHistory.push({ status: "delivered", at: deliveredAt });
       }
 
-      const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
-        (row) => isItemSettledForOrderDelivery(row),
-      );
-      if (allItemsDelivered && String(order.status) !== "delivered") {
+      if (
+        (await areAllOrderItemsSettledForDelivery(order)) &&
+        String(order.status) !== "delivered"
+      ) {
         order.status = "delivered";
       }
 

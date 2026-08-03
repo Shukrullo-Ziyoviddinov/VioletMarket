@@ -43,7 +43,14 @@ const {
   ensureItemUnits,
   getItemUnit,
   recomputeItemTrackingStatusFromUnits,
+  resolveUnitTrackingStatus,
 } = require("../../productManagement/orderItemUnitTracking");
+const {
+  normalizeOrderTrackingStatus,
+} = require("../../productManagement/orderTracking");
+const {
+  areAllOrderItemsSettledForDelivery,
+} = require("../../unitLifecycle/deliveryUnitSettlement");
 const {
   findShipmentProductByUnitIndex,
   isProductActiveForCargo,
@@ -595,8 +602,9 @@ async function markOrderItemReturnedToSellerFromCargo(
   ensureItemUnits(item, at);
   const unit = getItemUnit(item, unitIndex);
   if (unit) {
-    const unitStatus = String(unit.trackingStatus || "");
-    if (unitStatus !== "returned_to_seller") {
+    const unitStatus = resolveUnitTrackingStatus(item, unitIndex);
+    // delivered (kuryer Sotildi) ga tegilmaydi
+    if (unitStatus !== "delivered" && unitStatus !== "returned_to_seller") {
       unit.trackingStatus = "returned_to_seller";
       if (!Array.isArray(unit.trackingHistory)) unit.trackingHistory = [];
       unit.trackingHistory.push({
@@ -607,21 +615,31 @@ async function markOrderItemReturnedToSellerFromCargo(
     }
   }
 
-  const previous = String(item.trackingStatus || "");
+  const previous = normalizeOrderTrackingStatus(item.trackingStatus);
   recomputeItemTrackingStatusFromUnits(item);
-  if (
-    String(item.trackingStatus) === "returned_to_seller" &&
-    previous !== "returned_to_seller"
-  ) {
+  const next = normalizeOrderTrackingStatus(item.trackingStatus);
+  if (next && next !== previous) {
     if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-    item.trackingHistory.push({
-      status: "returned_to_seller",
-      at,
-      note: "cargo_return_defective",
-    });
+    const last = item.trackingHistory[item.trackingHistory.length - 1];
+    if (String(last?.status || "") !== next) {
+      item.trackingHistory.push({
+        status: next,
+        at,
+        note: "cargo_return_defective",
+      });
+    }
   }
 
   order.markModified("items");
+
+  // Multi-item / mixed courier+cargo: oxirgi cargo qaytarishda order delivered
+  if (
+    (await areAllOrderItemsSettledForDelivery(order)) &&
+    String(order.status) !== "delivered"
+  ) {
+    order.status = "delivered";
+  }
+
   await order.save();
 }
 

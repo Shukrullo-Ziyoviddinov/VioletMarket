@@ -59,8 +59,11 @@ function wouldMarkItemReturnedToSeller(item, assignmentUnitIndex, assignmentStat
   );
   statusByUnit.set(Number(assignmentUnitIndex) || 0, "returned");
   for (let i = 0; i < unitCount; i += 1) {
-    if (String(statusByUnit.get(i) || "") === "returned") continue;
-    if (isClosedUnitStatus(resolveUnitTrackingStatus(item, i))) continue;
+    const assignStatus = String(statusByUnit.get(i) || "");
+    if (assignStatus === "returned" || assignStatus === "delivered") continue;
+    const unitStatus = resolveUnitTrackingStatus(item, i);
+    if (unitStatus === "delivered") continue;
+    if (isClosedUnitStatus(unitStatus)) continue;
     return false;
   }
   recomputeItemTrackingStatusFromUnits(item);

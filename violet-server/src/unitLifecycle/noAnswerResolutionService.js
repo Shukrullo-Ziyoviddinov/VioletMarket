@@ -34,12 +34,15 @@ const {
   ensureItemUnits,
   getItemUnit,
   areAllItemUnitsSettledForDelivery,
-  isItemSettledForOrderDelivery,
   markItemUnitDelivered,
 } = require("../productManagement/orderItemUnitTracking");
 const {
   normalizeOrderTrackingStatus,
 } = require("../productManagement/orderTracking");
+const {
+  loadUnresolvedNoAnswerUnitIndexes,
+  areAllOrderItemsSettledForDelivery,
+} = require("./deliveryUnitSettlement");
 
 function isBadVariantLabel(value) {
   const text = String(value || "").trim();
@@ -330,9 +333,14 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
       thisUnitIndex,
     ]);
 
+    // Ochiq no_answer sibling → settle blok; return/defective sibling → OK
+    // Joriy dona deliveredUnits da — o‘zi settle (resolvedAt hali null bo‘lsa ham)
+    const unresolvedNoAnswerUnitIndexes =
+      await loadUnresolvedNoAnswerUnitIndexes(doc.orderId, doc.itemIndex);
     const allUnitsDelivered = areAllItemUnitsSettledForDelivery(
       item,
       deliveredUnits,
+      { unresolvedNoAnswerUnitIndexes },
     );
 
     const currentStatus = normalizeOrderTrackingStatus(item.trackingStatus);
@@ -342,10 +350,10 @@ async function markDeliveredNoAnswerOrder(returnedOrderId, options = {}) {
       item.trackingHistory.push({ status: "delivered", at: soldAt });
     }
 
-    const allItemsDelivered = (Array.isArray(order.items) ? order.items : []).every(
-      (row) => isItemSettledForOrderDelivery(row),
-    );
-    if (allItemsDelivered && String(order.status) !== "delivered") {
+    if (
+      (await areAllOrderItemsSettledForDelivery(order)) &&
+      String(order.status) !== "delivered"
+    ) {
       order.status = "delivered";
     }
 

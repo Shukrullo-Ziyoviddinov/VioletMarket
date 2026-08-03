@@ -22,6 +22,11 @@ const scripts = [
   "verifyMarkReturnedPartialUnitSave.js",
   "verifySoldSyncSkipClosedUnits.js",
   "verifyRound2Regression.js",
+  "verifyTerminalReturnedSettle.js",
+  "verifyOrderLevelSettle.js",
+  "verifyRound3Regression.js",
+  "verifyCompleteReturnAfterSold.js",
+  "verifyCargoOrderSettle.js",
 ];
 
 let failed = 0;

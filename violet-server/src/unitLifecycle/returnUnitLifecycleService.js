@@ -43,7 +43,14 @@ const {
   getItemUnit,
   resolveUnitTrackingStatus,
   isClosedUnitStatus,
+  recomputeItemTrackingStatusFromUnits,
 } = require("../productManagement/orderItemUnitTracking");
+const {
+  normalizeOrderTrackingStatus,
+} = require("../productManagement/orderTracking");
+const {
+  areAllOrderItemsSettledForDelivery,
+} = require("./deliveryUnitSettlement");
 
 
 /**
@@ -561,6 +568,36 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
   // Oldingi urinishda assignment returned — tracking/reason/stock ni tugatish
   if (String(assignment.status) === "returned") {
+    const existingDoc = await CourierReturnedOrder.findOne({
+      $or: [{ assignmentId: assignment._id }, unitFilter],
+    });
+
+    // no_answer «Sotildi» / qayta aktiv / qayta kuryer — allaqachon yopilgan.
+    // Qayta completeReturn resolution ni o‘chirmasin va delivered unitni buzmasin.
+    if (existingDoc?.resolvedAt) {
+      return {
+        returned: toPublicReturnedOrder(existingDoc),
+        assignment: await mapAssignmentPublic(assignment),
+        alreadyResolved: true,
+      };
+    }
+
+    // Sotildi order unit ni delivered qilgan, resolvedAt hali yozilmagan crash edge
+    const orderPeek = await Order.findOne({ id: assignment.orderId }).select("items");
+    const peekItem = Array.isArray(orderPeek?.items)
+      ? orderPeek.items[Number(assignment.itemIndex)]
+      : null;
+    if (
+      peekItem &&
+      resolveUnitTrackingStatus(peekItem, unitFilter.unitIndex) === "delivered"
+    ) {
+      return {
+        returned: existingDoc ? toPublicReturnedOrder(existingDoc) : null,
+        assignment: await mapAssignmentPublic(assignment),
+        alreadyResolved: true,
+      };
+    }
+
     await markOrderItemReturnedToSeller(
       assignment,
       assignment.returnedAt || new Date(),
@@ -571,18 +608,13 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
       await assignment.save();
     }
 
-    const existingDoc = await CourierReturnedOrder.findOne({
-      $or: [{ assignmentId: assignment._id }, unitFilter],
-    });
-
     if (existingDoc) {
       if (REASON_TYPES.has(reasonType)) {
         existingDoc.reasonType = reasonType;
         existingDoc.assignmentId = assignment._id;
       }
-      existingDoc.resolvedAt = null;
-      existingDoc.resolvedBy = "";
-      existingDoc.set("resolutionType", undefined);
+      // resolvedAt/resolutionType ni TOZALAMAYMIZ — ochiq no_answer heal uchun
+      // allaqachon null; yopilganlar yuqorida early-return.
 
       if (
         (reasonType === "return" && !existingDoc.stockReleased) ||
@@ -785,14 +817,18 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
 /**
  * Itemdagi barcha ochiq donalar kuryer orqali qaytarilgan bo‘lsa
- * trackingStatus = returned_to_seller.
+ * agregat qayta hisoblanadi (recompute).
  *
- * Assignment yo‘q yopiq donalar (unavailable / cancelled) «qanoatlantirilgan»
- * deb hisoblanadi — partial unavailable keyin qolgan donani qaytarish
- * itemni bloklamasligi kerak.
+ * Qanoatlantirilgan:
+ *   - assignment returned | delivered
+ *   - unit delivered
+ *   - unit yopiq (unavailable / cancelled / returned_to_seller)
  *
- * Muhim: sibling hali ochiq bo‘lsa ham joriy donaning units[] yozuvi
- * saqlanadi (agregat returned_to_seller ga o‘tmaydi — ochiq dona poolda qoladi).
+ * Sibling hali handed bo‘lsa agregat o‘zgarmaydi (pool uchun), lekin
+ * units[] har doim saqlanadi.
+ *
+ * Avval Sotildi, keyin qaytarish: delivered sibling → allSatisfied;
+ * recompute → item «delivered» (returned_to_seller ga yopishtirmaydi).
  */
 async function markOrderItemReturnedToSeller(assignment, returnedAt) {
   const order = await Order.findOne({ id: assignment.orderId });
@@ -810,7 +846,8 @@ async function markOrderItemReturnedToSeller(assignment, returnedAt) {
   const thisUnit = getItemUnit(item, thisUnitIndex);
   if (thisUnit) {
     const prev = resolveUnitTrackingStatus(item, thisUnitIndex);
-    if (prev !== "returned_to_seller") {
+    // no_answer «Sotildi» unitni delivered qilgan — qayta completeReturn buzmasin
+    if (prev !== "delivered" && prev !== "returned_to_seller") {
       thisUnit.trackingStatus = "returned_to_seller";
       if (!Array.isArray(thisUnit.trackingHistory)) thisUnit.trackingHistory = [];
       thisUnit.trackingHistory.push({ status: "returned_to_seller", at });
@@ -832,30 +869,66 @@ async function markOrderItemReturnedToSeller(assignment, returnedAt) {
 
   let allSatisfied = true;
   for (let i = 0; i < unitCount; i += 1) {
-    if (String(statusByUnit.get(i) || "") === "returned") continue;
-
-    const unitStatus = resolveUnitTrackingStatus(item, i);
-    // Assignment bo‘lmasa ham: yopiq dona (unavailable / cancelled / returned_to_seller) OK
-    if (isClosedUnitStatus(unitStatus)) {
+    const assignStatus = String(statusByUnit.get(i) || "");
+    if (assignStatus === "returned" || assignStatus === "delivered") {
       continue;
     }
+
+    const unitStatus = resolveUnitTrackingStatus(item, i);
+    if (unitStatus === "delivered") continue;
+    if (isClosedUnitStatus(unitStatus)) continue;
+
     allSatisfied = false;
     break;
   }
 
-  // Faqat hammasi qanoatlantirilganda item agregat — aks holda ochiq sibling
-  // handed_to_courier qoladi (kuryer pool item statusiga tayanadi).
   if (allSatisfied) {
-    const current = String(item.trackingStatus || "");
-    if (current !== "returned_to_seller") {
-      item.trackingStatus = "returned_to_seller";
+    // Assignment «returned» lekin units[] hali sync bo‘lmagan donalarni tugatish
+    // (oldingi partial save / race). delivered / unavailable / cancelled ga tegilmaydi.
+    for (let i = 0; i < unitCount; i += 1) {
+      if (String(statusByUnit.get(i) || "") !== "returned") continue;
+      const unit = getItemUnit(item, i);
+      if (!unit) continue;
+      const st = resolveUnitTrackingStatus(item, i);
+      if (
+        st === "delivered" ||
+        st === "returned_to_seller" ||
+        st === "unavailable" ||
+        st === "cancelled"
+      ) {
+        continue;
+      }
+      unit.trackingStatus = "returned_to_seller";
+      if (!Array.isArray(unit.trackingHistory)) unit.trackingHistory = [];
+      unit.trackingHistory.push({ status: "returned_to_seller", at });
+    }
+
+    const previous = normalizeOrderTrackingStatus(item.trackingStatus);
+    // delivered + returned aralash → delivered; faqat returned → returned_to_seller
+    recomputeItemTrackingStatusFromUnits(item);
+    const next = normalizeOrderTrackingStatus(item.trackingStatus);
+    if (next && next !== previous) {
       if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
-      item.trackingHistory.push({ status: "returned_to_seller", at });
+      const last = item.trackingHistory[item.trackingHistory.length - 1];
+      if (String(last?.status || "") !== next) {
+        item.trackingHistory.push({ status: next, at });
+      }
     }
   }
 
   // Har doim saqlash: partial qaytarishda ham units[i] yo‘qolmasin
   order.markModified("items");
+
+  // Multi-item: oxirgi amal qaytarish bo‘lsa ham order delivered ga yetsin
+  // (sibling itemlar delivered/unavailable/terminal returned).
+  if (
+    allSatisfied &&
+    (await areAllOrderItemsSettledForDelivery(order)) &&
+    String(order.status) !== "delivered"
+  ) {
+    order.status = "delivered";
+  }
+
   await order.save();
 }
 

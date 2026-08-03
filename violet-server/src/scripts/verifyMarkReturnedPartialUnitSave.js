@@ -8,7 +8,11 @@ const {
   getItemUnit,
   isClosedUnitStatus,
   resolveUnitTrackingStatus,
+  recomputeItemTrackingStatusFromUnits,
 } = require("../productManagement/orderItemUnitTracking");
+const {
+  normalizeOrderTrackingStatus,
+} = require("../productManagement/orderTracking");
 
 /**
  * Mirrors markOrderItemReturnedToSeller (no DB).
@@ -33,14 +37,23 @@ function applyMarkReturned(item, assignmentUnitIndex, assignmentStatuses) {
 
   let allSatisfied = true;
   for (let i = 0; i < unitCount; i += 1) {
-    if (String(statusByUnit.get(i) || "") === "returned") continue;
-    if (isClosedUnitStatus(resolveUnitTrackingStatus(item, i))) continue;
+    const assignStatus = String(statusByUnit.get(i) || "");
+    if (assignStatus === "returned" || assignStatus === "delivered") continue;
+    const unitStatus = resolveUnitTrackingStatus(item, i);
+    if (unitStatus === "delivered") continue;
+    if (isClosedUnitStatus(unitStatus)) continue;
     allSatisfied = false;
     break;
   }
 
-  if (allSatisfied && String(item.trackingStatus || "") !== "returned_to_seller") {
-    item.trackingStatus = "returned_to_seller";
+  if (allSatisfied) {
+    const previous = normalizeOrderTrackingStatus(item.trackingStatus);
+    recomputeItemTrackingStatusFromUnits(item);
+    const next = normalizeOrderTrackingStatus(item.trackingStatus);
+    if (next && next !== previous) {
+      if (!Array.isArray(item.trackingHistory)) item.trackingHistory = [];
+      item.trackingHistory.push({ status: next, at });
+    }
   }
 
   return { allSatisfied, shouldSave: true };
@@ -108,6 +121,25 @@ check("qty=1 return → satisfied + item returned", () => {
   const result = applyMarkReturned(item, 0, { 0: "returned" });
   assert.strictEqual(result.allSatisfied, true);
   assert.strictEqual(item.trackingStatus, "returned_to_seller");
+});
+
+check("delivered sibling + return → item delivered via recompute", () => {
+  const item = {
+    quantity: 2,
+    trackingStatus: "handed_to_courier",
+    trackingHistory: [],
+    units: [
+      { unitIndex: 0, trackingStatus: "delivered", trackingHistory: [] },
+      { unitIndex: 1, trackingStatus: "handed_to_courier", trackingHistory: [] },
+    ],
+  };
+  const result = applyMarkReturned(item, 1, {
+    0: "delivered",
+    1: "returned",
+  });
+  assert.strictEqual(result.allSatisfied, true);
+  assert.strictEqual(resolveUnitTrackingStatus(item, 1), "returned_to_seller");
+  assert.strictEqual(item.trackingStatus, "delivered");
 });
 
 console.log("\nPassed", passed, "checks");
