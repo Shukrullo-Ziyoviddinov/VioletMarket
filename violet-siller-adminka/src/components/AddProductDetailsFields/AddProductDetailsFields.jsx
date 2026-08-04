@@ -56,23 +56,26 @@ export default function AddProductDetailsFields({ values, onChange }) {
 
   const handleWeightChange = (event) => {
     const raw = event.target.value.replace(/[^\d]/g, '');
-    onChange({ ...values, weight: raw });
+    onChange((current) => ({ ...current, weight: raw }));
   };
 
   const handleChegirmaPercentChange = (event) => {
     const raw = event.target.value.replace(/[^\d]/g, '');
-    onChange({ ...values, chegirmaPercent: raw });
+    onChange((current) => ({ ...current, chegirmaPercent: raw }));
   };
 
   const handleLabelToggle = (type) => {
-    const nextTypes = toggleLabelType(selectedTypes, type);
-    const nextValues = { ...values, labelTypes: nextTypes };
+    onChange((current) => {
+      const currentTypes = Array.isArray(current.labelTypes) ? current.labelTypes : [];
+      const nextTypes = toggleLabelType(currentTypes, type);
+      const nextValues = { ...current, labelTypes: nextTypes };
 
-    if (!nextTypes.includes('chegirma')) {
-      nextValues.chegirmaPercent = '';
-    }
+      if (!nextTypes.includes('chegirma')) {
+        nextValues.chegirmaPercent = '';
+      }
 
-    onChange(nextValues);
+      return nextValues;
+    });
   };
 
   return (

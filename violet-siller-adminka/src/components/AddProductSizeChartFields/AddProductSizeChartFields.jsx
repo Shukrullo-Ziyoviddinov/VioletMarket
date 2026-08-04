@@ -115,94 +115,135 @@ export default function AddProductSizeChartFields({ values, onChange }) {
   );
 
   const setField = (key) => (event) => {
-    onChange({ ...values, [key]: event.target.value });
+    onChange((current) => ({ ...current, [key]: event.target.value }));
   };
 
   const handleTypeSizeChange = (nextTypeSize) => {
-    onChange({
-      ...values,
-      sizeChartTypeSize: nextTypeSize,
-      sizeChartGuideImages: guideImages.map((item) => ({
-        ...item,
-        typeSize: nextTypeSize,
-      })),
+    onChange((current) => {
+      const currentGuideImages = Array.isArray(current.sizeChartGuideImages)
+        ? current.sizeChartGuideImages
+        : [];
+      return {
+        ...current,
+        sizeChartTypeSize: nextTypeSize,
+        sizeChartGuideImages: currentGuideImages.map((item) => ({
+          ...item,
+          typeSize: nextTypeSize,
+        })),
+      };
     });
   };
 
   const handleMeasureColumnLabelChange = (localId, key) => (event) => {
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: updateListItem(measureColumns, localId, {
-        [key]: event.target.value,
-      }),
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      return {
+        ...current,
+        sizeChartMeasureColumns: updateListItem(columns, localId, {
+          [key]: event.target.value,
+        }),
+      };
     });
   };
 
   const handleMeasureValueChange = (localId, valueIndex) => (event) => {
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: measureColumns.map((column) => {
-        if (column.localId !== localId) return column;
-        const nextValues = [...(column.values || [])];
-        nextValues[valueIndex] = event.target.value;
-        return { ...column, values: nextValues };
-      }),
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      return {
+        ...current,
+        sizeChartMeasureColumns: columns.map((column) => {
+          if (column.localId !== localId) return column;
+          const nextValues = [...(column.values || [])];
+          nextValues[valueIndex] = event.target.value;
+          return { ...column, values: nextValues };
+        }),
+      };
     });
   };
 
   const addMeasureValue = (localId) => {
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: measureColumns.map((column) => {
-        if (column.localId !== localId) return column;
-        return { ...column, values: [...(column.values || []), ''] };
-      }),
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      return {
+        ...current,
+        sizeChartMeasureColumns: columns.map((column) => {
+          if (column.localId !== localId) return column;
+          return { ...column, values: [...(column.values || []), ''] };
+        }),
+      };
     });
   };
 
   const removeMeasureValue = (localId, valueIndex) => {
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: measureColumns.map((column) => {
-        if (column.localId !== localId) return column;
-        const nextValues = [...(column.values || [])];
-        if (nextValues.length <= 1) return column;
-        nextValues.splice(valueIndex, 1);
-        return { ...column, values: nextValues };
-      }),
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      return {
+        ...current,
+        sizeChartMeasureColumns: columns.map((column) => {
+          if (column.localId !== localId) return column;
+          const nextValues = [...(column.values || [])];
+          if (nextValues.length <= 1) return column;
+          nextValues.splice(valueIndex, 1);
+          return { ...column, values: nextValues };
+        }),
+      };
     });
   };
 
   const addMeasureColumn = () => {
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: [...measureColumns, createMeasureColumnRow()],
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      return {
+        ...current,
+        sizeChartMeasureColumns: [...columns, createMeasureColumnRow()],
+      };
     });
   };
 
   const removeMeasureColumn = (localId) => {
-    const column = measureColumns.find((item) => item.localId === localId);
-    if (!column || column.isFixedLabel) return;
+    onChange((current) => {
+      const columns = Array.isArray(current.sizeChartMeasureColumns)
+        ? current.sizeChartMeasureColumns
+        : [];
+      const column = columns.find((item) => item.localId === localId);
+      if (!column || column.isFixedLabel) return current;
 
-    onChange({
-      ...values,
-      sizeChartMeasureColumns: measureColumns.filter((item) => item.localId !== localId),
+      return {
+        ...current,
+        sizeChartMeasureColumns: columns.filter((item) => item.localId !== localId),
+      };
     });
   };
 
   const handleGuideImageChange = (patch) => {
-    const first = guideImages[0];
-    if (!first) {
-      onChange({
-        ...values,
-        sizeChartGuideImages: [{ ...createGuideImageRow(values.sizeChartTypeSize), ...patch }],
-      });
-      return;
-    }
+    onChange((current) => {
+      const currentGuideImages = Array.isArray(current.sizeChartGuideImages)
+        ? current.sizeChartGuideImages
+        : [];
+      const first = currentGuideImages[0];
+      if (!first) {
+        return {
+          ...current,
+          sizeChartGuideImages: [
+            { ...createGuideImageRow(current.sizeChartTypeSize), ...patch },
+          ],
+        };
+      }
 
-    onChange({
-      ...values,
-      sizeChartGuideImages: updateListItem(guideImages, first.localId, patch),
+      return {
+        ...current,
+        sizeChartGuideImages: updateListItem(currentGuideImages, first.localId, patch),
+      };
     });
   };
 

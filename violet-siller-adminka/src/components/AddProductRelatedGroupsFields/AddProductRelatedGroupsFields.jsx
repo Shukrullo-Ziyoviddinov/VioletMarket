@@ -83,50 +83,65 @@ export default function AddProductRelatedGroupsFields({
   }, [relatedGroups]);
 
   const changeGroupField = (localId, field, fieldValue) => {
-    onChange({
-      ...values,
-      relatedGroups: updateGroup(relatedGroups, localId, { [field]: fieldValue }),
+    onChange((current) => {
+      const groups = Array.isArray(current.relatedGroups) ? current.relatedGroups : [];
+      return {
+        ...current,
+        relatedGroups: updateGroup(groups, localId, { [field]: fieldValue }),
+      };
     });
   };
 
   const changeGroupProductId = (localId, slotIndex, nextProductId) => {
-    onChange({
-      ...values,
-      relatedGroups: relatedGroups.map((group) => {
-        if (group.localId !== localId) return group;
-        const nextIds = [...(group.productIds || [])];
-        nextIds[slotIndex] = Number(nextProductId);
-        return {
-          ...group,
-          productIds: nextIds.filter((id) => Number.isFinite(Number(id))),
-        };
-      }),
+    onChange((current) => {
+      const groups = Array.isArray(current.relatedGroups) ? current.relatedGroups : [];
+      return {
+        ...current,
+        relatedGroups: groups.map((group) => {
+          if (group.localId !== localId) return group;
+          const nextIds = [...(group.productIds || [])];
+          nextIds[slotIndex] = Number(nextProductId);
+          return {
+            ...group,
+            productIds: nextIds.filter((id) => Number.isFinite(Number(id))),
+          };
+        }),
+      };
     });
   };
 
   const removeGroupProductId = (localId, slotIndex) => {
-    onChange({
-      ...values,
-      relatedGroups: relatedGroups.map((group) => {
-        if (group.localId !== localId) return group;
-        const nextIds = [...(group.productIds || [])];
-        nextIds.splice(slotIndex, 1);
-        return { ...group, productIds: nextIds };
-      }),
+    onChange((current) => {
+      const groups = Array.isArray(current.relatedGroups) ? current.relatedGroups : [];
+      return {
+        ...current,
+        relatedGroups: groups.map((group) => {
+          if (group.localId !== localId) return group;
+          const nextIds = [...(group.productIds || [])];
+          nextIds.splice(slotIndex, 1);
+          return { ...group, productIds: nextIds };
+        }),
+      };
     });
   };
 
   const addRelatedGroup = () => {
-    onChange({
-      ...values,
-      relatedGroups: [...relatedGroups, createRelatedGroupDraft()],
+    onChange((current) => {
+      const groups = Array.isArray(current.relatedGroups) ? current.relatedGroups : [];
+      return {
+        ...current,
+        relatedGroups: [...groups, createRelatedGroupDraft()],
+      };
     });
   };
 
   const removeRelatedGroup = (localId) => {
-    onChange({
-      ...values,
-      relatedGroups: relatedGroups.filter((group) => group.localId !== localId),
+    onChange((current) => {
+      const groups = Array.isArray(current.relatedGroups) ? current.relatedGroups : [];
+      return {
+        ...current,
+        relatedGroups: groups.filter((group) => group.localId !== localId),
+      };
     });
   };
 

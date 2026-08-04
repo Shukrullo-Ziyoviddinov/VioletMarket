@@ -43,50 +43,68 @@ export default function AddProductDescriptionFields({ values, onChange }) {
   const technicalSpecs = Array.isArray(values.technicalSpecs) ? values.technicalSpecs : [];
 
   const setField = (key) => (event) => {
-    onChange({ ...values, [key]: event.target.value });
+    onChange((current) => ({ ...current, [key]: event.target.value }));
   };
 
   const handleMainFeatureChange = (localId, key) => (event) => {
-    onChange({
-      ...values,
-      mainFeatures: updateListItem(mainFeatures, localId, { [key]: event.target.value }),
+    onChange((current) => {
+      const list = Array.isArray(current.mainFeatures) ? current.mainFeatures : [];
+      return {
+        ...current,
+        mainFeatures: updateListItem(list, localId, { [key]: event.target.value }),
+      };
     });
   };
 
   const handleTechnicalSpecChange = (localId, key) => (event) => {
-    onChange({
-      ...values,
-      technicalSpecs: updateListItem(technicalSpecs, localId, { [key]: event.target.value }),
+    onChange((current) => {
+      const list = Array.isArray(current.technicalSpecs) ? current.technicalSpecs : [];
+      return {
+        ...current,
+        technicalSpecs: updateListItem(list, localId, { [key]: event.target.value }),
+      };
     });
   };
 
   const addMainFeature = () => {
-    onChange({
-      ...values,
-      mainFeatures: [...mainFeatures, createMainFeatureRow()],
+    onChange((current) => {
+      const list = Array.isArray(current.mainFeatures) ? current.mainFeatures : [];
+      return {
+        ...current,
+        mainFeatures: [...list, createMainFeatureRow()],
+      };
     });
   };
 
   const removeMainFeature = (localId) => {
-    if (mainFeatures.length <= 1) return;
-    onChange({
-      ...values,
-      mainFeatures: mainFeatures.filter((item) => item.localId !== localId),
+    onChange((current) => {
+      const list = Array.isArray(current.mainFeatures) ? current.mainFeatures : [];
+      if (list.length <= 1) return current;
+      return {
+        ...current,
+        mainFeatures: list.filter((item) => item.localId !== localId),
+      };
     });
   };
 
   const addTechnicalSpec = () => {
-    onChange({
-      ...values,
-      technicalSpecs: [...technicalSpecs, createTechnicalSpecRow()],
+    onChange((current) => {
+      const list = Array.isArray(current.technicalSpecs) ? current.technicalSpecs : [];
+      return {
+        ...current,
+        technicalSpecs: [...list, createTechnicalSpecRow()],
+      };
     });
   };
 
   const removeTechnicalSpec = (localId) => {
-    if (technicalSpecs.length <= 1) return;
-    onChange({
-      ...values,
-      technicalSpecs: technicalSpecs.filter((item) => item.localId !== localId),
+    onChange((current) => {
+      const list = Array.isArray(current.technicalSpecs) ? current.technicalSpecs : [];
+      if (list.length <= 1) return current;
+      return {
+        ...current,
+        technicalSpecs: list.filter((item) => item.localId !== localId),
+      };
     });
   };
 
@@ -349,7 +367,9 @@ export default function AddProductDescriptionFields({ values, onChange }) {
 
       <AddProductDescriptionImagesField
         images={values.descriptionImages}
-        onChange={(descriptionImages) => onChange({ ...values, descriptionImages })}
+        onChange={(descriptionImages) =>
+          onChange((current) => ({ ...current, descriptionImages }))
+        }
       />
     </section>
   );

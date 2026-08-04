@@ -193,7 +193,25 @@ function mapRelatedGroupsToFormFields(relatedGroups) {
   };
 }
 
-export function mapSellerProductToFormValues(product) {
+function resolveMasterCategoryId(product, masterCategories = []) {
+  const rawId = product?.masterCategoryId;
+  if (rawId != null && String(rawId).trim() !== '') {
+    return String(rawId).trim();
+  }
+
+  const categoryText = String(product?.category || '').trim().toLowerCase();
+  if (!categoryText) return '';
+
+  const matched = (Array.isArray(masterCategories) ? masterCategories : []).find((row) => {
+    const uz = String(row?.name?.uz || '').trim().toLowerCase();
+    const ru = String(row?.name?.ru || '').trim().toLowerCase();
+    return uz === categoryText || ru === categoryText;
+  });
+
+  return matched?.id != null ? String(matched.id) : '';
+}
+
+export function mapSellerProductToFormValues(product, masterCategories = []) {
   if (!product || typeof product !== 'object') {
     return null;
   }
@@ -201,6 +219,15 @@ export function mapSellerProductToFormValues(product) {
   const { labelTypes, chegirmaPercent } = extractLabelTypes(product.labels);
   const colors = (Array.isArray(product.colors) ? product.colors : []).map(mapColorToDraft);
   const countries = Array.isArray(product.countries) ? product.countries : [];
+  const category = String(product.category || '').trim();
+  const masterCategoryId = resolveMasterCategoryId(product, masterCategories);
+  const resolvedCategory =
+    category ||
+    (Array.isArray(masterCategories)
+      ? String(
+          masterCategories.find((row) => String(row?.id) === masterCategoryId)?.name?.uz || '',
+        ).trim()
+      : '');
 
   return {
     categoryName: String(product.categoryName || '').trim(),
@@ -211,8 +238,8 @@ export function mapSellerProductToFormValues(product) {
     discountUz: String(product?.discount?.uz || '').trim(),
     discountRu: String(product?.discount?.ru || '').trim(),
     video: String(product.video || '').trim(),
-    masterCategoryId: product.masterCategoryId != null ? String(product.masterCategoryId) : '',
-    category: String(product.category || '').trim(),
+    masterCategoryId,
+    category: resolvedCategory,
     countryCode: String(countries[0] || '').trim(),
     productType: String(product.productType || '').trim(),
     productCountry: String(product.productCountry || '').trim(),

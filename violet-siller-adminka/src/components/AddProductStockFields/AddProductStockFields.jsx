@@ -28,7 +28,7 @@ export default function AddProductStockFields({ values, onChange }) {
   const modelStockRows = Array.isArray(values?.modelStockRows) ? values.modelStockRows : [];
   const storageStockRows = Array.isArray(values?.storageStockRows) ? values.storageStockRows : [];
 
-  const patchValues = (patch) => onChange({ ...values, ...patch });
+  const patchValues = (patch) => onChange((current) => ({ ...current, ...patch }));
 
   const changeSizeStockRow = (rowLocalId, patch) => {
     patchValues({

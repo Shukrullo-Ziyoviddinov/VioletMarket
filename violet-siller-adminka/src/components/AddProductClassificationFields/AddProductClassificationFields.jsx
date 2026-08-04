@@ -115,18 +115,20 @@ export default function AddProductClassificationFields({
   );
 
   const setField = (key) => (nextValue) => {
-    onChange({ ...values, [key]: nextValue });
+    onChange((current) => ({ ...current, [key]: nextValue }));
   };
 
   const handleMasterCategorySelect = (selectedId) => {
-    const matched = (Array.isArray(masterCategories) ? masterCategories : []).find(
-      (item) => String(item.id) === String(selectedId),
-    );
+    onChange((current) => {
+      const matched = (Array.isArray(masterCategories) ? masterCategories : []).find(
+        (item) => String(item.id) === String(selectedId),
+      );
 
-    onChange({
-      ...values,
-      masterCategoryId: String(selectedId),
-      category: matched?.name?.uz || '',
+      return {
+        ...current,
+        masterCategoryId: String(selectedId),
+        category: matched?.name?.uz || '',
+      };
     });
   };
 

@@ -28,7 +28,7 @@ export default function AddProductMainInfoFields({ values, onChange }) {
   const { t } = useTranslation();
 
   const setField = (key) => (event) => {
-    onChange({ ...values, [key]: event.target.value });
+    onChange((current) => ({ ...current, [key]: event.target.value }));
   };
 
   return (

@@ -35,7 +35,7 @@ export default function AddProductMediaFields({ values, onChange }) {
       : t('addProduct.media.videoUploading');
 
   const setField = (key, fieldValue) => {
-    onChange({ ...values, [key]: fieldValue });
+    onChange((current) => ({ ...current, [key]: fieldValue }));
   };
 
   const openFilePicker = () => {

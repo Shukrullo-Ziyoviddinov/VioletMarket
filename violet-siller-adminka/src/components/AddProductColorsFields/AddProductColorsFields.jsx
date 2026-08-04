@@ -80,141 +80,180 @@ export default function AddProductColorsFields({ values, onChange }) {
   );
 
   const addColor = () => {
-    onChange(applyColorsChange(values, [...colors, createColorDraft()]));
+    onChange((current) =>
+      applyColorsChange(current, [...(Array.isArray(current.colors) ? current.colors : []), createColorDraft()]),
+    );
   };
 
   const removeColor = (localId) => {
-    onChange(applyColorsChange(values, colors.filter((color) => color.localId !== localId)));
+    onChange((current) =>
+      applyColorsChange(
+        current,
+        (Array.isArray(current.colors) ? current.colors : []).filter((color) => color.localId !== localId),
+      ),
+    );
   };
 
   const changeColorField = (localId, field, fieldValue) => {
-    onChange({
-      ...values,
-      colors: updateColor(colors, localId, { [field]: fieldValue }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: updateColor(list, localId, { [field]: fieldValue }),
+      };
     });
   };
 
   const changeSizeStockRow = (localId, rowLocalId, patch) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          sizeStockRows: (color.sizeStockRows || []).map((row) =>
-            row.localId === rowLocalId ? { ...row, ...patch } : row,
-          ),
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            sizeStockRows: (color.sizeStockRows || []).map((row) =>
+              row.localId === rowLocalId ? { ...row, ...patch } : row,
+            ),
+          };
+        }),
+      };
     });
   };
 
   const addSizeStockRow = (localId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          sizeStockRows: [...(color.sizeStockRows || []), createSizeStockRow()],
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            sizeStockRows: [...(color.sizeStockRows || []), createSizeStockRow()],
+          };
+        }),
+      };
     });
   };
 
   const removeSizeStockRow = (localId, rowLocalId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        const nextRows = (color.sizeStockRows || []).filter((row) => row.localId !== rowLocalId);
-        return {
-          ...color,
-          sizeStockRows: nextRows.length > 0 ? nextRows : [createSizeStockRow()],
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          const nextRows = (color.sizeStockRows || []).filter((row) => row.localId !== rowLocalId);
+          return {
+            ...color,
+            sizeStockRows: nextRows.length > 0 ? nextRows : [createSizeStockRow()],
+          };
+        }),
+      };
     });
   };
 
   const changeModelStockRow = (localId, rowLocalId, patch) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          modelStockRows: (color.modelStockRows || []).map((row) =>
-            row.localId === rowLocalId ? { ...row, ...patch } : row,
-          ),
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            modelStockRows: (color.modelStockRows || []).map((row) =>
+              row.localId === rowLocalId ? { ...row, ...patch } : row,
+            ),
+          };
+        }),
+      };
     });
   };
 
   const addModelStockRow = (localId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          modelStockRows: [...(color.modelStockRows || []), createModelStockRow()],
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            modelStockRows: [...(color.modelStockRows || []), createModelStockRow()],
+          };
+        }),
+      };
     });
   };
 
   const removeModelStockRow = (localId, rowLocalId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          modelStockRows: (color.modelStockRows || []).filter((row) => row.localId !== rowLocalId),
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            modelStockRows: (color.modelStockRows || []).filter((row) => row.localId !== rowLocalId),
+          };
+        }),
+      };
     });
   };
 
   const changeStorageStockRow = (localId, rowLocalId, patch) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          storageStockRows: (color.storageStockRows || []).map((row) =>
-            row.localId === rowLocalId ? { ...row, ...patch } : row,
-          ),
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            storageStockRows: (color.storageStockRows || []).map((row) =>
+              row.localId === rowLocalId ? { ...row, ...patch } : row,
+            ),
+          };
+        }),
+      };
     });
   };
 
   const addStorageStockRow = (localId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          storageStockRows: [...(color.storageStockRows || []), createStorageStockRow()],
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            storageStockRows: [...(color.storageStockRows || []), createStorageStockRow()],
+          };
+        }),
+      };
     });
   };
 
   const removeStorageStockRow = (localId, rowLocalId) => {
-    onChange({
-      ...values,
-      colors: colors.map((color) => {
-        if (color.localId !== localId) return color;
-        return {
-          ...color,
-          storageStockRows: (color.storageStockRows || []).filter((row) => row.localId !== rowLocalId),
-        };
-      }),
+    onChange((current) => {
+      const list = Array.isArray(current.colors) ? current.colors : [];
+      return {
+        ...current,
+        colors: list.map((color) => {
+          if (color.localId !== localId) return color;
+          return {
+            ...color,
+            storageStockRows: (color.storageStockRows || []).filter(
+              (row) => row.localId !== rowLocalId,
+            ),
+          };
+        }),
+      };
     });
   };
 

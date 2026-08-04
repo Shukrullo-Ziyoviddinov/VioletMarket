@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, message, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -73,6 +73,17 @@ export default function AddProductForm({ editProductId = null }) {
   const [error, setError] = useState('');
   const [saveError, setSaveError] = useState('');
   const [savedProductId, setSavedProductId] = useState(null);
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
+
+  const updateValues = useCallback((next) => {
+    setValues((current) => {
+      if (typeof next === 'function') {
+        return next(current);
+      }
+      return { ...current, ...next };
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,19 +115,22 @@ export default function AddProductForm({ editProductId = null }) {
         const data = results[0];
         const pickerOptions = results[1];
         const product = isEditMode ? results[2] : null;
+        const nextMasterCategories = Array.isArray(data?.masterCategories)
+          ? data.masterCategories
+          : [];
 
         setSectionOptions(Array.isArray(data?.sectionOptions) ? data.sectionOptions : []);
         setShippingCountries(Array.isArray(data?.shippingCountries) ? data.shippingCountries : []);
         setProductTypes(Array.isArray(data?.productTypes) ? data.productTypes : []);
         setFilterValues(Array.isArray(data?.filterValues) ? data.filterValues : []);
-        setMasterCategories(Array.isArray(data?.masterCategories) ? data.masterCategories : []);
+        setMasterCategories(nextMasterCategories);
         setProductPickerOptions(pickerOptions);
 
         if (isEditMode) {
           if (!product) {
             throw new Error(t('addProduct.form.productNotFound'));
           }
-          const mapped = mapSellerProductToFormValues(product);
+          const mapped = mapSellerProductToFormValues(product, nextMasterCategories);
           if (!mapped) {
             throw new Error(t('addProduct.form.productLoadFailed'));
           }
@@ -141,12 +155,15 @@ export default function AddProductForm({ editProductId = null }) {
     return () => {
       cancelled = true;
     };
-  }, [token, editProductId, isEditMode, t]);
+    // `t` intentionally omitted: language changes must not wipe in-progress edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, editProductId, isEditMode]);
 
   const handleSave = async () => {
     if (!token || saving) return;
 
-    const validationErrors = validateSellerProductForm(values, t);
+    const currentValues = valuesRef.current;
+    const validationErrors = validateSellerProductForm(currentValues, t);
     if (validationErrors.length > 0) {
       setSaveError(validationErrors[0]);
       message.error(validationErrors[0]);
@@ -157,7 +174,7 @@ export default function AddProductForm({ editProductId = null }) {
     setSaveError('');
 
     try {
-      const payload = buildSellerProductPayload(values);
+      const payload = buildSellerProductPayload(currentValues);
       const product = isEditMode
         ? await updateSellerProduct(token, editProductId, payload)
         : await createSellerProduct(token, payload);
@@ -217,14 +234,14 @@ export default function AddProductForm({ editProductId = null }) {
         <AddProductSectionField
           value={values.categoryName}
           options={sectionOptions}
-          onChange={(categoryName) => setValues((current) => ({ ...current, categoryName }))}
+          onChange={(categoryName) => updateValues((current) => ({ ...current, categoryName }))}
         />
 
-        <AddProductMainInfoFields values={values} onChange={setValues} />
+        <AddProductMainInfoFields values={values} onChange={updateValues} />
 
-        <AddProductMediaFields values={values} onChange={setValues} />
+        <AddProductMediaFields values={values} onChange={updateValues} />
 
-        <AddProductStockFields values={values} onChange={setValues} />
+        <AddProductStockFields values={values} onChange={updateValues} />
 
         <AddProductClassificationFields
           values={values}
@@ -232,20 +249,20 @@ export default function AddProductForm({ editProductId = null }) {
           productTypes={productTypes}
           filterValues={filterValues}
           shippingCountries={shippingCountries}
-          onChange={setValues}
+          onChange={updateValues}
         />
 
-        <AddProductDetailsFields values={values} onChange={setValues} />
+        <AddProductDetailsFields values={values} onChange={updateValues} />
 
-        <AddProductDescriptionFields values={values} onChange={setValues} />
+        <AddProductDescriptionFields values={values} onChange={updateValues} />
 
-        <AddProductColorsFields values={values} onChange={setValues} />
+        <AddProductColorsFields values={values} onChange={updateValues} />
 
-        <AddProductSizeChartFields values={values} onChange={setValues} />
+        <AddProductSizeChartFields values={values} onChange={updateValues} />
 
         <AddProductRelatedGroupsFields
           values={values}
-          onChange={setValues}
+          onChange={updateValues}
           productPickerOptions={productPickerOptions}
           productPickerLoading={productPickerLoading}
         />

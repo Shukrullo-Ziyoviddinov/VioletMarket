@@ -13,7 +13,10 @@ export function validateSellerProductForm(values, t) {
     errors.push(t('addProduct.validation.priceRequired'));
   }
 
-  if (!String(values?.masterCategoryId || '').trim()) {
+  const hasMasterCategory =
+    String(values?.masterCategoryId ?? '').trim() !== '' ||
+    String(values?.category ?? '').trim() !== '';
+  if (!hasMasterCategory) {
     errors.push(t('addProduct.validation.masterCategoryRequired'));
   }
 
