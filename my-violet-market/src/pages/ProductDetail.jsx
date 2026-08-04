@@ -262,7 +262,6 @@ const ProductDetail = () => {
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
   const [isSellerChatOpen, setIsSellerChatOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [productData, setProductData] = useState(null);
   const [serverProductQty, setServerProductQty] = useState(null);
   const [commentPreviewLimit, setCommentPreviewLimit] = useState(resolveCommentPreviewLimit);
@@ -1120,31 +1119,6 @@ const ProductDetail = () => {
     selectedStorageAvailable &&
     selectedModelAvailable;
 
-  // Mahsulot cart da bor-yo'qligini tekshirish (variant kombinatsiyasi bilan) (must be before early return)
-  const isProductInCart = useMemo(() => {
-    if (!productData) return false;
-    
-    // Tanlangan variant label'larini olish
-    const colorLabel = getLabelFromOption(selectedColor, lang);
-    const sizeLabel = getLabelFromOption(selectedSize, lang);
-    const storageLabel = getLabelFromOption(selectedStorage, lang);
-    const modelLabel = getLabelFromOption(selectedModel, lang);
-    
-    // Cart da aynan shu product ID va variant kombinatsiyasi mavjudligini tekshirish
-    return cart.some(item => 
-      item.id === productData.id &&
-      item.color === colorLabel &&
-      item.size === sizeLabel &&
-      item.storage === storageLabel &&
-      item.model === modelLabel
-    );
-  }, [cart, productData, selectedColor, selectedSize, selectedStorage, selectedModel, lang]);
-
-  // isAddedToCart ni avtomatik yangilash (must be before early return)
-  useEffect(() => {
-    setIsAddedToCart(isProductInCart);
-  }, [isProductInCart]);
-
   const structuredDescriptionBlock = useMemo(() => {
     const d = productData?.description;
     if (!Array.isArray(d) || d.length === 0) return null;
@@ -1318,16 +1292,11 @@ const ProductDetail = () => {
       return;
     }
 
-    if (isProductInCart || isAddedToCart) {
-      navigate('/cart');
-      return;
-    }
-
     setIsAddingToCart(true);
     try {
+      // Bir xil variant qayta qo‘shilsa server quantity ni +1 qiladi
       await addToCart(productData, selectedColor, selectedSize, selectedStorage, selectedModel);
       showToast(i18n.t('cart.toastAdded'), 'success');
-      setIsAddedToCart(true);
     } catch {
       /* login redirect yoki xato */
     } finally {
@@ -1983,14 +1952,7 @@ const ProductDetail = () => {
                 disabled={addToCartDisabled}
               >
                 <ButtonLoader isLoading={isAddingToCart}>
-                  {isAddedToCart || isProductInCart ? (
-                    <>
-                      <i className="fas fa-shopping-cart"></i>
-                      <span>{i18n.t('productDetail.goToCart')}</span>
-                    </>
-                  ) : (
-                    <span>{i18n.t('productDetail.addToCart')}</span>
-                  )}
+                  <span>{i18n.t('productDetail.addToCart')}</span>
                 </ButtonLoader>
               </button>
             </div>

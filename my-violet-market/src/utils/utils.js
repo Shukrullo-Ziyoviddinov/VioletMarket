@@ -36,15 +36,25 @@ export const formatCargoPrice = (price) => {
 // Label olish (string, number yoki object dan). name { uz, ru } bo'lsa lang bo'yicha qaytaradi.
 export const getLabelFromOption = (opt, lang) => {
   if (!opt) return '';
-  if (typeof opt === 'string') return opt;
+  if (typeof opt === 'string') return String(opt).trim();
   if (typeof opt === 'number') return opt.toString();
   if (typeof opt === 'object' && opt.name != null) {
     const name = opt.name;
-    if (typeof name === 'object' && (name.uz != null || name.ru != null))
-      return getLocalizedText(name, lang || 'uz');
-    return typeof name === 'string' ? name : String(name);
+    if (typeof name === 'object' && (name.uz != null || name.ru != null)) {
+      return String(getLocalizedText(name, lang || 'uz') || '').trim();
+    }
+    return typeof name === 'string' ? name.trim() : String(name).trim();
   }
-  if (typeof opt === 'object' && opt.size) return opt.size;
+  // CartModal color: name bo‘lmasa colorFilter ishlatiladi
+  if (typeof opt === 'object' && opt.colorFilter != null) {
+    return String(opt.colorFilter).trim();
+  }
+  if (typeof opt === 'object' && opt.size != null) {
+    return String(opt.size).trim();
+  }
+  if (typeof opt === 'object' && opt.label != null) {
+    return String(opt.label).trim();
+  }
   return '';
 };
 

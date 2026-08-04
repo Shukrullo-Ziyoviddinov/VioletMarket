@@ -120,10 +120,10 @@ async function addCartItem(userId, payload) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 
-  const color = String(payload.color || "");
-  const size = String(payload.size || "");
-  const storage = String(payload.storage || "");
-  const model = String(payload.model || "");
+  const color = String(payload.color || "").trim();
+  const size = String(payload.size || "").trim();
+  const storage = String(payload.storage || "").trim();
+  const model = String(payload.model || "").trim();
   const incomingQty = Math.max(1, Number(payload.quantity) || 1);
   const variant = { color, size, storage, model };
 

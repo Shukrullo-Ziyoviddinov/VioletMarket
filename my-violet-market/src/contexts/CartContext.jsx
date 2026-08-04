@@ -190,10 +190,17 @@ export const CartProvider = ({ children }) => {
         throw new Error('UNAUTHORIZED');
       }
 
-      const payload = buildCartPayload(product, color, size, storage, model);
-      const data = await addCartItem(authToken, payload);
-      syncFromResponse(data);
-      return payload;
+      try {
+        const payload = buildCartPayload(product, color, size, storage, model);
+        const data = await addCartItem(authToken, payload);
+        syncFromResponse(data);
+        return payload;
+      } catch (err) {
+        if (err?.message !== 'UNAUTHORIZED') {
+          showToast(err?.message || t('cart.updateError'), 'error');
+        }
+        throw err;
+      }
     },
     [authToken, navigate, showToast, syncFromResponse, t],
   );

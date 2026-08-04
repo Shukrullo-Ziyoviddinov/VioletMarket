@@ -203,12 +203,12 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
   }, [isColorAvailable, isModelAvailable, isSizeAvailable, isStorageAvailable, pickFirstAvailable, product]);
 
   useEffect(() => {
-    if (product) {
-      const colors = Array.isArray(product.colors) ? product.colors : [];
-      const firstColor = pickFirstAvailable(colors, isColorAvailable) || colors[0] || null;
-      applyColorSelection(firstColor);
-    }
-  }, [applyColorSelection, isColorAvailable, pickFirstAvailable, product]);
+    if (!isOpen || !product) return;
+    setIsAddLoading(false);
+    const colors = Array.isArray(product.colors) ? product.colors : [];
+    const firstColor = pickFirstAvailable(colors, isColorAvailable) || colors[0] || null;
+    applyColorSelection(firstColor);
+  }, [applyColorSelection, isColorAvailable, isOpen, pickFirstAvailable, product]);
 
   const modelLabel = getModelValue(selectedModel);
   const storageLabel = getStorageValue(selectedStorage);
@@ -266,6 +266,7 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
   const modelChoices = getOptionList(selectedColor?.models || product?.models, selectedColor?.modelStock || product?.modelStock);
 
   const handleAddToCart = async () => {
+    if (isAddLoading) return;
     setIsAddLoading(true);
     try {
       await addToCart(product, selectedColor, selectedSize, selectedStorage, selectedModel);
@@ -273,7 +274,7 @@ const CartModal = ({ product, isOpen, onClose, onAdd }) => {
       if (onAdd) onAdd();
       setTimeout(() => onClose(), 100);
     } catch {
-      /* login redirect yoki xato — toast CartContext da */
+      // Xato toast CartContext da; modal yopilmaydi — yana urinish mumkin
     } finally {
       setIsAddLoading(false);
     }
