@@ -163,7 +163,7 @@ export default function AddProductForm({ editProductId = null }) {
     if (!token || saving) return;
 
     const currentValues = valuesRef.current;
-    const validationErrors = validateSellerProductForm(currentValues, t);
+    const validationErrors = validateSellerProductForm(currentValues, t, { isEditMode });
     if (validationErrors.length > 0) {
       setSaveError(validationErrors[0]);
       message.error(validationErrors[0]);

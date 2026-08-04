@@ -396,7 +396,19 @@
     "mainImageRequired": "Main image must be uploaded (or add at least one color)",
     "chegirmaPercentRequired": "Discount label selected — percentage must be entered",
     "discountBothLanguages": "Discount text must be filled in both languages",
-    "colorDiscountBothLanguages": "Color #{{index}}: discount text must be filled in both languages"
+    "colorDiscountBothLanguages": "Color #{{index}}: discount text must be filled in both languages",
+    "sizeQuantityMissing": "Quantity missing for size «{{label}}»",
+    "sizeLabelMissing": "Size #{{index}}: size name missing (quantity is set)",
+    "modelQuantityMissing": "Quantity missing for model «{{label}}»",
+    "modelLabelMissing": "Model #{{index}}: model name missing (quantity is set)",
+    "storageQuantityMissing": "Quantity missing for storage «{{label}}»",
+    "storageLabelMissing": "Storage #{{index}}: storage name missing (quantity is set)",
+    "colorSizeQuantityMissing": "Color «{{colorName}}»: quantity missing for size «{{label}}»",
+    "colorSizeLabelMissing": "Color «{{colorName}}»: size #{{index}} name missing (quantity is set)",
+    "colorModelQuantityMissing": "Color «{{colorName}}»: quantity missing for model «{{label}}»",
+    "colorModelLabelMissing": "Color «{{colorName}}»: model #{{index}} name missing (quantity is set)",
+    "colorStorageQuantityMissing": "Color «{{colorName}}»: quantity missing for storage «{{label}}»",
+    "colorStorageLabelMissing": "Color «{{colorName}}»: storage #{{index}} name missing (quantity is set)"
   },
   "common": {
     "uzbek": "Uzbek",

@@ -396,7 +396,19 @@
     "mainImageRequired": "必须上传主图（或至少添加一种颜色）",
     "chegirmaPercentRequired": "已选择折扣标签——必须输入百分比",
     "discountBothLanguages": "折扣文字必须用两种语言填写",
-    "colorDiscountBothLanguages": "颜色 #{{index}}：折扣文字必须用两种语言填写"
+    "colorDiscountBothLanguages": "颜色 #{{index}}：折扣文字必须用两种语言填写",
+    "sizeQuantityMissing": "尺码「{{label}}」未填写库存数量",
+    "sizeLabelMissing": "尺码 #{{index}}：未填写尺码名称（已有数量）",
+    "modelQuantityMissing": "型号「{{label}}」未填写库存数量",
+    "modelLabelMissing": "型号 #{{index}}：未填写型号名称（已有数量）",
+    "storageQuantityMissing": "存储「{{label}}」未填写库存数量",
+    "storageLabelMissing": "存储 #{{index}}：未填写存储名称（已有数量）",
+    "colorSizeQuantityMissing": "颜色「{{colorName}}」：尺码「{{label}}」未填写库存数量",
+    "colorSizeLabelMissing": "颜色「{{colorName}}」：尺码 #{{index}} 未填写名称（已有数量）",
+    "colorModelQuantityMissing": "颜色「{{colorName}}」：型号「{{label}}」未填写库存数量",
+    "colorModelLabelMissing": "颜色「{{colorName}}」：型号 #{{index}} 未填写名称（已有数量）",
+    "colorStorageQuantityMissing": "颜色「{{colorName}}」：存储「{{label}}」未填写库存数量",
+    "colorStorageLabelMissing": "颜色「{{colorName}}」：存储 #{{index}} 未填写名称（已有数量）"
   },
   "common": {
     "uzbek": "乌兹别克语",

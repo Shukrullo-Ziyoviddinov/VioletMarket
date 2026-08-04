@@ -396,7 +396,19 @@
     "mainImageRequired": "Asosiy rasm yuklanishi shart (yoki kamida bitta rang qo'shing)",
     "chegirmaPercentRequired": "Chegirma belgisi tanlangan — foiz kiritilishi shart",
     "discountBothLanguages": "Chegirma matni ikkala tilda ham to'ldirilishi kerak",
-    "colorDiscountBothLanguages": "Rang #{{index}}: chegirma matni ikkala tilda ham to'ldirilishi kerak"
+    "colorDiscountBothLanguages": "Rang #{{index}}: chegirma matni ikkala tilda ham to'ldirilishi kerak",
+    "sizeQuantityMissing": "O'lcham «{{label}}» uchun mavjudlik (soni) kiritilmagan",
+    "sizeLabelMissing": "O'lcham #{{index}}: o'lcham nomi kiritilmagan (soni bor)",
+    "modelQuantityMissing": "Model «{{label}}» uchun mavjudlik (soni) kiritilmagan",
+    "modelLabelMissing": "Model #{{index}}: model nomi kiritilmagan (soni bor)",
+    "storageQuantityMissing": "Xotira «{{label}}» uchun mavjudlik (soni) kiritilmagan",
+    "storageLabelMissing": "Xotira #{{index}}: xotira nomi kiritilmagan (soni bor)",
+    "colorSizeQuantityMissing": "Rang «{{colorName}}»: o'lcham «{{label}}» uchun mavjudlik kiritilmagan",
+    "colorSizeLabelMissing": "Rang «{{colorName}}»: o'lcham #{{index}} nomi kiritilmagan (soni bor)",
+    "colorModelQuantityMissing": "Rang «{{colorName}}»: model «{{label}}» uchun mavjudlik kiritilmagan",
+    "colorModelLabelMissing": "Rang «{{colorName}}»: model #{{index}} nomi kiritilmagan (soni bor)",
+    "colorStorageQuantityMissing": "Rang «{{colorName}}»: xotira «{{label}}» uchun mavjudlik kiritilmagan",
+    "colorStorageLabelMissing": "Rang «{{colorName}}»: xotira #{{index}} nomi kiritilmagan (soni bor)"
   },
   "common": {
     "uzbek": "O'zbekcha",

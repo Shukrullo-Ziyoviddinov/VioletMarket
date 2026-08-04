@@ -63,10 +63,26 @@ async function findNewestProductDoc(productId) {
   return rows[0] || null;
 }
 
-function normalizeI18nPair(raw, fieldName) {
+function normalizeI18nPair(raw, fieldName, { required = true, fallback = null } = {}) {
   const uz = String(raw?.uz ?? "").trim();
   const ru = String(raw?.ru ?? "").trim();
+  if (!uz && !ru) {
+    if (!required && fallback) {
+      return {
+        uz: String(fallback?.uz ?? "").trim(),
+        ru: String(fallback?.ru ?? "").trim(),
+      };
+    }
+    if (!required) return { uz: "", ru: "" };
+    throw new HttpError(400, `${fieldName} (UZ/RU) to'ldirilishi shart`, "VALIDATION_ERROR");
+  }
   if (!uz || !ru) {
+    if (!required && fallback) {
+      return {
+        uz: uz || String(fallback?.uz ?? "").trim(),
+        ru: ru || String(fallback?.ru ?? "").trim(),
+      };
+    }
     throw new HttpError(400, `${fieldName} (UZ/RU) to'ldirilishi shart`, "VALIDATION_ERROR");
   }
   return { uz, ru };
@@ -129,7 +145,7 @@ function resolveProductFilterValue(rawValue, rows, type) {
   return byAlias ? String(byAlias.filterValue || "").trim() : String(rawValue || "").trim();
 }
 
-async function resolveProductCategory(body) {
+async function resolveProductCategory(body, { required = true, existing = null } = {}) {
   const masterCategoryId = Number(body?.masterCategoryId);
   if (Number.isFinite(masterCategoryId) && masterCategoryId > 0) {
     const row = await MasterCategory.findOne({ id: Math.floor(masterCategoryId) }).lean();
@@ -156,15 +172,39 @@ async function resolveProductCategory(body) {
     };
   }
 
+  if (existing) {
+    const existingCategory = String(existing.category || "").trim();
+    const existingMasterId = Number(existing.masterCategoryId);
+    if (existingCategory || (Number.isFinite(existingMasterId) && existingMasterId > 0)) {
+      return {
+        category: existingCategory,
+        masterCategoryId: Number.isFinite(existingMasterId) && existingMasterId > 0
+          ? existingMasterId
+          : undefined,
+      };
+    }
+  }
+
+  if (!required) {
+    return { category: "", masterCategoryId: undefined };
+  }
+
   throw new HttpError(400, "Category tanlanishi shart", "VALIDATION_ERROR");
 }
 
-async function normalizeProductCountries(body) {
+async function normalizeProductCountries(body, { required = true, existing = null } = {}) {
   const shippingRows = await listActiveShippingCountries();
   const requested = Array.isArray(body?.countryCodes) ? body.countryCodes : [];
   const unique = [...new Set(requested.map((code) => normalizeCountryToken(code)).filter(Boolean))];
 
   if (unique.length === 0) {
+    const existingCountries = Array.isArray(existing?.countries)
+      ? existing.countries.map((code) => normalizeCountryToken(code)).filter(Boolean)
+      : [];
+    if (existingCountries.length > 0) {
+      return [...new Set(existingCountries)];
+    }
+    if (!required) return [];
     throw new HttpError(400, "Kamida bitta mahsulot hududi tanlanishi shart", "VALIDATION_ERROR");
   }
 
@@ -277,9 +317,10 @@ function normalizeWeight(raw) {
   return Math.floor(num);
 }
 
-function normalizeCategoryName(raw) {
+function normalizeCategoryName(raw, { required = true } = {}) {
   const categoryName = String(raw || "").trim();
   if (!categoryName) {
+    if (!required) return "";
     throw new HttpError(400, "Bo'lim (categoryName) tanlanishi shart", "VALIDATION_ERROR");
   }
   if (!FLASH_SECTION_CATEGORY_NAMES.includes(categoryName)) {
@@ -350,11 +391,25 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
   }
 }
 
-async function normalizeSellerProductPayload(body, { sellerShopId, productId = null } = {}) {
-  const categoryName = normalizeCategoryName(body?.categoryName);
-  const title = normalizeI18nPair(body?.title, "Sarlavha");
-  const price = String(body?.price ?? "").trim();
-  if (!price) {
+async function normalizeSellerProductPayload(body, { sellerShopId, productId = null, existing = null } = {}) {
+  const isEdit = Boolean(existing);
+  const required = !isEdit;
+
+  const categoryNameRaw =
+    String(body?.categoryName || "").trim() ||
+    (isEdit ? String(existing?.categoryName || "").trim() : "");
+  const categoryName = normalizeCategoryName(categoryNameRaw, { required });
+
+  const title = normalizeI18nPair(body?.title, "Sarlavha", {
+    required,
+    fallback: isEdit ? existing?.title : null,
+  });
+
+  let price = String(body?.price ?? "").trim();
+  if (!price && isEdit) {
+    price = String(existing?.price ?? "").trim();
+  }
+  if (!price && required) {
     throw new HttpError(400, "Narx to'ldirilishi shart", "VALIDATION_ERROR");
   }
 
@@ -363,26 +418,45 @@ async function normalizeSellerProductPayload(body, { sellerShopId, productId = n
   const video = String(body?.video ?? "").trim();
   const labels = normalizeLabelDraft(body?.labels);
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, productId);
-  const categoryFields = await resolveProductCategory(body);
-  const countries = await normalizeProductCountries(body);
-  const countryFilterValue = await normalizeCountryFilterField(
-    String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim(),
-  );
-  const brandCategories = await normalizeBrandCategories(body);
-  const productType = await normalizeProductTypeValue(body?.productType);
+  const categoryFields = await resolveProductCategory(body, { required, existing });
+  const countries = await normalizeProductCountries(body, { required, existing });
+
+  let countryFilterRaw =
+    String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim();
+  if (!countryFilterRaw && isEdit) {
+    countryFilterRaw =
+      String(existing?.productCountry ?? "").trim() ||
+      String(existing?.countriesCategories ?? "").trim();
+  }
+  const countryFilterValue = await normalizeCountryFilterField(countryFilterRaw);
+
+  let brandRaw = String(body?.brandCategories ?? "").trim();
+  if (!brandRaw && isEdit) {
+    brandRaw = String(existing?.brandCategories ?? "").trim();
+  }
+  const brandCategories = await normalizeBrandCategories({ brandCategories: brandRaw });
+
+  let productTypeRaw = String(body?.productType ?? "").trim();
+  if (!productTypeRaw && isEdit) {
+    productTypeRaw = String(existing?.productType ?? "").trim();
+  }
+  const productType = await normalizeProductTypeValue(productTypeRaw);
 
   const colors = Array.isArray(body?.colors) ? body.colors : [];
-  const mainImage = String(body?.mainImage ?? "").trim();
+  let mainImage = String(body?.mainImage ?? "").trim();
+  if (!mainImage && colors.length === 0 && isEdit) {
+    mainImage = String(existing?.mainImage || existing?.image || "").trim();
+  }
   const thumbnails = normalizeStringArray(body?.thumbnails);
 
-  if (colors.length === 0 && !mainImage) {
+  if (colors.length === 0 && !mainImage && required) {
     throw new HttpError(400, "Asosiy rasm (mainImage) yuklanishi shart", "VALIDATION_ERROR");
   }
 
   const payload = {
     categoryName,
     title,
-    price,
+    price: price || String(existing?.price || "").trim(),
     originalPrice: originalPrice || undefined,
     discount: discount || undefined,
     video: video || undefined,
@@ -405,7 +479,11 @@ async function normalizeSellerProductPayload(body, { sellerShopId, productId = n
   };
 
   const weight = normalizeWeight(body?.weight);
-  if (weight != null) payload.weight = weight;
+  if (weight != null) {
+    payload.weight = weight;
+  } else if (isEdit && Number.isFinite(Number(existing?.weight)) && Number(existing.weight) > 0) {
+    payload.weight = Math.floor(Number(existing.weight));
+  }
 
   const description = Array.isArray(body?.description) ? body.description : [];
   if (description.length > 0) payload.description = description;
@@ -506,7 +584,11 @@ async function updateSellerProduct(sellerShopId, productIdRaw, body) {
   await assertSellerCanManageProducts(sellerShopId);
   const productId = parseProductId(productIdRaw);
   const existing = await assertSellerOwnsProduct(sellerShopId, productId);
-  const payload = await normalizeSellerProductPayload(body, { sellerShopId, productId });
+  const payload = await normalizeSellerProductPayload(body, {
+    sellerShopId,
+    productId,
+    existing,
+  });
 
   const updateDoc = { $set: payload };
   const unset = {};
