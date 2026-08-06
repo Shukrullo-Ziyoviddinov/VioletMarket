@@ -19,9 +19,52 @@ function normalizeStep(row) {
   };
 }
 
-function normalizeOrderItem(row) {
+function normalizeProductLine(row) {
   return {
     id: String(row?.id || ''),
+    itemIndex: Number(row?.itemIndex) || 0,
+    productId: Number(row?.productId) || 0,
+    title: row?.title || { uz: '', ru: '' },
+    imageUrl: String(row?.imageUrl || ''),
+    price: Number(row?.price) || 0,
+    originalPrice: Number(row?.originalPrice) || 0,
+    quantity: Number(row?.quantity) || 1,
+    lineTotal: Number(row?.lineTotal) || 0,
+    color: String(row?.color || ''),
+    size: String(row?.size || ''),
+    storage: String(row?.storage || ''),
+    model: String(row?.model || ''),
+    trackingStatus: String(row?.trackingStatus || 'accepted'),
+  };
+}
+
+function normalizeCargoFeePayment(row) {
+  if (!row) return null;
+  return {
+    ready: Boolean(row.ready),
+    paymentRequired: Boolean(row.paymentRequired),
+    weightKg: Number(row.weightKg) || 0,
+    cargoDeliveryFee: Number(row.cargoDeliveryFee) || 0,
+    uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ''),
+    uzArrivalComment: String(row.uzArrivalComment || ''),
+    uzArrivedAt: row.uzArrivedAt || null,
+    customerPaidAt: row.customerPaidAt || null,
+    customerPaymentMethod: row.customerPaymentMethod || null,
+    adminConfirmedAt: row.adminConfirmedAt || null,
+    logisticaPaidAt: row.logisticaPaidAt || null,
+    canCustomerPay: Boolean(row.canCustomerPay),
+  };
+}
+
+function normalizeOrderItem(row) {
+  const products = Array.isArray(row?.products)
+    ? row.products.map(normalizeProductLine)
+    : [];
+
+  return {
+    id: String(row?.id || ''),
+    isGroup: Boolean(row?.isGroup) || products.length > 1,
+    groupKey: String(row?.groupKey || ''),
     orderId: Number(row?.orderId) || 0,
     orderCode: String(row?.orderCode || ''),
     productId: Number(row?.productId) || 0,
@@ -45,22 +88,9 @@ function normalizeOrderItem(row) {
     orderedAt: row?.orderedAt || '',
     trackingStatus: String(row?.trackingStatus || 'accepted'),
     steps: Array.isArray(row?.steps) ? row.steps.map(normalizeStep) : [],
+    products,
     cargoShipmentId: row?.cargoShipmentId ? String(row.cargoShipmentId) : null,
-    cargoFeePayment: row?.cargoFeePayment
-      ? {
-          ready: Boolean(row.cargoFeePayment.ready),
-          weightKg: Number(row.cargoFeePayment.weightKg) || 0,
-          cargoDeliveryFee: Number(row.cargoFeePayment.cargoDeliveryFee) || 0,
-          uzArrivalPhotoUrl: String(row.cargoFeePayment.uzArrivalPhotoUrl || ''),
-          uzArrivalComment: String(row.cargoFeePayment.uzArrivalComment || ''),
-          uzArrivedAt: row.cargoFeePayment.uzArrivedAt || null,
-          customerPaidAt: row.cargoFeePayment.customerPaidAt || null,
-          customerPaymentMethod: row.cargoFeePayment.customerPaymentMethod || null,
-          adminConfirmedAt: row.cargoFeePayment.adminConfirmedAt || null,
-          logisticaPaidAt: row.cargoFeePayment.logisticaPaidAt || null,
-          canCustomerPay: Boolean(row.cargoFeePayment.canCustomerPay),
-        }
-      : null,
+    cargoFeePayment: normalizeCargoFeePayment(row?.cargoFeePayment),
   };
 }
 

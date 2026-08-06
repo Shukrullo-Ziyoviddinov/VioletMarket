@@ -22,10 +22,22 @@
   align-items: center;
   gap: 7px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .user-order-tracking-card__header strong {
   color: #3d2a50;
+}
+
+.user-order-tracking-card__seller {
+  color: #6b6280;
+  font-size: 11px;
+}
+
+.user-order-tracking-card__seller::before {
+  content: '·';
+  margin-right: 7px;
+  color: #c6c0ce;
 }
 
 .user-order-tracking-card__fee-btn {
@@ -39,6 +51,15 @@
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.user-order-tracking-card__products--stacked .user-order-tracking-card__product {
+  border-bottom: 1px solid #f0edf3;
+}
+
+.user-order-tracking-card__products--stacked
+  .user-order-tracking-card__product:last-child {
+  border-bottom: 0;
 }
 
 .user-order-tracking-card__product {
@@ -89,6 +110,22 @@
   white-space: nowrap;
 }
 
+.user-order-tracking-card__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px 14px;
+  border-top: 1px solid #f0edf3;
+  color: #6b6280;
+  font-size: 13px;
+}
+
+.user-order-tracking-card__total strong {
+  color: #5f259f;
+  font-size: 15px;
+}
+
 .user-order-tracking-card__tracking {
   padding: 20px 14px 18px;
   border-top: 1px solid #f0edf3;
@@ -105,7 +142,6 @@
     width: 72px;
     height: 72px;
   }
-
 }
 
 @media (max-width: 450px) {

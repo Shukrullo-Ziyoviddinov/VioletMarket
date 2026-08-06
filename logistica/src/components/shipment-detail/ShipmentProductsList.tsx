@@ -13,6 +13,9 @@ type Props = {
   selectable?: boolean;
   selectedUnits?: ReturnUnitSelection[];
   onToggleUnit?: (shipmentId: string, unitIndex: number) => void;
+  /** Mahsulotlar ostida umumiy og‘irlik */
+  showTotalWeight?: boolean;
+  totalWeightKg?: number;
 };
 
 function unitKey(shipmentId: string, unitIndex: number) {
@@ -29,6 +32,8 @@ export function ShipmentProductsList({
   selectable = false,
   selectedUnits = [],
   onToggleUnit,
+  showTotalWeight = false,
+  totalWeightKg,
 }: Props) {
   const { t } = useTranslation();
   const selectedSet = new Set(
@@ -36,6 +41,15 @@ export function ShipmentProductsList({
       unitKey(String(row.shipmentId), Number(row.unitIndex) || 0),
     ),
   );
+
+  const productsWeightSum = products.reduce(
+    (sum, product) => sum + Math.max(0, Number(product.weightKg) || 0),
+    0,
+  );
+  const totalKg =
+    Number(totalWeightKg) > 0
+      ? Number(totalWeightKg)
+      : Math.round(productsWeightSum * 1000) / 1000;
 
   return (
     <View style={styles.section}>
@@ -89,7 +103,8 @@ export function ShipmentProductsList({
                 ) : null}
               </View>
               <Text style={styles.meta}>
-                {product.weightKg} kg x{product.quantity}
+                {product.weightKg} kg
+                {product.quantity > 1 ? ` ×${product.quantity}` : ''}
               </Text>
             </View>
           );
@@ -110,6 +125,18 @@ export function ShipmentProductsList({
             </View>
           );
         })}
+
+        {showTotalWeight && products.length > 0 ? (
+          <>
+            <View style={styles.line} />
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>
+                {t('shipments.detail.totalWeight')}
+              </Text>
+              <Text style={styles.totalValue}>{totalKg} kg</Text>
+            </View>
+          </>
+        ) : null}
       </View>
     </View>
   );
@@ -193,6 +220,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#374151',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  totalLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  totalValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#5B21B6',
   },
   line: {
     height: 1,

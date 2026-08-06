@@ -20,9 +20,25 @@ const CARGO_FEE_PAYMENT_METHODS = new Set(["payme", "click"]);
 
 const ADMIN_CARGO_FEE_FILTERS = ["all", "paid", "unpaid"];
 
-/** Yangi «Clientga yuborish» oqimi — to‘lov majburiy */
+/** Yangi «Clientga yuborish» oqimi — to‘lov majburiy (fee-bearer) */
 function isCargoFeePaymentRequired(shipment) {
   return Boolean(shipment?.cargoFeePaymentRequired);
+}
+
+/** Guruhdagi umumiy to‘lov yozuvi shu shipmentda */
+function isCargoFeeBearer(shipment) {
+  return isCargoFeePaymentRequired(shipment);
+}
+
+/**
+ * Guruh sibling: Toshkentga o‘tgan, lekin fee yozilmagan.
+ * To‘landi to‘g‘ridan-to‘g‘ri ochilmasin (faqat fee-bearer + fan-out).
+ */
+function isGroupNonFeeWarehouseSibling(shipment) {
+  if (!shipment?.uzArrivedAt) return false;
+  if (String(shipment.processStep || "") !== "toshkent_omborida") return false;
+  if (isCargoFeePaymentRequired(shipment)) return false;
+  return Number(shipment.cargoDeliveryFee) === 0;
 }
 
 /** Toshkentga kelgan (fizik so‘rov tayyor) */
@@ -51,12 +67,14 @@ function isAdminCargoFeeConfirmed(shipment) {
 
 /**
  * Logistica «To‘landi» ochiqmi.
- * Legacy (required=false): faqat Toshkent + !paidAt.
- * Yangi: + admin tasdiq.
+ * Fee-bearer (yangi): admin tasdiq.
+ * Guruh sibling (fee yo‘q): ochiq emas — fan-out kutadi.
+ * Legacy (required=false, fee>0 yoki eski): Toshkent + !paidAt.
  */
 function canLogisticaMarkPaid(shipment) {
   if (!isUzWarehouseArrived(shipment)) return false;
   if (shipment.paidAt) return false;
+  if (isGroupNonFeeWarehouseSibling(shipment)) return false;
   if (!isCargoFeePaymentRequired(shipment)) return true;
   return isAdminCargoFeeConfirmed(shipment);
 }
@@ -203,6 +221,8 @@ module.exports = {
   CARGO_FEE_PAYMENT_METHODS,
   ADMIN_CARGO_FEE_FILTERS,
   isCargoFeePaymentRequired,
+  isCargoFeeBearer,
+  isGroupNonFeeWarehouseSibling,
   isUzWarehouseArrived,
   isCargoFeeRequestReady,
   isCustomerCargoFeePaid,

@@ -155,15 +155,21 @@ export default function ShipmentDetailScreen() {
   const handleReturn = () => {
     if (!token || !id || busy) return;
 
-    const unitsToReturn = canSelectReturn
-      ? selectedUnits
-      : returnableUnits.length
-        ? returnableUnits
-        : [{ shipmentId: id, unitIndex: 0 }];
+    // Guruh: tanlov bo‘sh → barcha returnable unitlar (siblinglar qolmasin)
+    const unitsToReturn =
+      selectedUnits.length > 0
+        ? selectedUnits
+        : returnableUnits.length
+          ? returnableUnits
+          : [{ shipmentId: id, unitIndex: 0 }];
 
-    if (canSelectReturn && unitsToReturn.length === 0) {
+    if (unitsToReturn.length === 0) {
       Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
       return;
+    }
+
+    if (canSelectReturn && selectedUnits.length === 0) {
+      setSelectedUnits(unitsToReturn);
     }
 
     Alert.alert(
@@ -263,6 +269,8 @@ export default function ShipmentDetailScreen() {
             selectable={isPending && canSelectReturn}
             selectedUnits={selectedUnits}
             onToggleUnit={toggleUnit}
+            showTotalWeight
+            totalWeightKg={detail.weightKg}
           />
 
           {isPending ? (

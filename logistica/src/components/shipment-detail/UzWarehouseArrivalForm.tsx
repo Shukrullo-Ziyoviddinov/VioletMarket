@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,35 +15,98 @@ import {
 
 const ACCENT = '#7c3aed';
 
+export type UzArrivalWeightItem = {
+  shipmentId: string;
+  label: string;
+  initialWeightKg?: number;
+};
+
+export type UzArrivalSubmitPayload = {
+  weightKg: number;
+  cargoDeliveryFee: number;
+  comment: string;
+  photoBase64: string | null;
+  itemWeights: Array<{ shipmentId: string; weightKg: number }>;
+};
+
 type Props = {
   disabled?: boolean;
   loading?: boolean;
+  /** Guruh/yolg‘on mahsulotlar — har biri alohida kg */
+  items?: UzArrivalWeightItem[];
+  /** items yo‘q yoki 1 ta bo‘lganda dastlabki qiymat */
   initialWeightKg?: number;
-  onSubmit: (payload: {
-    weightKg: number;
-    cargoDeliveryFee: number;
-    comment: string;
-    photoBase64: string | null;
-  }) => void | Promise<void>;
+  onSubmit: (payload: UzArrivalSubmitPayload) => void | Promise<void>;
 };
+
+function parseKg(raw: string) {
+  return Number(String(raw).replace(',', '.').trim());
+}
+
+function formatTotal(sum: number) {
+  if (!Number.isFinite(sum) || sum <= 0) return '0';
+  return String(Math.round(sum * 1000) / 1000);
+}
 
 export function UzWarehouseArrivalForm({
   disabled = false,
   loading = false,
+  items = [],
   initialWeightKg = 0,
   onSubmit,
 }: Props) {
   const { t } = useTranslation();
-  const [weightText, setWeightText] = useState(
-    initialWeightKg > 0 ? String(initialWeightKg) : '',
-  );
+  const weightRows = useMemo(() => {
+    if (Array.isArray(items) && items.length > 0) {
+      return items.map((item) => ({
+        shipmentId: String(item.shipmentId || '').trim(),
+        label: String(item.label || '').trim() || item.shipmentId,
+        initial:
+          Number(item.initialWeightKg) > 0 ? Number(item.initialWeightKg) : 0,
+      }));
+    }
+    return [
+      {
+        shipmentId: '',
+        label: t('shipments.uzArrival.weightLabel'),
+        initial: initialWeightKg > 0 ? initialWeightKg : 0,
+      },
+    ];
+  }, [items, initialWeightKg, t]);
+
+  const [weightMap, setWeightMap] = useState<Record<string, string>>({});
   const [feeText, setFeeText] = useState('');
   const [comment, setComment] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
 
+  const rowsKey = weightRows.map((row) => row.shipmentId || '_single').join('|');
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    for (const row of weightRows) {
+      const key = row.shipmentId || '_single';
+      next[key] = row.initial > 0 ? String(row.initial) : '';
+    }
+    setWeightMap(next);
+    // faqat product/shipment seti o‘zgaganda
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowsKey]);
+
   const busy = disabled || loading || picking;
+  const multi = weightRows.length > 1;
+
+  const totalWeight = useMemo(() => {
+    return weightRows.reduce((sum, row) => {
+      const key = row.shipmentId || '_single';
+      const kg = parseKg(weightMap[key] || '');
+      return sum + (Number.isFinite(kg) && kg > 0 ? kg : 0);
+    }, 0);
+  }, [weightRows, weightMap]);
+
+  const setItemWeight = (key: string, value: string) => {
+    setWeightMap((prev) => ({ ...prev, [key]: value }));
+  };
 
   const pickPhoto = async () => {
     if (busy) return;
@@ -93,16 +156,42 @@ export function UzWarehouseArrivalForm({
 
   const handleSubmit = () => {
     if (busy) return;
-    const weightKg = Number(String(weightText).replace(',', '.'));
-    const cargoDeliveryFee = Number(String(feeText).replace(/\s/g, '').replace(',', '.'));
 
-    if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    const itemWeights: Array<{ shipmentId: string; weightKg: number }> = [];
+    for (const row of weightRows) {
+      const key = row.shipmentId || '_single';
+      const kg = parseKg(weightMap[key] || '');
+      if (!Number.isFinite(kg) || kg <= 0) {
+        Alert.alert(
+          t('shipments.uzArrival.weightAlertTitle'),
+          multi
+            ? t('shipments.uzArrival.itemWeightAlertMessage', {
+                name: row.label,
+              })
+            : t('shipments.uzArrival.weightAlertMessage'),
+        );
+        return;
+      }
+      if (row.shipmentId) {
+        itemWeights.push({
+          shipmentId: row.shipmentId,
+          weightKg: Math.round(kg * 1000) / 1000,
+        });
+      }
+    }
+
+    const weightKg = Math.round(totalWeight * 1000) / 1000;
+    if (!(weightKg > 0)) {
       Alert.alert(
         t('shipments.uzArrival.weightAlertTitle'),
         t('shipments.uzArrival.weightAlertMessage'),
       );
       return;
     }
+
+    const cargoDeliveryFee = Number(
+      String(feeText).replace(/\s/g, '').replace(',', '.'),
+    );
     if (!Number.isFinite(cargoDeliveryFee) || cargoDeliveryFee < 0) {
       Alert.alert(
         t('shipments.uzArrival.feeAlertTitle'),
@@ -116,13 +205,18 @@ export function UzWarehouseArrivalForm({
       cargoDeliveryFee,
       comment: comment.trim(),
       photoBase64,
+      itemWeights,
     });
   };
 
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>{t('shipments.uzArrival.title')}</Text>
-      <Text style={styles.hint}>{t('shipments.uzArrival.hint')}</Text>
+      <Text style={styles.hint}>
+        {multi
+          ? t('shipments.uzArrival.hintGroup')
+          : t('shipments.uzArrival.hint')}
+      </Text>
 
       <Pressable
         style={({ pressed }) => [
@@ -160,18 +254,45 @@ export function UzWarehouseArrivalForm({
         </Pressable>
       ) : null}
 
-      <Text style={styles.label}>{t('shipments.uzArrival.weightLabel')}</Text>
-      <TextInput
-        style={styles.input}
-        value={weightText}
-        onChangeText={setWeightText}
-        keyboardType="decimal-pad"
-        placeholder={t('shipments.uzArrival.weightPlaceholder')}
-        placeholderTextColor="#9CA3AF"
-        editable={!busy}
-      />
+      <Text style={styles.label}>
+        {multi
+          ? t('shipments.uzArrival.itemWeightsLabel')
+          : t('shipments.uzArrival.weightLabel')}
+      </Text>
+
+      {weightRows.map((row) => {
+        const key = row.shipmentId || '_single';
+        return (
+          <View key={key} style={multi ? styles.itemBlock : undefined}>
+            {multi ? (
+              <Text style={styles.itemLabel} numberOfLines={2}>
+                {row.label}
+              </Text>
+            ) : null}
+            <TextInput
+              style={styles.input}
+              value={weightMap[key] || ''}
+              onChangeText={(value) => setItemWeight(key, value)}
+              keyboardType="decimal-pad"
+              placeholder={t('shipments.uzArrival.weightPlaceholder')}
+              placeholderTextColor="#9CA3AF"
+              editable={!busy}
+            />
+          </View>
+        );
+      })}
+
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>
+          {t('shipments.uzArrival.totalWeightLabel')}
+        </Text>
+        <Text style={styles.totalValue}>
+          {formatTotal(totalWeight)} kg
+        </Text>
+      </View>
 
       <Text style={styles.label}>{t('shipments.uzArrival.feeLabel')}</Text>
+      <Text style={styles.feeHint}>{t('shipments.uzArrival.feeHintOnce')}</Text>
       <TextInput
         style={styles.input}
         value={feeText}
@@ -267,6 +388,19 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginTop: 2,
   },
+  feeHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: -4,
+  },
+  itemBlock: {
+    gap: 6,
+  },
+  itemLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4B5563',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -276,6 +410,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
     backgroundColor: '#F9FAFB',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F5F3FF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginTop: 2,
+  },
+  totalLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4C1D95',
+  },
+  totalValue: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#5B21B6',
   },
   comment: {
     minHeight: 80,

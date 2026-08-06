@@ -68,16 +68,40 @@ export default function UserCargoFeePaymentModal({
     >
       <div className="user-cargo-fee-modal">
         <div className="user-cargo-fee-modal__product">
-          <img
-            src={normalizeImagePath(order?.imageUrl)}
-            alt={title}
-            className="user-cargo-fee-modal__image"
-          />
-          <div className="user-cargo-fee-modal__info">
-            <strong>{title}</strong>
-            <span>{t('orderHistory.quantity', { count: order?.quantity || 1 })}</span>
-            <span>{formatPrice(order?.lineTotal || order?.price)}</span>
-          </div>
+          {Array.isArray(order?.products) && order.products.length > 1 ? (
+            <div className="user-cargo-fee-modal__info">
+              <strong>
+                {t('orderHistory.cargoFee.groupProducts', {
+                  count: order.products.length,
+                })}
+              </strong>
+              <span>
+                {order.products
+                  .map(
+                    (row) =>
+                      getLocalizedText(row.title, lang) ||
+                      t('orderHistory.productFallback'),
+                  )
+                  .join(' · ')}
+              </span>
+              <span>{formatPrice(order?.lineTotal || order?.price)}</span>
+            </div>
+          ) : (
+            <>
+              <img
+                src={normalizeImagePath(order?.imageUrl)}
+                alt={title}
+                className="user-cargo-fee-modal__image"
+              />
+              <div className="user-cargo-fee-modal__info">
+                <strong>{title}</strong>
+                <span>
+                  {t('orderHistory.quantity', { count: order?.quantity || 1 })}
+                </span>
+                <span>{formatPrice(order?.lineTotal || order?.price)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="user-cargo-fee-modal__logistics">

@@ -194,11 +194,47 @@ export default function IshStoliScreen() {
     }
   };
 
+  const uzArrivalWeightItems = useMemo(() => {
+    if (!detail?.products?.length) {
+      return [
+        {
+          shipmentId: String(detail?.id || id || ''),
+          label: t('shipments.uzArrival.weightLabel'),
+          initialWeightKg: Number(detail?.weightKg) || 0,
+        },
+      ].filter((row) => row.shipmentId);
+    }
+    const byShipment = new Map<
+      string,
+      { shipmentId: string; label: string; initialWeightKg: number }
+    >();
+    for (const product of detail.products) {
+      const shipmentId = String(product.shipmentId || detail.id || '').trim();
+      if (!shipmentId) continue;
+      const title = String(product.title || '').trim() || shipmentId;
+      const variant = String(product.variant || '').trim();
+      const label = variant ? `${title} · ${variant}` : title;
+      const existing = byShipment.get(shipmentId);
+      if (!existing) {
+        byShipment.set(shipmentId, {
+          shipmentId,
+          label,
+          initialWeightKg: Math.max(0, Number(product.weightKg) || 0),
+        });
+      } else {
+        existing.label = `${existing.label}; ${label}`;
+        existing.initialWeightKg += Math.max(0, Number(product.weightKg) || 0);
+      }
+    }
+    return [...byShipment.values()];
+  }, [detail, id, t]);
+
   const handleUzArrival = async (payload: {
     weightKg: number;
     cargoDeliveryFee: number;
     comment: string;
     photoBase64: string | null;
+    itemWeights: Array<{ shipmentId: string; weightKg: number }>;
   }) => {
     if (!token || !id || actionLoading) return;
     setActionLoading(true);
@@ -252,13 +288,14 @@ export default function IshStoliScreen() {
   const handleConfirmReturnRequest = async () => {
     if (!token || !id || actionLoading) return;
 
-    const unitsToReturn = canSelectReturn
-      ? selectedUnits
-      : returnableUnits.length
-        ? returnableUnits
-        : [{ shipmentId: id, unitIndex: 0 }];
+    const unitsToReturn =
+      selectedUnits.length > 0
+        ? selectedUnits
+        : returnableUnits.length
+          ? returnableUnits
+          : [{ shipmentId: id, unitIndex: 0 }];
 
-    if (canSelectReturn && unitsToReturn.length === 0) {
+    if (unitsToReturn.length === 0) {
       setReturnModalOpen(false);
       Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
       return;
@@ -347,6 +384,8 @@ export default function IshStoliScreen() {
             selectable={canSelectReturn}
             selectedUnits={selectedUnits}
             onToggleUnit={toggleUnit}
+            showTotalWeight
+            totalWeightKg={detail.weightKg}
           />
 
           {isToshkent && detail.uzArrivedAt ? (
@@ -377,6 +416,7 @@ export default function IshStoliScreen() {
           {showUzArrivalForm ? (
             <UzWarehouseArrivalForm
               loading={actionLoading}
+              items={uzArrivalWeightItems}
               initialWeightKg={detail.weightKg}
               onSubmit={handleUzArrival}
             />
@@ -492,12 +532,9 @@ export default function IshStoliScreen() {
                 <ShipmentActionButtons
                   onReturnToSeller={() => {
                     if (actionLoading) return;
+                    // Guruh: tanlov bo‘sh bo‘lsa default — barcha returnable sibling unitlar
                     if (canSelectReturn && selectedUnits.length === 0) {
-                      Alert.alert(
-                        t('common.error'),
-                        t('shipments.alerts.returnSelectRequired'),
-                      );
-                      return;
+                      setSelectedUnits(returnableUnits);
                     }
                     setReturnModalOpen(true);
                   }}

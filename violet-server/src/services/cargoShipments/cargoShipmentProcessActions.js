@@ -239,10 +239,61 @@ async function applyYuklarimProcessStep(shipment, processStepRaw) {
   return { alreadySame: false };
 }
 
+/** Guruh uchun umumiy to‘lov yozuvi shu shipmentda. */
+function isCargoFeeBearer(shipment) {
+  return Boolean(shipment?.cargoFeePaymentRequired);
+}
+
+/**
+ * payload.itemWeights[{ shipmentId, weightKg }]
+ * — har bir mahsulot (shipment) uchun alohida kg.
+ */
+function resolveOptionalItemWeightKg(payload, shipmentId) {
+  const rows = Array.isArray(payload?.itemWeights) ? payload.itemWeights : [];
+  const id = String(shipmentId || "").trim();
+  if (!id || !rows.length) return null;
+  const match = rows.find((row) => String(row?.shipmentId || "").trim() === id);
+  if (!match) return null;
+  const weightKg = Number(match.weightKg);
+  if (!Number.isFinite(weightKg) || weightKg <= 0) return null;
+  return Math.round(weightKg * 1000) / 1000;
+}
+
+/** O‘lchangan kg ni products[] da ham ko‘rsatish (itemda alohida). */
+function syncShipmentProductWeights(shipment, weightKg) {
+  const products = Array.isArray(shipment.products) ? shipment.products : [];
+  if (!products.length) return;
+  const kg = Math.round(Number(weightKg) * 1000) / 1000;
+  if (!(kg > 0)) return;
+  if (products.length === 1) {
+    products[0].weightKg = kg;
+    return;
+  }
+  const prevTotal = products.reduce(
+    (sum, row) => sum + Math.max(0, Number(row.weightKg) || 0),
+    0,
+  );
+  if (prevTotal > 0) {
+    for (const row of products) {
+      const share = Math.max(0, Number(row.weightKg) || 0) / prevTotal;
+      row.weightKg = Math.round(kg * share * 1000) / 1000;
+    }
+    return;
+  }
+  products[0].weightKg = kg;
+}
+
 /**
  * Clientga yuborish: og‘irlik + summa → toshkent_omborida.
+ *
+ * options.attachFee (default true):
+ *   true  — fee-bearer: kg + summa + comment/photo + cargoFeePaymentRequired
+ *   false — guruh sibling: faqat Toshkentga o‘tadi; to‘lov talab qilinmaydi
+ *
+ * weightKg — guruh umumiy (validatsiya); itemWeights bo‘lsa har bir shipment o‘z kg sini oladi.
  */
-async function applyUzWarehouseArrival(shipment, payload = {}) {
+async function applyUzWarehouseArrival(shipment, payload = {}, options = {}) {
+  const attachFee = options.attachFee !== false;
   const status = String(shipment.status || "");
   if (status !== "accepted") {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
@@ -271,6 +322,23 @@ async function applyUzWarehouseArrival(shipment, payload = {}) {
     );
   }
 
+  const arrivedAt = new Date();
+
+  if (!attachFee) {
+    const itemWeight = resolveOptionalItemWeightKg(payload, shipment._id);
+    if (itemWeight != null) {
+      shipment.weightKg = itemWeight;
+      shipment.weightLabel = "Og'irlik";
+      syncShipmentProductWeights(shipment, itemWeight);
+    }
+    shipment.cargoDeliveryFee = 0;
+    shipment.cargoFeePaymentRequired = false;
+    shipment.uzArrivedAt = arrivedAt;
+    shipment.processStep = "toshkent_omborida";
+    await shipment.save();
+    return { alreadyArrived: false, feeAttached: false };
+  }
+
   const weightKg = Number(payload.weightKg);
   if (!Number.isFinite(weightKg) || weightKg <= 0) {
     throw new HttpError(400, "Og‘irlikni to‘g‘ri kiriting", "INVALID_WEIGHT");
@@ -286,9 +354,13 @@ async function applyUzWarehouseArrival(shipment, payload = {}) {
     payload.photoBase64 || payload.imageBase64,
   );
 
-  const arrivedAt = new Date();
-  shipment.weightKg = Math.round(weightKg * 1000) / 1000;
+  const itemWeight = resolveOptionalItemWeightKg(payload, shipment._id);
+  const appliedWeight =
+    itemWeight != null ? itemWeight : Math.round(weightKg * 1000) / 1000;
+
+  shipment.weightKg = appliedWeight;
   shipment.weightLabel = "Og'irlik";
+  syncShipmentProductWeights(shipment, appliedWeight);
   shipment.cargoDeliveryFee = Math.round(cargoDeliveryFee);
   shipment.uzArrivalComment = comment;
   if (photoUrl) {
@@ -298,7 +370,7 @@ async function applyUzWarehouseArrival(shipment, payload = {}) {
   shipment.processStep = "toshkent_omborida";
   shipment.cargoFeePaymentRequired = true;
   await shipment.save();
-  return { alreadyArrived: false };
+  return { alreadyArrived: false, feeAttached: true };
 }
 
 /**
@@ -327,6 +399,19 @@ async function applyMarkShipmentPaid(shipment) {
     );
   }
 
+  // Guruh sibling (Toshkent, fee yo‘q) — To‘landi faqat fee-bearer orqali + fan-out
+  if (
+    !isCargoFeeBearer(shipment) &&
+    Number(shipment.cargoDeliveryFee) === 0 &&
+    shipment.uzArrivedAt
+  ) {
+    throw new HttpError(
+      409,
+      "Guruh to‘lovi asosiy yuk orqali To‘landi qilinadi",
+      "GROUP_FEE_BEARER_REQUIRED",
+    );
+  }
+
   assertAdminCargoFeeConfirmedForMarkPaid(shipment);
 
   if (shipment.paidAt) {
@@ -340,6 +425,53 @@ async function applyMarkShipmentPaid(shipment) {
   return { alreadyPaid: false };
 }
 
+/**
+ * Fee-bearer To‘landi dan keyin: guruh siblinglariga paidAt (tarix/balans yozilmaydi).
+ */
+async function applyPaidAtToGroupCompanion(shipment, paidAt) {
+  if (!shipment) return { skipped: true };
+  if (shipment.paidAt) return { alreadyPaid: true };
+  if (String(shipment.processStep || "") !== "toshkent_omborida") {
+    return { skipped: true };
+  }
+  if (!shipment.uzArrivedAt) return { skipped: true };
+  if (isCargoFeeBearer(shipment)) return { skipped: true };
+
+  const at = paidAt instanceof Date ? paidAt : new Date(paidAt || Date.now());
+  shipment.paidAt = at;
+  await shipment.save();
+  return { alreadyPaid: false };
+}
+
+/**
+ * orderId+sellerId guruhidagi Toshkent siblinglarga paidAt yoyish.
+ * @returns {number} yangi yozilgan sibling soni
+ */
+async function fanOutPaidAtToGroupCompanions(feeBearer) {
+  if (!feeBearer?.paidAt || !isCargoFeeBearer(feeBearer)) return 0;
+
+  const orderId = Number(feeBearer.orderId) || 0;
+  const sellerId = String(feeBearer.sellerId || "").trim();
+  if (!orderId || !sellerId) return 0;
+
+  const rows = await CargoShipment.find({
+    orderId,
+    sellerId,
+    status: "accepted",
+    paidAt: null,
+    processStep: "toshkent_omborida",
+    uzArrivedAt: { $ne: null },
+    _id: { $ne: feeBearer._id },
+  });
+
+  let count = 0;
+  for (const sibling of rows) {
+    const result = await applyPaidAtToGroupCompanion(sibling, feeBearer.paidAt);
+    if (result && !result.skipped && !result.alreadyPaid) count += 1;
+  }
+  return count;
+}
+
 module.exports = {
   YUKLARIM_PROCESS_STEPS,
   UZB_WAREHOUSE_LIST_STEPS,
@@ -348,5 +480,9 @@ module.exports = {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  applyPaidAtToGroupCompanion,
+  fanOutPaidAtToGroupCompanions,
+  isCargoFeeBearer,
+  resolveOptionalItemWeightKg,
   canLogisticaMarkPaid,
 };

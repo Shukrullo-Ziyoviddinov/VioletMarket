@@ -23,6 +23,8 @@ const {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  fanOutPaidAtToGroupCompanions,
+  isCargoFeeBearer,
   canLogisticaMarkPaid,
 } = require("./cargoShipmentProcessActions");
 const { resolveProductTitle } = require("./cargoShipmentDisplayHelpers");
@@ -121,7 +123,8 @@ function toLogisticaShipmentCard(doc) {
 
 /**
  * Bir checkout (orderId) + bir siller → bitta UI kartochka.
- * Turli mijoz (turli orderId) → alohida.
+ * Primary: fee-bearer (cargoFeePaymentRequired) — To‘landi id to‘g‘ri bo‘lsin.
+ * Fee yo‘q guruhda — eng yangi accepted/submitted.
  */
 function groupLogisticaShipmentCards(cards = []) {
   const map = new Map();
@@ -143,10 +146,16 @@ function groupLogisticaShipmentCards(cards = []) {
     return Number.isFinite(time) ? time : 0;
   };
 
+  const pickPrimary = (units) => {
+    const feeBearer = units.find((unit) => Boolean(unit.cargoFeePaymentRequired));
+    if (feeBearer) return feeBearer;
+    return units[0];
+  };
+
   const grouped = [];
   for (const units of map.values()) {
     const sorted = [...units].sort((a, b) => resolveTime(b) - resolveTime(a));
-    const primary = sorted[0];
+    const primary = pickPrimary(sorted);
     const siblingIds = sorted.map((unit) => String(unit.id));
     const requestCodes = [
       ...new Set(
@@ -279,6 +288,43 @@ async function loadAcceptedSiblingShipments(shipment, logisticaId) {
   return rows;
 }
 
+/**
+ * Detail / qaytarish UI: guruh siblinglari (pending + accepted + qisman return).
+ * To‘langan (paidAt) chiqarilmaydi.
+ */
+async function loadGroupSiblingShipmentsForDetail(shipment, logisticaId = null) {
+  const orderId = Number(shipment.orderId) || 0;
+  const sellerId = String(shipment.sellerId || "").trim();
+  if (!orderId || !sellerId) return [];
+
+  const lid = String(logisticaId || "").trim();
+  const filter = {
+    orderId,
+    sellerId,
+    paidAt: null,
+    _id: { $ne: shipment._id },
+    status: {
+      $in: [
+        "pending",
+        "accepted",
+        "return_request_pending",
+        "return_approved",
+      ],
+    },
+  };
+
+  if (lid) {
+    filter.$or = [
+      { status: "pending" },
+      { logisticaId: lid },
+    ];
+  }
+
+  return CargoShipment.find(filter)
+    .sort({ acceptedAt: -1, submittedAt: -1, createdAt: -1 })
+    .lean();
+}
+
 function mergeGroupDetail(primaryRow, siblingRows = []) {
   const detail = toLogisticaShipmentDetail(primaryRow);
   if (!siblingRows.length) return detail;
@@ -394,7 +440,12 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
     status === "return_request_pending" ||
     status === "return_approved"
   ) {
-    return { shipment: toLogisticaShipmentDetail(row) };
+    // Qisman qaytarishda siblinglar guruhda ko‘rinsin
+    const siblings = await loadGroupSiblingShipmentsForDetail(
+      shipment,
+      logisticaId,
+    );
+    return { shipment: mergeGroupDetail(row, siblings) };
   }
 
   throw new HttpError(403, "Bu so‘rovni ko‘rish mumkin emas", "SHIPMENT_FORBIDDEN");
@@ -470,8 +521,9 @@ async function updateShipmentProcessStepForLogistica(
 /**
  * UZB ish stoli — Clientga yuborish:
  * og‘irlik + summa → processStep = toshkent_omborida.
- * Mijozga so‘rov yuborish — keyingi qadam.
- * Guruh siblinglari ham birga o‘tadi (bir xil payload).
+ * Guruh: fee/comment/photo faqat form yuborilgan (primary) shipmentda;
+ * siblinglar faqat Toshkentga o‘tadi (alohida to‘lov yo‘q).
+ * payload.itemWeights[{shipmentId, weightKg}] — har mahsulot kg; weightKg = umumiy.
  */
 async function arriveShipmentAtUzWarehouseForLogistica(
   logisticaId,
@@ -482,14 +534,16 @@ async function arriveShipmentAtUzWarehouseForLogistica(
   if (String(shipment.logisticaId) !== String(logisticaId)) {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
-  const result = await applyUzWarehouseArrival(shipment, payload);
+  const result = await applyUzWarehouseArrival(shipment, payload, {
+    attachFee: true,
+  });
 
   const siblingRows = await loadAcceptedSiblingShipments(shipment, logisticaId);
   for (const siblingRow of siblingRows) {
     const sibling = await CargoShipment.findById(siblingRow._id);
     if (!sibling) continue;
     try {
-      await applyUzWarehouseArrival(sibling, payload);
+      await applyUzWarehouseArrival(sibling, payload, { attachFee: false });
     } catch (error) {
       if (Number(error?.status) === 409) continue;
       throw error;
@@ -504,7 +558,7 @@ async function arriveShipmentAtUzWarehouseForLogistica(
   };
 }
 
-function normalizeSelectedShipmentIds(primaryId, payload = {}) {
+function normalizeSelectedShipmentIds(primaryId, payload = {}, allowedIds = null) {
   const primary = String(primaryId || "").trim();
   const raw = Array.isArray(payload.shipmentIds) ? payload.shipmentIds : [];
   const selected = [
@@ -515,23 +569,34 @@ function normalizeSelectedShipmentIds(primaryId, payload = {}) {
     ),
   ];
   if (!selected.length && mongoose.isValidObjectId(primary)) {
+    // Tanlov yo‘q → butun guruh (allowedIds); aks holda faqat primary
+    if (allowedIds instanceof Set && allowedIds.size > 0) {
+      return [...allowedIds].filter((id) => mongoose.isValidObjectId(id));
+    }
     return [primary];
   }
   return selected;
 }
 
-function normalizeReturnSelections(primaryId, payload = {}) {
+/**
+ * selections[{shipmentId, unitIndex}] yoki shipmentIds.
+ * Tanlov bo‘sh + allowedIds → guruhdagi barcha shipment (siblinglar qolib ketmasin).
+ */
+function normalizeReturnSelections(primaryId, payload = {}, allowedIds = null) {
   const rawSelections = Array.isArray(payload.selections) ? payload.selections : null;
   if (rawSelections?.length) {
     return rawSelections
       .map((row) => ({
         shipmentId: String(row?.shipmentId || "").trim(),
-        unitIndex: Math.max(0, Math.floor(Number(row?.unitIndex) || 0)),
+        unitIndex:
+          row?.unitIndex == null
+            ? null
+            : Math.max(0, Math.floor(Number(row.unitIndex) || 0)),
       }))
       .filter((row) => mongoose.isValidObjectId(row.shipmentId));
   }
 
-  const shipmentIds = normalizeSelectedShipmentIds(primaryId, payload);
+  const shipmentIds = normalizeSelectedShipmentIds(primaryId, payload, allowedIds);
   const unitRaw = payload.unitIndexes ?? payload.unitIndex;
   const hasUnitHint = unitRaw != null && !(Array.isArray(unitRaw) && !unitRaw.length);
 
@@ -585,11 +650,15 @@ async function returnShipmentToSellerForLogistica(logisticaId, shipmentIdRaw, pa
     status === "return_request_pending" ||
     status === "return_approved"
   ) {
-    const siblings = await loadAcceptedSiblingShipments(primary, logisticaId);
+    const siblings = await loadGroupSiblingShipmentsForDetail(
+      primary,
+      logisticaId,
+    );
     for (const row of siblings) allowedIds.add(String(row._id));
   }
 
-  const selections = normalizeReturnSelections(primaryId, payload);
+  // Tanlov yo‘q → butun guruh (siblinglar primaryda qolib ketmasin)
+  const selections = normalizeReturnSelections(primaryId, payload, allowedIds);
   if (!selections.length) {
     throw new HttpError(
       400,
@@ -628,10 +697,15 @@ async function returnShipmentToSellerForLogistica(logisticaId, shipmentIdRaw, pa
     first?.shipment?.id || selections[0]?.shipmentId || primaryId,
   );
   const lean = await CargoShipment.findById(returnedId).lean();
+  const siblings = lean
+    ? await loadGroupSiblingShipmentsForDetail(lean, logisticaId)
+    : [];
   return {
     request: first.request,
     requests: results.map((row) => row.request),
-    shipment: toLogisticaShipmentDetail(lean || primary.toObject?.() || primary),
+    shipment: lean
+      ? mergeGroupDetail(lean, siblings)
+      : toLogisticaShipmentDetail(primary.toObject?.() || primary),
     returnedShipmentIds: [
       ...new Set(selections.map((row) => row.shipmentId)),
     ],
@@ -720,6 +794,7 @@ async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
 
 /**
  * To‘landi — faqat Toshkent omborida. Keyin asosiy admin Xorij→UZB ga chiqadi.
+ * Fee-bearer To‘landi bo‘lgach, guruh siblinglarga paidAt yoyiladi (balans faqat bearer fee).
  */
 async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);
@@ -727,9 +802,16 @@ async function markShipmentPaidForLogistica(logisticaId, shipmentIdRaw) {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
   const result = await applyMarkShipmentPaid(shipment);
+
+  let paidSiblingCount = 0;
+  if (isCargoFeeBearer(shipment) && shipment.paidAt) {
+    paidSiblingCount = await fanOutPaidAtToGroupCompanions(shipment);
+  }
+
   return {
     shipment: toLogisticaShipmentDetail(shipment.toObject()),
     alreadyPaid: Boolean(result.alreadyPaid),
+    paidSiblingCount,
   };
 }
 
@@ -746,6 +828,9 @@ module.exports = {
   toLogisticaShipmentCard,
   toLogisticaShipmentDetail,
   toPublicCargoShipment,
+  groupLogisticaShipmentCards,
+  normalizeReturnSelections,
+  normalizeSelectedShipmentIds,
   YUKLARIM_PROCESS_STEPS,
   UZB_WAREHOUSE_LIST_STEPS,
 };

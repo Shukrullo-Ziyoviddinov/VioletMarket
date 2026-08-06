@@ -56,14 +56,22 @@ function isTerminalOrderItem(item) {
   return TERMINAL_TRACKING_STATUSES.includes(status);
 }
 
+function fulfillmentGroupKey(orderId, sellerId) {
+  return `${Number(orderId) || 0}:${cleanSellerId(sellerId)}`;
+}
+
 function mapOrderItemBase(order, item, itemIndex, seller) {
   const orderedAt = order.paidAt || order.createdAt || null;
   const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
+  const sellerId = cleanSellerId(seller.id);
+  const orderId = Number(order.id) || 0;
 
   return {
-    id: `${Number(order.id) || 0}-${itemIndex}`,
-    orderId: Number(order.id) || 0,
+    id: `${orderId}-${itemIndex}`,
+    orderId,
+    itemIndex,
     orderCode: buildOrderCode(order.id),
+    groupKey: fulfillmentGroupKey(orderId, sellerId),
     productId: Number(item.productId) || 0,
     title: resolveTitle(item.title),
     imageUrl: resolvePublicAssetUrl(item.image || "/img/no-image.png"),
@@ -78,7 +86,7 @@ function mapOrderItemBase(order, item, itemIndex, seller) {
     storage: String(item.storage || "").trim(),
     model: String(item.model || "").trim(),
     seller: {
-      id: cleanSellerId(seller.id),
+      id: sellerId,
       name: seller.name || { uz: "", ru: "" },
       country: String(seller.sellerCountry || "").trim().toLowerCase(),
     },
@@ -86,6 +94,121 @@ function mapOrderItemBase(order, item, itemIndex, seller) {
     paymentMethod: String(order.paymentMethod || ""),
     orderedAt,
   };
+}
+
+/** Timeline uchun eng sekin mahsulot (kamroq completed/current). */
+function pickSlowestTrackingItem(items) {
+  if (!items.length) return null;
+  let best = items[0];
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (const item of items) {
+    const steps = Array.isArray(item.steps) ? item.steps : [];
+    const score = steps.reduce((sum, step) => {
+      const state = String(step?.state || "");
+      if (state === "completed") return sum + 2;
+      if (state === "current") return sum + 1;
+      return sum;
+    }, 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+  return best;
+}
+
+/**
+ * Bir checkout (orderId) + bir siller → bitta kartochka.
+ * Cargo to‘lov: faqat fee-bearer shipment (paymentRequired).
+ */
+function groupInProgressTrackingItems(flatItems) {
+  const buckets = new Map();
+  for (const item of flatItems) {
+    if (!item) continue;
+    const key =
+      String(item.groupKey || "").trim() ||
+      fulfillmentGroupKey(item.orderId, item.seller?.id);
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(item);
+  }
+
+  const grouped = [];
+  for (const items of buckets.values()) {
+    const sorted = [...items].sort(
+      (a, b) => (Number(a.itemIndex) || 0) - (Number(b.itemIndex) || 0),
+    );
+    const first = sorted[0];
+    const timelineSource = pickSlowestTrackingItem(sorted) || first;
+
+    const feeBearer =
+      sorted.find((row) => Boolean(row.cargoFeePayment?.paymentRequired)) ||
+      sorted.find((row) => Boolean(row.cargoFeePayment?.ready)) ||
+      null;
+
+    const products = sorted.map((row) => ({
+      id: row.id,
+      itemIndex: Number(row.itemIndex) || 0,
+      productId: row.productId,
+      title: row.title,
+      imageUrl: row.imageUrl,
+      price: row.price,
+      originalPrice: row.originalPrice,
+      quantity: row.quantity,
+      lineTotal: row.lineTotal,
+      color: row.color,
+      size: row.size,
+      storage: row.storage,
+      model: row.model,
+      trackingStatus: row.trackingStatus,
+    }));
+
+    const quantity = products.reduce(
+      (sum, row) => sum + Math.max(1, Number(row.quantity) || 1),
+      0,
+    );
+    const lineTotal = products.reduce(
+      (sum, row) => sum + (Number(row.lineTotal) || 0),
+      0,
+    );
+
+    grouped.push({
+      id: `g-${first.orderId}-${first.seller.id}`,
+      isGroup: products.length > 1,
+      groupKey: first.groupKey,
+      orderId: first.orderId,
+      orderCode: first.orderCode,
+      seller: first.seller,
+      pipelineMode: first.pipelineMode,
+      paymentMethod: first.paymentMethod,
+      orderedAt: first.orderedAt,
+      // UI single-product fallbacklar (birinchi mahsulot)
+      productId: first.productId,
+      title: first.title,
+      imageUrl: first.imageUrl,
+      price: first.price,
+      originalPrice: first.originalPrice,
+      quantity,
+      lineTotal,
+      color: first.color,
+      size: first.size,
+      storage: first.storage,
+      model: first.model,
+      trackingStatus: timelineSource.trackingStatus,
+      steps: timelineSource.steps,
+      products,
+      cargoShipmentId: feeBearer?.cargoShipmentId || null,
+      cargoFeePayment: feeBearer?.cargoFeePayment || null,
+    });
+  }
+
+  grouped.sort((a, b) => {
+    const ta = a.orderedAt ? new Date(a.orderedAt).getTime() : 0;
+    const tb = b.orderedAt ? new Date(b.orderedAt).getTime() : 0;
+    if (tb !== ta) return tb - ta;
+    return (Number(b.orderId) || 0) - (Number(a.orderId) || 0);
+  });
+
+  return grouped;
 }
 
 function mapUzbOrderItem(order, item, itemIndex, seller) {
@@ -194,10 +317,11 @@ async function listMyUzbOrderTracking(userId) {
   }
 
   const deliveredItems = await listDeliveredOrderItems(userId);
+  const grouped = groupInProgressTrackingItems(inProgressItems);
 
   return {
-    items: inProgressItems,
-    inProgressItems,
+    items: grouped,
+    inProgressItems: grouped,
     deliveredItems,
   };
 }
@@ -272,10 +396,11 @@ async function listMyOrderTracking(userId) {
   }
 
   const deliveredItems = await listDeliveredOrderItems(userId);
+  const grouped = groupInProgressTrackingItems(inProgressItems);
 
   return {
-    items: inProgressItems,
-    inProgressItems,
+    items: grouped,
+    inProgressItems: grouped,
     deliveredItems,
   };
 }
@@ -283,4 +408,6 @@ async function listMyOrderTracking(userId) {
 module.exports = {
   listMyUzbOrderTracking,
   listMyOrderTracking,
+  groupInProgressTrackingItems,
+  fulfillmentGroupKey,
 };

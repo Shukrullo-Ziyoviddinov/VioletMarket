@@ -12,6 +12,7 @@ const {
   applyCustomerCargoFeePayment,
   toCargoFeePaymentView,
   isCargoFeeRequestReady,
+  isCargoFeePaymentRequired,
 } = require("../../productManagement/foreignCargoFeePayment");
 
 function resolveProductTitle(title) {
@@ -90,6 +91,13 @@ async function getMyCargoFeePaymentDetail(userId, shipmentIdRaw) {
 
 async function payMyCargoFee(userId, shipmentIdRaw, paymentMethodRaw) {
   const { shipment, item } = await loadOwnedShipment(userId, shipmentIdRaw);
+  if (!isCargoFeePaymentRequired(shipment)) {
+    throw new HttpError(
+      409,
+      "Bu yuk guruh to‘lovi emas — asosiy yuk orqali to‘lang",
+      "GROUP_FEE_BEARER_REQUIRED",
+    );
+  }
   const result = await applyCustomerCargoFeePayment(shipment, paymentMethodRaw);
   return {
     alreadyPaid: Boolean(result.alreadyPaid),

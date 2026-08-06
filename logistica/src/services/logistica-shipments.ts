@@ -503,8 +503,23 @@ export async function arriveShipmentAtUzWarehouse(
     cargoDeliveryFee: number;
     comment?: string;
     photoBase64?: string | null;
+    itemWeights?: Array<{ shipmentId: string; weightKg: number }>;
   },
 ) {
+  const itemWeights = Array.isArray(payload.itemWeights)
+    ? payload.itemWeights
+        .map((row) => ({
+          shipmentId: String(row?.shipmentId || '').trim(),
+          weightKg: Number(row?.weightKg),
+        }))
+        .filter(
+          (row) =>
+            row.shipmentId &&
+            Number.isFinite(row.weightKg) &&
+            row.weightKg > 0,
+        )
+    : [];
+
   const data = await apiRequest<{
     shipment: ShipmentDetail;
     alreadyArrived?: boolean;
@@ -517,6 +532,7 @@ export async function arriveShipmentAtUzWarehouse(
         cargoDeliveryFee: payload.cargoDeliveryFee,
         comment: payload.comment || '',
         photoBase64: payload.photoBase64 || undefined,
+        ...(itemWeights.length ? { itemWeights } : {}),
       }),
     },
     token,

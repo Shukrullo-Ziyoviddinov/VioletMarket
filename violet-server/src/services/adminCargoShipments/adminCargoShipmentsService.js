@@ -18,6 +18,8 @@ const {
   applyYuklarimProcessStep,
   applyUzWarehouseArrival,
   applyMarkShipmentPaid,
+  fanOutPaidAtToGroupCompanions,
+  isCargoFeeBearer,
   canLogisticaMarkPaid,
 } = require("../cargoShipments/cargoShipmentProcessActions");
 const {
@@ -254,16 +256,54 @@ async function updateAdminCargoShipmentProcessStep(shipmentIdRaw, processStepRaw
 
 async function arriveAdminCargoShipmentUzWarehouse(shipmentIdRaw, payload = {}) {
   const shipment = await loadShipmentDoc(shipmentIdRaw);
-  const result = await applyUzWarehouseArrival(shipment, payload);
+  const result = await applyUzWarehouseArrival(shipment, payload, {
+    attachFee: true,
+  });
+
+  // Logistica bilan bir xil: siblinglar Toshkentga o‘tadi, fee ko‘paytirilmaydi
+  const orderId = Number(shipment.orderId) || 0;
+  const sellerId = String(shipment.sellerId || "").trim();
+  let advancedSiblingCount = 0;
+  if (orderId && sellerId) {
+    const siblings = await CargoShipment.find({
+      orderId,
+      sellerId,
+      status: "accepted",
+      paidAt: null,
+      _id: { $ne: shipment._id },
+    });
+    for (const sibling of siblings) {
+      try {
+        await applyUzWarehouseArrival(sibling, payload, { attachFee: false });
+        advancedSiblingCount += 1;
+      } catch (error) {
+        if (Number(error?.status) === 409) continue;
+        throw error;
+      }
+    }
+  }
+
   const data = await toAdminDetailResponse(shipment);
-  return { ...data, alreadyArrived: Boolean(result.alreadyArrived) };
+  return {
+    ...data,
+    alreadyArrived: Boolean(result.alreadyArrived),
+    advancedSiblingCount,
+  };
 }
 
 async function markAdminCargoShipmentPaid(shipmentIdRaw) {
   const shipment = await loadShipmentDoc(shipmentIdRaw);
   const result = await applyMarkShipmentPaid(shipment);
+  let paidSiblingCount = 0;
+  if (isCargoFeeBearer(shipment) && shipment.paidAt) {
+    paidSiblingCount = await fanOutPaidAtToGroupCompanions(shipment);
+  }
   const data = await toAdminDetailResponse(shipment);
-  return { ...data, alreadyPaid: Boolean(result.alreadyPaid) };
+  return {
+    ...data,
+    alreadyPaid: Boolean(result.alreadyPaid),
+    paidSiblingCount,
+  };
 }
 
 module.exports = {

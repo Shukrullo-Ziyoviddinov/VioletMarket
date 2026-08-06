@@ -49,19 +49,24 @@ const OrderHistory = () => {
 
   const handleCargoFeePaid = (orderId, result) => {
     const payment = result?.detail?.payment;
+    const shipmentId = result?.detail?.shipmentId
+      ? String(result.detail.shipmentId)
+      : '';
     if (!payment) return;
     setInProgressOrders((prev) =>
-      prev.map((row) =>
-        row.id === orderId
-          ? {
-              ...row,
-              cargoFeePayment: {
-                ...(row.cargoFeePayment || {}),
-                ...payment,
-              },
-            }
-          : row,
-      ),
+      prev.map((row) => {
+        const sameCard =
+          row.id === orderId ||
+          (shipmentId && row.cargoShipmentId === shipmentId);
+        if (!sameCard) return row;
+        return {
+          ...row,
+          cargoFeePayment: {
+            ...(row.cargoFeePayment || {}),
+            ...payment,
+          },
+        };
+      }),
     );
   };
 

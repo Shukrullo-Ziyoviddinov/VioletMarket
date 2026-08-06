@@ -28,6 +28,9 @@ const scripts = [
   "verifyCompleteReturnAfterSold.js",
   "verifyCargoOrderSettle.js",
   "verifyReactivateAndSoldCrash.js",
+  "verifyCargoGroupFeeOnce.js",
+  "verifyOrderTrackingGroup.js",
+  "verifyCargoGroupReturn.js",
 ];
 
 let failed = 0;
