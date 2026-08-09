@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
+
+import { CargoCameraCapture } from '@/components/shipment-detail/CargoCameraCapture';
 
 const ACCENT = '#7c3aed';
 
@@ -80,6 +83,7 @@ export function UzWarehouseArrivalForm({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const rowsKey = weightRows.map((row) => row.shipmentId || '_single').join('|');
   useEffect(() => {
@@ -108,7 +112,23 @@ export function UzWarehouseArrivalForm({
     setWeightMap((prev) => ({ ...prev, [key]: value }));
   };
 
-  const pickPhoto = async () => {
+  const applyPhotoUri = async (uri: string) => {
+    const context = ImageManipulator.manipulate(uri);
+    context.resize({ width: 1280 });
+    const imageRef = await context.renderAsync();
+    const saved = await imageRef.saveAsync({
+      compress: 0.7,
+      format: SaveFormat.JPEG,
+      base64: true,
+    });
+    if (!saved.base64) {
+      throw new Error(t('shipments.uzArrival.photoReadFailed'));
+    }
+    setPhotoPreview(saved.uri);
+    setPhotoBase64(`data:image/jpeg;base64,${saved.base64}`);
+  };
+
+  const pickFromGallery = async () => {
     if (busy) return;
     setPicking(true);
     try {
@@ -124,26 +144,11 @@ export function UzWarehouseArrivalForm({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 0.7,
-        base64: true,
         allowsEditing: true,
       });
 
-      if (result.canceled || !result.assets?.[0]) return;
-      const asset = result.assets[0];
-      if (!asset.base64) {
-        Alert.alert(
-          t('common.error'),
-          t('shipments.uzArrival.photoReadFailed'),
-        );
-        return;
-      }
-
-      const mime =
-        asset.mimeType && asset.mimeType.includes('png')
-          ? 'image/png'
-          : 'image/jpeg';
-      setPhotoPreview(asset.uri);
-      setPhotoBase64(`data:${mime};base64,${asset.base64}`);
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+      await applyPhotoUri(result.assets[0].uri);
     } catch {
       Alert.alert(
         t('common.error'),
@@ -152,6 +157,42 @@ export function UzWarehouseArrivalForm({
     } finally {
       setPicking(false);
     }
+  };
+
+  const handleCameraCapture = async (photoUri: string) => {
+    setPicking(true);
+    try {
+      await applyPhotoUri(photoUri);
+      setCameraOpen(false);
+    } catch {
+      Alert.alert(
+        t('common.error'),
+        t('shipments.uzArrival.photoPickFailed'),
+      );
+    } finally {
+      setPicking(false);
+    }
+  };
+
+  const pickPhoto = () => {
+    if (busy) return;
+    Alert.alert(
+      t('shipments.uzArrival.photoSourceTitle'),
+      t('shipments.uzArrival.photoSourceMessage'),
+      [
+        {
+          text: t('shipments.uzArrival.takePhoto'),
+          onPress: () => setCameraOpen(true),
+        },
+        {
+          text: t('shipments.uzArrival.pickGallery'),
+          onPress: () => {
+            void pickFromGallery();
+          },
+        },
+        { text: t('shipments.actions.cancel'), style: 'cancel' },
+      ],
+    );
   };
 
   const handleSubmit = () => {
@@ -211,6 +252,21 @@ export function UzWarehouseArrivalForm({
 
   return (
     <View style={styles.wrap}>
+      <CargoCameraCapture
+        visible={cameraOpen}
+        busy={picking}
+        permissionTitle={t('shipments.uzArrival.permissionTitle')}
+        permissionMessage={t('shipments.uzArrival.cameraPermissionMessage')}
+        allowLabel={t('shipments.uzArrival.allowCamera')}
+        backLabel={t('shipments.actions.cancel')}
+        resultTitle={t('shipments.uzArrival.photoResultTitle')}
+        retakeLabel={t('shipments.uzArrival.retakePhoto')}
+        useLabel={t('shipments.uzArrival.usePhoto')}
+        onClose={() => {
+          if (!picking) setCameraOpen(false);
+        }}
+        onCapture={handleCameraCapture}
+      />
       <Text style={styles.title}>{t('shipments.uzArrival.title')}</Text>
       <Text style={styles.hint}>
         {multi
@@ -224,9 +280,7 @@ export function UzWarehouseArrivalForm({
           pressed && !busy && styles.pressed,
         ]}
         disabled={busy}
-        onPress={() => {
-          void pickPhoto();
-        }}
+        onPress={pickPhoto}
       >
         {photoPreview ? (
           <Image source={{ uri: photoPreview }} style={styles.photoPreview} />

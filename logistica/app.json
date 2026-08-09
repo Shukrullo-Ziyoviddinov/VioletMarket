@@ -32,7 +32,21 @@
           "imageWidth": 220
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Yuk suratini olish uchun kamera ruxsati kerak",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Yuk suratini olish uchun kamera ruxsati kerak",
+          "photosPermission": "Yuk suratini tanlash uchun galereya ruxsati kerak"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -24,7 +24,80 @@ const {
 
 const DEFAULT_PAGE_SIZE = 50;
 
-function toAdminCargoFeeCard(row, sellerMap, logisticaMap) {
+function buildFulfillmentGroupKey(orderId, sellerId) {
+  const oid = Number(orderId) || 0;
+  const sid = String(sellerId || "").trim();
+  if (!oid || !sid) return "";
+  return `${oid}:${sid}`;
+}
+
+function mapFeeProductLine(row, product, index) {
+  const weightFromProduct = Math.max(0, Number(product?.weightKg) || 0);
+  const weightFromShipment = Math.max(0, Number(row.weightKg) || 0);
+  return {
+    id: `${row._id}-${index}`,
+    shipmentId: String(row._id),
+    title: resolveProductTitle(product?.title || row.storeName),
+    productId: Number(product?.productId) || 0,
+    color: String(product?.color || "").trim(),
+    size: String(product?.size || "").trim(),
+    storage: String(product?.storage || "").trim(),
+    model: String(product?.model || "").trim(),
+    quantity: Math.max(1, Number(product?.quantity) || 1),
+    weightKg: weightFromProduct > 0 ? weightFromProduct : weightFromShipment,
+  };
+}
+
+function collectFeeProductsFromRows(rows = []) {
+  const products = [];
+  let weightSum = 0;
+  let shipmentWeightSum = 0;
+
+  for (const row of rows) {
+    shipmentWeightSum += Math.max(0, Number(row.weightKg) || 0);
+    const list =
+      Array.isArray(row.products) && row.products.length > 0
+        ? row.products
+        : [
+            {
+              title: row.storeName,
+              productId: 0,
+              quantity: Math.max(1, Number(row.productCount) || 1),
+              weightKg: row.weightKg,
+            },
+          ];
+
+    list.forEach((product, index) => {
+      const mapped = mapFeeProductLine(row, product, index);
+      products.push(mapped);
+      weightSum += mapped.weightKg;
+    });
+  }
+
+  const weightKg = Number(
+    (weightSum > 0 ? weightSum : shipmentWeightSum).toFixed(3),
+  );
+  const titles = [
+    ...new Set(
+      products.map((p) => String(p.title || "").trim()).filter(Boolean),
+    ),
+  ];
+
+  return {
+    products,
+    weightKg,
+    productCount: products.reduce(
+      (sum, p) => sum + Math.max(1, Number(p.quantity) || 1),
+      0,
+    ),
+    productTitle:
+      titles.length <= 1
+        ? titles[0] || resolveProductTitle(rows[0]?.storeName)
+        : `${titles[0]} +${titles.length - 1}`,
+  };
+}
+
+function toAdminCargoFeeCard(row, sellerMap, logisticaMap, groupMeta = null) {
   const sellerId = String(row.sellerId || "");
   const seller = sellerMap.get(sellerId);
   const logisticaId = row.logisticaId ? String(row.logisticaId) : "";
@@ -32,6 +105,9 @@ function toAdminCargoFeeCard(row, sellerMap, logisticaMap) {
   const first = Array.isArray(row.products) ? row.products[0] : null;
   const payment = toCargoFeePaymentView(row);
   const confirmed = Boolean(row.adminCargoFeeConfirmedAt);
+
+  const merged = groupMeta || collectFeeProductsFromRows([row]);
+  const products = Array.isArray(merged.products) ? merged.products : [];
 
   return {
     id: String(row._id),
@@ -44,12 +120,22 @@ function toAdminCargoFeeCard(row, sellerMap, logisticaMap) {
       normalizeCargoCountry(row.sellerCountry) || String(row.sellerCountry || ""),
     logisticaId: logisticaId || null,
     logisticaCompanyName: logistica?.companyName || "—",
-    productTitle: resolveProductTitle(first?.title || row.storeName),
+    productTitle:
+      merged.productTitle ||
+      resolveProductTitle(first?.title || row.storeName),
     productId: Number(first?.productId) || 0,
     productImage: resolvePublicAssetUrl(first?.image || "/img/no-image.png"),
-    productCount: Math.max(0, Number(row.productCount) || 0),
-    weightKg: Math.max(0, Number(row.weightKg) || 0),
+    productCount: Math.max(
+      0,
+      Number(merged.productCount) || Number(row.productCount) || 0,
+    ),
+    weightKg: Math.max(
+      0,
+      Number(merged.weightKg) || Number(row.weightKg) || 0,
+    ),
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
+    products,
+    isGroup: products.length > 1,
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
     uzArrivedAt: row.uzArrivedAt || null,
@@ -61,6 +147,54 @@ function toAdminCargoFeeCard(row, sellerMap, logisticaMap) {
     canConfirm: Boolean(payment?.canAdminConfirm),
     payment,
   };
+}
+
+async function loadFeeGroupRowsByPairs(pairs = []) {
+  const unique = [];
+  const seen = new Set();
+  for (const pair of pairs) {
+    const orderId = Number(pair.orderId) || 0;
+    const sellerId = String(pair.sellerId || "").trim();
+    const key = buildFulfillmentGroupKey(orderId, sellerId);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push({ orderId, sellerId });
+  }
+  if (!unique.length) return new Map();
+
+  const rows = await CargoShipment.find({
+    $or: unique.map((pair) => ({
+      orderId: pair.orderId,
+      sellerId: pair.sellerId,
+    })),
+    status: {
+      $in: [
+        "accepted",
+        "return_request_pending",
+        "return_approved",
+      ],
+    },
+  })
+    .sort({ acceptedAt: -1, submittedAt: -1, createdAt: -1 })
+    .lean();
+
+  const byKey = new Map();
+  for (const row of rows) {
+    const key = buildFulfillmentGroupKey(row.orderId, row.sellerId);
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(row);
+  }
+  return byKey;
+}
+
+function resolveGroupRowsForFee(row, groupMap) {
+  const key = buildFulfillmentGroupKey(row.orderId, row.sellerId);
+  const groupRows = key ? groupMap.get(key) : null;
+  if (Array.isArray(groupRows) && groupRows.length > 0) {
+    return groupRows;
+  }
+  return [row];
 }
 
 async function listAdminCargoFeePayments(query = {}) {
@@ -82,6 +216,12 @@ async function listAdminCargoFeePayments(query = {}) {
 
   const sellerMap = await loadSellerMap(rows.map((r) => r.sellerId));
   const logisticaMap = await loadLogisticaMap(rows.map((r) => r.logisticaId));
+  const groupMap = await loadFeeGroupRowsByPairs(
+    rows.map((row) => ({
+      orderId: row.orderId,
+      sellerId: row.sellerId,
+    })),
+  );
 
   return {
     filter,
@@ -89,8 +229,33 @@ async function listAdminCargoFeePayments(query = {}) {
     limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    items: rows.map((row) => toAdminCargoFeeCard(row, sellerMap, logisticaMap)),
+    items: rows.map((row) => {
+      const groupRows = resolveGroupRowsForFee(row, groupMap);
+      return toAdminCargoFeeCard(
+        row,
+        sellerMap,
+        logisticaMap,
+        collectFeeProductsFromRows(groupRows),
+      );
+    }),
   };
+}
+
+async function enrichFeeCard(shipment) {
+  const row =
+    typeof shipment.toObject === "function" ? shipment.toObject() : shipment;
+  const sellerMap = await loadSellerMap([row.sellerId]);
+  const logisticaMap = await loadLogisticaMap([row.logisticaId]);
+  const groupMap = await loadFeeGroupRowsByPairs([
+    { orderId: row.orderId, sellerId: row.sellerId },
+  ]);
+  const groupRows = resolveGroupRowsForFee(row, groupMap);
+  return toAdminCargoFeeCard(
+    row,
+    sellerMap,
+    logisticaMap,
+    collectFeeProductsFromRows(groupRows),
+  );
 }
 
 async function getAdminCargoFeePaymentDetail(shipmentIdRaw) {
@@ -102,10 +267,8 @@ async function getAdminCargoFeePaymentDetail(shipmentIdRaw) {
   if (!shipment) {
     throw new HttpError(404, "Yuk so‘rovi topilmadi", "SHIPMENT_NOT_FOUND");
   }
-  const sellerMap = await loadSellerMap([shipment.sellerId]);
-  const logisticaMap = await loadLogisticaMap([shipment.logisticaId]);
   return {
-    item: toAdminCargoFeeCard(shipment, sellerMap, logisticaMap),
+    item: await enrichFeeCard(shipment),
   };
 }
 
@@ -120,11 +283,9 @@ async function confirmAdminCargoFeePayment(shipmentIdRaw) {
   }
 
   const result = await applyAdminCargoFeeConfirm(shipment);
-  const sellerMap = await loadSellerMap([shipment.sellerId]);
-  const logisticaMap = await loadLogisticaMap([shipment.logisticaId]);
   return {
     alreadyConfirmed: Boolean(result.alreadyConfirmed),
-    item: toAdminCargoFeeCard(shipment.toObject(), sellerMap, logisticaMap),
+    item: await enrichFeeCard(shipment),
   };
 }
 

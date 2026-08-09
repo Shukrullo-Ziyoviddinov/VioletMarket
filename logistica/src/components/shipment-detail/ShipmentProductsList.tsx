@@ -63,9 +63,9 @@ export function ShipmentProductsList({
           const unitIndex = Number(product.unitIndex) || 0;
           const returnable = isReturnable(product);
           const selected =
-            selectable &&
-            returnable &&
-            shipmentId &&
+            Boolean(selectable) &&
+            Boolean(returnable) &&
+            Boolean(shipmentId) &&
             selectedSet.has(unitKey(shipmentId, unitIndex));
           const status = String(product.returnStatus || 'active');
 

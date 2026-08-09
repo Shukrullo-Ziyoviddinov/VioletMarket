@@ -12,7 +12,25 @@ async function parseJson(res) {
   return data;
 }
 
+function normalizeProduct(row = {}) {
+  return {
+    id: String(row.id || ''),
+    shipmentId: String(row.shipmentId || ''),
+    title: String(row.title || ''),
+    productId: Number(row.productId) || 0,
+    color: String(row.color || ''),
+    size: String(row.size || ''),
+    storage: String(row.storage || ''),
+    model: String(row.model || ''),
+    quantity: Math.max(1, Number(row.quantity) || 1),
+    weightKg: Math.max(0, Number(row.weightKg) || 0),
+  };
+}
+
 function normalizeItem(row = {}) {
+  const products = Array.isArray(row.products)
+    ? row.products.map(normalizeProduct)
+    : [];
   return {
     id: String(row.id || ''),
     requestCode: String(row.requestCode || ''),
@@ -27,6 +45,8 @@ function normalizeItem(row = {}) {
     productCount: Number(row.productCount) || 0,
     weightKg: Number(row.weightKg) || 0,
     cargoDeliveryFee: Number(row.cargoDeliveryFee) || 0,
+    products,
+    isGroup: Boolean(row.isGroup) || products.length > 1,
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ''),
     uzArrivalComment: String(row.uzArrivalComment || ''),
     uzArrivedAt: row.uzArrivedAt || null,
