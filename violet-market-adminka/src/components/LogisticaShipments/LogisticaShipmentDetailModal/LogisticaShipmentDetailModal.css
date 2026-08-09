@@ -39,11 +39,51 @@
 
 .logistica-shipment-detail-modal__timeline h4,
 .logistica-shipment-detail-modal__edit h4,
-.logistica-shipment-detail-modal__arrival h4 {
+.logistica-shipment-detail-modal__arrival h4,
+.logistica-shipment-detail-modal__products h4 {
   margin: 0 0 10px;
   color: #2a1842;
   font-size: 14px;
   font-weight: 800;
+}
+
+.logistica-shipment-detail-modal__products ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logistica-shipment-detail-modal__products li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #faf8ff;
+  border: 1px solid #ece8f4;
+}
+
+.logistica-shipment-detail-modal__products strong {
+  color: #2a1842;
+  font-size: 13px;
+}
+
+.logistica-shipment-detail-modal__products span {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.logistica-shipment-detail-modal__total-weight {
+  margin: 8px 0 0;
+  color: #5b21b6;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .logistica-shipment-detail-modal__timeline ul {

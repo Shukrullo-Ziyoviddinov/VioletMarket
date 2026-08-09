@@ -102,6 +102,14 @@
   font-size: 12px;
 }
 
+.user-order-tracking-card__weight {
+  display: block;
+  margin-top: 2px;
+  color: #5b21b6 !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .user-order-tracking-card__price {
   display: block;
   margin-top: 8px;
@@ -119,6 +127,11 @@
   border-top: 1px solid #f0edf3;
   color: #6b6280;
   font-size: 13px;
+}
+
+.user-order-tracking-card__total--weight {
+  padding-top: 0;
+  border-top: none;
 }
 
 .user-order-tracking-card__total strong {

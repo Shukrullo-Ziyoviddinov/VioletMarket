@@ -39,6 +39,7 @@ function ProductRow({ product, t, lang }) {
   const title =
     getLocalizedText(product.title, lang) || t('orderHistory.productFallback');
   const variantText = buildVariantText(product, t);
+  const weightKg = Number(product.weightKg) || 0;
 
   return (
     <div className="user-order-tracking-card__product">
@@ -51,6 +52,11 @@ function ProductRow({ product, t, lang }) {
         <h2>{title}</h2>
         {variantText ? <p>{variantText}</p> : null}
         <span>{t('orderHistory.quantity', { count: product.quantity })}</span>
+        {weightKg > 0 ? (
+          <span className="user-order-tracking-card__weight">
+            {t('orderHistory.productWeight', { weight: weightKg })}
+          </span>
+        ) : null}
         <strong className="user-order-tracking-card__price">
           {formatPrice(product.lineTotal || product.price)}
         </strong>
@@ -104,6 +110,13 @@ export default function UserOrderTrackingCard({ order, onCargoFeePaid }) {
         <div className="user-order-tracking-card__total">
           <span>{t('orderHistory.groupTotal')}</span>
           <strong>{formatPrice(order.lineTotal)}</strong>
+        </div>
+      ) : null}
+
+      {products.length > 1 && Number(order?.cargoFeePayment?.weightKg) > 0 ? (
+        <div className="user-order-tracking-card__total user-order-tracking-card__total--weight">
+          <span>{t('orderHistory.groupTotalWeight')}</span>
+          <strong>{order.cargoFeePayment.weightKg} kg</strong>
         </div>
       ) : null}
 

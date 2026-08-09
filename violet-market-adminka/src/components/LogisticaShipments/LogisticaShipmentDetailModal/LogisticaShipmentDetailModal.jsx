@@ -229,7 +229,40 @@ export default function LogisticaShipmentDetailModal({
                 <span>Qabul</span>
                 <strong>{formatDateTime(detail.acceptedAt)}</strong>
               </div>
+              {detail.isGroup ? (
+                <div>
+                  <span>Guruh</span>
+                  <strong>
+                    {detail.productCount || detail.siblingIds?.length || 0} ta
+                    mahsulot
+                  </strong>
+                </div>
+              ) : null}
             </div>
+
+            {Array.isArray(detail.products) && detail.products.length > 0 ? (
+              <div className="logistica-shipment-detail-modal__products">
+                <h4>Mahsulotlar</h4>
+                <ul>
+                  {detail.products.map((product) => (
+                    <li key={product.id}>
+                      <strong>{product.title || '—'}</strong>
+                      <span>
+                        {Number(product.weightKg) > 0
+                          ? `${product.weightKg} kg`
+                          : ''}
+                        {product.quantity > 1 ? ` ×${product.quantity}` : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {detail.isGroup || detail.products.length > 1 ? (
+                  <p className="logistica-shipment-detail-modal__total-weight">
+                    Umumiy: {detail.weightKg} kg
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="logistica-shipment-detail-modal__timeline">
               <h4>Jarayon holati</h4>

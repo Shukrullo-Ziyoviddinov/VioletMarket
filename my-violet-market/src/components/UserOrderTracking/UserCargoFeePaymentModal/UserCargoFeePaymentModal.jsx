@@ -13,6 +13,25 @@ function formatMoney(value) {
   return `${Number(value || 0).toLocaleString('uz-UZ')} so‘m`;
 }
 
+function resolveProductLines(order) {
+  if (Array.isArray(order?.products) && order.products.length) {
+    return order.products;
+  }
+  return [
+    {
+      id: order?.id,
+      title: order?.title,
+      imageUrl: order?.imageUrl,
+      quantity: order?.quantity,
+      lineTotal: order?.lineTotal || order?.price,
+      weightKg: order?.cargoFeePayment?.weightKg || 0,
+      uzArrivalComment: '',
+      uzArrivalPhotoUrl: '',
+      cargoShipmentId: order?.cargoShipmentId || null,
+    },
+  ];
+}
+
 export default function UserCargoFeePaymentModal({
   open,
   order,
@@ -27,10 +46,17 @@ export default function UserCargoFeePaymentModal({
 
   const payment = order?.cargoFeePayment;
   const lang = i18n.language || 'uz';
-  const title =
-    getLocalizedText(order?.title, lang) || t('orderHistory.productFallback');
+  const products = resolveProductLines(order);
+  const isGroup = products.length > 1;
   const alreadyPaid = Boolean(payment?.customerPaidAt);
   const canPay = Boolean(payment?.canCustomerPay) && !alreadyPaid;
+  const feeBearerId = order?.cargoShipmentId
+    ? String(order.cargoShipmentId)
+    : '';
+
+  // Guruh izoh/surat — faqat fee-bearer dan bir marta (mahsulot qatorlarida takrorlanmasin)
+  const groupComment = String(payment?.uzArrivalComment || '').trim();
+  const groupPhoto = String(payment?.uzArrivalPhotoUrl || '').trim();
 
   const handleClose = () => {
     if (saving) return;
@@ -67,64 +93,112 @@ export default function UserCargoFeePaymentModal({
       title={t('orderHistory.cargoFee.modalTitle')}
     >
       <div className="user-cargo-fee-modal">
-        <div className="user-cargo-fee-modal__product">
-          {Array.isArray(order?.products) && order.products.length > 1 ? (
-            <div className="user-cargo-fee-modal__info">
-              <strong>
-                {t('orderHistory.cargoFee.groupProducts', {
-                  count: order.products.length,
-                })}
-              </strong>
-              <span>
-                {order.products
-                  .map(
-                    (row) =>
-                      getLocalizedText(row.title, lang) ||
-                      t('orderHistory.productFallback'),
-                  )
-                  .join(' · ')}
-              </span>
-              <span>{formatPrice(order?.lineTotal || order?.price)}</span>
-            </div>
-          ) : (
-            <>
-              <img
-                src={normalizeImagePath(order?.imageUrl)}
-                alt={title}
-                className="user-cargo-fee-modal__image"
-              />
-              <div className="user-cargo-fee-modal__info">
-                <strong>{title}</strong>
-                <span>
-                  {t('orderHistory.quantity', { count: order?.quantity || 1 })}
-                </span>
-                <span>{formatPrice(order?.lineTotal || order?.price)}</span>
+        <div className="user-cargo-fee-modal__products">
+          {isGroup ? (
+            <p className="user-cargo-fee-modal__group-label">
+              {t('orderHistory.cargoFee.groupProducts', {
+                count: products.length,
+              })}
+            </p>
+          ) : null}
+
+          {products.map((product) => {
+            const title =
+              getLocalizedText(product.title, lang) ||
+              t('orderHistory.productFallback');
+            const weightKg = Number(product.weightKg) || 0;
+            const isBearer =
+              feeBearerId &&
+              String(product.cargoShipmentId || '') === feeBearerId;
+            // Siblingda o‘z comment/photo bo‘lsa ko‘rsat; bearer media guruh blokida
+            const ownComment = String(product.uzArrivalComment || '').trim();
+            const ownPhoto = String(product.uzArrivalPhotoUrl || '').trim();
+            const showOwnMedia =
+              !isBearer &&
+              ((ownComment && ownComment !== groupComment) ||
+                (ownPhoto && ownPhoto !== groupPhoto));
+
+            return (
+              <div key={product.id} className="user-cargo-fee-modal__product-row">
+                <img
+                  src={normalizeImagePath(product.imageUrl)}
+                  alt={title}
+                  className="user-cargo-fee-modal__image"
+                />
+                <div className="user-cargo-fee-modal__info">
+                  <strong>{title}</strong>
+                  <span>
+                    {t('orderHistory.quantity', {
+                      count: product.quantity || 1,
+                    })}
+                  </span>
+                  {weightKg > 0 ? (
+                    <span className="user-cargo-fee-modal__item-weight">
+                      {t('orderHistory.cargoFee.itemWeight', {
+                        weight: weightKg,
+                      })}
+                    </span>
+                  ) : null}
+                  <span>{formatPrice(product.lineTotal || product.price)}</span>
+                  {showOwnMedia ? (
+                    <div className="user-cargo-fee-modal__item-media">
+                      {ownPhoto ? (
+                        <img
+                          src={normalizeImagePath(ownPhoto)}
+                          alt=""
+                          className="user-cargo-fee-modal__photo user-cargo-fee-modal__photo--small"
+                        />
+                      ) : null}
+                      {ownComment ? (
+                        <span className="user-cargo-fee-modal__item-comment">
+                          {ownComment}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </>
-          )}
+            );
+          })}
         </div>
 
         <div className="user-cargo-fee-modal__logistics">
           <h3>{t('orderHistory.cargoFee.logisticsInfo')}</h3>
-          {payment?.uzArrivalPhotoUrl ? (
+
+          {groupPhoto ? (
             <img
-              src={normalizeImagePath(payment.uzArrivalPhotoUrl)}
+              src={normalizeImagePath(groupPhoto)}
               alt=""
               className="user-cargo-fee-modal__photo"
             />
           ) : null}
-          <p>
-            <span>{t('orderHistory.cargoFee.weight')}</span>
-            <strong>{payment?.weightKg || 0} kg</strong>
-          </p>
+
+          {isGroup ? (
+            <p>
+              <span>{t('orderHistory.cargoFee.totalWeight')}</span>
+              <strong>{payment?.weightKg || 0} kg</strong>
+            </p>
+          ) : (
+            <p>
+              <span>{t('orderHistory.cargoFee.weight')}</span>
+              <strong>{payment?.weightKg || 0} kg</strong>
+            </p>
+          )}
+
           <p>
             <span>{t('orderHistory.cargoFee.fee')}</span>
             <strong>{formatMoney(payment?.cargoDeliveryFee)}</strong>
           </p>
-          {payment?.uzArrivalComment ? (
+          {isGroup ? (
+            <p className="user-cargo-fee-modal__fee-hint">
+              {t('orderHistory.cargoFee.onePaymentHint')}
+            </p>
+          ) : null}
+
+          {groupComment ? (
             <p className="user-cargo-fee-modal__comment">
               <span>{t('orderHistory.cargoFee.comment')}</span>
-              <strong>{payment.uzArrivalComment}</strong>
+              <strong>{groupComment}</strong>
             </p>
           ) : null}
         </div>

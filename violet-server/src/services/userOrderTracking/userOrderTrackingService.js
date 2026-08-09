@@ -119,7 +119,8 @@ function pickSlowestTrackingItem(items) {
 
 /**
  * Bir checkout (orderId) + bir siller → bitta kartochka.
- * Cargo to‘lov: faqat fee-bearer shipment (paymentRequired).
+ * Cargo to‘lov: faqat fee-bearer shipment (paymentRequired) — bitta summa.
+ * Har mahsulot: o‘z kg / (agar bo‘lsa) comment+photo — chalkashtirilmaydi.
  */
 function groupInProgressTrackingItems(flatItems) {
   const buckets = new Map();
@@ -145,22 +146,31 @@ function groupInProgressTrackingItems(flatItems) {
       sorted.find((row) => Boolean(row.cargoFeePayment?.ready)) ||
       null;
 
-    const products = sorted.map((row) => ({
-      id: row.id,
-      itemIndex: Number(row.itemIndex) || 0,
-      productId: row.productId,
-      title: row.title,
-      imageUrl: row.imageUrl,
-      price: row.price,
-      originalPrice: row.originalPrice,
-      quantity: row.quantity,
-      lineTotal: row.lineTotal,
-      color: row.color,
-      size: row.size,
-      storage: row.storage,
-      model: row.model,
-      trackingStatus: row.trackingStatus,
-    }));
+    const products = sorted.map((row) => {
+      const fee = row.cargoFeePayment || null;
+      return {
+        id: row.id,
+        itemIndex: Number(row.itemIndex) || 0,
+        productId: row.productId,
+        title: row.title,
+        imageUrl: row.imageUrl,
+        price: row.price,
+        originalPrice: row.originalPrice,
+        quantity: row.quantity,
+        lineTotal: row.lineTotal,
+        color: row.color,
+        size: row.size,
+        storage: row.storage,
+        model: row.model,
+        trackingStatus: row.trackingStatus,
+        cargoShipmentId: row.cargoShipmentId || null,
+        // Alohida kg — shu mahsulot shipmentidan
+        weightKg: Math.max(0, Number(fee?.weightKg) || 0),
+        // Comment/photo faqat shu shipmentda yozilgan bo‘lsa (bearer odatda)
+        uzArrivalComment: String(fee?.uzArrivalComment || "").trim(),
+        uzArrivalPhotoUrl: String(fee?.uzArrivalPhotoUrl || "").trim(),
+      };
+    });
 
     const quantity = products.reduce(
       (sum, row) => sum + Math.max(1, Number(row.quantity) || 1),
@@ -170,6 +180,23 @@ function groupInProgressTrackingItems(flatItems) {
       (sum, row) => sum + (Number(row.lineTotal) || 0),
       0,
     );
+    const totalWeightKg = Number(
+      products
+        .reduce((sum, row) => sum + Math.max(0, Number(row.weightKg) || 0), 0)
+        .toFixed(3),
+    );
+
+    let cargoFeePayment = feeBearer?.cargoFeePayment || null;
+    if (cargoFeePayment) {
+      cargoFeePayment = {
+        ...cargoFeePayment,
+        // Guruh umumiy kg (to‘lov bloki); har mahsulot o‘z kg sini products[] da saqlaydi
+        weightKg:
+          totalWeightKg > 0
+            ? totalWeightKg
+            : Math.max(0, Number(cargoFeePayment.weightKg) || 0),
+      };
+    }
 
     grouped.push({
       id: `g-${first.orderId}-${first.seller.id}`,
@@ -197,7 +224,7 @@ function groupInProgressTrackingItems(flatItems) {
       steps: timelineSource.steps,
       products,
       cargoShipmentId: feeBearer?.cargoShipmentId || null,
-      cargoFeePayment: feeBearer?.cargoFeePayment || null,
+      cargoFeePayment,
     });
   }
 

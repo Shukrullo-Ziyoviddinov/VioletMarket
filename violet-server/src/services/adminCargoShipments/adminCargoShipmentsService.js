@@ -23,6 +23,9 @@ const {
   canLogisticaMarkPaid,
 } = require("../cargoShipments/cargoShipmentProcessActions");
 const {
+  groupLogisticaShipmentCards,
+} = require("../cargoShipments/cargoShipmentLogisticaService");
+const {
   resolveProductTitle,
   formatProductCode,
   loadSellerMap,
@@ -30,6 +33,14 @@ const {
 } = require("../cargoShipments/cargoShipmentDisplayHelpers");
 
 const DEFAULT_PAGE_SIZE = 100;
+const LIST_FETCH_CAP = 500;
+
+function buildFulfillmentGroupKey(orderId, sellerId) {
+  const oid = Number(orderId) || 0;
+  const sid = String(sellerId || "").trim();
+  if (!oid || !sid) return "";
+  return `${oid}:${sid}`;
+}
 
 const COUNTRY_LABELS = {
   china: "China",
@@ -67,11 +78,12 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
   const firstProduct = Array.isArray(row.products) ? row.products[0] : null;
   const country = normalizeCargoCountry(row.sellerCountry) || String(row.sellerCountry || "");
   const productId = Number(firstProduct?.productId) || 0;
+  const orderId = Number(row.orderId) || 0;
 
   return {
     id: String(row._id),
     requestCode: String(row.requestCode || ""),
-    orderId: Number(row.orderId) || 0,
+    orderId,
     itemIndex: Number(row.itemIndex) || 0,
     sellerId,
     sellerName: seller?.name || sellerId || "Noma’lum siller",
@@ -83,6 +95,7 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
     productCount: Math.max(0, Number(row.productCount) || 0),
     weightKg: Math.max(0, Number(row.weightKg) || 0),
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
     status: String(row.status || ""),
     processStep: row.processStep || null,
     processStepLabel: processStepLabel(row.processStep),
@@ -97,7 +110,114 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
     logisticaId: logisticaId || null,
     logisticaCompanyName: logistica?.companyName || "—",
     logisticaCountry: logistica?.logisticaCountry || country,
+    groupKey: buildFulfillmentGroupKey(orderId, sellerId),
+    isGroup: false,
+    siblingIds: [],
   };
+}
+
+/**
+ * Guruh kartochkada mahsulot nomlarini birlashtirish
+ * (groupLogisticaShipmentCards faqat primary title qoldiradi).
+ */
+function enrichAdminGroupedCards(grouped, cardsById) {
+  return grouped.map((card) => {
+    if (!card?.isGroup) return card;
+    const units = (Array.isArray(card.siblingIds) ? card.siblingIds : [])
+      .map((id) => cardsById.get(String(id)))
+      .filter(Boolean);
+    if (!units.length) return card;
+
+    const titles = [
+      ...new Set(
+        units
+          .map((unit) => String(unit.productTitle || "").trim())
+          .filter(Boolean),
+      ),
+    ];
+    const feeSum = units.reduce(
+      (sum, unit) => sum + Math.max(0, Number(unit.cargoDeliveryFee) || 0),
+      0,
+    );
+    // Fee faqat bearerda — yig‘indi != har sibling fee (siblinglar 0)
+    return {
+      ...card,
+      productTitle:
+        titles.length <= 1
+          ? titles[0] || card.productTitle
+          : `${titles[0]} +${titles.length - 1}`,
+      cargoDeliveryFee: Math.max(
+        0,
+        Number(card.cargoDeliveryFee) || 0,
+      ) || feeSum,
+    };
+  });
+}
+
+function mergeAdminGroupDetail(primaryRow, siblingRows, sellerMap, logisticaMap) {
+  const allRows = [primaryRow, ...(Array.isArray(siblingRows) ? siblingRows : [])];
+  const feeBearerRow =
+    allRows.find((row) => Boolean(row.cargoFeePaymentRequired)) || primaryRow;
+  const detail = toAdminShipmentDetail(feeBearerRow, sellerMap, logisticaMap);
+  if (allRows.length <= 1) return detail;
+
+  const products = [];
+  const requestCodes = [];
+  let weightKg = 0;
+  let productCount = 0;
+
+  for (const row of allRows) {
+    const mapped = toAdminShipmentDetail(row, sellerMap, logisticaMap);
+    const code = String(mapped.requestCode || "").trim();
+    if (code) requestCodes.push(code);
+    weightKg += Math.max(0, Number(mapped.weightKg) || 0);
+    for (const product of mapped.products || []) {
+      products.push({
+        ...product,
+        shipmentId: String(row._id),
+      });
+      productCount += Math.max(1, Number(product.quantity) || 1);
+    }
+  }
+
+  const uniqueCodes = [...new Set(requestCodes)];
+  const titles = [
+    ...new Set(products.map((p) => String(p.title || "").trim()).filter(Boolean)),
+  ];
+
+  return {
+    ...detail,
+    requestCode:
+      uniqueCodes.length <= 1
+        ? uniqueCodes[0] || detail.requestCode
+        : uniqueCodes.join(", "),
+    productTitle:
+      titles.length <= 1
+        ? titles[0] || detail.productTitle
+        : `${titles[0]} +${titles.length - 1}`,
+    products,
+    productCount,
+    weightKg: Number(weightKg.toFixed(2)),
+    siblingIds: allRows.map((row) => String(row._id)),
+    isGroup: true,
+    groupKey: buildFulfillmentGroupKey(detail.orderId, detail.sellerId),
+  };
+}
+
+async function loadAdminGroupCompanionRows(shipmentRow) {
+  const orderId = Number(shipmentRow.orderId) || 0;
+  const sellerId = String(shipmentRow.sellerId || "").trim();
+  if (!orderId || !sellerId) return [];
+
+  return CargoShipment.find({
+    orderId,
+    sellerId,
+    status: "accepted",
+    paidAt: null,
+    _id: { $ne: shipmentRow._id },
+  })
+    .sort({ acceptedAt: -1, submittedAt: -1 })
+    .lean();
 }
 
 function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
@@ -167,19 +287,32 @@ async function loadShipmentDoc(shipmentIdRaw) {
 
 async function toAdminDetailResponse(shipment) {
   const row = typeof shipment.toObject === "function" ? shipment.toObject() : shipment;
-  const sellerMap = await loadSellerMap([row.sellerId]);
-  const logisticaMap = await loadLogisticaMap([row.logisticaId]);
+  const siblings = await loadAdminGroupCompanionRows(row);
+  const sellerIds = [row.sellerId, ...siblings.map((s) => s.sellerId)];
+  const logisticaIds = [row.logisticaId, ...siblings.map((s) => s.logisticaId)];
+  const sellerMap = await loadSellerMap(sellerIds);
+  const logisticaMap = await loadLogisticaMap(logisticaIds);
   return {
-    shipment: toAdminShipmentDetail(row, sellerMap, logisticaMap),
+    shipment: mergeAdminGroupDetail(row, siblings, sellerMap, logisticaMap),
   };
 }
 
 async function listAdminCargoShipmentCountries() {
+  // Davlat soni — guruh (orderId+sellerId) bo‘yicha, alohida shipment emas
   const rows = await CargoShipment.aggregate([
     { $match: { status: "accepted", paidAt: null } },
     {
       $group: {
-        _id: { $toLower: "$sellerCountry" },
+        _id: {
+          country: { $toLower: "$sellerCountry" },
+          orderId: "$orderId",
+          sellerId: "$sellerId",
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$_id.country",
         count: { $sum: 1 },
       },
     },
@@ -203,6 +336,7 @@ async function listAdminCargoShipmentCountries() {
 
 /**
  * Qabul qilingan, hali To‘lanmagan (Xorij→UZB ga o‘tmagan).
+ * Bir checkout (orderId) + bir siller → bitta kartochka.
  */
 async function listAdminCargoShipments(query = {}) {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
@@ -222,24 +356,31 @@ async function listAdminCargoShipments(query = {}) {
     filter.sellerCountry = { $in: aliases };
   }
 
-  const [total, rows] = await Promise.all([
-    CargoShipment.countDocuments(filter),
-    CargoShipment.find(filter)
-      .sort({ acceptedAt: -1, submittedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-  ]);
+  // Avval guruhlash, keyin paginate (Logistica bilan bir xil)
+  const rows = await CargoShipment.find(filter)
+    .sort({ acceptedAt: -1, submittedAt: -1 })
+    .limit(LIST_FETCH_CAP)
+    .lean();
 
   const sellerMap = await loadSellerMap(rows.map((r) => r.sellerId));
   const logisticaMap = await loadLogisticaMap(rows.map((r) => r.logisticaId));
+  const cards = rows.map((row) => toAdminShipmentCard(row, sellerMap, logisticaMap));
+  const cardsById = new Map(cards.map((card) => [String(card.id), card]));
+  const grouped = enrichAdminGroupedCards(
+    groupLogisticaShipmentCards(cards),
+    cardsById,
+  );
+
+  const total = grouped.length;
+  const start = (page - 1) * limit;
+  const pageItems = grouped.slice(start, start + limit);
 
   return {
     page,
     limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / limit) || 1),
-    shipments: rows.map((row) => toAdminShipmentCard(row, sellerMap, logisticaMap)),
+    shipments: pageItems,
   };
 }
 
@@ -251,6 +392,21 @@ async function getAdminCargoShipmentDetail(shipmentIdRaw) {
 async function updateAdminCargoShipmentProcessStep(shipmentIdRaw, processStepRaw) {
   const shipment = await loadShipmentDoc(shipmentIdRaw);
   await applyYuklarimProcessStep(shipment, processStepRaw);
+
+  const companions = await loadAdminGroupCompanionRows(
+    typeof shipment.toObject === "function" ? shipment.toObject() : shipment,
+  );
+  for (const siblingRow of companions) {
+    const sibling = await CargoShipment.findById(siblingRow._id);
+    if (!sibling) continue;
+    try {
+      await applyYuklarimProcessStep(sibling, processStepRaw);
+    } catch (error) {
+      if (Number(error?.status) === 409) continue;
+      throw error;
+    }
+  }
+
   return toAdminDetailResponse(shipment);
 }
 
@@ -315,4 +471,6 @@ module.exports = {
   markAdminCargoShipmentPaid,
   LOGISTICA_PROCESS_STEPS,
   YUKLARIM_PROCESS_STEPS,
+  buildFulfillmentGroupKey,
+  enrichAdminGroupedCards,
 };

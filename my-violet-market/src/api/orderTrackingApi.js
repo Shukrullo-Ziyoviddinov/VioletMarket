@@ -35,6 +35,10 @@ function normalizeProductLine(row) {
     storage: String(row?.storage || ''),
     model: String(row?.model || ''),
     trackingStatus: String(row?.trackingStatus || 'accepted'),
+    cargoShipmentId: row?.cargoShipmentId ? String(row.cargoShipmentId) : null,
+    weightKg: Math.max(0, Number(row?.weightKg) || 0),
+    uzArrivalComment: String(row?.uzArrivalComment || '').trim(),
+    uzArrivalPhotoUrl: String(row?.uzArrivalPhotoUrl || '').trim(),
   };
 }
 

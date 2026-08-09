@@ -31,6 +31,7 @@ const scripts = [
   "verifyCargoGroupFeeOnce.js",
   "verifyOrderTrackingGroup.js",
   "verifyCargoGroupReturn.js",
+  "verifyAdminCargoGroup.js",
 ];
 
 let failed = 0;

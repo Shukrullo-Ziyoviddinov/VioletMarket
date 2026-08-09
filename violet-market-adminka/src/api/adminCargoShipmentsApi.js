@@ -13,6 +13,9 @@ async function parseJson(res) {
 }
 
 function normalizeShipment(row = {}) {
+  const siblingIds = Array.isArray(row.siblingIds)
+    ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
+    : [];
   return {
     id: String(row.id || ''),
     requestCode: String(row.requestCode || ''),
@@ -27,6 +30,7 @@ function normalizeShipment(row = {}) {
     productCount: Number(row.productCount) || 0,
     weightKg: Number(row.weightKg) || 0,
     cargoDeliveryFee: Number(row.cargoDeliveryFee) || 0,
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
     status: String(row.status || ''),
     processStep: row.processStep || null,
     processStepLabel: String(row.processStepLabel || ''),
@@ -52,6 +56,9 @@ function normalizeShipment(row = {}) {
       label: 'Toshkent omborida',
       done: false,
     },
+    groupKey: String(row.groupKey || ''),
+    isGroup: Boolean(row.isGroup) || siblingIds.length > 1,
+    siblingIds,
   };
 }
 

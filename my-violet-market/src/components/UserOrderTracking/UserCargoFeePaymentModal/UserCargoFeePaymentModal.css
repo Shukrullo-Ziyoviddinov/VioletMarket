@@ -1,3 +1,57 @@
+.user-cargo-fee-modal__products {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-cargo-fee-modal__group-label {
+  margin: 0;
+  color: #5b21b6;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.user-cargo-fee-modal__product-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 10px;
+  border-radius: 12px;
+  background: #faf8ff;
+  border: 1px solid #ece8f4;
+}
+
+.user-cargo-fee-modal__item-weight {
+  color: #5b21b6 !important;
+  font-weight: 700 !important;
+}
+
+.user-cargo-fee-modal__item-media {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.user-cargo-fee-modal__item-comment {
+  color: #4b5563 !important;
+  font-size: 12px !important;
+  line-height: 1.4;
+}
+
+.user-cargo-fee-modal__photo--small {
+  max-height: 96px;
+  margin-bottom: 0;
+}
+
+.user-cargo-fee-modal__fee-hint {
+  display: block !important;
+  color: #6b7280 !important;
+  font-size: 12px !important;
+  font-weight: 500;
+}
+
 .user-cargo-fee-modal {
   display: flex;
   flex-direction: column;
