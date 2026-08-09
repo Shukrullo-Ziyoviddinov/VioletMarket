@@ -217,6 +217,32 @@
   gap: 12px;
 }
 
+.logistica-shipment-detail-modal__arrival-hint {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.logistica-shipment-detail-modal__arrival-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f5f3ff;
+  color: #4c1d95;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.logistica-shipment-detail-modal__arrival-total strong {
+  color: #5b21b6;
+  font-size: 14px;
+}
+
 .logistica-shipment-detail-modal__arrival-form label {
   display: flex;
   flex-direction: column;

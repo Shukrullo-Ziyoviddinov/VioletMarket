@@ -26,6 +26,7 @@ const {
   fanOutPaidAtToGroupCompanions,
   isCargoFeeBearer,
   canLogisticaMarkPaid,
+  assertItemWeightsForGroup,
 } = require("./cargoShipmentProcessActions");
 const { resolveProductTitle } = require("./cargoShipmentDisplayHelpers");
 
@@ -247,6 +248,7 @@ function toLogisticaShipmentDetail(doc) {
     acceptedAt: row.acceptedAt || null,
     returnedAt: row.returnedAt || null,
     paidAt: row.paidAt || null,
+    cargoFeePaymentRequired: Boolean(row.cargoFeePaymentRequired),
     canMarkPaid: canLogisticaMarkPaid(row),
   };
 }
@@ -325,14 +327,22 @@ async function loadGroupSiblingShipmentsForDetail(shipment, logisticaId = null) 
     .lean();
 }
 
+/**
+ * Guruh detail: fee-bearer asosiy (admin bilan bir xil).
+ * Sibling ochilsa ham to‘lov/izoh/canMarkPaid to‘g‘ri chiqsin.
+ */
 function mergeGroupDetail(primaryRow, siblingRows = []) {
-  const detail = toLogisticaShipmentDetail(primaryRow);
-  if (!siblingRows.length) return detail;
+  const allRows = [primaryRow, ...(Array.isArray(siblingRows) ? siblingRows : [])];
+  if (allRows.length <= 1) {
+    return toLogisticaShipmentDetail(primaryRow);
+  }
 
-  const allRows = [primaryRow, ...siblingRows];
+  const feeBearerRow =
+    allRows.find((row) => Boolean(row.cargoFeePaymentRequired)) || primaryRow;
+  const detail = toLogisticaShipmentDetail(feeBearerRow);
+
   const products = [];
   const requestCodes = [];
-
   for (const row of allRows) {
     const code = String(row.requestCode || "").trim();
     if (code) requestCodes.push(code);
@@ -348,19 +358,24 @@ function mergeGroupDetail(primaryRow, siblingRows = []) {
   return {
     ...detail,
     requestCode:
-      uniqueCodes.length <= 1 ? uniqueCodes[0] || detail.requestCode : uniqueCodes.join(", "),
+      uniqueCodes.length <= 1
+        ? uniqueCodes[0] || detail.requestCode
+        : uniqueCodes.join(", "),
     products,
     productCount: products.reduce(
-      (sum, product) => sum + (Math.max(1, Number(product.quantity) || 1)),
+      (sum, product) => sum + Math.max(1, Number(product.quantity) || 1),
       0,
     ),
     weightKg: Number(
       allRows
-        .reduce((sum, row) => sum + (Math.max(0, Number(row.weightKg) || 0)), 0)
+        .reduce((sum, row) => sum + Math.max(0, Number(row.weightKg) || 0), 0)
         .toFixed(2),
     ),
     siblingIds,
-    isGroup: siblingIds.length > 1,
+    isGroup: true,
+    groupKey:
+      detail.groupKey ||
+      buildFulfillmentGroupKey(detail.orderId, detail.sellerId),
   };
 }
 
@@ -534,11 +549,17 @@ async function arriveShipmentAtUzWarehouseForLogistica(
   if (String(shipment.logisticaId) !== String(logisticaId)) {
     throw new HttpError(409, "Avval so‘rovni qabul qiling", "SHIPMENT_NOT_ACCEPTED");
   }
+
+  const siblingRows = await loadAcceptedSiblingShipments(shipment, logisticaId);
+  assertItemWeightsForGroup(payload, [
+    shipment._id,
+    ...siblingRows.map((row) => row._id),
+  ]);
+
   const result = await applyUzWarehouseArrival(shipment, payload, {
     attachFee: true,
   });
 
-  const siblingRows = await loadAcceptedSiblingShipments(shipment, logisticaId);
   for (const siblingRow of siblingRows) {
     const sibling = await CargoShipment.findById(siblingRow._id);
     if (!sibling) continue;
@@ -829,6 +850,7 @@ module.exports = {
   toLogisticaShipmentDetail,
   toPublicCargoShipment,
   groupLogisticaShipmentCards,
+  mergeGroupDetail,
   normalizeReturnSelections,
   normalizeSelectedShipmentIds,
   YUKLARIM_PROCESS_STEPS,

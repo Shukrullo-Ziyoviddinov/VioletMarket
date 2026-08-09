@@ -230,5 +230,150 @@ check("list card primary = fee-bearer (eng yangi sibling emas)", () => {
   );
 });
 
+const {
+  assertItemWeightsForGroup,
+  assertWeightKgMatchesItemWeights,
+} = require("../src/services/cargoShipments/cargoShipmentProcessActions");
+
+check("guruhda itemWeights majburiy (admin chalkashligini oldini oladi)", () => {
+  assert.throws(
+    () =>
+      assertItemWeightsForGroup(
+        { weightKg: 3, cargoDeliveryFee: 1 },
+        ["a", "b"],
+      ),
+    (err) => err?.code === "ITEM_WEIGHTS_REQUIRED" || err?.status === 400,
+  );
+
+  assert.doesNotThrow(() =>
+    assertItemWeightsForGroup(
+      {
+        weightKg: 3,
+        itemWeights: [
+          { shipmentId: "a", weightKg: 1.8 },
+          { shipmentId: "b", weightKg: 1.2 },
+        ],
+      },
+      ["a", "b"],
+    ),
+  );
+
+  // Bitta shipment — itemWeights majburiy emas
+  assert.doesNotThrow(() =>
+    assertItemWeightsForGroup({ weightKg: 2 }, ["a"]),
+  );
+});
+
+check("guruhda weightKg ≠ itemWeights yig‘indisi → xato", () => {
+  assert.throws(
+    () =>
+      assertItemWeightsForGroup(
+        {
+          weightKg: 9,
+          itemWeights: [
+            { shipmentId: "a", weightKg: 1 },
+            { shipmentId: "b", weightKg: 1 },
+          ],
+        },
+        ["a", "b"],
+      ),
+    (err) => err?.code === "WEIGHT_SUM_MISMATCH" || err?.status === 400,
+  );
+});
+
+check("itemWeights bor (yakka ham) → weightKg yig‘indi bilan mos", () => {
+  assert.throws(
+    () =>
+      assertWeightKgMatchesItemWeights({
+        weightKg: 9,
+        itemWeights: [{ shipmentId: "a", weightKg: 2 }],
+      }),
+    (err) => err?.code === "WEIGHT_SUM_MISMATCH" || err?.status === 400,
+  );
+
+  assert.doesNotThrow(() =>
+    assertWeightKgMatchesItemWeights({
+      weightKg: 2,
+      itemWeights: [{ shipmentId: "a", weightKg: 2 }],
+    }),
+  );
+
+  // itemWeights yo‘q — e’tiborsiz (eski yo‘l)
+  assert.doesNotThrow(() =>
+    assertWeightKgMatchesItemWeights({ weightKg: 5 }),
+  );
+});
+
+const {
+  raiseIfOtherGroupFeeBearer,
+} = require("../src/services/cargoShipments/cargoShipmentProcessActions");
+
+check("ikkinchi fee-bearer → 409 GROUP_FEE_ALREADY_ATTACHED", () => {
+  assert.throws(
+    () =>
+      raiseIfOtherGroupFeeBearer(
+        { _id: "sibling", orderId: 1, sellerId: "s1" },
+        { _id: "bearer", requestCode: "RG-1" },
+      ),
+    (err) => err?.code === "GROUP_FEE_ALREADY_ATTACHED" || err?.status === 409,
+  );
+
+  // O‘zi bilan solishtirish — OK
+  assert.doesNotThrow(() =>
+    raiseIfOtherGroupFeeBearer(
+      { _id: "bearer" },
+      { _id: "bearer", requestCode: "RG-1" },
+    ),
+  );
+  assert.doesNotThrow(() =>
+    raiseIfOtherGroupFeeBearer({ _id: "a" }, null),
+  );
+});
+
+const {
+  mergeGroupDetail,
+} = require("../src/services/cargoShipments/cargoShipmentLogisticaService");
+
+check("logistica detail: sibling ochilsa ham fee-bearer asosiy", () => {
+  const sibling = {
+    _id: "sib",
+    requestCode: "S2",
+    orderId: 10,
+    sellerId: "s1",
+    status: "accepted",
+    processStep: "toshkent_omborida",
+    uzArrivedAt: new Date(),
+    weightKg: 1.2,
+    cargoDeliveryFee: 0,
+    cargoFeePaymentRequired: false,
+    uzArrivalComment: "",
+    products: [{ productId: 2, title: "B", quantity: 1, weightKg: 1.2, unitIndex: 0 }],
+  };
+  const bearer = {
+    _id: "bearer",
+    requestCode: "S1",
+    orderId: 10,
+    sellerId: "s1",
+    status: "accepted",
+    processStep: "toshkent_omborida",
+    uzArrivedAt: new Date(),
+    weightKg: 1.8,
+    cargoDeliveryFee: 100000,
+    cargoFeePaymentRequired: true,
+    uzArrivalComment: "Guruh izoh",
+    adminCargoFeeConfirmedAt: new Date(),
+    products: [{ productId: 1, title: "A", quantity: 1, weightKg: 1.8, unitIndex: 0 }],
+  };
+  // Sibling URL orqali ochilgan holat
+  const merged = mergeGroupDetail(sibling, [bearer]);
+  assert.strictEqual(merged.id, "bearer");
+  assert.strictEqual(merged.cargoDeliveryFee, 100000);
+  assert.strictEqual(merged.uzArrivalComment, "Guruh izoh");
+  assert.strictEqual(merged.isGroup, true);
+  assert.strictEqual(merged.products.length, 2);
+  assert.strictEqual(merged.weightKg, 3);
+  assert.strictEqual(merged.canMarkPaid, true);
+});
+
 console.log("\nPassed", passed, "checks");
 if (!process.exitCode) console.log("Verification PASSED");

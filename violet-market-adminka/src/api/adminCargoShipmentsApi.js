@@ -48,7 +48,22 @@ function normalizeShipment(row = {}) {
     storeName: String(row.storeName || ''),
     warehouseAddress: String(row.warehouseAddress || ''),
     note: String(row.note || ''),
-    products: Array.isArray(row.products) ? row.products : [],
+    products: Array.isArray(row.products)
+      ? row.products.map((product) => ({
+          id: String(product?.id || ''),
+          shipmentId: product?.shipmentId
+            ? String(product.shipmentId)
+            : null,
+          title: String(product?.title || ''),
+          productId: Number(product?.productId) || 0,
+          color: String(product?.color || ''),
+          size: String(product?.size || ''),
+          storage: String(product?.storage || ''),
+          model: String(product?.model || ''),
+          quantity: Math.max(1, Number(product?.quantity) || 1),
+          weightKg: Math.max(0, Number(product?.weightKg) || 0),
+        }))
+      : [],
     timeline: Array.isArray(row.timeline) ? row.timeline : [],
     processSteps: Array.isArray(row.processSteps) ? row.processSteps : [],
     toshkentStep: row.toshkentStep || {
@@ -151,6 +166,21 @@ export async function arriveAdminCargoShipmentUzWarehouse(
         cargoDeliveryFee: payload.cargoDeliveryFee,
         comment: payload.comment || '',
         photoBase64: payload.photoBase64 || null,
+        ...(Array.isArray(payload.itemWeights) && payload.itemWeights.length
+          ? {
+              itemWeights: payload.itemWeights
+                .map((row) => ({
+                  shipmentId: String(row?.shipmentId || '').trim(),
+                  weightKg: Number(row?.weightKg),
+                }))
+                .filter(
+                  (row) =>
+                    row.shipmentId &&
+                    Number.isFinite(row.weightKg) &&
+                    row.weightKg > 0,
+                ),
+            }
+          : {}),
       }),
     },
   );

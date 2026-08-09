@@ -245,6 +245,50 @@ function isCargoFeeBearer(shipment) {
 }
 
 /**
+ * Bir orderId+sellerId guruhida faqat bitta fee-bearer bo‘lishi kerak.
+ * DB qatori (boshqa shipment) berilganda — 409.
+ */
+function raiseIfOtherGroupFeeBearer(shipment, otherBearer) {
+  if (!otherBearer) return;
+  const otherId = String(otherBearer._id || otherBearer.id || "").trim();
+  const selfId = String(shipment?._id || shipment?.id || "").trim();
+  if (!otherId) return;
+  if (selfId && otherId === selfId) return;
+
+  const code = String(otherBearer.requestCode || "").trim();
+  throw new HttpError(
+    409,
+    code
+      ? `Guruh to‘lovi allaqachon «${code}» yukiga biriktirilgan. Ikkinchi fee yozib bo‘lmaydi.`
+      : "Guruh to‘lovi allaqachon biriktirilgan. Ikkinchi fee yozib bo‘lmaydi.",
+    "GROUP_FEE_ALREADY_ATTACHED",
+  );
+}
+
+/** orderId+sellerId guruhida boshqa cargoFeePaymentRequired=true bormi */
+async function findOtherGroupFeeBearer(shipment) {
+  const orderId = Number(shipment?.orderId) || 0;
+  const sellerId = String(shipment?.sellerId || "").trim();
+  const selfId = String(shipment?._id || "").trim();
+  if (!orderId || !sellerId || !selfId) return null;
+
+  return CargoShipment.findOne({
+    orderId,
+    sellerId,
+    cargoFeePaymentRequired: true,
+    status: { $nin: ["cancelled"] },
+    _id: { $ne: shipment._id },
+  })
+    .select({ _id: 1, requestCode: 1 })
+    .lean();
+}
+
+async function assertNoOtherGroupFeeBearer(shipment) {
+  const other = await findOtherGroupFeeBearer(shipment);
+  raiseIfOtherGroupFeeBearer(shipment, other);
+}
+
+/**
  * payload.itemWeights[{ shipmentId, weightKg }]
  * — har bir mahsulot (shipment) uchun alohida kg.
  */
@@ -257,6 +301,74 @@ function resolveOptionalItemWeightKg(payload, shipmentId) {
   const weightKg = Number(match.weightKg);
   if (!Number.isFinite(weightKg) || weightKg <= 0) return null;
   return Math.round(weightKg * 1000) / 1000;
+}
+
+/** Yaroqli itemWeights yig‘indisi (noto‘g‘ri qatorlar tashlanadi). */
+function sumPayloadItemWeights(payload) {
+  const rows = Array.isArray(payload?.itemWeights) ? payload.itemWeights : [];
+  let sum = 0;
+  let count = 0;
+  for (const row of rows) {
+    const id = String(row?.shipmentId || "").trim();
+    const kg = Number(row?.weightKg);
+    if (!id || !Number.isFinite(kg) || kg <= 0) continue;
+    sum += kg;
+    count += 1;
+  }
+  return {
+    sum: Math.round(sum * 1000) / 1000,
+    count,
+  };
+}
+
+/**
+ * itemWeights yuborilgan bo‘lsa: weightKg ≈ yig‘indi.
+ * itemWeights yo‘q → faqat weightKg (eski yo‘l); jim o‘tkazilmaydi.
+ */
+function assertWeightKgMatchesItemWeights(payload) {
+  const { sum, count } = sumPayloadItemWeights(payload);
+  if (count === 0) return;
+
+  const total = Number(payload?.weightKg);
+  if (!Number.isFinite(total) || total <= 0) {
+    throw new HttpError(400, "Og‘irlikni to‘g‘ri kiriting", "INVALID_WEIGHT");
+  }
+  if (Math.abs(sum - total) > 0.051) {
+    throw new HttpError(
+      400,
+      "Umumiy og‘irlik mahsulotlar yig‘indisiga teng emas",
+      "WEIGHT_SUM_MISMATCH",
+    );
+  }
+}
+
+/**
+ * Guruh (2+ shipment): har bir id uchun itemWeights majburiy.
+ * Bitta shipment: weightKg yetadi (eski yo‘l).
+ * itemWeights bo‘lsa — weightKg yig‘indi bilan mos (har doim).
+ */
+function assertItemWeightsForGroup(payload, shipmentIds = []) {
+  const ids = [
+    ...new Set(
+      (Array.isArray(shipmentIds) ? shipmentIds : [])
+        .map((id) => String(id || "").trim())
+        .filter(Boolean),
+    ),
+  ];
+
+  if (ids.length > 1) {
+    for (const id of ids) {
+      if (resolveOptionalItemWeightKg(payload, id) == null) {
+        throw new HttpError(
+          400,
+          "Guruhda har bir mahsulot og‘irligini alohida kiriting",
+          "ITEM_WEIGHTS_REQUIRED",
+        );
+      }
+    }
+  }
+
+  assertWeightKgMatchesItemWeights(payload);
 }
 
 /** O‘lchangan kg ni products[] da ham ko‘rsatish (itemda alohida). */
@@ -338,6 +450,12 @@ async function applyUzWarehouseArrival(shipment, payload = {}, options = {}) {
     await shipment.save();
     return { alreadyArrived: false, feeAttached: false };
   }
+
+  // Ikkinchi fee-bearer blok: guruhda allaqachon to‘lov biriktirilgan bo‘lsa
+  await assertNoOtherGroupFeeBearer(shipment);
+
+  // itemWeights kelgan bo‘lsa weightKg yig‘indi bilan mosligi (caller aylanib o‘tmasin)
+  assertWeightKgMatchesItemWeights(payload);
 
   const weightKg = Number(payload.weightKg);
   if (!Number.isFinite(weightKg) || weightKg <= 0) {
@@ -483,6 +601,12 @@ module.exports = {
   applyPaidAtToGroupCompanion,
   fanOutPaidAtToGroupCompanions,
   isCargoFeeBearer,
+  raiseIfOtherGroupFeeBearer,
+  findOtherGroupFeeBearer,
+  assertNoOtherGroupFeeBearer,
   resolveOptionalItemWeightKg,
+  sumPayloadItemWeights,
+  assertWeightKgMatchesItemWeights,
+  assertItemWeightsForGroup,
   canLogisticaMarkPaid,
 };

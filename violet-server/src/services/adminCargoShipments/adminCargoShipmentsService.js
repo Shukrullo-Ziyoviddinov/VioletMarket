@@ -21,6 +21,7 @@ const {
   fanOutPaidAtToGroupCompanions,
   isCargoFeeBearer,
   canLogisticaMarkPaid,
+  assertItemWeightsForGroup,
 } = require("../cargoShipments/cargoShipmentProcessActions");
 const {
   groupLogisticaShipmentCards,
@@ -251,6 +252,7 @@ function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
     note: String(row.note || ""),
     products: (Array.isArray(row.products) ? row.products : []).map((p, i) => ({
       id: `${row._id}-${i}`,
+      shipmentId: String(row._id),
       title: resolveProductTitle(p.title),
       productId: Number(p.productId) || 0,
       color: String(p.color || ""),
@@ -412,30 +414,39 @@ async function updateAdminCargoShipmentProcessStep(shipmentIdRaw, processStepRaw
 
 async function arriveAdminCargoShipmentUzWarehouse(shipmentIdRaw, payload = {}) {
   const shipment = await loadShipmentDoc(shipmentIdRaw);
-  const result = await applyUzWarehouseArrival(shipment, payload, {
-    attachFee: true,
-  });
 
   // Logistica bilan bir xil: siblinglar Toshkentga o‘tadi, fee ko‘paytirilmaydi
   const orderId = Number(shipment.orderId) || 0;
   const sellerId = String(shipment.sellerId || "").trim();
+  const siblings =
+    orderId && sellerId
+      ? await CargoShipment.find({
+          orderId,
+          sellerId,
+          status: "accepted",
+          paidAt: null,
+          _id: { $ne: shipment._id },
+        })
+      : [];
+
+  // Guruhda umumiy kg ni bearer ga yozib siblinglarni unutish xatosini oldini oladi
+  assertItemWeightsForGroup(payload, [
+    shipment._id,
+    ...siblings.map((row) => row._id),
+  ]);
+
+  const result = await applyUzWarehouseArrival(shipment, payload, {
+    attachFee: true,
+  });
+
   let advancedSiblingCount = 0;
-  if (orderId && sellerId) {
-    const siblings = await CargoShipment.find({
-      orderId,
-      sellerId,
-      status: "accepted",
-      paidAt: null,
-      _id: { $ne: shipment._id },
-    });
-    for (const sibling of siblings) {
-      try {
-        await applyUzWarehouseArrival(sibling, payload, { attachFee: false });
-        advancedSiblingCount += 1;
-      } catch (error) {
-        if (Number(error?.status) === 409) continue;
-        throw error;
-      }
+  for (const sibling of siblings) {
+    try {
+      await applyUzWarehouseArrival(sibling, payload, { attachFee: false });
+      advancedSiblingCount += 1;
+    } catch (error) {
+      if (Number(error?.status) === 409) continue;
+      throw error;
     }
   }
 

@@ -30,6 +30,40 @@ function formatMoney(value) {
   return `${n.toLocaleString('uz-UZ')} so‘m`;
 }
 
+function parseKg(raw) {
+  return Number(String(raw || '').replace(',', '.').trim());
+}
+
+/** Logistica kabi: har shipment (mahsulot) uchun alohida kg qatori */
+function buildArrivalWeightItems(detail) {
+  const products = Array.isArray(detail?.products) ? detail.products : [];
+  const byShip = new Map();
+  for (const product of products) {
+    const shipmentId = String(product.shipmentId || detail?.id || '').trim();
+    if (!shipmentId) continue;
+    const title = String(product.title || '').trim() || shipmentId;
+    const existing = byShip.get(shipmentId);
+    if (!existing) {
+      byShip.set(shipmentId, {
+        shipmentId,
+        label: title,
+        initialWeightKg: Math.max(0, Number(product.weightKg) || 0),
+      });
+    } else {
+      existing.label = `${existing.label}; ${title}`;
+      existing.initialWeightKg += Math.max(0, Number(product.weightKg) || 0);
+    }
+  }
+  if (!byShip.size && detail?.id) {
+    byShip.set(String(detail.id), {
+      shipmentId: String(detail.id),
+      label: String(detail.productTitle || 'Mahsulot'),
+      initialWeightKg: Math.max(0, Number(detail.weightKg) || 0),
+    });
+  }
+  return [...byShip.values()];
+}
+
 export default function LogisticaShipmentDetailModal({
   open,
   shipmentId,
@@ -42,7 +76,7 @@ export default function LogisticaShipmentDetailModal({
   const [selectedStep, setSelectedStep] = useState('');
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const [paidConfirmOpen, setPaidConfirmOpen] = useState(false);
-  const [weightText, setWeightText] = useState('');
+  const [weightByShipment, setWeightByShipment] = useState({});
   const [feeText, setFeeText] = useState('');
   const [comment, setComment] = useState('');
 
@@ -52,7 +86,7 @@ export default function LogisticaShipmentDetailModal({
       setSelectedStep('');
       setArrivalOpen(false);
       setPaidConfirmOpen(false);
-      setWeightText('');
+      setWeightByShipment({});
       setFeeText('');
       setComment('');
       return undefined;
@@ -96,6 +130,18 @@ export default function LogisticaShipmentDetailModal({
     [detail],
   );
 
+  const arrivalWeightItems = useMemo(
+    () => buildArrivalWeightItems(detail),
+    [detail],
+  );
+  const isArrivalGroup = arrivalWeightItems.length > 1;
+  const arrivalTotalKg = useMemo(() => {
+    return arrivalWeightItems.reduce((sum, item) => {
+      const kg = parseKg(weightByShipment[item.shipmentId]);
+      return sum + (Number.isFinite(kg) && kg > 0 ? kg : 0);
+    }, 0);
+  }, [arrivalWeightItems, weightByShipment]);
+
   const applyDetail = (updated) => {
     setDetail(updated);
     setSelectedStep(updated.processStep || '');
@@ -129,7 +175,12 @@ export default function LogisticaShipmentDetailModal({
   };
 
   const openArrivalModal = () => {
-    setWeightText(detail?.weightKg > 0 ? String(detail.weightKg) : '');
+    const next = {};
+    for (const item of buildArrivalWeightItems(detail)) {
+      next[item.shipmentId] =
+        item.initialWeightKg > 0 ? String(item.initialWeightKg) : '';
+    }
+    setWeightByShipment(next);
     setFeeText(
       detail?.cargoDeliveryFee > 0 ? String(detail.cargoDeliveryFee) : '',
     );
@@ -139,15 +190,33 @@ export default function LogisticaShipmentDetailModal({
 
   const handleArrive = async () => {
     if (!detail?.id || saving) return;
-    const weightKg = Number(String(weightText).replace(',', '.'));
-    const cargoDeliveryFee = Number(
-      String(feeText).replace(/\s/g, '').replace(',', '.'),
-    );
 
-    if (!Number.isFinite(weightKg) || weightKg <= 0) {
+    const itemWeights = [];
+    for (const item of arrivalWeightItems) {
+      const kg = parseKg(weightByShipment[item.shipmentId]);
+      if (!Number.isFinite(kg) || kg <= 0) {
+        message.error(
+          isArrivalGroup
+            ? `«${item.label}» uchun og‘irlikni to‘g‘ri kiriting`
+            : 'Og‘irlikni to‘g‘ri kiriting (kg)',
+        );
+        return;
+      }
+      itemWeights.push({
+        shipmentId: item.shipmentId,
+        weightKg: Math.round(kg * 1000) / 1000,
+      });
+    }
+
+    const weightKg = Math.round(arrivalTotalKg * 1000) / 1000;
+    if (!(weightKg > 0)) {
       message.error('Og‘irlikni to‘g‘ri kiriting (kg)');
       return;
     }
+
+    const cargoDeliveryFee = Number(
+      String(feeText).replace(/\s/g, '').replace(',', '.'),
+    );
     if (!Number.isFinite(cargoDeliveryFee) || cargoDeliveryFee < 0) {
       message.error('Og‘irlik summasini to‘g‘ri kiriting');
       return;
@@ -159,6 +228,8 @@ export default function LogisticaShipmentDetailModal({
         weightKg,
         cargoDeliveryFee,
         comment: comment.trim(),
+        // Guruhda majburiy; bitta mahsulotda ham xavfsiz
+        itemWeights,
       });
       applyDetail(result.shipment);
       setArrivalOpen(false);
@@ -332,11 +403,6 @@ export default function LogisticaShipmentDetailModal({
 
             {showUzArrivalAction ? (
               <div className="logistica-shipment-detail-modal__edit">
-                <h4>Toshkent omboriga</h4>
-                <p className="logistica-shipment-detail-modal__hint">
-                  Og‘irlik va summani kiriting — holat «Toshkent omborida»
-                  bo‘ladi.
-                </p>
                 <button
                   type="button"
                   className="logistica-shipment-detail-modal__confirm"
@@ -396,19 +462,45 @@ export default function LogisticaShipmentDetailModal({
         }}
       >
         <div className="logistica-shipment-detail-modal__arrival-form">
-          <label>
-            Og‘irlik (kg)
-            <input
-              type="text"
-              inputMode="decimal"
-              value={weightText}
-              disabled={saving}
-              onChange={(e) => setWeightText(e.target.value)}
-              placeholder="masalan: 2.5"
-            />
-          </label>
+          {isArrivalGroup ? (
+            <p className="logistica-shipment-detail-modal__arrival-hint">
+              Har bir mahsulot og‘irligini alohida kiriting. Umumiy kg
+              avtomatik. Narx bitta — mijoz bir marta to‘laydi.
+            </p>
+          ) : null}
+
+          {arrivalWeightItems.map((item) => (
+            <label key={item.shipmentId}>
+              {isArrivalGroup
+                ? `${item.label} — og‘irlik (kg)`
+                : 'Og‘irlik (kg)'}
+              <input
+                type="text"
+                inputMode="decimal"
+                value={weightByShipment[item.shipmentId] || ''}
+                disabled={saving}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setWeightByShipment((prev) => ({
+                    ...prev,
+                    [item.shipmentId]: value,
+                  }));
+                }}
+                placeholder="masalan: 2.5"
+              />
+            </label>
+          ))}
+
+          <div className="logistica-shipment-detail-modal__arrival-total">
+            <span>Umumiy og‘irlik</span>
+            <strong>
+              {Math.round(arrivalTotalKg * 1000) / 1000 || 0} kg
+            </strong>
+          </div>
+
           <label>
             Og‘irlik summasi (so‘m)
+            {isArrivalGroup ? ' — bitta to‘lov' : ''}
             <input
               type="text"
               inputMode="numeric"

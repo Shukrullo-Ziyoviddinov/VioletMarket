@@ -126,6 +126,8 @@ export default function IshStoliScreen() {
   const isUzFlow = isUzWarehouseFlowStep(step);
   const isPaid = Boolean(detail?.paidAt);
   const canMarkPaid = Boolean(detail?.canMarkPaid);
+  // Detail fee-bearer id ni qaytarishi mumkin (sibling URL ochilsa ham)
+  const actionShipmentId = String(detail?.id || id || '');
   const waitingAdminFeeConfirm =
     isAccepted && isToshkent && !isPaid && !canMarkPaid;
 
@@ -163,12 +165,16 @@ export default function IshStoliScreen() {
   }, [detail]);
 
   const handleProcessStep = async (nextStep: ProcessStepKey) => {
-    if (!token || !id || actionLoading) return;
+    if (!token || !actionShipmentId || actionLoading) return;
     if (nextStep === 'toshkent_omborida') return;
 
     setActionLoading(true);
     try {
-      const shipment = await saveShipmentProcessStep(token, id, nextStep);
+      const shipment = await saveShipmentProcessStep(
+        token,
+        actionShipmentId,
+        nextStep,
+      );
       setDetail(shipment);
       if (nextStep === 'bojxonada') {
         Alert.alert(
@@ -236,10 +242,14 @@ export default function IshStoliScreen() {
     photoBase64: string | null;
     itemWeights: Array<{ shipmentId: string; weightKg: number }>;
   }) => {
-    if (!token || !id || actionLoading) return;
+    if (!token || !actionShipmentId || actionLoading) return;
     setActionLoading(true);
     try {
-      const result = await arriveShipmentAtUzWarehouse(token, id, payload);
+      const result = await arriveShipmentAtUzWarehouse(
+        token,
+        actionShipmentId,
+        payload,
+      );
       setDetail(result.shipment);
       Alert.alert(
         t('shipments.alerts.atTashkentTitle'),
@@ -260,10 +270,10 @@ export default function IshStoliScreen() {
   };
 
   const handleConfirmPaid = async () => {
-    if (!token || !id || actionLoading || !canMarkPaid) return;
+    if (!token || !actionShipmentId || actionLoading || !canMarkPaid) return;
     setActionLoading(true);
     try {
-      const result = await markShipmentPaid(token, id);
+      const result = await markShipmentPaid(token, actionShipmentId);
       setDetail(result.shipment);
       setPaidModalOpen(false);
       Alert.alert(
@@ -286,14 +296,14 @@ export default function IshStoliScreen() {
   };
 
   const handleConfirmReturnRequest = async () => {
-    if (!token || !id || actionLoading) return;
+    if (!token || !actionShipmentId || actionLoading) return;
 
     const unitsToReturn =
       selectedUnits.length > 0
         ? selectedUnits
         : returnableUnits.length
           ? returnableUnits
-          : [{ shipmentId: id, unitIndex: 0 }];
+          : [{ shipmentId: actionShipmentId, unitIndex: 0 }];
 
     if (unitsToReturn.length === 0) {
       setReturnModalOpen(false);
@@ -303,7 +313,9 @@ export default function IshStoliScreen() {
 
     setActionLoading(true);
     try {
-      await returnShipmentToSeller(token, id, { selections: unitsToReturn });
+      await returnShipmentToSeller(token, actionShipmentId, {
+        selections: unitsToReturn,
+      });
       setReturnModalOpen(false);
       setSelectedUnits([]);
       Alert.alert(
