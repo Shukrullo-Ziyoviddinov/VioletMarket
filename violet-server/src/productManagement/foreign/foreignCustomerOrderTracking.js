@@ -10,7 +10,8 @@
  *   → handed_to_courier → delivered
  *
  * To‘landi (paidAt): mijoz timelineiga alohida bosqich emas.
- * Admin Xorij→UZB → handed_to_courier; kuryer beradi → delivered.
+ * Admin Xorij→UZB: kuryer pooliga chiqaradi (item.trackingStatus=handed_to_courier).
+ * Mijozda «Mahsulot kuryerda» faqat kuryer «Qabul qilish» (active assignment) dan keyin.
  */
 
 const {
@@ -60,20 +61,34 @@ function resolveTrackingDate(history, status) {
 
 /**
  * Mijoz timeline uchun joriy holat.
- * Last-mile (kuryer/delivered) eng yuqori prioritet.
- * paidAt alohida bosqich emas — toshkent_omborida da qoladi, keyin handed_to_courier.
+ * Last-mile: faqat kuryer qabul qilgan (courierAccepted) bo‘lsa handed_to_courier.
+ * Admin handoff yolg‘iz — pool uchun; mijoz hali Toshkent omborida qoladi.
  */
-function resolveForeignCustomerTrackingStatus(item, shipment) {
+function resolveForeignCustomerTrackingStatus(
+  item,
+  shipment,
+  courierCtx = null,
+) {
   const trackingStatus = normalizeItemTrackingStatus(item?.trackingStatus);
+  const courierAccepted = Boolean(courierCtx?.accepted);
 
   if (trackingStatus === "delivered") return "delivered";
-  if (trackingStatus === "handed_to_courier") return "handed_to_courier";
+  if (courierAccepted) return "handed_to_courier";
   if (
     trackingStatus === "cancelled" ||
     trackingStatus === "unavailable" ||
     trackingStatus === "returned_to_seller"
   ) {
     return trackingStatus;
+  }
+
+  // Admin handoff qilingan, lekin kuryer hali qabul qilmagan
+  if (trackingStatus === "handed_to_courier") {
+    const processStep = String(shipment?.processStep || "")
+      .trim()
+      .toLowerCase();
+    if (PROCESS_STEP_SET.has(processStep)) return processStep;
+    return "toshkent_omborida";
   }
 
   const processStep = String(shipment?.processStep || "")
@@ -86,7 +101,13 @@ function resolveForeignCustomerTrackingStatus(item, shipment) {
   return "accepted";
 }
 
-function resolveForeignStepOccurredAt(status, item, orderedAt, shipment) {
+function resolveForeignStepOccurredAt(
+  status,
+  item,
+  orderedAt,
+  shipment,
+  courierCtx = null,
+) {
   const history = Array.isArray(item?.trackingHistory) ? item.trackingHistory : [];
 
   if (FOREIGN_SELLER_STEP_SET.has(status)) {
@@ -98,11 +119,18 @@ function resolveForeignStepOccurredAt(status, item, orderedAt, shipment) {
     );
   }
 
-  if (status === "handed_to_courier" || status === "delivered") {
+  if (status === "handed_to_courier") {
+    return (
+      courierCtx?.acceptedAt ||
+      resolveTrackingDate(history, status) ||
+      null
+    );
+  }
+
+  if (status === "delivered") {
     return resolveTrackingDate(history, status);
   }
 
-  // Process steplar tarixi shipment da saqlanmaydi — joriy step uchun aniq maydonlar
   const processStep = String(shipment?.processStep || "")
     .trim()
     .toLowerCase();
@@ -118,8 +146,17 @@ function resolveForeignStepOccurredAt(status, item, orderedAt, shipment) {
   return null;
 }
 
-function buildForeignCustomerOrderTrackingSteps(item, orderedAt, shipment = null) {
-  const currentStatus = resolveForeignCustomerTrackingStatus(item, shipment);
+function buildForeignCustomerOrderTrackingSteps(
+  item,
+  orderedAt,
+  shipment = null,
+  courierCtx = null,
+) {
+  const currentStatus = resolveForeignCustomerTrackingStatus(
+    item,
+    shipment,
+    courierCtx,
+  );
   const currentIndex = FOREIGN_CUSTOMER_TRACKING_STEPS.indexOf(currentStatus);
   const safeIndex = currentIndex >= 0 ? currentIndex : 0;
 
@@ -131,7 +168,13 @@ function buildForeignCustomerOrderTrackingSteps(item, orderedAt, shipment = null
         : index === safeIndex
           ? "current"
           : "upcoming",
-    occurredAt: resolveForeignStepOccurredAt(status, item, orderedAt, shipment),
+    occurredAt: resolveForeignStepOccurredAt(
+      status,
+      item,
+      orderedAt,
+      shipment,
+      courierCtx,
+    ),
   }));
 }
 

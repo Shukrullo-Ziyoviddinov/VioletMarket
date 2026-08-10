@@ -89,8 +89,19 @@ function resolveTrackingDate(history, status) {
   return entry?.at || null;
 }
 
-function buildUzbOrderTrackingSteps(item, orderedAt) {
-  const currentStatus = normalizeCustomerTrackingStatus(item?.trackingStatus);
+function buildUzbOrderTrackingSteps(item, orderedAt, courierCtx = null) {
+  let currentStatus = normalizeCustomerTrackingStatus(item?.trackingStatus);
+  const courierAccepted = Boolean(courierCtx?.accepted);
+
+  if (currentStatus === "delivered") {
+    // final
+  } else if (courierAccepted) {
+    currentStatus = "handed_to_courier";
+  } else if (currentStatus === "handed_to_courier") {
+    // Siller/admin topshirgan — kuryer hali qabul qilmagan
+    currentStatus = "collected";
+  }
+
   const currentIndex = UZB_CUSTOMER_TRACKING_STEPS.indexOf(currentStatus);
   const history = Array.isArray(item?.trackingHistory) ? item.trackingHistory : [];
 
@@ -103,8 +114,12 @@ function buildUzbOrderTrackingSteps(item, orderedAt) {
           ? "current"
           : "upcoming",
     occurredAt:
-      resolveTrackingDate(history, status) ||
-      (status === "accepted" ? orderedAt || null : null),
+      status === "handed_to_courier"
+        ? courierCtx?.acceptedAt ||
+          resolveTrackingDate(history, status) ||
+          null
+        : resolveTrackingDate(history, status) ||
+          (status === "accepted" ? orderedAt || null : null),
   }));
 }
 

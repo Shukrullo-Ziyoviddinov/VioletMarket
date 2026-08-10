@@ -1,6 +1,7 @@
 const { Order } = require("../../models/order");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { CargoShipment } = require("../../models/cargoShipment");
+const { CourierOrderAssignment } = require("../../models/courierOrderAssignment");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
 const {
   UZB_SELLER_COUNTRY,
@@ -20,6 +21,9 @@ const {
   archiveDeliveredOrderItems,
   listDeliveredOrderItems,
 } = require("./deliveredOrderArchiveService");
+const {
+  COURIER_IN_PROGRESS_STATUSES,
+} = require("../../unitLifecycle/assignmentPoolRules");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -279,33 +283,107 @@ function groupInProgressTrackingItems(flatItems) {
   return grouped;
 }
 
-function mapUzbOrderItem(order, item, itemIndex, seller) {
+function mapUzbOrderItem(order, item, itemIndex, seller, courierCtx = null) {
   const base = mapOrderItemBase(order, item, itemIndex, seller);
-  const trackingStatus =
+  const rawStatus =
     String(order.status || "") === "delivered"
       ? "delivered"
       : normalizeOrderTrackingStatus(item.trackingStatus);
-  const trackedItem = { ...item, trackingStatus };
+
+  const courierAccepted = Boolean(courierCtx?.accepted);
+  const visibleStatus =
+    rawStatus === "delivered"
+      ? "delivered"
+      : courierAccepted
+        ? "handed_to_courier"
+        : rawStatus === "handed_to_courier"
+          ? "collected"
+          : rawStatus;
+
+  const trackedItem = { ...item, trackingStatus: rawStatus };
 
   return {
     ...base,
-    trackingStatus,
-    steps: buildUzbOrderTrackingSteps(trackedItem, base.orderedAt),
+    trackingStatus: visibleStatus,
+    steps: buildUzbOrderTrackingSteps(
+      trackedItem,
+      base.orderedAt,
+      courierCtx,
+    ),
   };
 }
 
-function mapForeignOrderItem(order, item, itemIndex, seller, shipment) {
+function mapForeignOrderItem(
+  order,
+  item,
+  itemIndex,
+  seller,
+  shipment,
+  courierCtx = null,
+) {
   const base = mapOrderItemBase(order, item, itemIndex, seller);
-  const trackingStatus = resolveForeignCustomerTrackingStatus(item, shipment);
+  const trackingStatus = resolveForeignCustomerTrackingStatus(
+    item,
+    shipment,
+    courierCtx,
+  );
   const cargoFeePayment = shipment ? toCargoFeePaymentView(shipment) : null;
 
   return {
     ...base,
     trackingStatus,
-    steps: buildForeignCustomerOrderTrackingSteps(item, base.orderedAt, shipment),
+    steps: buildForeignCustomerOrderTrackingSteps(
+      item,
+      base.orderedAt,
+      shipment,
+      courierCtx,
+    ),
     cargoShipmentId: shipment?._id ? String(shipment._id) : null,
     cargoFeePayment,
   };
+}
+
+function assignmentItemKey(orderId, itemIndex) {
+  return `${Number(orderId) || 0}:${Number(itemIndex) || 0}`;
+}
+
+/**
+ * Kuryer «Qabul qilish»dan keyin — active assignment (delivered emas).
+ * Bir itemIndex uchun bitta eng eski acceptedAt.
+ */
+async function loadActiveCourierCtxByItem(orderIds = []) {
+  const ids = [
+    ...new Set(
+      (Array.isArray(orderIds) ? orderIds : [])
+        .map((id) => Number(id) || 0)
+        .filter((id) => id > 0),
+    ),
+  ];
+  if (!ids.length) return new Map();
+
+  const rows = await CourierOrderAssignment.find({
+    orderId: { $in: ids },
+    status: { $in: COURIER_IN_PROGRESS_STATUSES },
+  })
+    .select({ orderId: 1, itemIndex: 1, acceptedAt: 1, status: 1 })
+    .lean();
+
+  const map = new Map();
+  for (const row of rows) {
+    const key = assignmentItemKey(row.orderId, row.itemIndex);
+    const acceptedAt = row.acceptedAt || null;
+    const prev = map.get(key);
+    if (!prev) {
+      map.set(key, { accepted: true, acceptedAt, status: row.status });
+      continue;
+    }
+    const prevTime = prev.acceptedAt ? new Date(prev.acceptedAt).getTime() : Infinity;
+    const nextTime = acceptedAt ? new Date(acceptedAt).getTime() : Infinity;
+    if (nextTime < prevTime) {
+      map.set(key, { accepted: true, acceptedAt, status: row.status });
+    }
+  }
+  return map;
 }
 
 async function loadShipmentsByKeys(pairs) {
@@ -371,6 +449,10 @@ async function listMyUzbOrderTracking(userId) {
 
   await archiveDeliveredOrderItems(userId, orders, sellerById);
 
+  const courierByItem = await loadActiveCourierCtxByItem(
+    orders.map((order) => order.id),
+  );
+
   const inProgressItems = [];
   for (const order of orders) {
     (Array.isArray(order.items) ? order.items : []).forEach((item, itemIndex) => {
@@ -380,7 +462,11 @@ async function listMyUzbOrderTracking(userId) {
       }
       if (isDeliveredOrderItem(order, item)) return;
       if (isTerminalOrderItem(item)) return;
-      inProgressItems.push(mapUzbOrderItem(order, item, itemIndex, seller));
+      const courierCtx =
+        courierByItem.get(assignmentItemKey(order.id, itemIndex)) || null;
+      inProgressItems.push(
+        mapUzbOrderItem(order, item, itemIndex, seller, courierCtx),
+      );
     });
   }
 
@@ -439,6 +525,9 @@ async function listMyOrderTracking(userId) {
   }
 
   const shipmentByKey = await loadShipmentsByKeys(foreignPairs);
+  const courierByItem = await loadActiveCourierCtxByItem(
+    orders.map((order) => order.id),
+  );
 
   const inProgressItems = [];
   for (const order of orders) {
@@ -448,18 +537,29 @@ async function listMyOrderTracking(userId) {
       if (isDeliveredOrderItem(order, item)) return;
       if (isTerminalOrderItem(item)) return;
 
+      const courierCtx =
+        courierByItem.get(assignmentItemKey(order.id, itemIndex)) || null;
       const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
       if (pipelineMode === "foreign") {
         const shipment = shipmentByKey.get(
           shipmentKey(order.id, itemIndex, seller.id),
         ) || null;
         inProgressItems.push(
-          mapForeignOrderItem(order, item, itemIndex, seller, shipment),
+          mapForeignOrderItem(
+            order,
+            item,
+            itemIndex,
+            seller,
+            shipment,
+            courierCtx,
+          ),
         );
         return;
       }
 
-      inProgressItems.push(mapUzbOrderItem(order, item, itemIndex, seller));
+      inProgressItems.push(
+        mapUzbOrderItem(order, item, itemIndex, seller, courierCtx),
+      );
     });
   }
 
