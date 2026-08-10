@@ -669,7 +669,7 @@ async function listAdminCustomerRefundRequests(query = {}) {
   };
 }
 
-async function markCustomerRefundRefunded(id, adminId = "") {
+async function markCustomerRefundRefunded(id, adminId = "", options = {}) {
   const doc = await CustomerRefundRequest.findById(String(id || "").trim());
   if (!doc) {
     throw new HttpError(404, "Pul qaytarish so‘rovi topilmadi", "REFUND_NOT_FOUND");
@@ -684,7 +684,7 @@ async function markCustomerRefundRefunded(id, adminId = "") {
   const now = new Date();
   const reviewedBy = String(adminId || "").trim();
   const markOne = async (row) => {
-    if (String(row.status) === "refunded") return row;
+    if (!row || String(row.status) === "refunded") return row;
     row.status = "refunded";
     row.refundedAt = now;
     row.refundedBy = reviewedBy;
@@ -694,18 +694,33 @@ async function markCustomerRefundRefunded(id, adminId = "") {
 
   await markOne(doc);
 
-  // Bir order + siller guruhidagi qolgan pendinglarni birga yopish
-  const siblings = await CustomerRefundRequest.find({
-    orderId: Number(doc.orderId) || 0,
-    sellerId: String(doc.sellerId || "").trim(),
-    status: "pending",
-    source: String(doc.source || "courier"),
-    reasonType: String(doc.reasonType || "return"),
-    _id: { $ne: doc._id },
-  });
+  // Kartochkadagi siblingIds — faqat UI da ko‘rsatilgan donalar yopiladi
+  // (turli kun / boshqa so‘rovlar chalkashmasin)
+  const rawSiblingIds = Array.isArray(options.siblingIds)
+    ? options.siblingIds
+    : Array.isArray(options.ids)
+      ? options.ids
+      : [];
+  const siblingIds = [
+    ...new Set(
+      rawSiblingIds
+        .map((value) => String(value || "").trim())
+        .filter((value) => value && value !== String(doc._id)),
+    ),
+  ];
 
-  for (const sibling of siblings) {
-    await markOne(sibling);
+  if (siblingIds.length) {
+    const siblings = await CustomerRefundRequest.find({
+      _id: { $in: siblingIds },
+      orderId: Number(doc.orderId) || 0,
+      sellerId: String(doc.sellerId || "").trim(),
+      status: "pending",
+      source: String(doc.source || "courier"),
+      reasonType: String(doc.reasonType || "return"),
+    });
+    for (const sibling of siblings) {
+      await markOne(sibling);
+    }
   }
 
   return toPublicRefundRequest(doc);

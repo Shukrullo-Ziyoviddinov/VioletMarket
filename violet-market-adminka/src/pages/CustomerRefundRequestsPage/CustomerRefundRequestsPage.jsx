@@ -150,7 +150,13 @@ export default function CustomerRefundRequestsPage() {
         onOk: async () => {
           setConfirmingId(item.id);
           try {
-            await confirmAdminCustomerRefund(item.id);
+            await confirmAdminCustomerRefund(item.id, {
+              siblingIds: Array.isArray(item.siblingIds)
+                ? item.siblingIds
+                : Array.isArray(item.units)
+                  ? item.units.map((unit) => unit.id).filter(Boolean)
+                  : [],
+            });
             await load({
               day: filters.day,
               week: filters.week,

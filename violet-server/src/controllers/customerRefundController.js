@@ -11,7 +11,8 @@ const listCustomerRefundRequests = asyncHandler(async (req, res) => {
 
 const confirmCustomerRefund = asyncHandler(async (req, res) => {
   const adminId = String(req.adminId || req.user?.id || req.headers["x-admin-id"] || "");
-  const data = await markCustomerRefundRefunded(req.params.id, adminId);
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const data = await markCustomerRefundRefunded(req.params.id, adminId, body);
   res.json({ ok: true, data });
 });
 

@@ -125,10 +125,14 @@ export async function fetchAdminCustomerRefunds(filters = {}) {
   };
 }
 
-export async function confirmAdminCustomerRefund(id) {
+export async function confirmAdminCustomerRefund(id, options = {}) {
+  const siblingIds = Array.isArray(options.siblingIds)
+    ? options.siblingIds.map((value) => String(value || '')).filter(Boolean)
+    : [];
   const res = await fetch(apiUrl(`/api/admin/customer-refunds/${id}/confirm`), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ siblingIds }),
   });
   const payload = await parseJson(res);
   return normalizeItem(payload?.data || {});
