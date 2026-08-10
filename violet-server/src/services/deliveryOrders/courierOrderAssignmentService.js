@@ -135,12 +135,66 @@ function resolveAssignmentDistanceKm(assignment, courierCoords) {
   return Number.isFinite(stored) && stored >= 0 ? stored : null;
 }
 
-/** Topshirish yoki sotuvchiga qaytarishda km bo‘yicha kuryer to‘lovini yozadi. */
+/**
+ * Bir mijoz + bir siller + bir kuryer (bir yetkazish) → bitta to‘lov.
+ * Dona (unit) soniga ko‘paytirilmaydi.
+ */
+function buildCourierPayGroupFilter(assignment) {
+  const orderId = Number(assignment?.orderId) || 0;
+  const sellerId = String(assignment?.sellerId || "").trim();
+  const deliveryId = assignment?.deliveryId;
+  if (!orderId || !sellerId || !deliveryId) return null;
+  return { orderId, sellerId, deliveryId };
+}
+
+async function findSiblingCourierPaymentTotal(assignment) {
+  const group = buildCourierPayGroupFilter(assignment);
+  if (!group) return 0;
+
+  const selfId = assignment?._id;
+  const match = {
+    orderId: group.orderId,
+    sellerId: group.sellerId,
+    deliveryId: group.deliveryId,
+    courierPayment: { $gt: 0 },
+    status: {
+      $in: [
+        ...COURIER_IN_PROGRESS_STATUSES,
+        "delivered",
+        "returned",
+      ],
+    },
+  };
+  if (selfId) {
+    match._id = { $ne: selfId };
+  }
+
+  const rows = await CourierOrderAssignment.find(match)
+    .select({ courierPayment: 1 })
+    .lean();
+
+  return rows.reduce(
+    (sum, row) => sum + Math.max(0, Number(row.courierPayment) || 0),
+    0,
+  );
+}
+
+/**
+ * Topshirish yoki sotuvchiga qaytarishda km bo‘yicha kuryer to‘lovini yozadi.
+ * Guruhda (orderId+sellerId+deliveryId) allaqachon to‘lov yo‘yilgan bo‘lsa — 0.
+ */
 async function applyCourierKmPayment(assignment, payload = {}, atDate = new Date()) {
   const courierCoords = parseCourierCoords(payload);
   const distanceKm = resolveAssignmentDistanceKm(assignment, courierCoords);
   if (distanceKm != null) {
     assignment.distanceKm = distanceKm;
+  }
+
+  const alreadyPaid = await findSiblingCourierPaymentTotal(assignment);
+  if (alreadyPaid > 0) {
+    assignment.courierPayment = 0;
+    assignment.courierPaymentUpdatedAt = atDate;
+    return assignment;
   }
 
   const paymentSettings = await getCourierPaymentSettings();

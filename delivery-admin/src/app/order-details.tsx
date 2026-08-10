@@ -340,15 +340,20 @@ export default function OrderDetailsScreen() {
       const ids = sameStatusAssignmentIds(order);
       const location = await requestCourierLocation();
       let last = order;
+      let payTotal = 0;
       for (const id of ids) {
         last = await deliverDeliveryOrder(token, {
           assignmentId: id,
           courierLat: location.coords?.latitude,
           courierLng: location.coords?.longitude,
         });
+        payTotal += Math.max(0, Number(last?.courierPayment) || 0);
       }
       setDeliverConfirmOpen(false);
-      setDeliveredSnapshot(last);
+      setDeliveredSnapshot({
+        ...last,
+        courierPayment: payTotal,
+      });
       setSuccessOpen(true);
     } catch (error) {
       const message =
