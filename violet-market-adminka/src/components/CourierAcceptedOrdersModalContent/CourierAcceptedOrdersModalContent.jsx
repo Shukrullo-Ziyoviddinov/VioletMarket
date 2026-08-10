@@ -102,11 +102,24 @@ export default function CourierAcceptedOrdersModalContent({
     }
   };
 
-  const handleReassigned = (assignmentId) => {
-    setOrders((prev) => prev.filter((item) => item.id !== assignmentId));
+  const handleReassigned = (assignmentIds) => {
+    const ids = new Set(
+      (Array.isArray(assignmentIds) ? assignmentIds : [assignmentIds]).map(String),
+    );
+    setOrders((prev) =>
+      prev.filter((item) => {
+        const siblingIds = Array.isArray(item.siblingIds)
+          ? item.siblingIds.map(String)
+          : [String(item.id)];
+        return !siblingIds.some((id) => ids.has(id));
+      }),
+    );
     setStats((prev) => ({
       ...prev,
-      activeCount: Math.max(0, (Number(prev.activeCount) || 0) - 1),
+      activeCount: Math.max(
+        0,
+        (Number(prev.activeCount) || 0) - Math.max(1, ids.size),
+      ),
     }));
   };
 

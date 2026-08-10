@@ -28,6 +28,17 @@ function resolveTitle(order) {
   );
 }
 
+function resolveUnitTitle(unit) {
+  return unit?.title?.uz || unit?.title?.ru || 'Mahsulot';
+}
+
+function formatVariant(unit) {
+  return [unit?.size, unit?.color, unit?.storage, unit?.model]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)
+    .join(' · ');
+}
+
 const REASSIGNABLE_STATUSES = new Set([
   'accepted',
   'en_route_to_seller',
@@ -50,22 +61,44 @@ export default function CourierAcceptedOrderCard({
   const isReturned = order?.status === 'returned';
   const isPayable = isDelivered || isReturned;
   const canReassign = REASSIGNABLE_STATUSES.has(String(order?.status || ''));
+  const isGroup = Boolean(order?.isGroup) || (Number(order?.productCount) || 1) > 1;
+  const units = Array.isArray(order?.units) ? order.units : [];
+  const productCodes = Array.isArray(order?.productCodes)
+    ? order.productCodes.filter(Boolean)
+    : String(order?.barcode || order?.productCode || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+  const siblingIds = Array.isArray(order?.siblingIds)
+    ? order.siblingIds.filter(Boolean)
+    : [order?.id].filter(Boolean);
+  const paymentOrder = {
+    ...order,
+    id: order?.paymentAssignmentId || order?.id,
+  };
 
   const handleReassign = () => {
-    if (!canReassign || reassigning || !order?.id) return;
+    if (!canReassign || reassigning || !siblingIds.length) return;
     Modal.confirm({
       title: 'Qayta tayinlash',
-      content:
-        'Bu buyurtma kuryerdan olinib, delivery «Buyurtmalar» sahifasiga qaytariladi. Boshqa kuryer (shu kuryer ham) qayta qabul qilishi mumkin.',
+      content: isGroup
+        ? `Bu guruhdagi ${siblingIds.length} ta mahsulot kuryerdan olinib, delivery «Buyurtmalar» sahifasiga qaytariladi.`
+        : 'Bu buyurtma kuryerdan olinib, delivery «Buyurtmalar» sahifasiga qaytariladi. Boshqa kuryer (shu kuryer ham) qayta qabul qilishi mumkin.',
       okText: 'Qayta tayinlash',
       cancelText: 'Bekor',
       okButtonProps: { danger: true },
       onOk: async () => {
         setReassigning(true);
         try {
-          await reassignCourierAssignment(order.id);
-          message.success('Buyurtma poolga qaytarildi');
-          onReassigned?.(order.id);
+          for (const id of siblingIds) {
+            await reassignCourierAssignment(id);
+          }
+          message.success(
+            isGroup
+              ? 'Guruh poolga qaytarildi'
+              : 'Buyurtma poolga qaytarildi',
+          );
+          onReassigned?.(siblingIds);
         } catch (err) {
           message.error(err?.message || 'Qayta tayinlab bo‘lmadi');
           throw err;
@@ -79,13 +112,46 @@ export default function CourierAcceptedOrderCard({
   return (
     <article className="courier-accepted-order-card">
       <div className="courier-accepted-order-card__top">
-        <p className="courier-accepted-order-card__barcode">
-          {order?.barcode || order?.productCode || '—'}
-        </p>
+        <div className="courier-accepted-order-card__codes">
+          {isGroup && productCodes.length > 1 ? (
+            productCodes.map((code) => (
+              <p key={code} className="courier-accepted-order-card__barcode">
+                {code}
+              </p>
+            ))
+          ) : (
+            <p className="courier-accepted-order-card__barcode">
+              {productCodes[0] || order?.barcode || order?.productCode || '—'}
+            </p>
+          )}
+        </div>
         <CourierAcceptedOrderStatusBadge status={order?.status} />
       </div>
 
       <h4 className="courier-accepted-order-card__title">{resolveTitle(order)}</h4>
+
+      {isGroup ? (
+        <p className="courier-accepted-order-card__count">
+          {order?.productCount || units.length || 1} ta mahsulot
+        </p>
+      ) : null}
+
+      {isGroup && units.length > 1 ? (
+        <ul className="courier-accepted-order-card__units">
+          {units.map((unit) => {
+            const variant = formatVariant(unit);
+            return (
+              <li key={unit.id}>
+                <span>
+                  {resolveUnitTitle(unit)}
+                  {variant ? ` · ${variant}` : ''}
+                </span>
+                <span>{unit.barcode || unit.productCode || '—'}</span>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
 
       <CourierAcceptedOrderProgress status={order?.status} />
 
@@ -131,12 +197,13 @@ export default function CourierAcceptedOrderCard({
       </div>
 
       <CourierAcceptedOrderPaymentEditor
-        order={order}
+        order={paymentOrder}
         editable={isPayable}
         onUpdated={(updated) =>
           onPaymentUpdated?.({
             ...order,
             courierPayment: updated?.courierPayment ?? order.courierPayment,
+            paymentAssignmentId: paymentOrder.id,
           })
         }
       />
