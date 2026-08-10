@@ -164,6 +164,58 @@
   justify-content: flex-end;
 }
 
+.customer-refund-card__variants {
+  margin: 0;
+  color: #6b5f78;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.customer-refund-card__units {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #efe9f6;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #faf8fc;
+}
+
+.customer-refund-card__units li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customer-refund-card__unit-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-refund-card__unit-main strong {
+  color: #2a1842;
+  font-size: 13px;
+}
+
+.customer-refund-card__unit-code,
+.customer-refund-card__unit-variants {
+  color: #8a7e96;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customer-refund-card__unit-amount {
+  flex-shrink: 0;
+  color: #2a1842;
+  font-size: 13px;
+}
+
 .customer-refund-card__confirm {
   min-height: 42px;
   padding: 0 16px;

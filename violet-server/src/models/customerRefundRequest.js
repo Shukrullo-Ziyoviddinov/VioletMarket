@@ -34,6 +34,10 @@ const customerRefundRequestSchema = new mongoose.Schema(
     amount: { type: Number, default: 0 },
     quantity: { type: Number, default: 1 },
     imageUrl: { type: String, default: "" },
+    color: { type: String, default: "" },
+    size: { type: String, default: "" },
+    storage: { type: String, default: "" },
+    model: { type: String, default: "" },
     reasonType: {
       type: String,
       enum: ["return", "defective", "unavailable"],

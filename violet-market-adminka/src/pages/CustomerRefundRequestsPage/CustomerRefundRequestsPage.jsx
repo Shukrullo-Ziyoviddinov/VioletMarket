@@ -138,9 +138,13 @@ export default function CustomerRefundRequestsPage() {
 
   const handleConfirm = useCallback(
     (item) => {
+      const unitCount = Math.max(1, Number(item?.productCount) || item?.units?.length || 1);
+      const isGroup = Boolean(item?.isGroup) || unitCount > 1;
       Modal.confirm({
         title: 'Mijozga summa qaytarildi?',
-        content: `${formatRevenue(item.amount)} mijozga qaytarilganini tasdiqlaysizmi?`,
+        content: isGroup
+          ? `${unitCount} ta mahsulot uchun jami ${formatRevenue(item.amount)} mijozga qaytarilganini tasdiqlaysizmi?`
+          : `${formatRevenue(item.amount)} mijozga qaytarilganini tasdiqlaysizmi?`,
         okText: 'Ha, qaytarildi',
         cancelText: 'Yo‘q',
         onOk: async () => {

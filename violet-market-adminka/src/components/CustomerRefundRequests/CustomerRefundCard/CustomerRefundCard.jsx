@@ -32,8 +32,30 @@ function formatDateTime(value) {
   });
 }
 
+function variantParts(unit) {
+  return [unit?.size, unit?.color, unit?.storage, unit?.model]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean);
+}
+
 export default function CustomerRefundCard({ item, confirming = false, onConfirm }) {
   const isPending = item?.status === 'pending';
+  const units = Array.isArray(item?.units) && item.units.length
+    ? item.units
+    : [
+        {
+          id: item?.id,
+          title: item?.title,
+          productCode: item?.productCode,
+          amount: item?.amount,
+          imageUrl: item?.imageUrl,
+          color: item?.color,
+          size: item?.size,
+          storage: item?.storage,
+          model: item?.model,
+        },
+      ];
+  const isGroup = Boolean(item?.isGroup) || units.length > 1;
   const reasonLabel =
     item?.reasonType === 'defective'
       ? 'Yaroqsiz'
@@ -52,7 +74,7 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
     <article className="customer-refund-card">
       <div className="customer-refund-card__media">
         <img
-          src={resolveProductImageUrl(item?.imageUrl)}
+          src={resolveProductImageUrl(item?.imageUrl || units[0]?.imageUrl)}
           alt={productTitle(item)}
           onError={(event) => {
             event.currentTarget.src = resolveProductImageUrl('');
@@ -64,8 +86,14 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
         <div className="customer-refund-card__header">
           <div>
             <h3 className="customer-refund-card__title">{productTitle(item)}</h3>
-            {item?.productCode ? (
+            {item?.orderId ? (
+              <p className="customer-refund-card__code">Buyurtma #{item.orderId}</p>
+            ) : null}
+            {!isGroup && item?.productCode ? (
               <p className="customer-refund-card__code">{item.productCode}</p>
+            ) : null}
+            {isGroup ? (
+              <p className="customer-refund-card__code">{units.length} ta mahsulot</p>
             ) : null}
           </div>
           <div className="customer-refund-card__badges">
@@ -125,9 +153,46 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
           </div>
         )}
 
+        {isGroup ? (
+          <ul className="customer-refund-card__units">
+            {units.map((unit) => {
+              const variants = variantParts(unit);
+              return (
+                <li key={unit.id || `${unit.itemIndex}-${unit.unitIndex}`}>
+                  <div className="customer-refund-card__unit-main">
+                    <strong>{productTitle(unit)}</strong>
+                    {unit.productCode ? (
+                      <span className="customer-refund-card__unit-code">
+                        {unit.productCode}
+                      </span>
+                    ) : null}
+                    {variants.length ? (
+                      <span className="customer-refund-card__unit-variants">
+                        {variants.join(' · ')}
+                      </span>
+                    ) : null}
+                  </div>
+                  <strong className="customer-refund-card__unit-amount">
+                    {formatRevenue(unit.amount)}
+                  </strong>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          (() => {
+            const variants = variantParts(item);
+            return variants.length ? (
+              <p className="customer-refund-card__variants">{variants.join(' · ')}</p>
+            ) : null;
+          })()
+        )}
+
         <div className="customer-refund-card__meta">
           <div>
-            <span className="customer-refund-card__label">Summa</span>
+            <span className="customer-refund-card__label">
+              {isGroup ? 'Jami summa' : 'Summa'}
+            </span>
             <strong className="customer-refund-card__amount">
               {formatRevenue(item?.amount)}
             </strong>
@@ -159,7 +224,11 @@ export default function CustomerRefundCard({ item, confirming = false, onConfirm
               disabled={confirming}
               onClick={() => onConfirm?.(item)}
             >
-              {confirming ? 'Saqlanmoqda...' : 'Mijozga summa qaytarildi'}
+              {confirming
+                ? 'Saqlanmoqda...'
+                : isGroup
+                  ? 'Guruh uchun summa qaytarildi'
+                  : 'Mijozga summa qaytarildi'}
             </button>
           </div>
         ) : null}

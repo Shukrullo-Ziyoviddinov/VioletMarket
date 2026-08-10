@@ -188,6 +188,10 @@ function toPublicRefundRequest(doc, seller = null) {
     amount: Math.max(0, Number(row.amount) || 0),
     quantity: Math.max(1, Number(row.quantity) || 1),
     imageUrl: String(row.imageUrl || ""),
+    color: String(row.color || ""),
+    size: String(row.size || ""),
+    storage: String(row.storage || ""),
+    model: String(row.model || ""),
     reasonType: String(row.reasonType || "return"),
     customer: {
       firstName: String(row.customer?.firstName || ""),
@@ -264,6 +268,10 @@ async function createCustomerRefundRequestIfNeeded(returnedDoc) {
     amount,
     quantity: Math.max(1, Number(row.quantity) || 1),
     imageUrl: String(row.imageUrl || ""),
+    color: String(row.color || ""),
+    size: String(row.size || ""),
+    storage: String(row.storage || ""),
+    model: String(row.model || ""),
     reasonType,
     customer: {
       firstName: String(row.customer?.firstName || ""),
@@ -376,6 +384,10 @@ async function createCustomerRefundForSellerUnavailable({
     amount,
     quantity: 1,
     imageUrl: String(item.image || item.imageUrl || ""),
+    color: String(item.color || ""),
+    size: String(item.size || ""),
+    storage: String(item.storage || ""),
+    model: String(item.model || ""),
     reasonType: "unavailable",
     customer,
     courier: {
@@ -480,6 +492,100 @@ function buildSearchMatch(searchRaw) {
   return { $or: or };
 }
 
+function refundGroupKey(row) {
+  return [
+    Number(row.orderId) || 0,
+    String(row.sellerId || "").trim(),
+    String(row.status || "pending"),
+    String(row.source || "courier"),
+    String(row.reasonType || "return"),
+  ].join(":");
+}
+
+function toUnitPublic(row) {
+  return {
+    id: String(row.id || ""),
+    itemIndex: Number(row.itemIndex) || 0,
+    unitIndex: Number(row.unitIndex) || 0,
+    productId: Number(row.productId) || 0,
+    productCode: String(row.productCode || ""),
+    title: row.title || { uz: "", ru: "" },
+    amount: Math.max(0, Number(row.amount) || 0),
+    quantity: Math.max(1, Number(row.quantity) || 1),
+    imageUrl: String(row.imageUrl || ""),
+    color: String(row.color || ""),
+    size: String(row.size || ""),
+    storage: String(row.storage || ""),
+    model: String(row.model || ""),
+  };
+}
+
+/**
+ * Bir order + bir siller (+ status/source/sabab) — bitta admin kartochka.
+ */
+function groupCustomerRefundRequests(items = []) {
+  if (!Array.isArray(items) || !items.length) return [];
+
+  const buckets = new Map();
+  for (const row of items) {
+    const key = refundGroupKey(row);
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(row);
+  }
+
+  const groups = [];
+  for (const rows of buckets.values()) {
+    const sorted = [...rows].sort((a, b) => {
+      const ai = Number(a.itemIndex) || 0;
+      const bi = Number(b.itemIndex) || 0;
+      if (ai !== bi) return ai - bi;
+      return (Number(a.unitIndex) || 0) - (Number(b.unitIndex) || 0);
+    });
+    const primary = sorted[0];
+    const units = sorted.map(toUnitPublic);
+    const amount = units.reduce(
+      (sum, unit) => sum + Math.max(0, Number(unit.amount) || 0),
+      0,
+    );
+    const productCodes = [
+      ...new Set(
+        units.map((unit) => String(unit.productCode || "").trim()).filter(Boolean),
+      ),
+    ];
+
+    groups.push({
+      ...primary,
+      amount,
+      quantity: units.length,
+      productCount: units.length,
+      isGroup: units.length > 1,
+      productCodes,
+      productCode:
+        productCodes.length <= 1
+          ? productCodes[0] || primary.productCode || ""
+          : productCodes.join(", "),
+      title:
+        units.length > 1
+          ? {
+              uz: `${units.length} ta mahsulot (buyurtma #${primary.orderId})`,
+              ru: `${units.length} товара (заказ #${primary.orderId})`,
+            }
+          : primary.title,
+      imageUrl: primary.imageUrl || units.find((u) => u.imageUrl)?.imageUrl || "",
+      units,
+      siblingIds: units.map((unit) => unit.id).filter(Boolean),
+    });
+  }
+
+  groups.sort((a, b) => {
+    const ta = new Date(a.returnedAt || 0).getTime();
+    const tb = new Date(b.returnedAt || 0).getTime();
+    return tb - ta;
+  });
+
+  return groups;
+}
+
 async function listAdminCustomerRefundRequests(query = {}) {
   await ensureCustomerRefundIndexes();
   await repairMissingSellerUnavailableRefundsOnce();
@@ -495,7 +601,6 @@ async function listAdminCustomerRefundRequests(query = {}) {
 
   const page = Math.max(1, Number(query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50));
-  const skip = (page - 1) * limit;
 
   const findFilter = {
     [listPeriod.field]: listPeriod.value,
@@ -514,13 +619,12 @@ async function listAdminCustomerRefundRequests(query = {}) {
     countBase.$and = [searchMatch];
   }
 
-  const [rows, total, pendingCount, refundedCount] = await Promise.all([
+  // Guruhlashdan oldin yetarli qator; pagination — guruhlar bo‘yicha
+  const [rows, pendingCount, refundedCount] = await Promise.all([
     CustomerRefundRequest.find(findFilter)
       .sort({ returnedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      .limit(500)
       .lean(),
-    CustomerRefundRequest.countDocuments(findFilter),
     CustomerRefundRequest.countDocuments({
       ...countBase,
       status: "pending",
@@ -532,7 +636,7 @@ async function listAdminCustomerRefundRequests(query = {}) {
   ]);
 
   const sellerMap = await loadSellerMap(rows.map((row) => row.sellerId));
-  const items = rows.map((row) => {
+  const flatItems = rows.map((row) => {
     const sellerId = String(row.sellerId || "").trim();
     const seller = sellerMap.get(sellerId) || {
       id: sellerId || "—",
@@ -541,6 +645,11 @@ async function listAdminCustomerRefundRequests(query = {}) {
     };
     return toPublicRefundRequest(row, seller);
   });
+
+  const grouped = groupCustomerRefundRequests(flatItems);
+  const total = grouped.length;
+  const skip = (page - 1) * limit;
+  const items = grouped.slice(skip, skip + limit);
 
   return {
     filters,
@@ -572,14 +681,34 @@ async function markCustomerRefundRefunded(id, adminId = "") {
     throw new HttpError(409, "So‘rov holati noto‘g‘ri", "REFUND_INVALID_STATUS");
   }
 
-  doc.status = "refunded";
-  doc.refundedAt = new Date();
-  doc.refundedBy = String(adminId || "").trim();
-  await doc.save();
+  const now = new Date();
+  const reviewedBy = String(adminId || "").trim();
+  const markOne = async (row) => {
+    if (String(row.status) === "refunded") return row;
+    row.status = "refunded";
+    row.refundedAt = now;
+    row.refundedBy = reviewedBy;
+    await row.save();
+    return row;
+  };
 
-  const sellerMap = await loadSellerMap([doc.sellerId]);
-  const seller = sellerMap.get(String(doc.sellerId || "").trim()) || null;
-  return toPublicRefundRequest(doc, seller);
+  await markOne(doc);
+
+  // Bir order + siller guruhidagi qolgan pendinglarni birga yopish
+  const siblings = await CustomerRefundRequest.find({
+    orderId: Number(doc.orderId) || 0,
+    sellerId: String(doc.sellerId || "").trim(),
+    status: "pending",
+    source: String(doc.source || "courier"),
+    reasonType: String(doc.reasonType || "return"),
+    _id: { $ne: doc._id },
+  });
+
+  for (const sibling of siblings) {
+    await markOne(sibling);
+  }
+
+  return toPublicRefundRequest(doc);
 }
 
 module.exports = {

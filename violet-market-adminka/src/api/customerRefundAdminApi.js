@@ -20,20 +20,56 @@ function normalizeSeller(row) {
   };
 }
 
+function normalizeUnit(row) {
+  return {
+    id: String(row?.id || ''),
+    itemIndex: Number(row?.itemIndex) || 0,
+    unitIndex: Number(row?.unitIndex) || 0,
+    productId: Number(row?.productId) || 0,
+    productCode: String(row?.productCode || ''),
+    title: row?.title || { uz: '', ru: '' },
+    amount: Number(row?.amount) || 0,
+    quantity: Number(row?.quantity) || 1,
+    imageUrl: String(row?.imageUrl || ''),
+    color: String(row?.color || ''),
+    size: String(row?.size || ''),
+    storage: String(row?.storage || ''),
+    model: String(row?.model || ''),
+  };
+}
+
 function normalizeItem(row) {
+  const unitsRaw = Array.isArray(row?.units) ? row.units : [];
+  const units = unitsRaw.map(normalizeUnit);
+  const siblingIds = Array.isArray(row?.siblingIds)
+    ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
+    : units.map((unit) => unit.id).filter(Boolean);
+
   return {
     id: String(row?.id || ''),
     returnedOrderId: String(row?.returnedOrderId || ''),
     orderId: Number(row?.orderId) || 0,
     productId: Number(row?.productId) || 0,
     productCode: String(row?.productCode || ''),
+    productCodes: Array.isArray(row?.productCodes)
+      ? row.productCodes.map((code) => String(code || '')).filter(Boolean)
+      : [],
     sellerId: String(row?.sellerId || ''),
     seller: normalizeSeller(row?.seller),
     title: row?.title || { uz: '', ru: '' },
     amount: Number(row?.amount) || 0,
     quantity: Number(row?.quantity) || 1,
+    productCount: Number(row?.productCount) || units.length || 1,
+    isGroup: Boolean(row?.isGroup) || units.length > 1,
     imageUrl: String(row?.imageUrl || ''),
+    color: String(row?.color || ''),
+    size: String(row?.size || ''),
+    storage: String(row?.storage || ''),
+    model: String(row?.model || ''),
     reasonType: String(row?.reasonType || 'return'),
+    source: String(row?.source || 'courier'),
+    cargoCountry: String(row?.cargoCountry || ''),
+    cargoCountryLabel: String(row?.cargoCountryLabel || ''),
     customer: {
       firstName: String(row?.customer?.firstName || ''),
       lastName: String(row?.customer?.lastName || ''),
@@ -47,6 +83,8 @@ function normalizeItem(row) {
     status: String(row?.status || 'pending'),
     returnedAt: row?.returnedAt || null,
     refundedAt: row?.refundedAt || null,
+    units,
+    siblingIds,
   };
 }
 
