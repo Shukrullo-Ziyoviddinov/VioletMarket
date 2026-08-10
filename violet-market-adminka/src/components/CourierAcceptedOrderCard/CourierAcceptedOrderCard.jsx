@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Modal, message } from 'antd';
 import CourierAcceptedOrderPaymentEditor from '../CourierAcceptedOrderPaymentEditor/CourierAcceptedOrderPaymentEditor';
 import CourierAcceptedOrderProgress from '../CourierAcceptedOrderProgress/CourierAcceptedOrderProgress';
 import CourierAcceptedOrderStatusBadge from '../CourierAcceptedOrderStatusBadge/CourierAcceptedOrderStatusBadge';
+import { reassignCourierAssignment } from '../../api/couriersAdminApi';
 import './CourierAcceptedOrderCard.css';
 
 function formatDateTime(value) {
@@ -26,13 +28,53 @@ function resolveTitle(order) {
   );
 }
 
-export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
+const REASSIGNABLE_STATUSES = new Set([
+  'accepted',
+  'en_route_to_seller',
+  'arrived_at_seller',
+  'picked_up',
+  'en_route_to_customer',
+  'arrived_at_customer',
+]);
+
+export default function CourierAcceptedOrderCard({
+  order,
+  onPaymentUpdated,
+  onReassigned,
+}) {
+  const [reassigning, setReassigning] = useState(false);
   const customerName =
     `${order?.customer?.firstName || ''} ${order?.customer?.lastName || ''}`.trim() ||
     'Mijoz nomi yo‘q';
   const isDelivered = order?.status === 'delivered';
   const isReturned = order?.status === 'returned';
   const isPayable = isDelivered || isReturned;
+  const canReassign = REASSIGNABLE_STATUSES.has(String(order?.status || ''));
+
+  const handleReassign = () => {
+    if (!canReassign || reassigning || !order?.id) return;
+    Modal.confirm({
+      title: 'Qayta tayinlash',
+      content:
+        'Bu buyurtma kuryerdan olinib, delivery «Buyurtmalar» sahifasiga qaytariladi. Boshqa kuryer (shu kuryer ham) qayta qabul qilishi mumkin.',
+      okText: 'Qayta tayinlash',
+      cancelText: 'Bekor',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        setReassigning(true);
+        try {
+          await reassignCourierAssignment(order.id);
+          message.success('Buyurtma poolga qaytarildi');
+          onReassigned?.(order.id);
+        } catch (err) {
+          message.error(err?.message || 'Qayta tayinlab bo‘lmadi');
+          throw err;
+        } finally {
+          setReassigning(false);
+        }
+      },
+    });
+  };
 
   return (
     <article className="courier-accepted-order-card">
@@ -98,6 +140,17 @@ export default function CourierAcceptedOrderCard({ order, onPaymentUpdated }) {
           })
         }
       />
+
+      {canReassign ? (
+        <button
+          type="button"
+          className="courier-accepted-order-card__reassign"
+          disabled={reassigning}
+          onClick={handleReassign}
+        >
+          {reassigning ? 'Qayta tayinlanmoqda...' : 'Qayta tayinlash'}
+        </button>
+      ) : null}
     </article>
   );
 }

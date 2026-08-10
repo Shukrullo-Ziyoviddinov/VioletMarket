@@ -66,6 +66,23 @@
   color: #6d32c5;
 }
 
+.courier-accepted-order-card__reassign {
+  margin-top: 2px;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid #c4b5fd;
+  background: #f5f3ff;
+  color: #5b21b6;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.courier-accepted-order-card__reassign:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .courier-accepted-order-card__meta-grid,
   .courier-accepted-order-card__meta-grid--delivered {

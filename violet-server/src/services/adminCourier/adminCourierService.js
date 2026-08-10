@@ -270,6 +270,70 @@ async function updateCourierAssignmentPayment(assignmentId, payload = {}) {
   };
 }
 
+/** Qabul qilingan (topshirilmagan) assignment — delivery poolga qaytarish. */
+const REASSIGNABLE_ASSIGNMENT_STATUSES = new Set([
+  "accepted",
+  "en_route_to_seller",
+  "arrived_at_seller",
+  "picked_up",
+  "en_route_to_customer",
+  "arrived_at_customer",
+]);
+
+/**
+ * Admin «Qayta tayinlash»:
+ * assignment → cancelled → delivery «Buyurtmalar» pooliga qaytadi.
+ * Order/item tracking, ombor, sotildi, sotuvchiga qaytarish — tegilmaydi.
+ */
+async function reassignCourierAssignmentToPool(assignmentIdRaw) {
+  const assignmentId = String(assignmentIdRaw || "").trim();
+  if (!assignmentId) {
+    throw new HttpError(400, "Assignment ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
+  }
+
+  const assignment = await CourierOrderAssignment.findById(assignmentId);
+  if (!assignment) {
+    throw new HttpError(404, "Buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+
+  const status = String(assignment.status || "");
+  if (!REASSIGNABLE_ASSIGNMENT_STATUSES.has(status)) {
+    throw new HttpError(
+      409,
+      "Faqat kuryer qabul qilgan (topshirilmagan) buyurtmani qayta tayinlash mumkin",
+      "ASSIGNMENT_NOT_REASSIGNABLE",
+    );
+  }
+
+  assignment.status = "cancelled";
+  assignment.enRouteToSellerAt = null;
+  assignment.arrivedAtSellerAt = null;
+  assignment.pickedUpAt = null;
+  assignment.enRouteToCustomerAt = null;
+  assignment.arrivedAtCustomerAt = null;
+  assignment.deliveredAt = null;
+  assignment.enRouteReturnToSellerAt = null;
+  assignment.arrivedReturnAtSellerAt = null;
+  assignment.returnedAt = null;
+  assignment.courierPayment = 0;
+  assignment.courierPaymentUpdatedAt = null;
+  if (typeof assignment.set === "function") {
+    assignment.set("approvedReturnReasonType", undefined);
+  } else {
+    assignment.approvedReturnReasonType = undefined;
+  }
+  await assignment.save();
+
+  return {
+    id: String(assignment._id),
+    orderId: Number(assignment.orderId) || 0,
+    itemIndex: Number(assignment.itemIndex) || 0,
+    unitIndex: Number(assignment.unitIndex) || 0,
+    status: "cancelled",
+    releasedToPool: true,
+  };
+}
+
 module.exports = {
   listCouriers,
   approveCourier,
@@ -277,4 +341,5 @@ module.exports = {
   deleteCourier,
   listCourierAcceptedOrders,
   updateCourierAssignmentPayment,
+  reassignCourierAssignmentToPool,
 };

@@ -11,6 +11,10 @@ router.patch(
   "/admin/courier-assignments/:assignmentId/payment",
   controller.updateCourierAssignmentPayment,
 );
+router.post(
+  "/admin/courier-assignments/:assignmentId/reassign",
+  controller.reassignCourierAssignment,
+);
 router.post("/admin/couriers/:id/approve", controller.approveCourier);
 router.post("/admin/couriers/:id/reject", controller.rejectCourier);
 router.delete("/admin/couriers/:id", controller.deleteCourier);

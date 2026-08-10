@@ -36,6 +36,13 @@ const updateCourierAssignmentPayment = asyncHandler(async (req, res) => {
   res.json({ ok: true, data });
 });
 
+const reassignCourierAssignment = asyncHandler(async (req, res) => {
+  const data = await adminCourierService.reassignCourierAssignmentToPool(
+    req.params.assignmentId,
+  );
+  res.json({ ok: true, data });
+});
+
 const getCourierPaymentSettings = asyncHandler(async (_req, res) => {
   const courierPaymentService = require("../services/courierPayment/courierPaymentService");
   const data = await courierPaymentService.getCourierPaymentSettings();
@@ -55,6 +62,7 @@ module.exports = {
   deleteCourier,
   listCourierAcceptedOrders,
   updateCourierAssignmentPayment,
+  reassignCourierAssignment,
   getCourierPaymentSettings,
   updateCourierPaymentSettings,
 };

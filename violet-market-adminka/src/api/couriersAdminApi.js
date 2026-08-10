@@ -65,3 +65,15 @@ export async function fetchCourierAcceptedOrders(courierId, status = 'all') {
   const payload = await parseJson(res);
   return payload?.data || { courier: null, stats: null, orders: [] };
 }
+
+/** Qabul qilingan buyurtmani kuryerdan olib delivery poolga qaytarish */
+export async function reassignCourierAssignment(assignmentId) {
+  const res = await fetch(
+    apiUrl(
+      `/api/admin/courier-assignments/${encodeURIComponent(assignmentId)}/reassign`,
+    ),
+    { method: 'POST' },
+  );
+  const payload = await parseJson(res);
+  return payload?.data || null;
+}

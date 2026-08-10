@@ -102,6 +102,14 @@ export default function CourierAcceptedOrdersModalContent({
     }
   };
 
+  const handleReassigned = (assignmentId) => {
+    setOrders((prev) => prev.filter((item) => item.id !== assignmentId));
+    setStats((prev) => ({
+      ...prev,
+      activeCount: Math.max(0, (Number(prev.activeCount) || 0) - 1),
+    }));
+  };
+
   const filteredOrders = useMemo(
     () => filterOrdersByCustomer(orders, searchQuery),
     [orders, searchQuery],
@@ -200,6 +208,7 @@ export default function CourierAcceptedOrdersModalContent({
               key={order.id}
               order={order}
               onPaymentUpdated={handlePaymentUpdated}
+              onReassigned={handleReassigned}
             />
           ))}
         </div>
