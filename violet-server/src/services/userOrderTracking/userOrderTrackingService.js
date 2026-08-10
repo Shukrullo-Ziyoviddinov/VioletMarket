@@ -117,6 +117,47 @@ function pickSlowestTrackingItem(items) {
   return best;
 }
 
+/** Timeline uchun eng oldinga o‘tgan mahsulot. */
+function pickFurthestTrackingItem(items) {
+  if (!items.length) return null;
+  let best = items[0];
+  let bestScore = Number.NEGATIVE_INFINITY;
+  for (const item of items) {
+    const steps = Array.isArray(item.steps) ? item.steps : [];
+    const score = steps.reduce((sum, step) => {
+      const state = String(step?.state || "");
+      if (state === "completed") return sum + 2;
+      if (state === "current") return sum + 1;
+      return sum;
+    }, 0);
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+  return best;
+}
+
+const LAST_MILE_TRACKING_STATUSES = new Set([
+  "handed_to_courier",
+  "delivered",
+]);
+
+/**
+ * Cargo/logistica bosqichida — eng sekin (hammasi yetib kelgunicha).
+ * Kuryer/delivered boshlangach — eng oldinga o‘tganini ko‘rsatamiz,
+ * aks holda bitta sibling «Toshkent omborida»da qolsa, «Mahsulot kuryerda» yashirinadi.
+ */
+function pickTimelineSourceItem(items) {
+  if (!items.length) return null;
+  const hasLastMile = items.some((item) =>
+    LAST_MILE_TRACKING_STATUSES.has(String(item?.trackingStatus || "")),
+  );
+  return hasLastMile
+    ? pickFurthestTrackingItem(items)
+    : pickSlowestTrackingItem(items);
+}
+
 /**
  * Bir checkout (orderId) + bir siller → bitta kartochka.
  * Cargo to‘lov: faqat fee-bearer shipment (paymentRequired) — bitta summa.
@@ -139,7 +180,7 @@ function groupInProgressTrackingItems(flatItems) {
       (a, b) => (Number(a.itemIndex) || 0) - (Number(b.itemIndex) || 0),
     );
     const first = sorted[0];
-    const timelineSource = pickSlowestTrackingItem(sorted) || first;
+    const timelineSource = pickTimelineSourceItem(sorted) || first;
 
     const feeBearer =
       sorted.find((row) => Boolean(row.cargoFeePayment?.paymentRequired)) ||
