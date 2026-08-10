@@ -68,13 +68,22 @@ function unitProductTitle(unit: {
   );
 }
 
-/** Bir xil statusdagi siblinglar — advance/pickup/deliver birga. */
+/**
+ * Bir xil status (+ bir siller) siblinglar — pickup/deliver/seller-customer advance.
+ * Qaytarish (Ajdaniya→ombor) serverda order+seller fan-out qiladi → client 1 marta chaqiradi.
+ */
 function sameStatusAssignmentIds(order: DeliveryAcceptedOrder): string[] {
   const units = Array.isArray(order.units) ? order.units : [];
   if (units.length <= 1) return [order.id];
   const status = String(order.status || '');
+  const sellerId = String(order.sellerId || '').trim();
   const ids = units
-    .filter((unit) => String(unit.status || '') === status)
+    .filter((unit) => {
+      if (String(unit.status || '') !== status) return false;
+      if (!sellerId) return true;
+      const unitSeller = String(unit.sellerId || '').trim();
+      return !unitSeller || unitSeller === sellerId;
+    })
     .map((unit) => String(unit.id || '').trim())
     .filter(Boolean);
   return ids.length ? ids : [order.id];
@@ -262,9 +271,10 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
-      const ids = sameStatusAssignmentIds(order);
       const isReturnAdvance =
         action === 'go_return_to_seller' || action === 'arrive_return_seller';
+      // Qaytarish: server order+seller guruhini o‘zi yoyadi
+      const ids = isReturnAdvance ? [order.id] : sameStatusAssignmentIds(order);
       let last = order;
       for (const id of ids) {
         last = isReturnAdvance
@@ -373,20 +383,32 @@ export default function OrderDetailsScreen() {
     if (!token || !order || returning) return;
     setReturning(true);
     try {
-      const data = await returnDeliveryOrder(token, {
+      // Server bir order+siller guruhini fan-out qiladi
+      await returnDeliveryOrder(token, {
         assignmentId: order.id,
         comment: payload.comment,
       });
-      setOrder(data.assignment);
+      const unitCount = Math.max(
+        1,
+        Array.isArray(order.units) ? order.units.length : 1,
+      );
       setReturnModalOpen(false);
+      await loadOrder();
       Alert.alert(
         'So‘rov yuborildi',
-        'Asosiy admin tasdiqlamaguncha qaytarish tugmalari ochilmaydi.',
+        unitCount > 1
+          ? `${unitCount} ta mahsulot uchun so‘rov yuborildi. Asosiy admin tasdiqlamaguncha qaytarish tugmalari ochilmaydi.`
+          : 'Asosiy admin tasdiqlamaguncha qaytarish tugmalari ochilmaydi.',
       );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'So‘rov yuborilmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setReturning(false);
     }
@@ -398,18 +420,18 @@ export default function OrderDetailsScreen() {
     if (!token || !order || returning) return;
     setReturning(true);
     try {
-      const data = await confirmReturnReason(token, {
+      await confirmReturnReason(token, {
         assignmentId: order.id,
         reasonType: payload.reasonType,
       });
-      const advanced = await advanceReturnDeliveryStep(token, {
+      const last = await advanceReturnDeliveryStep(token, {
         assignmentId: order.id,
         action: 'go_return_to_seller',
       });
-      setOrder(advanced);
       setReturnModalOpen(false);
+      await loadOrder();
       try {
-        await openRoute(advanced);
+        await openRoute(last);
       } catch {
         // ignore
       }
@@ -417,6 +439,11 @@ export default function OrderDetailsScreen() {
       const message =
         error instanceof Error ? error.message : 'Tasdiqlash amalga oshmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setReturning(false);
     }
@@ -437,13 +464,13 @@ export default function OrderDetailsScreen() {
         assignmentId: order.id,
         reasonType,
       });
-      const advanced = await advanceReturnDeliveryStep(token, {
+      const last = await advanceReturnDeliveryStep(token, {
         assignmentId: order.id,
         action: 'go_return_to_seller',
       });
-      setOrder(advanced);
+      await loadOrder();
       try {
-        await openRoute(advanced);
+        await openRoute(last);
       } catch {
         // ignore route errors
       }
@@ -451,6 +478,11 @@ export default function OrderDetailsScreen() {
       const message =
         error instanceof Error ? error.message : 'Qaytarishni boshlab bo‘lmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setReturning(false);
     }
@@ -471,27 +503,38 @@ export default function OrderDetailsScreen() {
     if (!token || !order || actionLoading) return;
     setActionLoading(true);
     try {
+      const unitCount = Math.max(
+        1,
+        Array.isArray(order.units) ? order.units.length : 1,
+      );
       const location = await requestCourierLocation();
-      const data = await completeReturnDeliveryOrder(token, {
+      const lastResult = await completeReturnDeliveryOrder(token, {
         assignmentId: order.id,
         courierLat: location.coords?.latitude,
         courierLng: location.coords?.longitude,
       });
       setCompleteReturnConfirmOpen(false);
-      setOrder(data.assignment);
+      const reasonType = lastResult?.returned?.reasonType;
       Alert.alert(
         'Qaytarildi',
-        data.returned?.reasonType === 'no_answer'
+        reasonType === 'no_answer'
           ? 'Buyurtma «Javob bermadi» sifatida yozildi. Ombor hali ochilmaydi — admin «Qayta aktiv qilish» bosganda ochiladi.'
-          : data.returned?.reasonType === 'defective'
+          : reasonType === 'defective'
             ? 'Buyurtma «Yaroqsiz» sifatida yozildi. Ombor va sotildi hisobiga kirmaydi.'
-            : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
+            : unitCount > 1
+              ? `${unitCount} ta mahsulot sotuvchiga qaytarildi, ombor yangilandi.`
+              : 'Mahsulot sotuvchiga qaytarildi, ombor yangilandi.',
         [{ text: 'OK', onPress: () => router.replace('/home') }],
       );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Qaytarish amalga oshmadi';
       Alert.alert('Xatolik', message);
+      try {
+        await loadOrder();
+      } catch {
+        // ignore
+      }
     } finally {
       setActionLoading(false);
     }

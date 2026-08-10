@@ -157,50 +157,77 @@ async function mapAssignmentPublic(assignment) {
   return publicRow;
 }
 
+/** Bir order + bir siller + bir kuryer — qaytarish guruhining progressi */
+const RETURN_GROUP_STATUS_RANK = {
+  picked_up: 10,
+  en_route_to_customer: 20,
+  arrived_at_customer: 30,
+  return_request_pending: 40,
+  return_approved: 50,
+  return_to_seller: 60,
+  en_route_return_to_seller: 70,
+  arrived_return_at_seller: 80,
+  returned: 90,
+};
+
+function returnGroupRank(status) {
+  return Number(RETURN_GROUP_STATUS_RANK[String(status || "")]) || 0;
+}
+
+function assignmentSellerId(assignment, orderItem = null) {
+  return (
+    String(assignment?.sellerId || "").trim() ||
+    String(orderItem?.sellerId || "").trim()
+  );
+}
+
 /**
- * Ajdaniya → faqat so‘rov (admin kutadi).
+ * Bitta siller + order + kuryer dagi sibling assignmentlar.
+ * @param {object} [filter] mongoose filter qo‘shimchasi (masalan status)
  */
-async function createReturnRequestByCourier(deliveryId, payload = {}) {
-  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
-  const comment = String(payload.comment || "").trim();
+async function loadSameSellerSiblingAssignments(assignment, filter = {}) {
+  const orderId = Number(assignment.orderId);
+  const deliveryId = assignment.deliveryId;
+  const sellerId = assignmentSellerId(assignment);
+  if (!Number.isFinite(orderId) || !deliveryId) return [];
 
-  if (!assignmentId) {
-    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
-  }
+  const rows = await CourierOrderAssignment.find({
+    deliveryId,
+    orderId,
+    ...filter,
+  }).sort({ itemIndex: 1, unitIndex: 1 });
 
-  const assignment = await CourierOrderAssignment.findById(assignmentId);
-  if (!assignment) {
-    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
-  }
-  if (String(assignment.deliveryId) !== String(deliveryId)) {
-    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
-  }
+  if (!sellerId) return rows;
 
+  return rows.filter((row) => {
+    const sid = String(row.sellerId || "").trim();
+    return !sid || sid === sellerId;
+  });
+}
+
+async function applyCreateReturnRequestForAssignment(assignment, comment = "") {
   const status = String(assignment.status || "");
   if (status === "delivered" || status === "returned") {
-    throw new HttpError(409, "Bu buyurtmani qaytarib bo‘lmaydi", "ASSIGNMENT_TERMINAL");
-  }
-  if (status === "return_request_pending") {
-    const existing = await CourierReturnRequest.findOne({
-      assignmentId: assignment._id,
-      status: "pending",
-    }).lean();
-    if (existing) return toPublicReturnRequest(existing);
-  }
-  if (!REQUESTABLE_STATUSES.has(status)) {
-    throw new HttpError(
-      409,
-      "Avval sotuvchidan mahsulotni oling",
-      "ASSIGNMENT_NOT_PICKED_UP",
-    );
+    return null;
   }
 
   const openPending = await CourierReturnRequest.findOne({
     assignmentId: assignment._id,
     status: "pending",
-  }).lean();
+  });
   if (openPending) {
-    throw new HttpError(409, "Ochiq so‘rov allaqachon bor", "RETURN_REQUEST_EXISTS");
+    if (status !== "return_request_pending") {
+      assignment.status = "return_request_pending";
+      await assignment.save();
+    }
+    return {
+      request: toPublicReturnRequest(openPending),
+      assignment: await mapAssignmentPublic(assignment),
+    };
+  }
+
+  if (!REQUESTABLE_STATUSES.has(status)) {
+    return null;
   }
 
   const order = await Order.findOne({ id: assignment.orderId })
@@ -210,9 +237,7 @@ async function createReturnRequestByCourier(deliveryId, payload = {}) {
   const orderItem = Array.isArray(order?.items)
     ? order.items[Number(assignment.itemIndex)]
     : null;
-  const sellerId =
-    String(assignment.sellerId || "").trim() ||
-    String(orderItem?.sellerId || "").trim();
+  const sellerId = assignmentSellerId(assignment, orderItem);
   if (!sellerId) {
     throw new HttpError(409, "Siller ID topilmadi", "SELLER_ID_MISSING");
   }
@@ -268,6 +293,80 @@ async function createReturnRequestByCourier(deliveryId, payload = {}) {
     request: toPublicReturnRequest(created),
     assignment: await mapAssignmentPublic(assignment),
   };
+}
+
+/**
+ * Ajdaniya → bir order+siller guruhidagi barcha mos donalar so‘rovga tushadi.
+ */
+async function createReturnRequestByCourier(deliveryId, payload = {}) {
+  const assignmentId = String(payload.assignmentId || payload.id || "").trim();
+  const comment = String(payload.comment || "").trim();
+
+  if (!assignmentId) {
+    throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
+  }
+
+  const assignment = await CourierOrderAssignment.findById(assignmentId);
+  if (!assignment) {
+    throw new HttpError(404, "Qabul qilingan buyurtma topilmadi", "ASSIGNMENT_NOT_FOUND");
+  }
+  if (String(assignment.deliveryId) !== String(deliveryId)) {
+    throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
+  }
+
+  const status = String(assignment.status || "");
+  if (status === "delivered" || status === "returned") {
+    throw new HttpError(409, "Bu buyurtmani qaytarib bo‘lmaydi", "ASSIGNMENT_TERMINAL");
+  }
+  if (
+    status !== "return_request_pending" &&
+    !REQUESTABLE_STATUSES.has(status)
+  ) {
+    throw new HttpError(
+      409,
+      "Avval sotuvchidan mahsulotni oling",
+      "ASSIGNMENT_NOT_PICKED_UP",
+    );
+  }
+
+  const siblings = await loadSameSellerSiblingAssignments(assignment, {
+    status: { $in: [...REQUESTABLE_STATUSES] },
+  });
+  const byId = new Map();
+  for (const row of siblings) {
+    byId.set(String(row._id), row);
+  }
+  // Primary ham pending bo‘lsa — fan-out faqat requestable siblinglar
+  if (REQUESTABLE_STATUSES.has(status)) {
+    byId.set(String(assignment._id), assignment);
+  }
+
+  let primaryResult = null;
+  for (const row of byId.values()) {
+    const result = await applyCreateReturnRequestForAssignment(row, comment);
+    if (result && String(row._id) === String(assignment._id)) {
+      primaryResult = result;
+    }
+  }
+
+  if (primaryResult) {
+    return primaryResult;
+  }
+
+  if (status === "return_request_pending") {
+    const existing = await CourierReturnRequest.findOne({
+      assignmentId: assignment._id,
+      status: "pending",
+    });
+    if (existing) {
+      return {
+        request: toPublicReturnRequest(existing),
+        assignment: await mapAssignmentPublic(assignment),
+      };
+    }
+  }
+
+  throw new HttpError(409, "Ochiq so‘rov allaqachon bor", "RETURN_REQUEST_EXISTS");
 }
 
 async function listReturnRequestsForAdmin(query = {}) {
@@ -356,16 +455,47 @@ async function approveReturnRequest(requestId, payload = {}) {
   }
 
   const now = new Date();
-  request.status = "approved";
-  request.approvedReasonType = reasonType;
-  request.reviewedAt = now;
-  request.reviewedBy = reviewedBy;
-  request.rejectReason = "";
-  await request.save();
+  const applyApproveToRequest = async (reqDoc, assignDoc) => {
+    reqDoc.status = "approved";
+    reqDoc.approvedReasonType = reasonType;
+    reqDoc.reviewedAt = now;
+    reqDoc.reviewedBy = reviewedBy;
+    reqDoc.rejectReason = "";
+    await reqDoc.save();
 
-  assignment.status = "return_approved";
-  assignment.approvedReturnReasonType = reasonType;
-  await assignment.save();
+    assignDoc.status = "return_approved";
+    assignDoc.approvedReturnReasonType = reasonType;
+    await assignDoc.save();
+  };
+
+  await applyApproveToRequest(request, assignment);
+
+  // Guruh: pending so‘rovlar + hali requestable donalar (stuck heal)
+  const siblings = await loadSameSellerSiblingAssignments(assignment);
+  for (const sibling of siblings) {
+    if (String(sibling._id) === String(assignment._id)) continue;
+
+    let current = await CourierOrderAssignment.findById(sibling._id);
+    if (!current) continue;
+
+    if (REQUESTABLE_STATUSES.has(String(current.status || ""))) {
+      await applyCreateReturnRequestForAssignment(
+        current,
+        String(request.comment || "").trim() || "Guruh sinxron",
+      );
+      current = await CourierOrderAssignment.findById(sibling._id);
+      if (!current) continue;
+    }
+
+    if (String(current.status || "") !== "return_request_pending") continue;
+
+    const siblingReq = await CourierReturnRequest.findOne({
+      assignmentId: current._id,
+      status: "pending",
+    });
+    if (!siblingReq) continue;
+    await applyApproveToRequest(siblingReq, current);
+  }
 
   return {
     request: toPublicReturnRequest(request),
@@ -406,19 +536,38 @@ async function rejectReturnRequest(requestId, payload = {}) {
   }
 
   const now = new Date();
-  request.status = "rejected";
-  request.reviewedAt = now;
-  request.reviewedBy = reviewedBy;
-  request.rejectReason = rejectReason;
-  request.set("approvedReasonType", undefined);
-  await request.save();
+  const applyReject = async (reqDoc, assignDoc) => {
+    reqDoc.status = "rejected";
+    reqDoc.reviewedAt = now;
+    reqDoc.reviewedBy = reviewedBy;
+    reqDoc.rejectReason = rejectReason;
+    reqDoc.set("approvedReasonType", undefined);
+    await reqDoc.save();
 
-  assignment.status = "arrived_at_customer";
-  assignment.set("approvedReturnReasonType", undefined);
-  if (!assignment.arrivedAtCustomerAt) {
-    assignment.arrivedAtCustomerAt = now;
+    assignDoc.status = "arrived_at_customer";
+    assignDoc.set("approvedReturnReasonType", undefined);
+    if (!assignDoc.arrivedAtCustomerAt) {
+      assignDoc.arrivedAtCustomerAt = now;
+    }
+    await assignDoc.save();
+  };
+
+  await applyReject(request, assignment);
+
+  const siblings = await loadSameSellerSiblingAssignments(assignment, {
+    status: "return_request_pending",
+  });
+  for (const sibling of siblings) {
+    if (String(sibling._id) === String(assignment._id)) continue;
+    const siblingReq = await CourierReturnRequest.findOne({
+      assignmentId: sibling._id,
+      status: "pending",
+    });
+    if (!siblingReq) continue;
+    const siblingAssign = await CourierOrderAssignment.findById(sibling._id);
+    if (!siblingAssign) continue;
+    await applyReject(siblingReq, siblingAssign);
   }
-  await assignment.save();
 
   return {
     request: toPublicReturnRequest(request),
@@ -432,6 +581,7 @@ async function rejectReturnRequest(requestId, payload = {}) {
 async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
   const assignmentId = String(payload.assignmentId || payload.id || "").trim();
   let reasonType = String(payload.reasonType || "").trim().toLowerCase();
+  const skipSiblingFanout = Boolean(payload.skipSiblingFanout);
 
   if (!assignmentId) {
     throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
@@ -444,7 +594,44 @@ async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
   if (String(assignment.deliveryId) !== String(deliveryId)) {
     throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
   }
-  if (String(assignment.status) !== "return_approved") {
+
+  const status = String(assignment.status || "");
+  // Server fan-outdan keyin qayta chaqiriq / alleqachon keyingi bosqich — 409 emas
+  const alreadyConfirmed = new Set([
+    "return_to_seller",
+    "en_route_return_to_seller",
+    "arrived_return_at_seller",
+    "returned",
+  ]);
+  if (alreadyConfirmed.has(status)) {
+    if (!skipSiblingFanout) {
+      const approvedExisting = await resolveApprovedReturnReasonType(assignment);
+      const siblings = await loadSameSellerSiblingAssignments(assignment, {
+        status: "return_approved",
+      });
+      for (const sibling of siblings) {
+        if (String(sibling._id) === String(assignment._id)) continue;
+        try {
+          await confirmApprovedReturnReasonByCourier(deliveryId, {
+            assignmentId: String(sibling._id),
+            reasonType: REASON_TYPES.has(approvedExisting)
+              ? approvedExisting
+              : reasonType,
+            skipSiblingFanout: true,
+          });
+        } catch (err) {
+          console.error(
+            "Return confirm sibling fan-out:",
+            sibling._id,
+            err?.message || err,
+          );
+        }
+      }
+    }
+    return mapAssignmentPublic(assignment);
+  }
+
+  if (status !== "return_approved") {
     throw new HttpError(
       409,
       "Avval admin so‘rovni tasdiqlashi kerak",
@@ -505,12 +692,36 @@ async function confirmApprovedReturnReasonByCourier(deliveryId, payload = {}) {
   assignment.status = "return_to_seller";
   assignment.approvedReturnReasonType = approved;
   await assignment.save();
+
+  if (!skipSiblingFanout) {
+    const siblings = await loadSameSellerSiblingAssignments(assignment, {
+      status: "return_approved",
+    });
+    for (const sibling of siblings) {
+      if (String(sibling._id) === String(assignment._id)) continue;
+      try {
+        await confirmApprovedReturnReasonByCourier(deliveryId, {
+          assignmentId: String(sibling._id),
+          reasonType: approved,
+          skipSiblingFanout: true,
+        });
+      } catch (err) {
+        console.error(
+          "Return confirm sibling fan-out:",
+          sibling._id,
+          err?.message || err,
+        );
+      }
+    }
+  }
+
   return mapAssignmentPublic(assignment);
 }
 
 async function advanceReturnToSellerByCourier(deliveryId, payload = {}) {
   const assignmentId = String(payload.assignmentId || payload.id || "").trim();
   const action = String(payload.action || "").trim().toLowerCase();
+  const skipSiblingFanout = Boolean(payload.skipSiblingFanout);
 
   if (!assignmentId) {
     throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
@@ -531,16 +742,40 @@ async function advanceReturnToSellerByCourier(deliveryId, payload = {}) {
 
   const current = String(assignment.status || "");
   if (current === rule.to) {
-    return mapAssignmentPublic(assignment);
-  }
-  if (!rule.from.includes(current)) {
+    // already advanced — still fan-out siblings
+  } else if (!rule.from.includes(current)) {
     throw new HttpError(409, rule.errorMessage, "ASSIGNMENT_STATUS_CONFLICT");
+  } else {
+    const at = new Date();
+    assignment.status = rule.to;
+    assignment[rule.atField] = at;
+    await assignment.save();
   }
 
-  const at = new Date();
-  assignment.status = rule.to;
-  assignment[rule.atField] = at;
-  await assignment.save();
+  if (!skipSiblingFanout) {
+    const siblings = await loadSameSellerSiblingAssignments(assignment, {
+      status: { $in: [...rule.from, rule.to] },
+    });
+    for (const sibling of siblings) {
+      if (String(sibling._id) === String(assignment._id)) continue;
+      if (String(sibling.status || "") === rule.to) continue;
+      if (!rule.from.includes(String(sibling.status || ""))) continue;
+      try {
+        await advanceReturnToSellerByCourier(deliveryId, {
+          assignmentId: String(sibling._id),
+          action,
+          skipSiblingFanout: true,
+        });
+      } catch (err) {
+        console.error(
+          "Return advance sibling fan-out:",
+          sibling._id,
+          err?.message || err,
+        );
+      }
+    }
+  }
+
   return mapAssignmentPublic(assignment);
 }
 
@@ -549,6 +784,7 @@ async function advanceReturnToSellerByCourier(deliveryId, payload = {}) {
  */
 async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   const assignmentId = String(payload.assignmentId || payload.id || "").trim();
+  const skipSiblingFanout = Boolean(payload.skipSiblingFanout);
   if (!assignmentId) {
     throw new HttpError(400, "Buyurtma ID noto‘g‘ri", "INVALID_ASSIGNMENT_ID");
   }
@@ -560,6 +796,30 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   if (String(assignment.deliveryId) !== String(deliveryId)) {
     throw new HttpError(403, "Bu buyurtma sizniki emas", "ASSIGNMENT_FORBIDDEN");
   }
+
+  const fanOutCompleteSiblings = async () => {
+    if (skipSiblingFanout) return;
+    const siblings = await loadSameSellerSiblingAssignments(assignment, {
+      status: "arrived_return_at_seller",
+    });
+    for (const sibling of siblings) {
+      if (String(sibling._id) === String(assignment._id)) continue;
+      try {
+        await completeReturnToSellerByCourier(deliveryId, {
+          assignmentId: String(sibling._id),
+          courierLat: payload.courierLat,
+          courierLng: payload.courierLng ?? payload.lng,
+          skipSiblingFanout: true,
+        });
+      } catch (err) {
+        console.error(
+          "Return complete sibling fan-out:",
+          sibling._id,
+          err?.message || err,
+        );
+      }
+    }
+  };
 
   const unitFilter = {
     orderId: Number(assignment.orderId),
@@ -576,6 +836,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
     // no_answer «Sotildi» / qayta aktiv / qayta kuryer — allaqachon yopilgan.
     // Qayta completeReturn resolution ni o‘chirmasin va delivered unitni buzmasin.
     if (existingDoc?.resolvedAt) {
+      await fanOutCompleteSiblings();
       return {
         returned: toPublicReturnedOrder(existingDoc),
         assignment: await mapAssignmentPublic(assignment),
@@ -605,6 +866,7 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
         );
         if (heal.healed) healedDoc = heal.returnedDoc || existingDoc;
       }
+      await fanOutCompleteSiblings();
       return {
         returned: healedDoc ? toPublicReturnedOrder(healedDoc) : null,
         assignment: await mapAssignmentPublic(assignment),
@@ -683,12 +945,14 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
 
       await existingDoc.save();
       await createCustomerRefundRequestIfNeeded(existingDoc);
+      await fanOutCompleteSiblings();
       return {
         returned: toPublicReturnedOrder(existingDoc),
         assignment: await mapAssignmentPublic(assignment),
       };
     }
 
+    await fanOutCompleteSiblings();
     return {
       returned: null,
       assignment: await mapAssignmentPublic(assignment),
@@ -823,10 +1087,145 @@ async function completeReturnToSellerByCourier(deliveryId, payload = {}) {
   // Pul zanjiri — inventardan keyin, alohida (faqat to‘langan return|defective)
   await createCustomerRefundRequestIfNeeded(saved);
 
+  await fanOutCompleteSiblings();
   return {
     returned: toPublicReturnedOrder(saved),
     assignment: await mapAssignmentPublic(assignment),
   };
+}
+
+/**
+ * Kuryer detail ochganda: bir siller guruhida partial qaytarishdan
+ * qolib ketgan donani leader statusiga yetkazish (ombor ham to‘g‘ri).
+ */
+async function healStuckReturnSiblingsOnView(assignmentDoc) {
+  if (!assignmentDoc?._id) return false;
+
+  const group = await loadSameSellerSiblingAssignments(assignmentDoc);
+  if (group.length <= 1) return false;
+
+  let leader = null;
+  let leaderRank = 0;
+  for (const row of group) {
+    const rank = returnGroupRank(row.status);
+    if (rank > leaderRank) {
+      leaderRank = rank;
+      leader = row;
+    }
+  }
+
+  // Qaytarish zanjiri boshlanganidan keyingina catch-up
+  if (!leader || leaderRank < returnGroupRank("return_request_pending")) {
+    return false;
+  }
+
+  let reasonType = await resolveApprovedReturnReasonType(leader);
+  if (!REASON_TYPES.has(reasonType)) {
+    const returnedDoc = await CourierReturnedOrder.findOne({
+      deliveryId: leader.deliveryId,
+      orderId: Number(leader.orderId),
+      sellerId: assignmentSellerId(leader),
+      reasonType: { $in: [...REASON_TYPES] },
+    })
+      .sort({ returnedAt: -1 })
+      .select("reasonType")
+      .lean();
+    reasonType = String(returnedDoc?.reasonType || "").trim().toLowerCase();
+  }
+
+  let changed = false;
+  const deliveryId = String(leader.deliveryId);
+
+  for (const row of group) {
+    let current = await CourierOrderAssignment.findById(row._id);
+    if (!current) continue;
+
+    const skipTerminal =
+      String(current.status) === "delivered" ||
+      String(current.status) === "cancelled";
+    if (skipTerminal) continue;
+
+    let rank = returnGroupRank(current.status);
+    if (rank >= leaderRank) continue;
+
+    // Faqat requestable yoki allaqachon qaytarishda bo‘lganlarni ko‘taramiz
+    const canHeal =
+      REQUESTABLE_STATUSES.has(String(current.status || "")) || rank >= 40;
+    if (!canHeal) continue;
+
+    try {
+      while (rank < leaderRank) {
+        const st = String(current.status || "");
+        if (REQUESTABLE_STATUSES.has(st)) {
+          await applyCreateReturnRequestForAssignment(
+            current,
+            "Guruh sinxron (avto)",
+          );
+        } else if (st === "return_request_pending") {
+          if (!REASON_TYPES.has(reasonType)) break;
+          if (leaderRank < returnGroupRank("return_approved")) break;
+          const pendingReq = await CourierReturnRequest.findOne({
+            assignmentId: current._id,
+            status: "pending",
+          });
+          if (!pendingReq) break;
+          pendingReq.status = "approved";
+          pendingReq.approvedReasonType = reasonType;
+          pendingReq.reviewedAt = new Date();
+          pendingReq.reviewedBy = "system_heal_group";
+          pendingReq.rejectReason = "";
+          await pendingReq.save();
+          current.status = "return_approved";
+          current.approvedReturnReasonType = reasonType;
+          await current.save();
+        } else if (st === "return_approved") {
+          if (leaderRank < returnGroupRank("return_to_seller")) break;
+          await confirmApprovedReturnReasonByCourier(deliveryId, {
+            assignmentId: String(current._id),
+            reasonType,
+            skipSiblingFanout: true,
+          });
+        } else if (st === "return_to_seller") {
+          if (leaderRank < returnGroupRank("en_route_return_to_seller")) break;
+          await advanceReturnToSellerByCourier(deliveryId, {
+            assignmentId: String(current._id),
+            action: "go_return_to_seller",
+            skipSiblingFanout: true,
+          });
+        } else if (st === "en_route_return_to_seller") {
+          if (leaderRank < returnGroupRank("arrived_return_at_seller")) break;
+          await advanceReturnToSellerByCourier(deliveryId, {
+            assignmentId: String(current._id),
+            action: "arrive_return_seller",
+            skipSiblingFanout: true,
+          });
+        } else if (st === "arrived_return_at_seller") {
+          if (leaderRank < returnGroupRank("returned")) break;
+          await completeReturnToSellerByCourier(deliveryId, {
+            assignmentId: String(current._id),
+            skipSiblingFanout: true,
+          });
+        } else {
+          break;
+        }
+
+        current = await CourierOrderAssignment.findById(row._id);
+        if (!current) break;
+        const nextRank = returnGroupRank(current.status);
+        if (nextRank <= rank) break;
+        rank = nextRank;
+        changed = true;
+      }
+    } catch (err) {
+      console.error(
+        "healStuckReturnSiblingsOnView:",
+        row._id,
+        err?.message || err,
+      );
+    }
+  }
+
+  return changed;
 }
 
 /**
@@ -954,6 +1353,7 @@ module.exports = {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
+  healStuckReturnSiblingsOnView,
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
 };

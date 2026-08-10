@@ -936,17 +936,43 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
     }
   }
 
+  // Partial qaytarish: bir siller guruhida qolib ketgan size/color donalar
+  try {
+    const {
+      healStuckReturnSiblingsOnView,
+    } = require("../../unitLifecycle/returnUnitLifecycleService");
+    const healed = await healStuckReturnSiblingsOnView(assignment);
+    if (healed) {
+      const refreshed = await CourierOrderAssignment.findById(id);
+      if (refreshed) {
+        assignment.status = refreshed.status;
+        assignment.approvedReturnReasonType = refreshed.approvedReturnReasonType;
+        assignment.returnedAt = refreshed.returnedAt;
+        assignment.enRouteReturnToSellerAt = refreshed.enRouteReturnToSellerAt;
+        assignment.arrivedReturnAtSellerAt = refreshed.arrivedReturnAtSellerAt;
+      }
+    }
+  } catch (err) {
+    console.error("healStuckReturnSiblingsOnView:", err?.message || err);
+  }
+
   const paymentMap = await loadOrderPaymentMap([assignment.orderId]);
   const payment = paymentMap.get(Number(assignment.orderId)) || {};
   const [publicRow] = await attachSellerPickup([
     toPublicAssignment(assignment, payment),
   ]);
 
-  const siblingRows = await CourierOrderAssignment.find({
+  const siblingQuery = {
     deliveryId,
     orderId: Number(assignment.orderId) || 0,
     status: { $in: ACTIVE_ASSIGNMENT_STATUSES },
-  })
+  };
+  const primarySellerId = String(assignment.sellerId || "").trim();
+  if (primarySellerId) {
+    siblingQuery.sellerId = primarySellerId;
+  }
+
+  const siblingRows = await CourierOrderAssignment.find(siblingQuery)
     .sort({ itemIndex: 1, unitIndex: 1 })
     .lean();
 

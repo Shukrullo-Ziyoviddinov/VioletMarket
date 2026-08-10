@@ -14,6 +14,7 @@ const {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
+  healStuckReturnSiblingsOnView,
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
 } = require("./returnUnitLifecycleService");
@@ -49,6 +50,7 @@ module.exports = {
   confirmApprovedReturnReasonByCourier,
   advanceReturnToSellerByCourier,
   completeReturnToSellerByCourier,
+  healStuckReturnSiblingsOnView,
   toPublicReturnRequest,
   RETURN_ADVANCE_ACTIONS,
   REASON_TYPES,
