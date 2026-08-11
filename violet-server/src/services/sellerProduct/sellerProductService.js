@@ -15,7 +15,12 @@ const {
   listProductTypes,
   normalizeProductTypeValue,
 } = require("../adminProductTypeService");
-
+const { resolveSellerPipelineMode } = require("../../productManagement/seller/sellerPipelineMode");
+const {
+  buildCreateApprovalFields,
+  normalizeApprovalStatus,
+  PRODUCT_APPROVAL_STATUS,
+} = require("../../utils/productApproval");
 const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
 const SUPER_NARX_COLOR = "#13BE4C";
 const ORIGINAL_ICON = "&#10004;";
@@ -335,7 +340,9 @@ async function assertSellerCanManageProducts(sellerShopId) {
     throw new HttpError(401, "Sotuvchi autentifikatsiyasi talab qilinadi", "UNAUTHORIZED");
   }
 
-  const seller = await SellerAccount.findOne({ id: sellerId }).select({ id: 1, status: 1 }).lean();
+  const seller = await SellerAccount.findOne({ id: sellerId })
+    .select({ id: 1, status: 1, sellerCountry: 1 })
+    .lean();
   if (!seller) {
     throw new HttpError(404, "Sotuvchi topilmadi", "SELLER_NOT_FOUND");
   }
@@ -347,6 +354,8 @@ async function assertSellerCanManageProducts(sellerShopId) {
       "SELLER_PAUSED",
     );
   }
+
+  return seller;
 }
 
 async function assertSellerOwnsProduct(sellerShopId, productId) {
@@ -470,8 +479,6 @@ async function normalizeSellerProductPayload(body, { sellerShopId, productId = n
     brandCategories,
     productType,
     sellerId: String(sellerShopId || "").trim(),
-    clientActive: true,
-    pausedBySeller: false,
     mainImage: mainImage || undefined,
     image: String(body?.image ?? mainImage).trim() || undefined,
     thumbnails: colors.length > 0 ? [] : thumbnails,
@@ -544,6 +551,8 @@ async function listSellerProducts(sellerShopId) {
       categoryName: 1,
       clientActive: 1,
       pausedBySeller: 1,
+      approvalStatus: 1,
+      cargoExpressPolicy: 1,
       colors: 1,
     })
     .sort({ _id: -1 })
@@ -552,6 +561,8 @@ async function listSellerProducts(sellerShopId) {
   return keepNewestProductPerId(rows).map((product) => {
     const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
     const image = product.image || product.mainImage || firstColor?.mainImage || "";
+    const approvalStatus =
+      normalizeApprovalStatus(product.approvalStatus) || PRODUCT_APPROVAL_STATUS.APPROVED;
     return {
       id: product.id,
       title: product.title || { uz: "", ru: "" },
@@ -562,6 +573,8 @@ async function listSellerProducts(sellerShopId) {
       categoryName: product.categoryName || "",
       clientActive: product.clientActive !== false,
       pausedBySeller: Boolean(product.pausedBySeller),
+      approvalStatus,
+      cargoExpressPolicy: product.cargoExpressPolicy ?? null,
     };
   });
 }
@@ -574,8 +587,10 @@ async function getSellerProductById(sellerShopId, productIdRaw) {
 }
 
 async function createSellerProduct(sellerShopId, body) {
-  await assertSellerCanManageProducts(sellerShopId);
+  const seller = await assertSellerCanManageProducts(sellerShopId);
   const payload = await normalizeSellerProductPayload(body, { sellerShopId });
+  const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
+  Object.assign(payload, buildCreateApprovalFields(pipelineMode));
   const created = await createProduct(payload);
   return created;
 }
@@ -589,6 +604,14 @@ async function updateSellerProduct(sellerShopId, productIdRaw, body) {
     productId,
     existing,
   });
+
+  // Seller approval / cargo siyosatini o'zgartira olmaydi
+  delete payload.clientActive;
+  delete payload.pausedBySeller;
+  delete payload.approvalStatus;
+  delete payload.cargoExpressPolicy;
+  delete payload.reviewedAt;
+  delete payload.rejectionReason;
 
   const updateDoc = { $set: payload };
   const unset = {};
@@ -629,7 +652,16 @@ async function deleteSellerProduct(sellerShopId, productIdRaw) {
 async function setSellerProductClientActive(sellerShopId, productIdRaw, clientActiveRaw) {
   await assertSellerCanManageProducts(sellerShopId);
   const productId = parseProductId(productIdRaw);
-  await assertSellerOwnsProduct(sellerShopId, productId);
+  const existing = await assertSellerOwnsProduct(sellerShopId, productId);
+
+  const approvalStatus = normalizeApprovalStatus(existing.approvalStatus);
+  if (approvalStatus === PRODUCT_APPROVAL_STATUS.PENDING) {
+    throw new HttpError(
+      403,
+      "Mahsulot hali asosiy admin tasdiqlashi kutilmoqda",
+      "PRODUCT_PENDING_APPROVAL",
+    );
+  }
 
   const clientActive = clientActiveRaw !== false;
   const sellerId = String(sellerShopId || "").trim();

@@ -1,13 +1,22 @@
+const {
+  isProductApprovalVisibleOnClient,
+} = require("./productApproval");
+
 function isProductActiveOnClient(product) {
   if (!product || typeof product !== "object") return false;
-  return product.clientActive !== false;
+  if (product.clientActive === false) return false;
+  return isProductApprovalVisibleOnClient(product);
 }
 
 function filterProductsActiveOnClient(products) {
   return (Array.isArray(products) ? products : []).filter(isProductActiveOnClient);
 }
 
-const CLIENT_ACTIVE_FILTER = { clientActive: { $ne: false } };
+/** Mongo filter: live + pending/rejected emas (yo'q maydon = eski live mahsulot). */
+const CLIENT_ACTIVE_FILTER = {
+  clientActive: { $ne: false },
+  approvalStatus: { $nin: ["pending", "rejected"] },
+};
 
 module.exports = {
   isProductActiveOnClient,

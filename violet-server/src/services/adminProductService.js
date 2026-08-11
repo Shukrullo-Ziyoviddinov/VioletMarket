@@ -114,6 +114,8 @@ function mapProductCard(product, sellerMap) {
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
     clientActive: isProductActiveOnClient(product),
     pausedBySeller: Boolean(product.pausedBySeller),
+    approvalStatus: product.approvalStatus || null,
+    cargoExpressPolicy: product.cargoExpressPolicy ?? null,
   };
 }
 
@@ -165,6 +167,8 @@ async function listProductsForAdmin() {
         colorStock: 1,
         clientActive: 1,
         pausedBySeller: 1,
+        approvalStatus: 1,
+        cargoExpressPolicy: 1,
       })
       .sort({ _id: -1 })
       .lean(),

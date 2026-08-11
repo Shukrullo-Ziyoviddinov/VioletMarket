@@ -42,6 +42,15 @@ function getProductTitleText(title, fallback) {
   return String(fallback || "Mahsulot");
 }
 
+function resolveCargoExpressPolicy(product, payload) {
+  const raw = product?.cargoExpressPolicy ?? payload?.cargoExpressPolicy ?? null;
+  const value = String(raw || "")
+    .trim()
+    .toLowerCase();
+  if (value === "standard_only" || value === "unrestricted") return value;
+  return null;
+}
+
 async function pickDistinctUrgencyStock(userId, excludeItemId = null) {
   const query = { userId };
   if (excludeItemId) {
@@ -79,6 +88,7 @@ function mapItemToClient(doc) {
     quantity: row.quantity,
     countries: row.countries || [],
     weight: row.weight ?? 300,
+    cargoExpressPolicy: row.cargoExpressPolicy ?? null,
     urgencyStockLeft: Number.isFinite(row.urgencyStockLeft)
       ? row.urgencyStockLeft
       : 3,
@@ -184,6 +194,7 @@ async function addCartItem(userId, payload) {
     if (payload.weight !== undefined || product.weight !== undefined) {
       existing.weight = Number(payload.weight) || product.weight || 300;
     }
+    existing.cargoExpressPolicy = resolveCargoExpressPolicy(product, payload);
     if (!Number.isFinite(existing.urgencyStockLeft)) {
       existing.urgencyStockLeft = await pickDistinctUrgencyStock(userId, existing._id);
     }
@@ -213,6 +224,7 @@ async function addCartItem(userId, payload) {
     image: payload.image || "/img/no-image.png",
     countries: Array.isArray(payload.countries) ? payload.countries : product.countries || [],
     weight: Number(payload.weight) || product.weight || 300,
+    cargoExpressPolicy: resolveCargoExpressPolicy(product, payload),
     urgencyStockLeft: await pickDistinctUrgencyStock(userId),
     urgencyNextShowAt: null,
     urgencyEndsAt: null,

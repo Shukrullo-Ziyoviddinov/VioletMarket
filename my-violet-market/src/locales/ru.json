@@ -278,6 +278,8 @@
     "totalWeight": "Общий вес:",
     "standard": "Стандарт",
     "express": "Экспресс",
+    "standardOnlySuffix": "(только Стандарт)",
+    "standardOnlyNote": "Эти товары доставляются только по тарифу Стандарт.",
     "warehouseUzb": "Товар на складе в Узбекистане"
   },
   "delivery": {

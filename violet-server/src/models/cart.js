@@ -32,6 +32,8 @@ const cartItemSchema = new mongoose.Schema(
     image: { type: String, default: "/img/no-image.png" },
     countries: { type: [String], default: [] },
     weight: { type: Number, default: 300 },
+    /** xorij: unrestricted | standard_only | null (bo'sh = cheklovsiz) */
+    cargoExpressPolicy: { type: String, default: null },
     urgencyStockLeft: { type: Number, default: randomUrgencyStock, min: 1 },
     urgencyNextShowAt: { type: Date, default: null },
     urgencyEndsAt: { type: Date, default: null },

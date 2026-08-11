@@ -1,5 +1,8 @@
 import { getApiBaseUrl } from '../config/api';
-import { normalizeProductCountries } from './warehouseProduct';
+import {
+  calcForeignCountryCargoPrice,
+  groupCartItemsByCountry,
+} from './cargoGrouping';
 
 const FALLBACK_IMAGE_DATA_URL =
   'data:image/svg+xml;utf8,' +
@@ -208,44 +211,25 @@ export const calculateDeliveryPrice = (totalProductPrice, selectedDeliveryType =
 };
 
 // Kargo narxini hisoblash (cargoRates — API / AppData dan)
+// Har bir mamlakat alohida; mamlakat ichida standard_only / unrestricted ajratiladi.
 export const calculateCargoPrice = (items, selectedCargoOptions = {}, cargoRates) => {
   if (!cargoRates || typeof cargoRates !== 'object') return 0;
 
-  const countryGroups = {};
-  
-  // Davlatlar bo'yicha guruhlash
-  items.forEach(item => {
-    normalizeProductCountries(item).forEach((countryKey) => {
-      if (!countryGroups[countryKey]) {
-        countryGroups[countryKey] = [];
-      }
-      countryGroups[countryKey].push(item);
-    });
-  });
-  
+  const countryGroups = groupCartItemsByCountry(items);
   let totalCargoPrice = 0;
-  
-  Object.keys(countryGroups).forEach(countryKey => {
+
+  Object.keys(countryGroups).forEach((countryKey) => {
     const cargoInfo = cargoRates[countryKey];
-    if (!cargoInfo || countryKey === 'uzb') return; // UZB uchun kargo yo'q
-    
-    const items = countryGroups[countryKey];
-    
-    // Vaznni hisoblash
-    const totalWeight = items.reduce((sum, item) => {
-      return sum + ((item.weight || 300) * (item.quantity || 1));
-    }, 0);
-    const weightInKg = totalWeight / 1000; // gram -> kg
-    
-    // Tanlangan kargo turi
-    const selectedType = selectedCargoOptions[countryKey] || 'standard';
-    const rate = cargoInfo[selectedType];
-    
-    // Kargo narxi
-    const cargoPrice = Math.ceil(weightInKg * rate * 100) / 100;
-    totalCargoPrice += cargoPrice;
+    if (!cargoInfo || countryKey === 'uzb') return;
+
+    totalCargoPrice += calcForeignCountryCargoPrice(
+      countryKey,
+      countryGroups[countryKey],
+      selectedCargoOptions,
+      cargoInfo,
+    );
   });
-  
+
   return totalCargoPrice;
 };
 

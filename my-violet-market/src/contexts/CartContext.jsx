@@ -9,6 +9,7 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLabelFromOption, getNumberPrice } from '../utils/utils';
+import { resolveCargoExpressPolicyForCart } from '../utils/cargoExpressPolicy';
 import i18n from '../i18n';
 import { useUser } from './UserContext';
 import { useToast } from './ToastContext';
@@ -121,6 +122,7 @@ function buildCartPayload(product, color, size, storage, model) {
     quantity: 1,
     countries: product?.countries || [],
     weight: product?.weight || 300,
+    cargoExpressPolicy: resolveCargoExpressPolicyForCart(product),
   };
 }
 

@@ -39,6 +39,38 @@
   font-size: 1.1rem;
 }
 
+.cargo-header__suffix {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.cargo-standard-only {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.cargo-standard-only__note {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.85rem !important;
+}
+
+.cargo-standard-only__price {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.cargo-country-section--standard-only {
+  border: 1px solid #e8ecf1;
+}
+
 .cargo-info-btn {
   background: transparent;
   border: none;

@@ -1,5 +1,13 @@
 // @ts-nocheck
 
+/**
+ * products collection — strict: false.
+ * Qo'shimcha maydonlar (hujjatga yoziladi):
+ * - approvalStatus: pending | approved | rejected | (yo'q = eski live)
+ * - cargoExpressPolicy: unrestricted | standard_only | null
+ * - clientActive, pausedBySeller, reviewedAt
+ */
+
 const mongoose = require("mongoose");
 const { Counter } = require("./counter");
 const {

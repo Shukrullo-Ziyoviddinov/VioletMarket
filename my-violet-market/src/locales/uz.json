@@ -278,6 +278,8 @@
     "totalWeight": "Umumiy vazn:",
     "standard": "Standard",
     "express": "Express",
+    "standardOnlySuffix": "(faqat Standard)",
+    "standardOnlyNote": "Bu mahsulotlar faqat Standard tarifida yetkazib beriladi.",
     "warehouseUzb": "Mahsulot o'zbekiston omborida"
   },
   "delivery": {
