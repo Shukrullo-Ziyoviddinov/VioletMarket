@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { ViewedAt } = require("../../models/viewedAt");
 const { Product } = require("../../models/product");
 const { HttpError } = require("../../utils/httpError");
+const { isProductActiveOnClient } = require("../../utils/productClientVisibility");
 const {
   getProductDisplayName,
   getProductDisplayPrice,
@@ -19,6 +20,11 @@ function toUserObjectId(userId) {
     throw new HttpError(400, "Foydalanuvchi ID noto'g'ri", "INVALID_USER_ID");
   }
   return new mongoose.Types.ObjectId(idStr);
+}
+
+async function findNewestProductById(productId) {
+  const rows = await Product.find({ id: productId }).sort({ _id: -1 }).limit(1).lean();
+  return rows[0] || null;
 }
 
 function mapRowToClient(row) {
@@ -72,8 +78,9 @@ async function recordProductView(userId, rawProductId) {
     throw new HttpError(400, "Mahsulot ID noto'g'ri", "INVALID_PRODUCT_ID");
   }
 
-  const product = await Product.findOne({ id: productId }).lean();
-  if (!product) {
+  const product = await findNewestProductById(productId);
+  // Katalog bilan bir xil: pending / pause / yashirin — tarixga yozilmasin
+  if (!product || !isProductActiveOnClient(product)) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 

@@ -20,6 +20,7 @@ import ForeignOrdersPage from './pages/ForeignOrdersPage/ForeignOrdersPage';
 import ReturnRequestsPage from './pages/ReturnRequestsPage/ReturnRequestsPage';
 import ReturnedProductsPage from './pages/ReturnedProductsPage/ReturnedProductsPage';
 import CustomerRefundRequestsPage from './pages/CustomerRefundRequestsPage/CustomerRefundRequestsPage';
+import ProductApprovalPage from './pages/ProductApprovalPage/ProductApprovalPage';
 
 function AllProductsPage() {
   return <ProductPage mode="all" />;
@@ -39,6 +40,7 @@ function App() {
           <Route path="sales/statistics" element={<SalesStatisticsPage />} />
           <Route path="products/paused" element={<PausedProductsPage />} />
           <Route path="products" element={<AllProductsPage />} />
+          <Route path="product-approval" element={<ProductApprovalPage />} />
           <Route path="flash-products" element={<FlashPage />} />
           <Route path="sellers" element={<SellersPage />} />
           <Route path="orders" element={<OrdersPage />} />

@@ -18,13 +18,7 @@ async function getById(req, res) {
   res.json(product);
 }
 
-async function create(req, res) {
-  const created = await productService.createProduct(req.body);
-  res.status(201).json(created);
-}
-
 module.exports = {
   list,
   getById,
-  create,
 };

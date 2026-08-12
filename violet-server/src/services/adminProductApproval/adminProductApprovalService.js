@@ -2,6 +2,7 @@ const { Product } = require("../../models/product");
 const { SellerAccount } = require("../../models/sellerAccount");
 const { HttpError } = require("../../utils/httpError");
 const { resolvePublicAssetUrl } = require("../../utils/resolvePublicAssetUrl");
+const { isSellerAccountPaused } = require("../../utils/sellerAccountStatus");
 const {
   PRODUCT_APPROVAL_STATUS,
   requireCargoExpressPolicy,
@@ -141,13 +142,27 @@ async function approvePendingProduct(productIdRaw, cargoExpressPolicyRaw) {
   const cargoExpressPolicy = requireCargoExpressPolicy(cargoExpressPolicyRaw);
   const reviewedAt = new Date();
 
+  const sellerId = String(existing.sellerId || "").trim();
+  let sellerPaused = false;
+  if (sellerId) {
+    const seller = await SellerAccount.findOne({ id: sellerId })
+      .select({ id: 1, status: 1 })
+      .lean();
+    sellerPaused = isSellerAccountPaused(seller?.status);
+  }
+
+  // Siller pauzada bo'lsa tasdiqlash mumkin, lekin saytda chiqmasin.
+  // pausedBySeller: true → siller qayta ochilganda activateProductsForSeller uni yoqadi.
+  const clientActive = !sellerPaused;
+  const pausedBySeller = sellerPaused;
+
   await Product.updateMany(
     { id: productId },
     {
       $set: {
         approvalStatus: PRODUCT_APPROVAL_STATUS.APPROVED,
-        clientActive: true,
-        pausedBySeller: false,
+        clientActive,
+        pausedBySeller,
         cargoExpressPolicy,
         reviewedAt,
       },
@@ -158,7 +173,9 @@ async function approvePendingProduct(productIdRaw, cargoExpressPolicyRaw) {
   return {
     id: productId,
     approvalStatus: PRODUCT_APPROVAL_STATUS.APPROVED,
-    clientActive: true,
+    clientActive,
+    pausedBySeller,
+    sellerPaused,
     cargoExpressPolicy,
     reviewedAt,
   };

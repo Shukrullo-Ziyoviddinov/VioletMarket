@@ -12,6 +12,10 @@ const { resolvePublicAssetUrl } = require("../utils/resolvePublicAssetUrl");
 const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
 const { isProductActiveOnClient } = require("../utils/productClientVisibility");
+const {
+  normalizeApprovalStatus,
+  PRODUCT_APPROVAL_STATUS,
+} = require("../utils/productApproval");
 const { normalizeSellerAccountStatus, isSellerAccountPaused } = require("../utils/sellerAccountStatus");
 
 const SUPER_NARX_ICON = "<i class='bx bxs-hot'></i>";
@@ -101,6 +105,7 @@ function mapProductCard(product, sellerMap) {
   const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
   const sellerId = String(product.sellerId || "").trim();
   const image = product.image || product.mainImage || firstColor?.mainImage || "";
+  const approvalStatus = normalizeApprovalStatus(product.approvalStatus);
 
   return {
     id: product.id,
@@ -112,10 +117,12 @@ function mapProductCard(product, sellerMap) {
     effectiveQuantity: computeEffectiveQuantity(product),
     sellerId: sellerId || null,
     seller: sellerId ? mapSellerForAdmin(sellerMap.get(sellerId)) : null,
-    clientActive: isProductActiveOnClient(product),
+    // Pause UI uchun xom bayroq (pending bilan chalkashmasin)
+    clientActive: product.clientActive !== false,
     pausedBySeller: Boolean(product.pausedBySeller),
-    approvalStatus: product.approvalStatus || null,
+    approvalStatus,
     cargoExpressPolicy: product.cargoExpressPolicy ?? null,
+    visibleOnClient: isProductActiveOnClient(product),
   };
 }
 
@@ -179,8 +186,16 @@ async function listProductsForAdmin() {
 }
 
 async function getProductStats() {
-  const rows = await Product.find().select({ id: 1, _id: 1 }).sort({ _id: -1 }).lean();
-  const unique = keepNewestProductPerId(rows);
+  const rows = await Product.find()
+    .select({ id: 1, _id: 1, approvalStatus: 1 })
+    .sort({ _id: -1 })
+    .lean();
+
+  // ProductPage bilan mos: pending faqat «Mahsulotni tasdiqlash»da, statistikaga kirmaydi
+  const unique = keepNewestProductPerId(rows).filter(
+    (product) =>
+      normalizeApprovalStatus(product.approvalStatus) !== PRODUCT_APPROVAL_STATUS.PENDING,
+  );
 
   return {
     total: unique.length,
@@ -471,12 +486,16 @@ async function listProductPickerOptions(forProductIdRaw) {
   }
 
   const rows = await Product.find({ sellerId })
-    .select({ id: 1, title: 1, sellerId: 1 })
+    .select({ id: 1, title: 1, sellerId: 1, approvalStatus: 1 })
     .sort({ _id: -1 })
     .lean();
 
   return keepNewestProductPerId(rows)
     .filter((product) => Number(product.id) !== forProductId)
+    .filter(
+      (product) =>
+        normalizeApprovalStatus(product.approvalStatus) !== PRODUCT_APPROVAL_STATUS.PENDING,
+    )
     .map((product) => ({
       id: product.id,
       title: product.title || { uz: "", ru: "" },
@@ -499,7 +518,7 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
   }
 
   const rows = await Product.find({ id: { $in: ids } })
-    .select({ id: 1, sellerId: 1 })
+    .select({ id: 1, sellerId: 1, approvalStatus: 1 })
     .sort({ _id: -1 })
     .lean();
 
@@ -518,6 +537,13 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
       throw new HttpError(
         400,
         `Mahsulot #${id} shu sotuvchiga tegishli emas`,
+        "VALIDATION_ERROR",
+      );
+    }
+    if (normalizeApprovalStatus(row.approvalStatus) === PRODUCT_APPROVAL_STATUS.PENDING) {
+      throw new HttpError(
+        400,
+        `Mahsulot #${id} hali tasdiqlanmagan — related qilib bo'lmaydi`,
         "VALIDATION_ERROR",
       );
     }
@@ -665,6 +691,15 @@ async function setProductClientActive(productIdRaw, clientActiveRaw) {
   const existing = await findNewestProductDoc(productId);
   if (!existing) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
+  }
+
+  const approvalStatus = normalizeApprovalStatus(existing.approvalStatus);
+  if (approvalStatus === PRODUCT_APPROVAL_STATUS.PENDING) {
+    throw new HttpError(
+      403,
+      "Mahsulot hali tasdiqlash kutilmoqda. Avval «Mahsulotni tasdiqlash» sahifasidan o'tkazing",
+      "PRODUCT_PENDING_APPROVAL",
+    );
   }
 
   await assertSellerAllowsProductClientActiveToggle(existing.sellerId);

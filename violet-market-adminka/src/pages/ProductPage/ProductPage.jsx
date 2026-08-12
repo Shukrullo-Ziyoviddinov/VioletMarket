@@ -36,11 +36,21 @@ const PAGE_META = {
   },
 };
 
+function isPendingApprovalProduct(product) {
+  return String(product?.approvalStatus || '').trim().toLowerCase() === 'pending';
+}
+
 function filterProductsByMode(products, mode) {
+  const rows = Array.isArray(products) ? products : [];
+
+  // Pending — faqat «Mahsulotni tasdiqlash» sahifasida
+  const withoutPending = rows.filter((product) => !isPendingApprovalProduct(product));
+
   if (mode === 'paused') {
-    return products.filter((product) => product.clientActive === false);
+    return withoutPending.filter((product) => product.clientActive === false);
   }
-  return products;
+
+  return withoutPending;
 }
 
 export default function ProductPage({ mode = 'all' }) {
@@ -117,6 +127,13 @@ export default function ProductPage({ mode = 'all' }) {
   };
 
   const handleToggleProductPause = async (product) => {
+    if (isPendingApprovalProduct(product)) {
+      showError(
+        'Mahsulot hali tasdiqlash kutilmoqda. «Mahsulotni tasdiqlash» sahifasidan o‘tkazing',
+      );
+      return;
+    }
+
     const nextClientActive = product.clientActive === false;
     setTogglingPauseProductId(product.id);
 
@@ -210,14 +227,16 @@ export default function ProductPage({ mode = 'all' }) {
               : '';
             const quantity = Number(product.effectiveQuantity) || 0;
             const isMenuOpen = String(openMenuProductId) === String(product.id);
+            const isPendingApproval = isPendingApprovalProduct(product);
             const isClientActive = product.clientActive !== false;
             const isSellerPaused = product.seller?.status === 'paused';
+            const pauseDisabled = isSellerPaused || isPendingApproval;
 
             return (
               <article
                 key={product.id}
                 className={`product-page-card${isMenuOpen ? ' product-page-card--menu-open' : ''}${
-                  !isClientActive ? ' product-page-card--paused' : ''
+                  !isClientActive && !isPendingApproval ? ' product-page-card--paused' : ''
                 }`}
               >
                 <div className="product-page-card__media">
@@ -229,7 +248,7 @@ export default function ProductPage({ mode = 'all' }) {
                       event.currentTarget.src = resolveProductImageUrl('');
                     }}
                   />
-                  {!isClientActive ? (
+                  {!isClientActive && !isPendingApproval ? (
                     <div className="product-page-card__paused-overlay" aria-hidden="true">
                       <span>Vaqtincha to&apos;xtatilgan</span>
                     </div>
@@ -279,7 +298,14 @@ export default function ProductPage({ mode = 'all' }) {
                       <ProductCardMenu
                         isOpen={isMenuOpen}
                         clientActive={isClientActive}
-                        pauseDisabled={isSellerPaused}
+                        pauseDisabled={pauseDisabled}
+                        pauseDisabledReason={
+                          isPendingApproval
+                            ? 'Mahsulot tasdiqlash kutilmoqda — «Mahsulotni tasdiqlash» sahifasidan o‘tkazing'
+                            : isSellerPaused
+                              ? "Sotuvchi vaqtincha to'xtatilgan — mahsulotni alohida boshqarib bo'lmaydi"
+                              : undefined
+                        }
                         togglingPause={String(togglingPauseProductId) === String(product.id)}
                         onToggle={() =>
                           setOpenMenuProductId((current) =>

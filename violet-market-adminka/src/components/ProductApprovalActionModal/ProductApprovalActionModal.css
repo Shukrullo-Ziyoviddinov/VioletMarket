@@ -1,0 +1,30 @@
+.product-approval-action-modal__dialog {
+  width: min(100%, 480px);
+}
+
+.product-approval-action-modal__hint {
+  margin: -6px 0 16px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #7a6f8f;
+}
+
+.product-approval-action-modal__actions {
+  flex-wrap: wrap;
+  justify-content: stretch;
+}
+
+.product-approval-action-modal__actions .mini-global-modal__btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+.mini-global-modal__btn--primary {
+  border: 1px solid var(--admin-color-primary, #7c3aed);
+  background: var(--admin-color-primary, #7c3aed);
+  color: #ffffff;
+}
+
+.mini-global-modal__btn--primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}

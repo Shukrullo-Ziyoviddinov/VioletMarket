@@ -16,6 +16,7 @@ function ProductCardMenuDropdown({
   deleting,
   togglingPause,
   pauseDisabled = false,
+  pauseDisabledReason,
   onDelete,
   onEdit,
   onTogglePause,
@@ -54,7 +55,8 @@ function ProductCardMenuDropdown({
         disabled={pauseToggleDisabled}
         title={
           pauseDisabled
-            ? "Sotuvchi vaqtincha to'xtatilgan — mahsulotni alohida boshqarib bo'lmaydi"
+            ? pauseDisabledReason ||
+              "Sotuvchi vaqtincha to'xtatilgan — mahsulotni alohida boshqarib bo'lmaydi"
             : undefined
         }
       >
@@ -81,6 +83,7 @@ export default function ProductCardMenu({
   deleting = false,
   togglingPause = false,
   pauseDisabled = false,
+  pauseDisabledReason,
   onToggle,
   onClose,
   onEdit,
@@ -184,6 +187,7 @@ export default function ProductCardMenu({
               deleting={deleting}
               togglingPause={togglingPause}
               pauseDisabled={pauseDisabled}
+              pauseDisabledReason={pauseDisabledReason}
               onDelete={handleDelete}
               onEdit={handleEdit}
               onTogglePause={handleTogglePause}

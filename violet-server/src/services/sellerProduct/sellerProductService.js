@@ -379,7 +379,7 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
   if (ids.length === 0) return;
 
   const rows = await Product.find({ id: { $in: ids } })
-    .select({ id: 1, sellerId: 1 })
+    .select({ id: 1, sellerId: 1, approvalStatus: 1 })
     .sort({ _id: -1 })
     .lean();
 
@@ -396,6 +396,13 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
     }
     if (String(row.sellerId || "").trim() !== sellerId) {
       throw new HttpError(400, `Mahsulot #${id} shu sotuvchiga tegishli emas`, "VALIDATION_ERROR");
+    }
+    if (normalizeApprovalStatus(row.approvalStatus) === PRODUCT_APPROVAL_STATUS.PENDING) {
+      throw new HttpError(
+        400,
+        `Mahsulot #${id} hali tasdiqlanmagan — related qilib bo'lmaydi`,
+        "VALIDATION_ERROR",
+      );
     }
   }
 }

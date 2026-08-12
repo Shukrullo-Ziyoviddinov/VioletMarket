@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   BarChartOutlined,
   CarOutlined,
+  CheckCircleOutlined,
   ControlOutlined,
   DashboardOutlined,
   DollarOutlined,
@@ -87,6 +88,12 @@ const menuItems = [
     route: '/customer-refunds',
   },
   { key: 'products', icon: <InboxOutlined />, label: 'Mahsulotlar ma\'lumoti', route: '/products' },
+  {
+    key: 'product-approval',
+    icon: <CheckCircleOutlined />,
+    label: 'Mahsulotni tasdiqlash',
+    route: '/product-approval',
+  },
   {
     key: 'flash-products',
     icon: <FireOutlined />,
@@ -174,6 +181,7 @@ function getSelectedKeyFromPath(pathname) {
   if (pathname === '/returned-products') return 'returned-products';
   if (pathname === '/customer-refunds') return 'customer-refunds';
   if (pathname === '/products/paused') return 'products-paused';
+  if (pathname === '/product-approval') return 'product-approval';
   if (pathname === '/flash-products') return 'flash-products';
   if (pathname === '/products') return 'products';
   if (pathname === '/sellers') return 'sellers';

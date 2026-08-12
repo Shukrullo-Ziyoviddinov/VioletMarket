@@ -17,6 +17,7 @@ const {
 const {
   requireDeliveryRegionAddress,
 } = require("../../utils/normalizeDeliveryAddress");
+const { isProductActiveOnClient } = require("../../utils/productClientVisibility");
 const {
   generateInitialUrgencyStock,
   buildNextShowAt,
@@ -31,6 +32,33 @@ function parseProductId(raw) {
     throw new HttpError(400, "Mahsulot ID noto'g'ri", "INVALID_PRODUCT_ID");
   }
   return num;
+}
+
+async function findNewestProductById(productId) {
+  const rows = await Product.find({ id: productId }).sort({ _id: -1 }).limit(1).lean();
+  return rows[0] || null;
+}
+
+function keepNewestProductsById(products) {
+  const map = new Map();
+  for (const product of Array.isArray(products) ? products : []) {
+    const id = Number(product?.id);
+    if (!Number.isFinite(id) || map.has(id)) continue;
+    map.set(id, product);
+  }
+  return map;
+}
+
+async function assertProductPurchasable(productId) {
+  const product = await findNewestProductById(productId);
+  if (!product || !isProductActiveOnClient(product)) {
+    throw new HttpError(
+      409,
+      "Mahsulot hozircha sotuvda emas",
+      "PRODUCT_NOT_AVAILABLE",
+    );
+  }
+  return product;
 }
 
 function getProductTitleText(title, fallback) {
@@ -125,8 +153,8 @@ async function getCartForUser(userId) {
 
 async function addCartItem(userId, payload) {
   const productId = parseProductId(payload.productId ?? payload.id);
-  const product = await Product.findOne({ id: productId }).lean();
-  if (!product) {
+  const product = await findNewestProductById(productId);
+  if (!product || !isProductActiveOnClient(product)) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 
@@ -247,6 +275,11 @@ async function updateCartItemQuantity(userId, itemId, change) {
   const delta = Number(change);
   if (!Number.isFinite(delta)) {
     throw new HttpError(400, "Miqdor noto'g'ri", "INVALID_QUANTITY");
+  }
+
+  // Oshirish — faqat live mahsulot; kamaytirish/o'chirish ochiq
+  if (delta > 0) {
+    await assertProductPurchasable(item.productId);
   }
 
   const nextQty = (item.quantity || 1) + delta;
@@ -380,8 +413,33 @@ async function checkoutCartForUser(userId, options = {}) {
 
   const productIds = [...requestedByProductId.keys()].filter(Number.isFinite);
   const products = await Product.find({ id: { $in: productIds } })
-    .select("id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName sellerId");
-  const productMap = new Map(products.map((product) => [Number(product.id), product]));
+    .select(
+      "id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName sellerId clientActive approvalStatus",
+    )
+    .sort({ _id: -1 });
+  const productMap = keepNewestProductsById(products);
+
+  const unavailable = [];
+  for (const productId of productIds) {
+    const product = productMap.get(productId);
+    const plain = product?.toObject ? product.toObject() : product;
+    if (!plain || !isProductActiveOnClient(plain)) {
+      unavailable.push({
+        productId,
+        title: getProductTitleText(plain?.title, productId),
+      });
+    }
+  }
+
+  if (unavailable.length > 0) {
+    const first = unavailable[0];
+    throw new HttpError(
+      409,
+      `Mahsulot hozircha sotuvda emas: ${first.title}`,
+      "PRODUCT_NOT_AVAILABLE",
+      unavailable,
+    );
+  }
 
   const insufficient = [];
   const hasVariantStockByProductId = new Map();

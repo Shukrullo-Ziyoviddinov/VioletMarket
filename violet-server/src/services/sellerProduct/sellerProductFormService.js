@@ -11,6 +11,10 @@ const {
   normalizeMasterCategoryDisplayName,
   normalizeProductTypeDisplayName,
 } = require("../../utils/masterCategoryDisplay");
+const {
+  normalizeApprovalStatus,
+  PRODUCT_APPROVAL_STATUS,
+} = require("../../utils/productApproval");
 
 async function listActiveShippingCountriesForSeller() {
   const rows = await ShippingCountry.find({ active: { $ne: false } })
@@ -77,14 +81,19 @@ async function listSellerRelatedProductPickerOptions(sellerShopId) {
   if (!sellerId) return [];
 
   const rows = await Product.find({ sellerId })
-    .select({ id: 1, title: 1, sellerId: 1 })
+    .select({ id: 1, title: 1, sellerId: 1, approvalStatus: 1 })
     .sort({ _id: -1 })
     .lean();
 
-  return keepNewestProductPerId(rows).map((product) => ({
-    id: product.id,
-    title: product.title || { uz: "", ru: "" },
-  }));
+  return keepNewestProductPerId(rows)
+    .filter(
+      (product) =>
+        normalizeApprovalStatus(product.approvalStatus) !== PRODUCT_APPROVAL_STATUS.PENDING,
+    )
+    .map((product) => ({
+      id: product.id,
+      title: product.title || { uz: "", ru: "" },
+    }));
 }
 
 async function getSellerProductFormOptions() {

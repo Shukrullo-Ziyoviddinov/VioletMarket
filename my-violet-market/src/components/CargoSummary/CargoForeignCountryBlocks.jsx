@@ -24,7 +24,9 @@ function CargoSelectableOptions({
   onSelect,
   t,
 }) {
-  const weightInKg = totalWeightGrams / 1000;
+  const standardFee = calcCargoFeeFromWeightGrams(totalWeightGrams, cargoInfo.standard);
+  const expressFee = calcCargoFeeFromWeightGrams(totalWeightGrams, cargoInfo.express);
+
   return (
     <div className="cargo-options">
       <label className={`cargo-option ${selectedType === 'standard' ? 'selected' : ''}`}>
@@ -37,7 +39,7 @@ function CargoSelectableOptions({
         />
         <span>
           {t('cargo.standard')} (${cargoInfo.standard}/kg) -{' '}
-          {formatCargoPrice(weightInKg * cargoInfo.standard)}
+          {formatCargoPrice(standardFee)}
         </span>
       </label>
       <label className={`cargo-option ${selectedType === 'express' ? 'selected' : ''}`}>
@@ -50,7 +52,7 @@ function CargoSelectableOptions({
         />
         <span>
           {t('cargo.express')} (${cargoInfo.express}/kg) -{' '}
-          {formatCargoPrice(weightInKg * cargoInfo.express)}
+          {formatCargoPrice(expressFee)}
         </span>
       </label>
     </div>
