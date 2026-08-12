@@ -15,12 +15,12 @@
     "video": "video/video-2.mp4",
     "category": "Ayollar kiyimi",
     "countries": [
-      "USA"
+      "china"
     ],
     "productType": "shim",
-    "productCountry": "USA",
+    "productCountry": "China",
     "brandCategories": "nike",
-    "countriesCategories": "usa",
+    "countriesCategories": "xitoy",
     "flashSale": true,
     "weight": 200,
     "labels": [
@@ -654,7 +654,11 @@
       }
     ],
     "thumbnails": [],
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "unrestricted",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 2364,
@@ -672,12 +676,12 @@
     "video": "video/video-2.mp4",
     "category": "Ayollar kiyimi",
     "countries": [
-      "usa"
+      "china"
     ],
     "productType": "kupalnik",
-    "productCountry": "USA",
+    "productCountry": "China",
     "brandCategories": "adidas",
-    "countriesCategories": "usa",
+    "countriesCategories": "xitoy",
     "flashSale": true,
     "weight": 700,
     "description": {
@@ -791,7 +795,11 @@
         "quantity": 1
       }
     },
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "standard_only",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 3465,
@@ -894,12 +902,12 @@
     "originalPrice": "350 000",
     "video": "video/video-2.mp4",
     "productType": "yozgi-keyim",
-    "productCountry": "USA",
+    "productCountry": "China",
     "brandCategories": "puma",
-    "countriesCategories": "usa",
+    "countriesCategories": "xitoy",
     "category": "Erkaklar kiyimi",
     "countries": [
-      "USA"
+      "china"
     ],
     "sizeChart": {
       "typeSize": "pants",
@@ -1006,7 +1014,11 @@
         "quantity": 1
       }
     },
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "unrestricted",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 5577,
@@ -1131,7 +1143,11 @@
         "quantity": 1
       }
     ],
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "standard_only",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 6578,
@@ -1142,12 +1158,12 @@
     },
     "price": "170000",
     "countries": [
-      "turkiya"
+      "china"
     ],
     "productType": "shippak",
-    "productCountry": "Turkiya",
+    "productCountry": "China",
     "brandCategories": "gucci",
-    "countriesCategories": "turkiya",
+    "countriesCategories": "xitoy",
     "category": "Erkaklar poyabzali",
     "weight": 1000,
     "relatedGroups": [
@@ -1195,7 +1211,11 @@
       "img/oqkeyim-3.webp"
     ],
     "quantity": 5,
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "unrestricted",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 757,
@@ -1213,9 +1233,9 @@
     "originalPrice": "$900",
     "video": "video/video-1.mp4",
     "productType": "qo'lqop",
-    "productCountry": "USA",
+    "productCountry": "China",
     "brandCategories": "huawe",
-    "countriesCategories": "usa",
+    "countriesCategories": "xitoy",
     "category": "Aksessuarlar",
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
@@ -1262,7 +1282,14 @@
         "quantity": 1
       }
     },
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "standard_only",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false,
+    "countries": [
+      "china"
+    ]
   },
   {
     "id": 85667,
@@ -1275,12 +1302,12 @@
     "video": "video/SaveVid.Net_184F7EA2857F4536CE03EA92B582BDAE_video_dashinit.mp4",
     "category": "Erkaklar kiyimi",
     "countries": [
-      "USA"
+      "china"
     ],
     "productType": "qo'lqop",
-    "productCountry": "USA",
+    "productCountry": "China",
     "brandCategories": "amazon",
-    "countriesCategories": "usa",
+    "countriesCategories": "xitoy",
     "sizeChart": "",
     "description": {
       "uz": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum consequatur officia soluta saepe at ullam labore dolore doloremque dolor perferendis! Dolorum, pariatur? Rerum suscipit eligendi neque at obcaecati eaque ducimus?",
@@ -1319,7 +1346,11 @@
         "quantity": 1
       }
     },
-    "sellerId": "vilianora-market"
+    "sellerId": "vilianora-market",
+    "cargoExpressPolicy": "unrestricted",
+    "approvalStatus": "approved",
+    "clientActive": true,
+    "pausedBySeller": false
   },
   {
     "id": 9675,

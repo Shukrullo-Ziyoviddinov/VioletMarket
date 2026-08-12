@@ -6,6 +6,7 @@
     "start": "node src/index.js",
     "seed": "node src/seed/runSeed.js",
     "seed:sellers": "node src/seed/seedSellersOnly.js",
+    "seed:china-cargo": "node src/seed/seedChinaSellerCargoExpressPolicy.js",
     "seed:trending": "node src/seed/repairTrendingCategory.js",
     "db:check": "node src/seed/checkDb.js",
     "test:regions": "node src/scripts/testDeliveryRegions.js",

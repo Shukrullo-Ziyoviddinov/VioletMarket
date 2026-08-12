@@ -20,6 +20,21 @@ const sellers = [
     subscriberCount: 10,
     status: 'active',
   },
+  {
+    id: 'vilianora-market',
+    name: { uz: 'vilianora market', ru: 'vilianora market' },
+    description: {
+      uz: 'Xitoy omboridan yetkazib beriladigan demo sotuvchi. Cargo Standard/Express demo uchun.',
+      ru: 'Демо-продавец со склада в Китае. Для демо Standard/Express карго.',
+    },
+    sellerCountry: 'china',
+    logo: 'img/vm logo.jpg',
+    address: 'Guangzhou, China',
+    coordinates: [23.1291, 113.2644],
+    sellerPhone: '+8613800138000',
+    subscriberCount: 5,
+    status: 'active',
+  },
 ];
 
 /** Siller ruyxatdan utish collection kurinishi */
