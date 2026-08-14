@@ -34,8 +34,28 @@ function keepNewestProductPerId(products) {
   return unique;
 }
 
+function toLocalizedString(value) {
+  if (value == null || value === "") return "";
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+  if (typeof value === "object") {
+    const uz = value.uz;
+    const ru = value.ru;
+    if (typeof uz === "string" && uz.trim()) return uz.trim();
+    if (typeof ru === "string" && ru.trim()) return ru.trim();
+    for (const entry of Object.values(value)) {
+      if (typeof entry === "string" && entry.trim()) return entry.trim();
+    }
+  }
+  return "";
+}
+
 function localizeTitle(title) {
-  if (typeof title === "string") return title;
+  if (typeof title === "string") {
+    const text = title.trim();
+    return { uz: text, ru: text };
+  }
   if (title && typeof title === "object") {
     return {
       uz: String(title.uz || "").trim(),
@@ -45,24 +65,40 @@ function localizeTitle(title) {
   return { uz: "", ru: "" };
 }
 
+function mapPendingDescription(description) {
+  if (!description) return "";
+  if (typeof description === "string") return description.trim();
+  if (Array.isArray(description)) {
+    if (description.length === 0) return "";
+    return toLocalizedString(description[0]);
+  }
+  return toLocalizedString(description);
+}
+
 function mapPendingProductCard(product, sellerMap) {
   const firstColor = Array.isArray(product.colors) ? product.colors[0] : null;
   const sellerId = String(product.sellerId || "").trim();
   const image = product.image || product.mainImage || firstColor?.mainImage || "";
   const seller = sellerId ? sellerMap.get(sellerId) : null;
+  const title = localizeTitle(product.title);
 
   return {
     id: product.id,
-    title: localizeTitle(product.title),
-    description: Array.isArray(product.description) ? product.description : [],
-    price: firstColor?.price || product.price || "",
-    originalPrice: firstColor?.originalPrice || product.originalPrice || "",
+    title,
+    // UI uchun tayyor stringlar — React #31 ({uz,ru} child) oldini olish
+    titleText: toLocalizedString(title) || `Mahsulot #${product.id}`,
+    description: mapPendingDescription(product.description),
+    descriptionText: mapPendingDescription(product.description),
+    price: toLocalizedString(firstColor?.price || product.price || ""),
+    originalPrice: toLocalizedString(
+      firstColor?.originalPrice || product.originalPrice || "",
+    ),
     image,
     imageUrl: resolvePublicAssetUrl(image),
     countries: Array.isArray(product.countries) ? product.countries : [],
     countriesCategories: String(product.countriesCategories || "").trim(),
     productCountry: String(product.productCountry || "").trim(),
-    categoryName: String(product.categoryName || "").trim(),
+    categoryName: toLocalizedString(product.categoryName),
     approvalStatus: PRODUCT_APPROVAL_STATUS.PENDING,
     cargoExpressPolicy: product.cargoExpressPolicy ?? null,
     createdAt: product.createdAt || product._id?.getTimestamp?.() || null,
@@ -70,7 +106,7 @@ function mapPendingProductCard(product, sellerMap) {
     seller: seller
       ? {
           id: seller.id,
-          name: seller.name || "",
+          name: toLocalizedString(seller.name) || sellerId,
           logo: seller.logo || "",
           logoUrl: resolvePublicAssetUrl(seller.logo || ""),
           sellerCountry: String(seller.sellerCountry || "").trim().toLowerCase(),

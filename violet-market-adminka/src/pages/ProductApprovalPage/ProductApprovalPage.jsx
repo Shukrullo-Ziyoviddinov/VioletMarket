@@ -9,8 +9,25 @@ import ProductApprovalCard from '../../components/ProductApprovalCard/ProductApp
 import ProductApprovalActionModal from '../../components/ProductApprovalActionModal/ProductApprovalActionModal';
 import { useAdminToast } from '../../context/AdminToastContext';
 import { useGlobalLoader } from '../../context/GlobalLoaderContext';
-import { getLocalizedText } from '../../utils/productDisplay';
 import './ProductApprovalPage.css';
+
+function toDisplayText(value, fallback = '') {
+  if (value == null || value === '') return fallback;
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    return text || fallback;
+  }
+  if (typeof value === 'object') {
+    const uz = value.uz;
+    const ru = value.ru;
+    if (typeof uz === 'string' && uz.trim()) return uz.trim();
+    if (typeof ru === 'string' && ru.trim()) return ru.trim();
+    for (const entry of Object.values(value)) {
+      if (typeof entry === 'string' && entry.trim()) return entry.trim();
+    }
+  }
+  return fallback;
+}
 
 export default function ProductApprovalPage() {
   const { setGlobalLoading } = useGlobalLoader();
@@ -53,7 +70,8 @@ export default function ProductApprovalPage() {
 
       setActionLoading(true);
       const productTitle =
-        getLocalizedText(selected.title, 'uz') || `Mahsulot #${selected.id}`;
+        toDisplayText(selected.titleText) ||
+        toDisplayText(selected.title, `Mahsulot #${selected.id}`);
 
       try {
         if (actionKey === 'unrestricted' || actionKey === 'standard_only') {

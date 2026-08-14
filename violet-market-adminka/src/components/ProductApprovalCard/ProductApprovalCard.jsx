@@ -1,39 +1,52 @@
 import React from 'react';
-import { getLocalizedText, resolveProductImageUrl } from '../../utils/productDisplay';
+import { resolveProductImageUrl } from '../../utils/productDisplay';
 import './ProductApprovalCard.css';
+
+/** Har doim string qaytaradi — React #31 ({uz,ru} child) oldini oladi. */
+function toDisplayText(value, fallback = '') {
+  if (value == null || value === '') return fallback;
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    return text || fallback;
+  }
+  if (typeof value === 'object') {
+    const uz = value.uz;
+    const ru = value.ru;
+    if (typeof uz === 'string' && uz.trim()) return uz.trim();
+    if (typeof ru === 'string' && ru.trim()) return ru.trim();
+    for (const entry of Object.values(value)) {
+      if (typeof entry === 'string' && entry.trim()) return entry.trim();
+    }
+  }
+  return fallback;
+}
 
 function formatDescription(description) {
   if (!description) return '';
-  if (typeof description === 'string') return description;
+  if (typeof description === 'string') return description.trim();
   if (Array.isArray(description)) {
     if (description.length === 0) return '';
-    const first = description[0];
-    if (typeof first === 'string') return first;
-    return getLocalizedText(first, 'uz');
+    return toDisplayText(description[0]);
   }
-  if (typeof description === 'object') {
-    return getLocalizedText(description, 'uz');
-  }
-  return '';
-}
-
-function toDisplayText(value, fallback = '') {
-  const text = getLocalizedText(value, 'uz');
-  return text || fallback;
+  return toDisplayText(description);
 }
 
 export default function ProductApprovalCard({ product, onOpen }) {
   if (!product) return null;
 
-  const title = toDisplayText(product.title, `Mahsulot #${product.id}`);
+  const title =
+    toDisplayText(product.titleText) ||
+    toDisplayText(product.title, `Mahsulot #${product.id}`);
   const imageSrc =
     product.imageUrl || resolveProductImageUrl(product.image) || '/img/no-image.png';
   const sellerName =
     toDisplayText(product.seller?.name) || product.sellerId || 'Noma’lum siller';
-  const sellerCountry = String(
-    product.seller?.sellerCountry || product.productCountry || '—',
+  const sellerCountry = toDisplayText(
+    product.seller?.sellerCountry || product.productCountry,
+    '—',
   );
-  const description = formatDescription(product.description);
+  const description =
+    toDisplayText(product.descriptionText) || formatDescription(product.description);
   const categoryName = toDisplayText(product.categoryName);
   const price = toDisplayText(product.price);
 
@@ -63,7 +76,7 @@ export default function ProductApprovalCard({ product, onOpen }) {
           Siller: {sellerName} · {sellerCountry}
         </p>
         <p className="product-approval-card__meta">
-          ID: {product.id}
+          ID: {String(product.id ?? '')}
           {categoryName ? ` · ${categoryName}` : ''}
           {price ? ` · ${price}` : ''}
         </p>

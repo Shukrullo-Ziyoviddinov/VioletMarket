@@ -1,8 +1,25 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { getLocalizedText } from '../../utils/productDisplay';
 import '../MiniGlobalModal/MiniGlobalModal.css';
 import './ProductApprovalActionModal.css';
+
+function toDisplayText(value, fallback = '') {
+  if (value == null || value === '') return fallback;
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    return text || fallback;
+  }
+  if (typeof value === 'object') {
+    const uz = value.uz;
+    const ru = value.ru;
+    if (typeof uz === 'string' && uz.trim()) return uz.trim();
+    if (typeof ru === 'string' && ru.trim()) return ru.trim();
+    for (const entry of Object.values(value)) {
+      if (typeof entry === 'string' && entry.trim()) return entry.trim();
+    }
+  }
+  return fallback;
+}
 
 export default function ProductApprovalActionModal({
   open,
@@ -13,11 +30,14 @@ export default function ProductApprovalActionModal({
 }) {
   if (!open || !product) return null;
 
-  const title = getLocalizedText(product.title, 'uz') || `Mahsulot #${product.id}`;
+  const title =
+    toDisplayText(product.titleText) ||
+    toDisplayText(product.title, `Mahsulot #${product.id}`);
   const sellerName =
-    getLocalizedText(product.seller?.name, 'uz') || product.sellerId || '—';
-  const sellerCountry = String(
-    product.seller?.sellerCountry || product.productCountry || '—',
+    toDisplayText(product.seller?.name) || product.sellerId || '—';
+  const sellerCountry = toDisplayText(
+    product.seller?.sellerCountry || product.productCountry,
+    '—',
   );
 
   return createPortal(
@@ -44,7 +64,7 @@ export default function ProductApprovalActionModal({
             <br />
             Siller: {sellerName} · Davlat: {sellerCountry}
             <br />
-            ID: {product.id}
+            ID: {String(product.id ?? '')}
           </p>
           <p className="product-approval-action-modal__hint">
             Cheklovsiz — Standard va Express. Faqat standart — Express yo‘q. Rad etish —
