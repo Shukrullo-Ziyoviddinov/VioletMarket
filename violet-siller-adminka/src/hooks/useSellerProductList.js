@@ -8,6 +8,10 @@ import {
 } from '../api/sellerProductApi';
 import { useSellerAuth } from '../context/SellerAuthContext';
 
+function isPendingApprovalProduct(product) {
+  return String(product?.approvalStatus || '').trim().toLowerCase() === 'pending';
+}
+
 export function useSellerProductList({ productFilter = 'all' } = {}) {
   const { token } = useSellerAuth();
   const navigate = useNavigate();
@@ -49,7 +53,10 @@ export function useSellerProductList({ productFilter = 'all' } = {}) {
 
   const displayedProducts = useMemo(() => {
     if (productFilter === 'paused') {
-      return products.filter((product) => product.clientActive === false);
+      // Pending — tasdiqlash kutilmoqda, "to'xtatilgan" emas
+      return products.filter(
+        (product) => product.clientActive === false && !isPendingApprovalProduct(product),
+      );
     }
     return products;
   }, [products, productFilter]);
@@ -83,6 +90,11 @@ export function useSellerProductList({ productFilter = 'all' } = {}) {
 
   const handleTogglePause = async (product) => {
     if (!token || !product?.id || togglingPauseProductId != null) return;
+
+    if (isPendingApprovalProduct(product)) {
+      message.warning('Mahsulot hali asosiy admin tasdiqlashi kutilmoqda');
+      return;
+    }
 
     const nextClientActive = product.clientActive === false;
     setTogglingPauseProductId(product.id);

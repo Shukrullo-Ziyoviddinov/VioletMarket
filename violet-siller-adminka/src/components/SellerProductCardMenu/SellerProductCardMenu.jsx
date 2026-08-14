@@ -16,11 +16,14 @@ function SellerProductCardMenuDropdown({
   isPaused,
   deleting,
   togglingPause,
+  pauseDisabled = false,
+  pauseDisabledReason,
   onDelete,
   onEdit,
   onTogglePause,
 }) {
   const { t } = useTranslation();
+  const pauseToggleDisabled = pauseDisabled || deleting || togglingPause;
 
   return (
     <div className="seller-product-card-menu__dropdown" role="menu" style={style}>
@@ -53,7 +56,8 @@ function SellerProductCardMenuDropdown({
             : ' seller-product-card-menu__item--pause'
         }`}
         onClick={onTogglePause}
-        disabled={deleting || togglingPause}
+        disabled={pauseToggleDisabled}
+        title={pauseDisabled ? pauseDisabledReason : undefined}
       >
         {isPaused ? (
           <PlayCircleOutlined aria-hidden="true" />
@@ -77,6 +81,8 @@ export default function SellerProductCardMenu({
   clientActive = true,
   deleting = false,
   togglingPause = false,
+  pauseDisabled = false,
+  pauseDisabledReason,
   onToggle,
   onClose,
   onEdit,
@@ -180,6 +186,8 @@ export default function SellerProductCardMenu({
               isPaused={isPaused}
               deleting={deleting}
               togglingPause={togglingPause}
+              pauseDisabled={pauseDisabled}
+              pauseDisabledReason={pauseDisabledReason}
               onDelete={handleDelete}
               onEdit={handleEdit}
               onTogglePause={handleTogglePause}

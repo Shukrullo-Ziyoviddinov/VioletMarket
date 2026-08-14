@@ -283,7 +283,9 @@
     "saving": "Saqlanmoqda...",
     "activate": "Faollashtirish",
     "pause": "Vaqtincha to'xtatish",
-    "paused": "Vaqtincha to'xtatilgan"
+    "paused": "Vaqtincha to'xtatilgan",
+    "pendingApproval": "Tasdiqlash kutilmoqda",
+    "pendingApprovalHint": "Mahsulot hali asosiy admin tasdiqlashi kutilmoqda"
   },
   "header": {
     "adminDashboard": "Admin dashboard"

@@ -14,8 +14,11 @@ export default function ProductApprovalActionModal({
   if (!open || !product) return null;
 
   const title = getLocalizedText(product.title, 'uz') || `Mahsulot #${product.id}`;
-  const sellerName = product.seller?.name || product.sellerId || '—';
-  const sellerCountry = product.seller?.sellerCountry || product.productCountry || '—';
+  const sellerName =
+    getLocalizedText(product.seller?.name, 'uz') || product.sellerId || '—';
+  const sellerCountry = String(
+    product.seller?.sellerCountry || product.productCountry || '—',
+  );
 
   return createPortal(
     <div className="mini-global-modal">

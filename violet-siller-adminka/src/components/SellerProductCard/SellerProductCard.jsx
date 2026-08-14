@@ -21,6 +21,10 @@ function getImageSrc(product) {
   return resolveAssetUrl(product?.image || product?.mainImage || '');
 }
 
+function isPendingApprovalProduct(product) {
+  return String(product?.approvalStatus || '').trim().toLowerCase() === 'pending';
+}
+
 export default function SellerProductCard({
   product,
   onEdit,
@@ -38,7 +42,8 @@ export default function SellerProductCard({
   const showOriginalPrice = Boolean(originalPrice && originalPrice !== price);
   const resolvedSrc = getImageSrc(product);
   const [hasError, setHasError] = useState(false);
-  const isPaused = product?.clientActive === false;
+  const isPendingApproval = isPendingApprovalProduct(product);
+  const isPaused = !isPendingApproval && product?.clientActive === false;
 
   const displaySrc = hasError ? FALLBACK_IMAGE : resolvedSrc;
 
@@ -61,6 +66,14 @@ export default function SellerProductCard({
           loading="lazy"
           onError={handleImageError}
         />
+        {isPendingApproval ? (
+          <div
+            className="seller-product-card__paused-overlay seller-product-card__paused-overlay--pending"
+            aria-hidden="true"
+          >
+            <span>{t('myProducts.pendingApproval')}</span>
+          </div>
+        ) : null}
         {isPaused ? (
           <div className="seller-product-card__paused-overlay" aria-hidden="true">
             <span>{t('myProducts.paused')}</span>
@@ -91,6 +104,10 @@ export default function SellerProductCard({
           <SellerProductCardMenu
             isOpen={isMenuOpen}
             clientActive={product?.clientActive !== false}
+            pauseDisabled={isPendingApproval}
+            pauseDisabledReason={
+              isPendingApproval ? t('myProducts.pendingApprovalHint') : undefined
+            }
             togglingPause={togglingPause}
             onToggle={onMenuToggle}
             onClose={onMenuClose}

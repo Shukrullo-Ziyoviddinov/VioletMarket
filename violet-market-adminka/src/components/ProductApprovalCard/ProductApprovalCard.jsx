@@ -3,21 +3,39 @@ import { getLocalizedText, resolveProductImageUrl } from '../../utils/productDis
 import './ProductApprovalCard.css';
 
 function formatDescription(description) {
-  if (!Array.isArray(description) || description.length === 0) return '';
-  const first = description[0];
-  if (typeof first === 'string') return first;
-  return getLocalizedText(first, 'uz');
+  if (!description) return '';
+  if (typeof description === 'string') return description;
+  if (Array.isArray(description)) {
+    if (description.length === 0) return '';
+    const first = description[0];
+    if (typeof first === 'string') return first;
+    return getLocalizedText(first, 'uz');
+  }
+  if (typeof description === 'object') {
+    return getLocalizedText(description, 'uz');
+  }
+  return '';
+}
+
+function toDisplayText(value, fallback = '') {
+  const text = getLocalizedText(value, 'uz');
+  return text || fallback;
 }
 
 export default function ProductApprovalCard({ product, onOpen }) {
   if (!product) return null;
 
-  const title = getLocalizedText(product.title, 'uz') || `Mahsulot #${product.id}`;
+  const title = toDisplayText(product.title, `Mahsulot #${product.id}`);
   const imageSrc =
     product.imageUrl || resolveProductImageUrl(product.image) || '/img/no-image.png';
-  const sellerName = product.seller?.name || product.sellerId || 'Noma’lum siller';
-  const sellerCountry = product.seller?.sellerCountry || product.productCountry || '—';
+  const sellerName =
+    toDisplayText(product.seller?.name) || product.sellerId || 'Noma’lum siller';
+  const sellerCountry = String(
+    product.seller?.sellerCountry || product.productCountry || '—',
+  );
   const description = formatDescription(product.description);
+  const categoryName = toDisplayText(product.categoryName);
+  const price = toDisplayText(product.price);
 
   return (
     <button
@@ -46,8 +64,8 @@ export default function ProductApprovalCard({ product, onOpen }) {
         </p>
         <p className="product-approval-card__meta">
           ID: {product.id}
-          {product.categoryName ? ` · ${product.categoryName}` : ''}
-          {product.price ? ` · ${product.price}` : ''}
+          {categoryName ? ` · ${categoryName}` : ''}
+          {price ? ` · ${price}` : ''}
         </p>
         {description ? (
           <p className="product-approval-card__desc" title={description}>

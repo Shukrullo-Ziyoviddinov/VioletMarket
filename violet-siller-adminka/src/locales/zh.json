@@ -283,7 +283,9 @@
     "saving": "保存中...",
     "activate": "启用",
     "pause": "暂时暂停",
-    "paused": "已暂时暂停"
+    "paused": "已暂时暂停",
+    "pendingApproval": "等待审核",
+    "pendingApprovalHint": "商品正在等待主管理员审核"
   },
   "header": {
     "adminDashboard": "管理后台"

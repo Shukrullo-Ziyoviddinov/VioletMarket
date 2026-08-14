@@ -283,7 +283,9 @@
     "saving": "Saving...",
     "activate": "Activate",
     "pause": "Pause temporarily",
-    "paused": "Temporarily paused"
+    "paused": "Temporarily paused",
+    "pendingApproval": "Awaiting approval",
+    "pendingApprovalHint": "Product is waiting for main admin approval"
   },
   "header": {
     "adminDashboard": "Admin dashboard"
