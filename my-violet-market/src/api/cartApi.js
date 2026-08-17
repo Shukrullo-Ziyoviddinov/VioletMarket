@@ -62,7 +62,10 @@ export function clearCartApi(token) {
   }).then(parseJsonResponse);
 }
 
-export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) {
+export function checkoutCartApi(
+  token,
+  { paymentMethod, deliveryAddress, selectedCargoOptions } = {},
+) {
   const method = String(paymentMethod || '').trim();
   if (!method) {
     return Promise.reject(Object.assign(new Error('To‘lov usulini tanlang'), { status: 400 }));
@@ -79,6 +82,14 @@ export function checkoutCartApi(token, { paymentMethod, deliveryAddress } = {}) 
   }
 
   const body = { paymentMethod: method };
+
+  if (
+    selectedCargoOptions &&
+    typeof selectedCargoOptions === 'object' &&
+    !Array.isArray(selectedCargoOptions)
+  ) {
+    body.selectedCargoOptions = selectedCargoOptions;
+  }
 
   if (addressPayload) {
     const city = String(addressPayload.city || '').trim();

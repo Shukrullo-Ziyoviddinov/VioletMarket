@@ -27,6 +27,7 @@ const {
   assertAdminCargoFeeConfirmedForMarkPaid,
   canLogisticaMarkPaid,
 } = require("../../productManagement/foreignCargoFeePayment");
+const { applyCargoLaneMongoFilter } = require("../../utils/cargoServiceType");
 
 const YUKLARIM_PROCESS_STEPS = ["xitoy_omborida", "yolda", "bojxonada"];
 const YUKLARIM_PROCESS_STEP_SET = new Set(YUKLARIM_PROCESS_STEPS);
@@ -278,6 +279,7 @@ async function findOtherGroupFeeBearer(shipment) {
     cargoFeePaymentRequired: true,
     status: { $nin: ["cancelled"] },
     _id: { $ne: shipment._id },
+    ...applyCargoLaneMongoFilter({}, shipment),
   })
     .select({ _id: 1, requestCode: 1 })
     .lean();
@@ -572,15 +574,20 @@ async function fanOutPaidAtToGroupCompanions(feeBearer) {
   const sellerId = String(feeBearer.sellerId || "").trim();
   if (!orderId || !sellerId) return 0;
 
-  const rows = await CargoShipment.find({
-    orderId,
-    sellerId,
-    status: "accepted",
-    paidAt: null,
-    processStep: "toshkent_omborida",
-    uzArrivedAt: { $ne: null },
-    _id: { $ne: feeBearer._id },
-  });
+  const rows = await CargoShipment.find(
+    applyCargoLaneMongoFilter(
+      {
+        orderId,
+        sellerId,
+        status: "accepted",
+        paidAt: null,
+        processStep: "toshkent_omborida",
+        uzArrivedAt: { $ne: null },
+        _id: { $ne: feeBearer._id },
+      },
+      feeBearer,
+    ),
+  );
 
   let count = 0;
   for (const sibling of rows) {

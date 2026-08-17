@@ -61,6 +61,20 @@
   white-space: nowrap;
 }
 
+.seller-order-card__package-count {
+  color: #8c8c8c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.seller-order-card__package--express .seller-order-card__value {
+  color: #b45309;
+}
+
+.seller-order-card__package--standard .seller-order-card__value {
+  color: #5b21b6;
+}
+
 .seller-order-card__payment {
   display: inline-flex;
   align-items: center;

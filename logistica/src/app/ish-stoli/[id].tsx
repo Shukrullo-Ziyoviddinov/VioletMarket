@@ -389,6 +389,8 @@ export default function IshStoliScreen() {
             weightKg={detail.weightKg}
             warehouseAddress={detail.warehouseAddress}
             note={detail.note}
+            cargoServiceType={detail.cargoServiceType}
+            cargoLaneCounts={detail.cargoLaneCounts}
           />
 
           <ShipmentProductsList

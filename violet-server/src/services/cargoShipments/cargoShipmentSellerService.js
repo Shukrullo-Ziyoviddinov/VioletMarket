@@ -309,6 +309,7 @@ async function submitSellerOrderItemToCargo(
       orderId,
       itemIndex,
       groupId,
+      cargoServiceType: item.cargoServiceType || null,
       products,
       productCount: products.length,
       weightKg,

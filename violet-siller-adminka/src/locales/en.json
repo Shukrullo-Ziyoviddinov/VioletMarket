@@ -195,6 +195,11 @@
       "payment": "Payment",
       "amount": "Product price"
     },
+    "cargoPackage": {
+      "express": "Express package",
+      "standard": "Standard package",
+      "splitHint": "Pack Express and Standard separately — do not put them in one package."
+    },
     "payment": {
       "paid": "Paid",
       "cash": "Cash",

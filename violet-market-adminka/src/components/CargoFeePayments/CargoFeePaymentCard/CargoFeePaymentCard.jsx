@@ -32,6 +32,9 @@ export default function CargoFeePaymentCard({ item, onOpen }) {
         </div>
         <p>
           {item.requestCode} · {item.sellerName}
+          {item.cargoServiceType
+            ? ` · ${item.cargoServiceType === 'express' ? 'Express' : 'Standard'}`
+            : ''}
         </p>
         <p>
           Og‘irlik: {item.weightKg} kg · Summa: {formatMoney(item.cargoDeliveryFee)}

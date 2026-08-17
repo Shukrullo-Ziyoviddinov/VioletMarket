@@ -12,6 +12,55 @@
   line-height: 1.4;
 }
 
+.seller-order-group-items__package {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #ece7f3;
+  background: #fff;
+}
+
+.seller-order-group-items__package--express {
+  border-color: #f3d7a3;
+  background: #fffaf0;
+}
+
+.seller-order-group-items__package--standard {
+  border-color: #d7d4f5;
+  background: #f8f7ff;
+}
+
+.seller-order-group-items__package-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.seller-order-group-items__package-head strong {
+  display: block;
+  color: #2a1842;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.seller-order-group-items__package-head p {
+  margin: 4px 0 0;
+  color: #6f35bc;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.seller-order-group-items__package-head span {
+  flex-shrink: 0;
+  color: #6b5b7a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .seller-order-group-items__card {
   display: flex;
   flex-direction: column;

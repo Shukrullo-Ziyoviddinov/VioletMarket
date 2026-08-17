@@ -80,6 +80,13 @@ const orderItemSchema = new mongoose.Schema(
       type: uzWarehousePickupSchema,
       default: undefined,
     },
+    /** Xorij: standard | express. UZB / eski buyurtmalar: null. */
+    cargoServiceType: {
+      type: String,
+      default: null,
+      trim: true,
+      lowercase: true,
+    },
   },
   { _id: false },
 );

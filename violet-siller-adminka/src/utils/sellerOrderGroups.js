@@ -1,7 +1,10 @@
 /**
  * Seller Buyurtmalar — bir checkout + bir siller UI bloki.
  * groupKey = orderId:sellerId (cargo groupId emas).
+ * Express/Standard paket FAQAT xorij siller (pipelineMode === foreign).
  */
+
+import { resolveSellerPipelineMode } from './sellerPipeline';
 
 export function resolveSellerOrderGroupKey(order) {
   const fromApi = String(order?.groupKey || '').trim();
@@ -9,6 +12,113 @@ export function resolveSellerOrderGroupKey(order) {
   const orderId = Number(order?.orderId) || 0;
   const sellerId = String(order?.sellerId || '').trim();
   return `${orderId}:${sellerId}`;
+}
+
+export function isForeignSellerOrder(order) {
+  const mode = String(order?.pipelineMode || '').trim();
+  if (mode === 'foreign') return true;
+  if (mode === 'local') return false;
+
+  const fromItems = Array.isArray(order?.items)
+    ? order.items.find((item) => String(item?.pipelineMode || '').trim())
+    : null;
+  const itemMode = String(fromItems?.pipelineMode || '').trim();
+  if (itemMode === 'foreign') return true;
+  if (itemMode === 'local') return false;
+
+  const country =
+    order?.sellerCountry ||
+    fromItems?.sellerCountry ||
+    order?.items?.[0]?.sellerCountry ||
+    '';
+  return resolveSellerPipelineMode(country) === 'foreign';
+}
+
+export function resolveItemCargoServiceType(item) {
+  const fromItem = String(item?.cargoServiceType || '')
+    .trim()
+    .toLowerCase();
+  if (fromItem === 'express' || fromItem === 'standard') return fromItem;
+  const fromShipment = String(item?.cargoShipment?.cargoServiceType || '')
+    .trim()
+    .toLowerCase();
+  if (fromShipment === 'express' || fromShipment === 'standard') {
+    return fromShipment;
+  }
+  return null;
+}
+
+export function buildPackageBarcode(orderCode, type) {
+  const base = String(orderCode || '').trim() || '#0000';
+  return type === 'express' ? `${base}-EX` : `${base}-ST`;
+}
+
+function listOrderUnits(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (items.length) return items;
+  return order ? [order] : [];
+}
+
+/**
+ * Faqat xorij: Express va Standard alohida paket.
+ * UZB / local → har doim null.
+ */
+export function buildSellerCargoPackages(order) {
+  if (!isForeignSellerOrder(order)) return null;
+
+  const units = listOrderUnits(order);
+  if (!units.length) return null;
+  if (!units.some((item) => resolveItemCargoServiceType(item))) return null;
+
+  const orderCode = String(order?.orderCode || units[0]?.orderCode || '').trim();
+  const buckets = {
+    express: [],
+    standard: [],
+  };
+
+  for (const item of units) {
+    const type = resolveItemCargoServiceType(item) || 'standard';
+    buckets[type].push(item);
+  }
+
+  const packages = [];
+  for (const type of ['express', 'standard']) {
+    const items = buckets[type];
+    if (!items.length) continue;
+    const productCodes = [
+      ...new Set(
+        items
+          .map((item) => String(item.productCode || '').trim())
+          .filter(Boolean),
+      ),
+    ];
+    const requestCodes = [
+      ...new Set(
+        items
+          .map((item) => String(item?.cargoShipment?.requestCode || '').trim())
+          .filter(Boolean),
+      ),
+    ];
+    packages.push({
+      type,
+      items,
+      productCodes,
+      requestCodes,
+      packageCode: buildPackageBarcode(orderCode, type),
+      productCount: items.length,
+      amount: items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+    });
+  }
+
+  return packages.length ? packages : null;
+}
+
+export function resolveSellerCargoPackages(order) {
+  if (!isForeignSellerOrder(order)) return null;
+  if (Array.isArray(order?.cargoPackages) && order.cargoPackages.length) {
+    return order.cargoPackages;
+  }
+  return buildSellerCargoPackages(order);
 }
 
 /**
@@ -32,6 +142,8 @@ export function groupSellerOrdersByFulfillment(orders = []) {
         orderedAt: order.orderedAt || null,
         trackingStatus: String(order.trackingStatus || ''),
         paymentMethod: order.paymentMethod,
+        pipelineMode: order.pipelineMode || 'local',
+        sellerCountry: String(order.sellerCountry || ''),
         items: [],
       });
     }
@@ -46,8 +158,7 @@ export function groupSellerOrdersByFulfillment(orders = []) {
       .map((item) => String(item.productCode || '').trim())
       .filter(Boolean);
     const courierFields = hoistCourierFieldsFromItems(group.items);
-
-    return {
+    const grouped = {
       ...group,
       itemIndexes,
       productCount: group.items.length,
@@ -64,6 +175,10 @@ export function groupSellerOrdersByFulfillment(orders = []) {
       ),
       isGroup: group.items.length > 1,
       ...courierFields,
+    };
+    return {
+      ...grouped,
+      cargoPackages: buildSellerCargoPackages(grouped),
     };
   });
 }

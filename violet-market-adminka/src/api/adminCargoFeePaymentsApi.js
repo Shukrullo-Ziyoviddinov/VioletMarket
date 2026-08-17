@@ -56,6 +56,10 @@ function normalizeItem(row = {}) {
     logisticaPaidAt: row.logisticaPaidAt || null,
     paymentStatus: row.paymentStatus === 'paid' ? 'paid' : 'unpaid',
     canConfirm: Boolean(row.canConfirm),
+    cargoServiceType:
+      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
+        ? row.cargoServiceType
+        : null,
   };
 }
 

@@ -46,6 +46,8 @@ export type ShipmentListItem = {
   groupKey?: string;
   isGroup?: boolean;
   siblingIds?: string[];
+  cargoServiceType?: 'standard' | 'express' | null;
+  cargoLaneCounts?: { standard?: number; express?: number };
 };
 
 export type ShipmentDetail = {
@@ -68,6 +70,8 @@ export type ShipmentDetail = {
   groupKey?: string;
   isGroup?: boolean;
   siblingIds?: string[];
+  cargoServiceType?: 'standard' | 'express' | null;
+  cargoLaneCounts?: { standard?: number; express?: number };
   cargoDeliveryFee?: number;
   uzArrivalPhotoUrl?: string;
   uzArrivalComment?: string;

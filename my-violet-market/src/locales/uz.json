@@ -469,6 +469,8 @@
     "productFallback": "Mahsulot",
     "groupTotal": "Jami",
     "groupTotalWeight": "Umumiy og'irlik",
+    "cargoStandard": "Standard",
+    "cargoExpress": "Express",
     "productWeight": "{{weight}} kg",
     "quantity": "{{count}} dona",
     "color": "Rang",

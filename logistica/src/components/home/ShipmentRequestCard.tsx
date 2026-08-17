@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { WeightLabel } from '@/types/shipment';
+import { formatCargoServiceLabel } from '@/utils/cargoServiceLabel';
 
 export type ShipmentRequest = {
   id: string;
@@ -17,6 +18,8 @@ export type ShipmentRequest = {
   adminCargoFeeConfirmedAt?: string | null;
   isGroup?: boolean;
   siblingIds?: string[];
+  cargoServiceType?: 'standard' | 'express' | null;
+  cargoLaneCounts?: { standard?: number; express?: number };
 };
 
 const CARDBOARD = '#C4A484';
@@ -69,6 +72,19 @@ export function ShipmentRequestCard({
         <Text style={styles.storeName} numberOfLines={1}>
           {item.storeName}
         </Text>
+        {formatCargoServiceLabel(
+          t,
+          item.cargoServiceType,
+          item.cargoLaneCounts,
+        ) ? (
+          <Text style={styles.cargoLane} numberOfLines={1}>
+            {formatCargoServiceLabel(
+              t,
+              item.cargoServiceType,
+              item.cargoLaneCounts,
+            )}
+          </Text>
+        ) : null}
         <Text style={styles.dateTime}>{item.dateTime}</Text>
         <View style={styles.productBadge}>
           <Text style={styles.productBadgeText}>
@@ -165,6 +181,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#374151',
+  },
+  cargoLane: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7C3AED',
   },
   dateTime: {
     fontSize: 12,

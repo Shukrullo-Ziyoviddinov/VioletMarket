@@ -82,6 +82,15 @@ export default function UserOrderTrackingCard({ order, onCargoFeePaid }) {
           {sellerName ? (
             <span className="user-order-tracking-card__seller">{sellerName}</span>
           ) : null}
+          {order?.pipelineMode === 'foreign' && order?.cargoServiceType ? (
+            <span
+              className={`user-order-tracking-card__cargo user-order-tracking-card__cargo--${order.cargoServiceType}`}
+            >
+              {order.cargoServiceType === 'express'
+                ? t('orderHistory.cargoExpress')
+                : t('orderHistory.cargoStandard')}
+            </span>
+          ) : null}
         </div>
         {showCargoFeeButton ? (
           <button

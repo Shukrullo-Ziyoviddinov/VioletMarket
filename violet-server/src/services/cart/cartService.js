@@ -414,7 +414,7 @@ async function checkoutCartForUser(userId, options = {}) {
   const productIds = [...requestedByProductId.keys()].filter(Number.isFinite);
   const products = await Product.find({ id: { $in: productIds } })
     .select(
-      "id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName sellerId clientActive approvalStatus",
+      "id title quantity colors colorStock sizeStock storage storageStock models modelStock categoryName sellerId clientActive approvalStatus cargoExpressPolicy countries",
     )
     .sort({ _id: -1 });
   const productMap = keepNewestProductsById(products);
@@ -515,6 +515,7 @@ async function checkoutCartForUser(userId, options = {}) {
     productMap,
     paymentMethod: options.paymentMethod,
     deliveryAddress,
+    selectedCargoOptions: options.selectedCargoOptions,
   });
 
   if (deliveryAddress) {

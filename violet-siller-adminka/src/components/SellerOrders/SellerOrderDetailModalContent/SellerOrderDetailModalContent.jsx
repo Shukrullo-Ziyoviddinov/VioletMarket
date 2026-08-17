@@ -11,6 +11,7 @@ import {
   getSellerOrderProductTitle,
 } from '../../../utils/sellerOrdersDisplay';
 import SellerOrderGroupItems from '../SellerOrderGroupItems/SellerOrderGroupItems';
+import { resolveSellerCargoPackages } from '../../../utils/sellerOrderGroups';
 import './SellerOrderDetailModalContent.css';
 
 function optionValue(value) {
@@ -32,13 +33,15 @@ export default function SellerOrderDetailModalContent({
 
   const items = Array.isArray(order?.items) ? order.items : [];
   const isGroup = items.length > 1 || Boolean(order?.isGroup);
+  const cargoPackages = resolveSellerCargoPackages(order);
   const paymentTone = getSellerOrderPaymentTone(order.paymentMethod);
 
   return (
     <div className="seller-order-detail-modal-content">
-      {isGroup ? (
+      {isGroup || cargoPackages ? (
         <SellerOrderGroupItems
           order={order}
+          showWhenSingle={Boolean(cargoPackages)}
           selectable={selectableUnavailable}
           selectedUnits={selectedUnits}
           onToggleUnit={onToggleUnit}
@@ -65,7 +68,7 @@ export default function SellerOrderDetailModalContent({
       )}
 
       <div className="seller-order-detail-modal-content__info">
-        {!isGroup ? (
+        {!isGroup && !cargoPackages ? (
           <>
             <div className="seller-order-detail-modal-content__row">
               <span>{t('orders.modal.color')}</span>

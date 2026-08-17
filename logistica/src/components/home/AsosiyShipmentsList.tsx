@@ -52,6 +52,8 @@ export function AsosiyShipmentsList() {
             productCount: row.productCount,
             weightKg: row.weightKg,
             weightLabel: row.weightLabel,
+            cargoServiceType: row.cargoServiceType,
+            cargoLaneCounts: row.cargoLaneCounts,
           })),
         );
       } catch (err) {

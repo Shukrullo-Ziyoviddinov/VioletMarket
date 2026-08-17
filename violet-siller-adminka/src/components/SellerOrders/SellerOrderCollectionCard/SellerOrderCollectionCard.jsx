@@ -6,6 +6,7 @@ import {
   formatSellerOrderAmount,
   getSellerOrderProductTitle,
 } from '../../../utils/sellerOrdersDisplay';
+import { resolveSellerCargoPackages } from '../../../utils/sellerOrderGroups';
 import './SellerOrderCollectionCard.css';
 
 function buildVariantText(order, t) {
@@ -39,6 +40,7 @@ export default function SellerOrderCollectionCard({ order, onOpen }) {
     isGroup && productCodes.length
       ? productCodes.join(', ')
       : order.productCode || '—';
+  const cargoPackages = resolveSellerCargoPackages(order);
   const variants = isGroup ? '' : buildVariantText(order, t);
   const imageUrl = resolveAssetUrl(
     isGroup ? items[0]?.imageUrl || order.imageUrl : order.imageUrl,
@@ -58,7 +60,31 @@ export default function SellerOrderCollectionCard({ order, onOpen }) {
 
       <div className="seller-order-collection-card__content">
         <strong title={title}>{title}</strong>
-        <span title={codeLabel}>{codeLabel}</span>
+        {cargoPackages ? (
+          cargoPackages.map((pkg) => (
+            <span
+              key={pkg.type}
+              className={`seller-order-collection-card__pkg seller-order-collection-card__pkg--${pkg.type}`}
+            >
+              {pkg.type === 'express'
+                ? t('orders.cargoPackage.express', {
+                    defaultValue: 'Express paket',
+                  })
+                : t('orders.cargoPackage.standard', {
+                    defaultValue: 'Standard paket',
+                  })}
+              {' · '}
+              {pkg.packageCode}
+              {' · '}
+              {t('orders.card.productCount', {
+                count: pkg.productCount,
+                defaultValue: '{{count}} ta mahsulot',
+              })}
+            </span>
+          ))
+        ) : (
+          <span title={codeLabel}>{codeLabel}</span>
+        )}
         {variants ? <p title={variants}>{variants}</p> : null}
       </div>
 

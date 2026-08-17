@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { WeightLabel } from '@/types/shipment';
+import { formatCargoServiceLabel } from '@/utils/cargoServiceLabel';
 
 type Props = {
   productCount: number;
@@ -9,6 +10,8 @@ type Props = {
   weightKg: number;
   warehouseAddress: string;
   note: string;
+  cargoServiceType?: 'standard' | 'express' | null;
+  cargoLaneCounts?: { standard?: number; express?: number };
 };
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -35,13 +38,29 @@ export function ShipmentRequestInfo({
   weightKg,
   warehouseAddress,
   note,
+  cargoServiceType,
+  cargoLaneCounts,
 }: Props) {
   const { t } = useTranslation();
+  const cargoLabel = formatCargoServiceLabel(
+    t,
+    cargoServiceType,
+    cargoLaneCounts,
+  );
 
   return (
     <View style={styles.section}>
       <Text style={styles.title}>{t('shipments.detail.requestInfo')}</Text>
       <View style={styles.card}>
+        {cargoLabel ? (
+          <>
+            <InfoRow
+              label={t('shipments.cargoService.label')}
+              value={cargoLabel}
+            />
+            <View style={styles.line} />
+          </>
+        ) : null}
         <InfoRow
           label={t('shipments.detail.productCount')}
           value={t('shipments.detail.productCountValue', { count: productCount })}

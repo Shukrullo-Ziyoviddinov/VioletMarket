@@ -258,10 +258,14 @@ export const CartProvider = ({ children }) => {
     if (!authToken) {
       throw new Error('UNAUTHORIZED');
     }
-    const data = await checkoutCartApi(authToken, { paymentMethod, deliveryAddress });
+    const data = await checkoutCartApi(authToken, {
+      paymentMethod,
+      deliveryAddress,
+      selectedCargoOptions,
+    });
     syncFromResponse(data);
     return data;
-  }, [authToken, syncFromResponse]);
+  }, [authToken, selectedCargoOptions, syncFromResponse]);
 
   const getTotal = useCallback(() => {
     return cart.reduce((sum, item) => {

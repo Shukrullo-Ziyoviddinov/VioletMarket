@@ -25,6 +25,9 @@ const {
   shipmentLookupKey,
 } = require("../../services/cargoShipments/cargoShipmentSellerService");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
+const { normalizeCargoServiceType } = require("../../utils/cargoServiceType");
+const { SellerAccount } = require("../../models/sellerAccount");
+const { resolveSellerPipelineMode } = require("./sellerPipelineMode");
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -128,6 +131,31 @@ function sliceKeepingFulfillmentGroups(cards, start, limit) {
   return list.slice(from, to);
 }
 
+async function resolveSellerPipelineContext(sellerId) {
+  const account = await SellerAccount.findOne({ id: sellerId })
+    .select({ sellerCountry: 1 })
+    .lean();
+  const sellerCountry = String(account?.sellerCountry || "")
+    .trim()
+    .toLowerCase();
+  return {
+    sellerCountry,
+    pipelineMode: resolveSellerPipelineMode(sellerCountry),
+  };
+}
+
+function stampSellerPipelineFields(cards, pipelineContext) {
+  const pipelineMode = pipelineContext?.pipelineMode || "local";
+  const sellerCountry = String(pipelineContext?.sellerCountry || "").trim();
+  return (Array.isArray(cards) ? cards : []).map((card) => ({
+    ...card,
+    pipelineMode,
+    sellerCountry,
+    cargoServiceType:
+      pipelineMode === "foreign" ? card.cargoServiceType || null : null,
+  }));
+}
+
 function formatOrderCode(orderId) {
   const id = Math.max(0, Math.floor(toNumber(orderId, 0)));
   return `#${String(id).padStart(4, "0")}`;
@@ -178,6 +206,7 @@ function mapSellerOrderItems(items, sellerId) {
         trackingStatus: normalizeOrderTrackingStatus(item?.trackingStatus),
         trackingHistory: Array.isArray(item?.trackingHistory) ? item.trackingHistory : [],
         units: Array.isArray(item?.units) ? item.units : undefined,
+        cargoServiceType: normalizeCargoServiceType(item?.cargoServiceType),
       };
     });
 }
@@ -247,6 +276,7 @@ function buildSellerOrderItemCards(order, user, sellerId) {
             (entry) => String(entry?.status || "") === "handed_to_cargo",
           )?.at || null,
         unitIndex,
+        cargoServiceType: item.cargoServiceType || null,
       });
     }
   });
@@ -315,8 +345,13 @@ async function listSellerOrders(sellerId, query = {}) {
     : [];
   const userById = new Map(users.map((row) => [String(row._id), row]));
 
-  const allCards = rows.flatMap((row) =>
-    buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
+  const pipelineContext = await resolveSellerPipelineContext(normalizedSellerId);
+
+  const allCards = stampSellerPipelineFields(
+    rows.flatMap((row) =>
+      buildSellerOrderItemCards(row, userById.get(String(row.userId)), normalizedSellerId),
+    ),
+    pipelineContext,
   );
   const filteredCards = annotateVisibleFulfillmentGroups(
     requestedTrackingStatus

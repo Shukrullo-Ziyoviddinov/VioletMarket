@@ -120,5 +120,33 @@ check("boshqa order (boshqa vaqt/checkout) → alohida", () => {
   assert.strictEqual(grouped.length, 2);
 });
 
+check("qabuldan keyin mixed tarif → 2 kartochka", () => {
+  const cards = [
+    {
+      id: "a",
+      orderId: 100,
+      sellerId: "s1",
+      cargoServiceType: "standard",
+      productCount: 1,
+      weightKg: 0.4,
+      acceptedAt: "2026-06-01T10:00:00.000Z",
+    },
+    {
+      id: "b",
+      orderId: 100,
+      sellerId: "s1",
+      cargoServiceType: "express",
+      productCount: 1,
+      weightKg: 0.2,
+      cargoFeePaymentRequired: true,
+      acceptedAt: "2026-06-01T10:00:00.000Z",
+    },
+  ];
+  const grouped = groupLogisticaShipmentCards(cards, {
+    splitByCargoService: true,
+  });
+  assert.strictEqual(grouped.length, 2);
+});
+
 console.log("\nPassed", passed, "checks");
 if (!process.exitCode) console.log("Verification PASSED");

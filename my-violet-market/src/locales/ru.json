@@ -469,6 +469,8 @@
     "productFallback": "Товар",
     "groupTotal": "Итого",
     "groupTotalWeight": "Общий вес",
+    "cargoStandard": "Стандарт",
+    "cargoExpress": "Экспресс",
     "productWeight": "{{weight}} кг",
     "quantity": "{{count}} шт.",
     "color": "Цвет",

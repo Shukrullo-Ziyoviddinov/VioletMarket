@@ -75,6 +75,8 @@ export function ShipmentsListPanel({
             adminCargoFeeConfirmedAt: row.adminCargoFeeConfirmedAt,
             isGroup: row.isGroup,
             siblingIds: row.siblingIds,
+            cargoServiceType: row.cargoServiceType,
+            cargoLaneCounts: row.cargoLaneCounts,
           })),
         );
       } catch (err) {

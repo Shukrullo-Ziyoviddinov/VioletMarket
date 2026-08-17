@@ -61,6 +61,17 @@ const cargoShipmentSchema = new mongoose.Schema(
      * Har bir shipment alohida qoladi (logistika qabul o‘zgarmaydi).
      */
     groupId: { type: String, default: "", trim: true, index: true },
+    /**
+     * Mijoz tanlagan (yoki majburiy) cargo tarifi.
+     * standard | express. Yo‘q = eski yozuv → standard deb hisoblanadi.
+     */
+    cargoServiceType: {
+      type: String,
+      default: null,
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
     products: { type: [cargoShipmentProductSchema], default: [] },
     productCount: { type: Number, default: 0, min: 0 },
     weightKg: { type: Number, default: 0, min: 0 },
@@ -124,10 +135,8 @@ const cargoShipmentSchema = new mongoose.Schema(
   },
 );
 
-cargoShipmentSchema.index(
-  { orderId: 1, itemIndex: 1, sellerId: 1 },
-  { unique: true },
-);
+cargoShipmentSchema.index({ orderId: 1, itemIndex: 1, sellerId: 1 }, { unique: true });
+cargoShipmentSchema.index({ orderId: 1, sellerId: 1, cargoServiceType: 1, status: 1 });
 cargoShipmentSchema.index({ groupId: 1, submittedAt: -1 });
 cargoShipmentSchema.index({ status: 1, sellerCountry: 1, submittedAt: -1 });
 cargoShipmentSchema.index({ status: 1, processStep: 1, paidAt: 1, logisticaId: 1 });
@@ -150,6 +159,9 @@ function toPublicCargoShipment(doc) {
     orderId: Number(row.orderId) || 0,
     itemIndex: Number(row.itemIndex) || 0,
     groupId: String(row.groupId || "").trim(),
+    cargoServiceType: row.cargoServiceType
+      ? String(row.cargoServiceType).trim().toLowerCase()
+      : null,
     products: Array.isArray(row.products) ? row.products : [],
     productCount: Math.max(0, Number(row.productCount) || 0),
     weightKg: Math.max(0, Number(row.weightKg) || 0),

@@ -47,6 +47,14 @@ function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): 
     groupKey: row.groupKey ? String(row.groupKey) : undefined,
     isGroup: Boolean(row.isGroup) || siblingIds.length > 1,
     siblingIds,
+    cargoServiceType:
+      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
+        ? row.cargoServiceType
+        : null,
+    cargoLaneCounts: {
+      standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
+      express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),
+    },
   };
 }
 
@@ -94,6 +102,14 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
     siblingIds: Array.isArray(row.siblingIds)
       ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
       : [],
+    cargoServiceType:
+      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
+        ? row.cargoServiceType
+        : null,
+    cargoLaneCounts: {
+      standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
+      express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),
+    },
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ''),
     uzArrivalComment: String(row.uzArrivalComment || ''),

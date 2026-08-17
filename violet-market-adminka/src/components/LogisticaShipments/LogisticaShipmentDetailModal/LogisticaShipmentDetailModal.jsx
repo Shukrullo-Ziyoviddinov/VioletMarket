@@ -292,6 +292,16 @@ export default function LogisticaShipmentDetailModal({
                   {detail.sellerCountryLabel || detail.sellerCountry}
                 </strong>
               </div>
+              {detail.cargoServiceType ? (
+                <div>
+                  <span>Tarif</span>
+                  <strong>
+                    {detail.cargoServiceType === 'express'
+                      ? 'Express'
+                      : 'Standard'}
+                  </strong>
+                </div>
+              ) : null}
               <div>
                 <span>Logistica</span>
                 <strong>{detail.logisticaCompanyName || '—'}</strong>

@@ -40,6 +40,24 @@
   color: #c6c0ce;
 }
 
+.user-order-tracking-card__cargo {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.user-order-tracking-card__cargo--standard {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.user-order-tracking-card__cargo--express {
+  background: #fef3c7;
+  color: #b45309;
+}
+
 .user-order-tracking-card__fee-btn {
   flex-shrink: 0;
   border: 0;

@@ -56,6 +56,13 @@ function normalizeOrder(row) {
     unitIndex: Number(row?.unitIndex) || 0,
     sellerId: String(row?.sellerId || ''),
     groupKey: String(row?.groupKey || ''),
+    pipelineMode: String(row?.pipelineMode || '') === 'foreign' ? 'foreign' : 'local',
+    sellerCountry: String(row?.sellerCountry || ''),
+    cargoServiceType:
+      String(row?.pipelineMode || '') === 'foreign' &&
+      (row?.cargoServiceType === 'express' || row?.cargoServiceType === 'standard')
+        ? row.cargoServiceType
+        : null,
     groupSize: Number(row?.groupSize) || 0,
     groupItemCount: Number(row?.groupItemCount) || 0,
     siblingIds: Array.isArray(row?.siblingIds)
@@ -85,6 +92,11 @@ function normalizeOrder(row) {
           requestCode: String(row.cargoShipment.requestCode || ''),
           groupId: String(row.cargoShipment.groupId || ''),
           status: String(row.cargoShipment.status || ''),
+          cargoServiceType:
+            row.cargoShipment.cargoServiceType === 'express' ||
+            row.cargoShipment.cargoServiceType === 'standard'
+              ? row.cargoShipment.cargoServiceType
+              : null,
         }
       : null,
     reasonType: String(row?.reasonType || ''),

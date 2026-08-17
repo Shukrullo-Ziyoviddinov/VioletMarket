@@ -32,15 +32,18 @@ const {
   loadSellerMap,
   loadLogisticaMap,
 } = require("../cargoShipments/cargoShipmentDisplayHelpers");
+const {
+  buildSellerFulfillmentGroupKey,
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+  applyCargoLaneMongoFilter,
+} = require("../../utils/cargoServiceType");
 
 const DEFAULT_PAGE_SIZE = 100;
 const LIST_FETCH_CAP = 500;
 
 function buildFulfillmentGroupKey(orderId, sellerId) {
-  const oid = Number(orderId) || 0;
-  const sid = String(sellerId || "").trim();
-  if (!oid || !sid) return "";
-  return `${oid}:${sid}`;
+  return buildSellerFulfillmentGroupKey(orderId, sellerId);
 }
 
 const COUNTRY_LABELS = {
@@ -112,6 +115,7 @@ function toAdminShipmentCard(row, sellerMap, logisticaMap) {
     logisticaCompanyName: logistica?.companyName || "—",
     logisticaCountry: logistica?.logisticaCountry || country,
     groupKey: buildFulfillmentGroupKey(orderId, sellerId),
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     isGroup: false,
     siblingIds: [],
   };
@@ -201,7 +205,11 @@ function mergeAdminGroupDetail(primaryRow, siblingRows, sellerMap, logisticaMap)
     weightKg: Number(weightKg.toFixed(2)),
     siblingIds: allRows.map((row) => String(row._id)),
     isGroup: true,
-    groupKey: buildFulfillmentGroupKey(detail.orderId, detail.sellerId),
+    groupKey: buildCargoLaneGroupKey(
+      detail.orderId,
+      detail.sellerId,
+      detail.cargoServiceType || feeBearerRow.cargoServiceType,
+    ),
   };
 }
 
@@ -210,13 +218,18 @@ async function loadAdminGroupCompanionRows(shipmentRow) {
   const sellerId = String(shipmentRow.sellerId || "").trim();
   if (!orderId || !sellerId) return [];
 
-  return CargoShipment.find({
-    orderId,
-    sellerId,
-    status: "accepted",
-    paidAt: null,
-    _id: { $ne: shipmentRow._id },
-  })
+  return CargoShipment.find(
+    applyCargoLaneMongoFilter(
+      {
+        orderId,
+        sellerId,
+        status: "accepted",
+        paidAt: null,
+        _id: { $ne: shipmentRow._id },
+      },
+      shipmentRow,
+    ),
+  )
     .sort({ acceptedAt: -1, submittedAt: -1 })
     .lean();
 }
@@ -369,7 +382,7 @@ async function listAdminCargoShipments(query = {}) {
   const cards = rows.map((row) => toAdminShipmentCard(row, sellerMap, logisticaMap));
   const cardsById = new Map(cards.map((card) => [String(card.id), card]));
   const grouped = enrichAdminGroupedCards(
-    groupLogisticaShipmentCards(cards),
+    groupLogisticaShipmentCards(cards, { splitByCargoService: true }),
     cardsById,
   );
 
@@ -420,13 +433,18 @@ async function arriveAdminCargoShipmentUzWarehouse(shipmentIdRaw, payload = {}) 
   const sellerId = String(shipment.sellerId || "").trim();
   const siblings =
     orderId && sellerId
-      ? await CargoShipment.find({
-          orderId,
-          sellerId,
-          status: "accepted",
-          paidAt: null,
-          _id: { $ne: shipment._id },
-        })
+      ? await CargoShipment.find(
+          applyCargoLaneMongoFilter(
+            {
+              orderId,
+              sellerId,
+              status: "accepted",
+              paidAt: null,
+              _id: { $ne: shipment._id },
+            },
+            shipment,
+          ),
+        )
       : [];
 
   // Guruhda umumiy kg ni bearer ga yozib siblinglarni unutish xatosini oldini oladi

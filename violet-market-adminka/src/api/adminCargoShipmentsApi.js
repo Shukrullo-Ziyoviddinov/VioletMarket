@@ -72,6 +72,14 @@ function normalizeShipment(row = {}) {
       done: false,
     },
     groupKey: String(row.groupKey || ''),
+    cargoServiceType:
+      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
+        ? row.cargoServiceType
+        : null,
+    cargoLaneCounts: {
+      standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
+      express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),
+    },
     isGroup: Boolean(row.isGroup) || siblingIds.length > 1,
     siblingIds,
   };

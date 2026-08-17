@@ -21,15 +21,12 @@ const {
   loadSellerMap,
   loadLogisticaMap,
 } = require("../cargoShipments/cargoShipmentDisplayHelpers");
+const {
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 const DEFAULT_PAGE_SIZE = 50;
-
-function buildFulfillmentGroupKey(orderId, sellerId) {
-  const oid = Number(orderId) || 0;
-  const sid = String(sellerId || "").trim();
-  if (!oid || !sid) return "";
-  return `${oid}:${sid}`;
-}
 
 function mapFeeProductLine(row, product, index) {
   const weightFromProduct = Math.max(0, Number(product?.weightKg) || 0);
@@ -146,6 +143,7 @@ function toAdminCargoFeeCard(row, sellerMap, logisticaMap, groupMeta = null) {
     paymentStatus: confirmed ? "paid" : "unpaid",
     canConfirm: Boolean(payment?.canAdminConfirm),
     payment,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
   };
 }
 
@@ -155,7 +153,11 @@ async function loadFeeGroupRowsByPairs(pairs = []) {
   for (const pair of pairs) {
     const orderId = Number(pair.orderId) || 0;
     const sellerId = String(pair.sellerId || "").trim();
-    const key = buildFulfillmentGroupKey(orderId, sellerId);
+    const key = buildCargoLaneGroupKey(
+      orderId,
+      sellerId,
+      pair.cargoServiceType,
+    );
     if (!key || seen.has(key)) continue;
     seen.add(key);
     unique.push({ orderId, sellerId });
@@ -180,7 +182,11 @@ async function loadFeeGroupRowsByPairs(pairs = []) {
 
   const byKey = new Map();
   for (const row of rows) {
-    const key = buildFulfillmentGroupKey(row.orderId, row.sellerId);
+    const key = buildCargoLaneGroupKey(
+      row.orderId,
+      row.sellerId,
+      row.cargoServiceType,
+    );
     if (!key) continue;
     if (!byKey.has(key)) byKey.set(key, []);
     byKey.get(key).push(row);
@@ -189,7 +195,11 @@ async function loadFeeGroupRowsByPairs(pairs = []) {
 }
 
 function resolveGroupRowsForFee(row, groupMap) {
-  const key = buildFulfillmentGroupKey(row.orderId, row.sellerId);
+  const key = buildCargoLaneGroupKey(
+    row.orderId,
+    row.sellerId,
+    row.cargoServiceType,
+  );
   const groupRows = key ? groupMap.get(key) : null;
   if (Array.isArray(groupRows) && groupRows.length > 0) {
     return groupRows;
@@ -220,6 +230,7 @@ async function listAdminCargoFeePayments(query = {}) {
     rows.map((row) => ({
       orderId: row.orderId,
       sellerId: row.sellerId,
+      cargoServiceType: row.cargoServiceType,
     })),
   );
 
@@ -247,7 +258,11 @@ async function enrichFeeCard(shipment) {
   const sellerMap = await loadSellerMap([row.sellerId]);
   const logisticaMap = await loadLogisticaMap([row.logisticaId]);
   const groupMap = await loadFeeGroupRowsByPairs([
-    { orderId: row.orderId, sellerId: row.sellerId },
+    {
+      orderId: row.orderId,
+      sellerId: row.sellerId,
+      cargoServiceType: row.cargoServiceType,
+    },
   ]);
   const groupRows = resolveGroupRowsForFee(row, groupMap);
   return toAdminCargoFeeCard(

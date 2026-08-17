@@ -9,6 +9,7 @@ import {
   getSellerOrderPaymentLabel,
   getSellerOrderPaymentTone,
 } from '../../../utils/sellerOrdersDisplay';
+import { resolveSellerCargoPackages } from '../../../utils/sellerOrderGroups';
 import './SellerOrderCard.css';
 
 export default function SellerOrderCard({ order, onOpen }) {
@@ -29,6 +30,7 @@ export default function SellerOrderCard({ order, onOpen }) {
     isGroup && productCodes.length > 1
       ? productCodes.join(', ')
       : productCodes[0] || String(order.productCode || '').trim() || '—';
+  const cargoPackages = resolveSellerCargoPackages(order);
 
   return (
     <button
@@ -37,18 +39,46 @@ export default function SellerOrderCard({ order, onOpen }) {
       onClick={() => onOpen?.(order)}
     >
       <div className="seller-order-card__fields">
-        <div className="seller-order-card__field">
-          <span className="seller-order-card__label">
-            {isGroup
-              ? t('orders.card.barcodes', { defaultValue: 'Shtrix kodlar' })
-              : t('orders.card.barcode')}
-          </span>
-          <strong className="seller-order-card__value" title={productCode}>
-            {productCode}
-          </strong>
-        </div>
+        {cargoPackages ? (
+          cargoPackages.map((pkg) => (
+            <div
+              key={pkg.type}
+              className={`seller-order-card__field seller-order-card__package seller-order-card__package--${pkg.type}`}
+            >
+              <span className="seller-order-card__label">
+                {pkg.type === 'express'
+                  ? t('orders.cargoPackage.express', {
+                      defaultValue: 'Express paket',
+                    })
+                  : t('orders.cargoPackage.standard', {
+                      defaultValue: 'Standard paket',
+                    })}
+              </span>
+              <strong className="seller-order-card__value" title={pkg.packageCode}>
+                {pkg.packageCode}
+              </strong>
+              <span className="seller-order-card__package-count">
+                {t('orders.card.productCount', {
+                  count: pkg.productCount,
+                  defaultValue: '{{count}} ta mahsulot',
+                })}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div className="seller-order-card__field">
+            <span className="seller-order-card__label">
+              {isGroup
+                ? t('orders.card.barcodes', { defaultValue: 'Shtrix kodlar' })
+                : t('orders.card.barcode')}
+            </span>
+            <strong className="seller-order-card__value" title={productCode}>
+              {productCode}
+            </strong>
+          </div>
+        )}
 
-        {isGroup ? (
+        {isGroup && !cargoPackages ? (
           <div className="seller-order-card__field">
             <span className="seller-order-card__label">
               {t('orders.card.products', { defaultValue: 'Mahsulotlar' })}

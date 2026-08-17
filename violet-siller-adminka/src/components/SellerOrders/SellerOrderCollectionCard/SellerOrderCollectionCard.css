@@ -46,6 +46,18 @@
   font-size: 12px;
 }
 
+.seller-order-collection-card__pkg {
+  font-weight: 700 !important;
+}
+
+.seller-order-collection-card__pkg--express {
+  color: #b45309 !important;
+}
+
+.seller-order-collection-card__pkg--standard {
+  color: #5b21b6 !important;
+}
+
 .seller-order-collection-card__content p {
   margin: 6px 0 0;
   overflow: hidden;

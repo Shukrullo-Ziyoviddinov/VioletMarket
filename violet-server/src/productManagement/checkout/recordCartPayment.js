@@ -1,17 +1,49 @@
 const { Order } = require("../../models/order");
+const { SellerAccount } = require("../../models/sellerAccount");
 const { createInitialOrderTracking } = require("../unitTracking/orderTracking");
 const {
   requireDeliveryRegionAddress,
 } = require("../../utils/normalizeDeliveryAddress");
 const { normalizePaymentMethod } = require("./paymentMethods");
 const { resolveOptionLabel } = require("../../unitLifecycle/optionLabel");
+const {
+  resolveCheckoutCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 const PAYMENT_SOURCES = {
   CHECKOUT: "checkout",
   DELIVERY_ADMIN: "delivery-admin",
 };
 
-function mapCartItemToOrderItem(item, productMap) {
+function cleanSellerId(value) {
+  return String(value || "").trim();
+}
+
+async function loadSellerCountryMap(sellerIds) {
+  const ids = [
+    ...new Set(
+      (Array.isArray(sellerIds) ? sellerIds : [])
+        .map((id) => cleanSellerId(id))
+        .filter(Boolean),
+    ),
+  ];
+  if (!ids.length) return new Map();
+
+  const rows = await SellerAccount.find({ id: { $in: ids } })
+    .select({ id: 1, sellerCountry: 1 })
+    .lean();
+
+  return new Map(
+    rows.map((row) => [cleanSellerId(row.id), String(row.sellerCountry || "")]),
+  );
+}
+
+function mapCartItemToOrderItem(
+  item,
+  productMap,
+  sellerCountryMap,
+  selectedCargoOptions,
+) {
   const row = item?.toObject ? item.toObject() : item;
   if (!row) return null;
 
@@ -19,7 +51,14 @@ function mapCartItemToOrderItem(item, productMap) {
   const quantity = Math.max(1, Number(row.quantity) || 1);
   const price = Math.max(0, Number(row.price) || 0);
   const product = productMap.get(productId) ?? productMap.get(row.productId);
-  const sellerId = String(product?.sellerId ?? "").trim();
+  const sellerId = cleanSellerId(product?.sellerId);
+  const sellerCountry = sellerId ? sellerCountryMap.get(sellerId) || "" : "";
+  const cargoServiceType = resolveCheckoutCargoServiceType({
+    sellerCountry,
+    cargoExpressPolicy: row.cargoExpressPolicy ?? product?.cargoExpressPolicy,
+    itemCountries: row.countries || product?.countries,
+    selectedCargoOptions,
+  });
 
   return {
     productId,
@@ -34,13 +73,26 @@ function mapCartItemToOrderItem(item, productMap) {
     storage: resolveOptionLabel(row.storage),
     model: resolveOptionLabel(row.model),
     image: String(row.image || "/img/no-image.png"),
+    cargoServiceType,
     ...createInitialOrderTracking(),
   };
 }
 
-function buildOrderItemsFromCart(cartItems, productMap) {
+function buildOrderItemsFromCart(
+  cartItems,
+  productMap,
+  sellerCountryMap = new Map(),
+  selectedCargoOptions = {},
+) {
   return (Array.isArray(cartItems) ? cartItems : [])
-    .map((item) => mapCartItemToOrderItem(item, productMap))
+    .map((item) =>
+      mapCartItemToOrderItem(
+        item,
+        productMap,
+        sellerCountryMap,
+        selectedCargoOptions,
+      ),
+    )
     .filter(Boolean);
 }
 
@@ -62,8 +114,24 @@ async function recordCartPayment({
   source = PAYMENT_SOURCES.CHECKOUT,
   status = "paid",
   deliveryAddress = null,
+  selectedCargoOptions = {},
 }) {
-  const items = buildOrderItemsFromCart(cartItems, productMap);
+  const previewItems = (Array.isArray(cartItems) ? cartItems : [])
+    .map((item) => {
+      const row = item?.toObject ? item.toObject() : item;
+      const productId = Number(row?.productId);
+      const product = productMap.get(productId) ?? productMap.get(row?.productId);
+      return cleanSellerId(product?.sellerId);
+    })
+    .filter(Boolean);
+  const sellerCountryMap = await loadSellerCountryMap(previewItems);
+
+  const items = buildOrderItemsFromCart(
+    cartItems,
+    productMap,
+    sellerCountryMap,
+    selectedCargoOptions,
+  );
   if (items.length === 0) {
     return null;
   }

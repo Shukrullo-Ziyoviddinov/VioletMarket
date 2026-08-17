@@ -195,6 +195,11 @@
       "payment": "To'lov",
       "amount": "Mahsulot narxi"
     },
+    "cargoPackage": {
+      "express": "Express paket",
+      "standard": "Standard paket",
+      "splitHint": "Express va Standard ni alohida paket qiling — bir paketga qo‘shmang."
+    },
     "payment": {
       "paid": "To'langan",
       "cash": "Naqt",

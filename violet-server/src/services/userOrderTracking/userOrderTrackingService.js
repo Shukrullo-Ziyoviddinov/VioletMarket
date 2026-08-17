@@ -24,6 +24,10 @@ const {
 const {
   COURIER_IN_PROGRESS_STATUSES,
 } = require("../../unitLifecycle/assignmentPoolRules");
+const {
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -69,13 +73,19 @@ function mapOrderItemBase(order, item, itemIndex, seller) {
   const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
   const sellerId = cleanSellerId(seller.id);
   const orderId = Number(order.id) || 0;
+  const cargoServiceType = normalizeCargoServiceType(item.cargoServiceType);
+  const groupKey =
+    pipelineMode === "foreign" && cargoServiceType
+      ? buildCargoLaneGroupKey(orderId, sellerId, cargoServiceType)
+      : fulfillmentGroupKey(orderId, sellerId);
 
   return {
     id: `${orderId}-${itemIndex}`,
     orderId,
     itemIndex,
     orderCode: buildOrderCode(order.id),
-    groupKey: fulfillmentGroupKey(orderId, sellerId),
+    groupKey,
+    cargoServiceType,
     productId: Number(item.productId) || 0,
     title: resolveTitle(item.title),
     imageUrl: resolvePublicAssetUrl(item.image || "/img/no-image.png"),
@@ -244,9 +254,10 @@ function groupInProgressTrackingItems(flatItems) {
     }
 
     grouped.push({
-      id: `g-${first.orderId}-${first.seller.id}`,
+      id: `g-${first.orderId}-${first.seller.id}-${first.cargoServiceType || "all"}`,
       isGroup: products.length > 1,
       groupKey: first.groupKey,
+      cargoServiceType: first.cargoServiceType || null,
       orderId: first.orderId,
       orderCode: first.orderCode,
       seller: first.seller,

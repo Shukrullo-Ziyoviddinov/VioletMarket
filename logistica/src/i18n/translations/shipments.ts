@@ -28,6 +28,12 @@ export const shipmentTranslations = {
         paid: 'To‘landi',
         unpaid: 'To‘lanmagan',
       },
+      cargoService: {
+        label: 'Tarif',
+        standard: 'Standard',
+        express: 'Express',
+        mixed: 'Express {{express}} · Standard {{standard}}',
+      },
       filters: {
         all: 'Barchasi',
         paid: 'To‘langan',
@@ -174,6 +180,12 @@ export const shipmentTranslations = {
         paid: 'Paid',
         unpaid: 'Unpaid',
       },
+      cargoService: {
+        label: 'Tariff',
+        standard: 'Standard',
+        express: 'Express',
+        mixed: 'Express {{express}} · Standard {{standard}}',
+      },
       filters: {
         all: 'All',
         paid: 'Paid',
@@ -318,6 +330,12 @@ export const shipmentTranslations = {
       payment: {
         paid: '已付款',
         unpaid: '未付款',
+      },
+      cargoService: {
+        label: '运费套餐',
+        standard: '标准',
+        express: '快递',
+        mixed: '快递 {{express}} · 标准 {{standard}}',
       },
       filters: {
         all: '全部',

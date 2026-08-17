@@ -29,11 +29,20 @@ const {
   assertItemWeightsForGroup,
 } = require("./cargoShipmentProcessActions");
 const { resolveProductTitle } = require("./cargoShipmentDisplayHelpers");
+const {
+  buildSellerFulfillmentGroupKey,
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+  applyCargoLaneMongoFilter,
+  countCargoLanes,
+  resolveGroupCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 const DEFAULT_PAGE_SIZE = 20;
 
 function buildFulfillmentGroupKey(orderId, sellerId) {
-  return `${Number(orderId) || 0}:${String(sellerId || "").trim()}`;
+  return buildSellerFulfillmentGroupKey(orderId, sellerId);
 }
 
 function assertActiveLogistica(profile) {
@@ -96,12 +105,14 @@ function toLogisticaShipmentCard(doc) {
   const row = doc || {};
   const orderId = Number(row.orderId) || 0;
   const sellerId = String(row.sellerId || "").trim();
+  const cargoServiceType = normalizeCargoServiceType(row.cargoServiceType);
+  const productCount = Math.max(0, Number(row.productCount) || 0);
   return {
     id: String(row._id),
     requestCode: String(row.requestCode || ""),
     storeName: String(row.storeName || ""),
     dateTime: formatDateTime(row.submittedAt || row.createdAt),
-    productCount: Math.max(0, Number(row.productCount) || 0),
+    productCount,
     weightKg: Math.max(0, Number(row.weightKg) || 0),
     weightLabel: row.weightLabel || "Taxminiy og'irlik",
     status: String(row.status || "pending"),
@@ -116,6 +127,17 @@ function toLogisticaShipmentCard(doc) {
     sellerId,
     itemIndex: Number(row.itemIndex) || 0,
     groupId: row.groupId ? String(row.groupId) : null,
+    cargoServiceType,
+    cargoLaneCounts: {
+      standard:
+        resolveStoredCargoServiceType(cargoServiceType) === "express"
+          ? 0
+          : productCount,
+      express:
+        resolveStoredCargoServiceType(cargoServiceType) === "express"
+          ? productCount
+          : 0,
+    },
     groupKey: buildFulfillmentGroupKey(orderId, sellerId),
     isGroup: false,
     siblingIds: [],
@@ -123,18 +145,19 @@ function toLogisticaShipmentCard(doc) {
 }
 
 /**
- * Bir checkout (orderId) + bir siller → bitta UI kartochka.
- * Primary: fee-bearer (cargoFeePaymentRequired) — To‘landi id to‘g‘ri bo‘lsin.
- * Fee yo‘q guruhda — eng yangi accepted/submitted.
+ * Qabul sahifasi: orderId+sellerId → bitta kartochka (tarif aralash bo‘lsa ham).
+ * Yuklarim / UZB / admin qabuldan keyin: splitByCargoService → Standard va Express alohida.
  */
-function groupLogisticaShipmentCards(cards = []) {
+function groupLogisticaShipmentCards(cards = [], options = {}) {
+  const splitByCargoService = options.splitByCargoService === true;
   const map = new Map();
 
   for (const card of cards) {
     if (!card) continue;
-    const key =
-      String(card.groupKey || "").trim() ||
-      buildFulfillmentGroupKey(card.orderId, card.sellerId);
+    const key = splitByCargoService
+      ? buildCargoLaneGroupKey(card.orderId, card.sellerId, card.cargoServiceType)
+      : buildFulfillmentGroupKey(card.orderId, card.sellerId);
+    if (!key) continue;
     if (!map.has(key)) {
       map.set(key, []);
     }
@@ -166,6 +189,11 @@ function groupLogisticaShipmentCards(cards = []) {
       ),
     ];
 
+    const cargoLaneCounts = countCargoLanes(sorted);
+    const laneType = splitByCargoService
+      ? resolveStoredCargoServiceType(primary.cargoServiceType)
+      : resolveGroupCargoServiceType(sorted);
+
     grouped.push({
       ...primary,
       requestCode:
@@ -183,7 +211,15 @@ function groupLogisticaShipmentCards(cards = []) {
       ),
       isGroup: sorted.length > 1,
       siblingIds,
-      groupKey: primary.groupKey,
+      cargoServiceType: laneType,
+      cargoLaneCounts,
+      groupKey: splitByCargoService
+        ? buildCargoLaneGroupKey(
+            primary.orderId,
+            primary.sellerId,
+            primary.cargoServiceType,
+          )
+        : buildFulfillmentGroupKey(primary.orderId, primary.sellerId),
     });
   }
 
@@ -237,6 +273,13 @@ function toLogisticaShipmentDetail(doc) {
     groupKey: buildFulfillmentGroupKey(orderId, sellerId),
     siblingIds: [],
     isGroup: false,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
+    cargoLaneCounts: countCargoLanes([
+      {
+        cargoServiceType: row.cargoServiceType,
+        productCount: Math.max(0, Number(row.productCount) || products.length),
+      },
+    ]),
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
@@ -283,6 +326,7 @@ async function loadAcceptedSiblingShipments(shipment, logisticaId) {
     logisticaId: lid,
     paidAt: null,
     _id: { $ne: shipment._id },
+    ...applyCargoLaneMongoFilter({}, shipment),
   })
     .sort({ acceptedAt: -1, submittedAt: -1 })
     .lean();
@@ -322,7 +366,7 @@ async function loadGroupSiblingShipmentsForDetail(shipment, logisticaId = null) 
     ];
   }
 
-  return CargoShipment.find(filter)
+  return CargoShipment.find(applyCargoLaneMongoFilter(filter, shipment))
     .sort({ acceptedAt: -1, submittedAt: -1, createdAt: -1 })
     .lean();
 }
@@ -373,9 +417,15 @@ function mergeGroupDetail(primaryRow, siblingRows = []) {
     ),
     siblingIds,
     isGroup: true,
-    groupKey:
-      detail.groupKey ||
-      buildFulfillmentGroupKey(detail.orderId, detail.sellerId),
+    cargoServiceType: resolveGroupCargoServiceType(allRows),
+    cargoLaneCounts: countCargoLanes(allRows),
+    groupKey: resolveGroupCargoServiceType(allRows)
+      ? buildCargoLaneGroupKey(
+          detail.orderId,
+          detail.sellerId,
+          resolveGroupCargoServiceType(allRows),
+        )
+      : buildFulfillmentGroupKey(detail.orderId, detail.sellerId),
   };
 }
 
@@ -766,7 +816,10 @@ async function listAcceptedShipmentsForLogistica(logisticaId, query = {}) {
     .limit(500)
     .lean();
 
-  const grouped = groupLogisticaShipmentCards(rows.map(toLogisticaShipmentCard));
+  const grouped = groupLogisticaShipmentCards(
+    rows.map(toLogisticaShipmentCard),
+    { splitByCargoService: true },
+  );
   const total = grouped.length;
   const start = (page - 1) * limit;
   const pageItems = grouped.slice(start, start + limit);
@@ -799,7 +852,10 @@ async function listUzWarehouseShipmentsForLogistica(logisticaId, query = {}) {
     .limit(500)
     .lean();
 
-  const grouped = groupLogisticaShipmentCards(rows.map(toLogisticaShipmentCard));
+  const grouped = groupLogisticaShipmentCards(
+    rows.map(toLogisticaShipmentCard),
+    { splitByCargoService: true },
+  );
   const total = grouped.length;
   const start = (page - 1) * limit;
   const pageItems = grouped.slice(start, start + limit);

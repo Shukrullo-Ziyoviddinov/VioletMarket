@@ -95,6 +95,10 @@ function normalizeOrderItem(row) {
     products,
     cargoShipmentId: row?.cargoShipmentId ? String(row.cargoShipmentId) : null,
     cargoFeePayment: normalizeCargoFeePayment(row?.cargoFeePayment),
+    cargoServiceType:
+      row?.cargoServiceType === 'express' || row?.cargoServiceType === 'standard'
+        ? row.cargoServiceType
+        : null,
   };
 }
 
