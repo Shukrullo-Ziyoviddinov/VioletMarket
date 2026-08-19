@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DropdownPicker from '../DropdownPicker/DropdownPicker';
 import { getMasterCategoryDisplayLabel, getProductTypeDisplayLabel } from '../../utils/masterCategoryDisplay';
+import { sellerWarehouseCountryLabel } from '../../utils/sellerWarehouseCountry';
 import './AddProductClassificationFields.css';
 
 function formatFilterLabel(value) {
@@ -49,6 +50,7 @@ export default function AddProductClassificationFields({
   productTypes,
   filterValues,
   shippingCountries,
+  warehouseLocked = false,
   onChange,
 }) {
   const { t, i18n } = useTranslation();
@@ -167,20 +169,38 @@ export default function AddProductClassificationFields({
           className="add-product-classification__field--compact"
         />
 
-        <FilterDropdownField
-          fieldKey="countryCode"
-          openKey={openKey}
-          onOpenKeyChange={setOpenKey}
-          label={t('addProduct.classification.countryCodeLabel')}
-          hint={t('addProduct.classification.countryCodeHint')}
-          required
-          value={values.countryCode}
-          options={shippingCountryOptions}
-          placeholder={t('addProduct.classification.countryCodePlaceholder')}
-          emptyText={t('addProduct.classification.countryCodeEmpty')}
-          onSelect={setField('countryCode')}
-          className="add-product-classification__field--compact"
-        />
+        {warehouseLocked ? (
+          <div className="add-product-form__field add-product-classification__field add-product-classification__field--compact">
+            <span className="add-product-classification__locked-label">
+              {t('addProduct.classification.countryCodeLabel')}
+            </span>
+            <p className="add-product-classification__locked-hint">
+              {t('addProduct.classification.countryCodeHint')}
+            </p>
+            <div className="add-product-classification__locked-value">
+              {sellerWarehouseCountryLabel(
+                values.countryCode,
+                shippingCountries,
+                i18n.language,
+              ) || t('addProduct.classification.countryCodeEmpty')}
+            </div>
+          </div>
+        ) : (
+          <FilterDropdownField
+            fieldKey="countryCode"
+            openKey={openKey}
+            onOpenKeyChange={setOpenKey}
+            label={t('addProduct.classification.countryCodeLabel')}
+            hint={t('addProduct.classification.countryCodeHint')}
+            required
+            value={values.countryCode}
+            options={shippingCountryOptions}
+            placeholder={t('addProduct.classification.countryCodePlaceholder')}
+            emptyText={t('addProduct.classification.countryCodeEmpty')}
+            onSelect={setField('countryCode')}
+            className="add-product-classification__field--compact"
+          />
+        )}
       </div>
 
       <div className="add-product-classification__row add-product-classification__row--3">

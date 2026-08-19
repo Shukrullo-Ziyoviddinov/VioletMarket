@@ -35,6 +35,7 @@ const {
   normalizeCargoServiceType,
   resolveStoredCargoServiceType,
   applyCargoLaneMongoFilter,
+  resolveCargoLaneUnitCount,
   countCargoLanes,
   resolveGroupCargoServiceType,
 } = require("../../utils/cargoServiceType");
@@ -106,7 +107,7 @@ function toLogisticaShipmentCard(doc) {
   const orderId = Number(row.orderId) || 0;
   const sellerId = String(row.sellerId || "").trim();
   const cargoServiceType = normalizeCargoServiceType(row.cargoServiceType);
-  const productCount = Math.max(0, Number(row.productCount) || 0);
+  const productCount = resolveCargoLaneUnitCount(row);
   return {
     id: String(row._id),
     requestCode: String(row.requestCode || ""),
@@ -201,7 +202,7 @@ function groupLogisticaShipmentCards(cards = [], options = {}) {
           ? requestCodes[0] || primary.requestCode
           : requestCodes.join(", "),
       productCount: sorted.reduce(
-        (sum, unit) => sum + (Math.max(0, Number(unit.productCount) || 0)),
+        (sum, unit) => sum + resolveCargoLaneUnitCount(unit),
         0,
       ),
       weightKg: Number(
@@ -250,6 +251,8 @@ function toLogisticaShipmentDetail(doc) {
         ? Number(product.unitIndex)
         : index,
       returnStatus: String(product.returnStatus || "active"),
+      cargoServiceType: resolveStoredCargoServiceType(row.cargoServiceType),
+      requestCode: String(row.requestCode || ""),
     }),
   );
 
@@ -258,7 +261,10 @@ function toLogisticaShipmentDetail(doc) {
     requestCode: String(row.requestCode || ""),
     storeName: String(row.storeName || ""),
     dateTime: formatDateTime(row.submittedAt || row.createdAt),
-    productCount: Math.max(0, Number(row.productCount) || products.length),
+    productCount: resolveCargoLaneUnitCount({
+      ...row,
+      products,
+    }),
     weightKg: Math.max(0, Number(row.weightKg) || 0),
     weightLabel: row.weightLabel || "Taxminiy og'irlik",
     warehouseAddress: String(row.warehouseAddress || ""),
@@ -274,12 +280,7 @@ function toLogisticaShipmentDetail(doc) {
     siblingIds: [],
     isGroup: false,
     cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
-    cargoLaneCounts: countCargoLanes([
-      {
-        cargoServiceType: row.cargoServiceType,
-        productCount: Math.max(0, Number(row.productCount) || products.length),
-      },
-    ]),
+    cargoLaneCounts: countCargoLanes([row]),
     cargoDeliveryFee: Math.max(0, Number(row.cargoDeliveryFee) || 0),
     uzArrivalPhotoUrl: String(row.uzArrivalPhotoUrl || ""),
     uzArrivalComment: String(row.uzArrivalComment || ""),
@@ -319,15 +320,20 @@ async function loadAcceptedSiblingShipments(shipment, logisticaId) {
   const lid = String(logisticaId || "").trim();
   if (!orderId || !sellerId || !lid) return [];
 
-  const rows = await CargoShipment.find({
-    orderId,
-    sellerId,
-    status: "accepted",
-    logisticaId: lid,
-    paidAt: null,
-    _id: { $ne: shipment._id },
-    ...applyCargoLaneMongoFilter({}, shipment),
-  })
+  // Qabuldan keyin: bir yo‘lak siblinglari. Spread qilmang — $or yozilib ketadi.
+  const rows = await CargoShipment.find(
+    applyCargoLaneMongoFilter(
+      {
+        orderId,
+        sellerId,
+        status: "accepted",
+        logisticaId: lid,
+        paidAt: null,
+        _id: { $ne: shipment._id },
+      },
+      shipment,
+    ),
+  )
     .sort({ acceptedAt: -1, submittedAt: -1 })
     .lean();
 
@@ -335,8 +341,8 @@ async function loadAcceptedSiblingShipments(shipment, logisticaId) {
 }
 
 /**
- * Detail / qaytarish UI: guruh siblinglari (pending + accepted + qisman return).
- * To‘langan (paidAt) chiqarilmaydi.
+ * Detail / qaytarish UI: yo‘lak siblinglari (pending + accepted + qisman return).
+ * To‘langan (paidAt) chiqarilmaydi. Qabul sahifasi pending’da lane filter yo‘q.
  */
 async function loadGroupSiblingShipmentsForDetail(shipment, logisticaId = null) {
   const orderId = Number(shipment.orderId) || 0;

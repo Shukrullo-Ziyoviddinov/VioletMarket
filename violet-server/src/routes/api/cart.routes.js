@@ -12,6 +12,11 @@ router.put(
   authMiddleware,
   cartController.saveDeliveryAddress,
 );
+router.put(
+  "/cart/cargo-options",
+  authMiddleware,
+  cartController.updateCargoOptions,
+);
 router.patch("/cart/items/:itemId", authMiddleware, cartController.updateQuantity);
 router.post("/cart/items/:itemId/urgency-dismiss", authMiddleware, cartController.dismissUrgency);
 router.delete("/cart/items/:itemId", authMiddleware, cartController.removeItem);

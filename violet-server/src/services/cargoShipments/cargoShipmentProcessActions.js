@@ -246,7 +246,7 @@ function isCargoFeeBearer(shipment) {
 }
 
 /**
- * Bir orderId+sellerId guruhida faqat bitta fee-bearer bo‘lishi kerak.
+ * Qabuldan keyin: bir yo‘lakda (orderId+sellerId+cargoServiceType) faqat bitta fee-bearer.
  * DB qatori (boshqa shipment) berilganda — 409.
  */
 function raiseIfOtherGroupFeeBearer(shipment, otherBearer) {
@@ -266,21 +266,25 @@ function raiseIfOtherGroupFeeBearer(shipment, otherBearer) {
   );
 }
 
-/** orderId+sellerId guruhida boshqa cargoFeePaymentRequired=true bormi */
+/** Shu yo‘lakda boshqa cargoFeePaymentRequired=true bormi */
 async function findOtherGroupFeeBearer(shipment) {
   const orderId = Number(shipment?.orderId) || 0;
   const sellerId = String(shipment?.sellerId || "").trim();
   const selfId = String(shipment?._id || "").trim();
   if (!orderId || !sellerId || !selfId) return null;
 
-  return CargoShipment.findOne({
-    orderId,
-    sellerId,
-    cargoFeePaymentRequired: true,
-    status: { $nin: ["cancelled"] },
-    _id: { $ne: shipment._id },
-    ...applyCargoLaneMongoFilter({}, shipment),
-  })
+  return CargoShipment.findOne(
+    applyCargoLaneMongoFilter(
+      {
+        orderId,
+        sellerId,
+        cargoFeePaymentRequired: true,
+        status: { $nin: ["cancelled"] },
+        _id: { $ne: shipment._id },
+      },
+      shipment,
+    ),
+  )
     .select({ _id: 1, requestCode: 1 })
     .lean();
 }
@@ -564,7 +568,8 @@ async function applyPaidAtToGroupCompanion(shipment, paidAt) {
 }
 
 /**
- * orderId+sellerId guruhidagi Toshkent siblinglarga paidAt yoyish.
+ * Shu yo‘lakdagi Toshkent siblinglarga paidAt yoyish.
+ * Express to‘lovi Standard ga yoyilmasin.
  * @returns {number} yangi yozilgan sibling soni
  */
 async function fanOutPaidAtToGroupCompanions(feeBearer) {

@@ -4,6 +4,7 @@ import {
   getSellerOrderBuyerName,
   getSellerOrderBuyerPhone,
 } from '../../../utils/sellerOrdersDisplay';
+import { resolveSellerCargoPackages } from '../../../utils/sellerOrderGroups';
 import SellerOrderGroupItems from '../SellerOrderGroupItems/SellerOrderGroupItems';
 import '../SellerOrderHandedCard/SellerOrderHandedCard.css';
 
@@ -32,6 +33,10 @@ export default function SellerOrderCargoHandedCard({ order }) {
         .filter(Boolean);
 
   const sourceItems = items.length ? items : [order];
+  const cargoPackages = resolveSellerCargoPackages(order);
+  const packagesShowRequestCodes = Boolean(
+    cargoPackages?.some((pkg) => pkg.packageCodeKind === 'request'),
+  );
   const requestCodes = [
     ...new Set(
       sourceItems
@@ -90,20 +95,22 @@ export default function SellerOrderCargoHandedCard({ order }) {
         <span>{t('orders.card.phone')}</span>
         <strong>{getSellerOrderBuyerPhone(order.buyer)}</strong>
       </div>
-      <div className="seller-order-handed-card__row">
-        <span>{t('orders.cargoHanded.requestCode')}</span>
-        {requestCodes.length > 1 ? (
-          <ul className="seller-order-handed-card__codes">
-            {requestCodes.map((code) => (
-              <li key={code}>
-                <strong>{code}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <strong>{requestCodes[0] || shipment?.requestCode || '—'}</strong>
-        )}
-      </div>
+      {!packagesShowRequestCodes || !isGroup ? (
+        <div className="seller-order-handed-card__row">
+          <span>{t('orders.cargoHanded.requestCode')}</span>
+          {requestCodes.length > 1 ? (
+            <ul className="seller-order-handed-card__codes">
+              {requestCodes.map((code) => (
+                <li key={code}>
+                  <strong>{code}</strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <strong>{requestCodes[0] || shipment?.requestCode || '—'}</strong>
+          )}
+        </div>
+      ) : null}
       {cargoGroupIds.length ? (
         <div className="seller-order-handed-card__row">
           <span>

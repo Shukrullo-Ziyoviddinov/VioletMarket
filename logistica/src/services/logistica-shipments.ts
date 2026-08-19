@@ -77,6 +77,15 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
         image: String(product?.image || '/img/no-image.png'),
         unitIndex: Number(product?.unitIndex) || 0,
         returnStatus: String(product?.returnStatus || 'active'),
+        cargoServiceType:
+          product?.cargoServiceType === 'express' ||
+          product?.cargoServiceType === 'standard'
+            ? product.cargoServiceType
+            : row.cargoServiceType === 'express' ||
+                row.cargoServiceType === 'standard'
+              ? row.cargoServiceType
+              : undefined,
+        requestCode: String(product?.requestCode || ''),
       }))
     : [];
 

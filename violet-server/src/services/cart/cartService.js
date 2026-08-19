@@ -1,5 +1,6 @@
 const { CartItem } = require("../../models/cart");
 const { Product } = require("../../models/product");
+const { SellerAccount } = require("../../models/sellerAccount");
 const { User } = require("../../models/user");
 const { HttpError } = require("../../utils/httpError");
 const {
@@ -18,6 +19,17 @@ const {
   requireDeliveryRegionAddress,
 } = require("../../utils/normalizeDeliveryAddress");
 const { isProductActiveOnClient } = require("../../utils/productClientVisibility");
+const { normalizeCargoCountry } = require("../../utils/cargoCountryNormalize");
+const {
+  CARGO_SERVICE_TYPE,
+  normalizeCargoServiceType,
+  normalizeSelectedCargoOptionsMap,
+  resolveCartCargoCountryKey,
+  resolvePersistedCartCargoServiceType,
+} = require("../../utils/cargoServiceType");
+const {
+  isLocalSellerCountry,
+} = require("../../productManagement/seller/sellerPipelineMode");
 const {
   generateInitialUrgencyStock,
   buildNextShowAt,
@@ -47,6 +59,67 @@ function keepNewestProductsById(products) {
     map.set(id, product);
   }
   return map;
+}
+
+async function loadUserSelectedCargoOptions(userId) {
+  const user = await User.findById(userId).select({ selectedCargoOptions: 1 }).lean();
+  return normalizeSelectedCargoOptionsMap(user?.selectedCargoOptions);
+}
+
+async function saveUserSelectedCargoOptions(userId, selectedCargoOptions) {
+  const map = normalizeSelectedCargoOptionsMap(selectedCargoOptions);
+  await User.findByIdAndUpdate(userId, { $set: { selectedCargoOptions: map } });
+  return map;
+}
+
+function resolveItemCargoServiceType(item, sellerCountry, selectedCargoOptions) {
+  return resolvePersistedCartCargoServiceType({
+    sellerCountry,
+    cargoExpressPolicy: item?.cargoExpressPolicy,
+    itemCountries: item?.countries,
+    selectedCargoOptions,
+    storedType: item?.cargoServiceType,
+  });
+}
+
+async function stampCartItemsCargoServiceType(items, sellerCtx, selectedCargoOptions) {
+  const map = normalizeSelectedCargoOptionsMap(selectedCargoOptions);
+  let hydrated = { ...map };
+
+  for (const item of Array.isArray(items) ? items : []) {
+    const productId = Number(item.productId);
+    const ctx = sellerCtx instanceof Map ? sellerCtx.get(productId) : null;
+    const next = resolveItemCargoServiceType(
+      item,
+      ctx?.sellerCountry || "",
+      hydrated,
+    );
+    const normalized = next || null;
+    if (
+      normalized &&
+      String(item.cargoServiceType || "") !== String(normalized)
+    ) {
+      item.cargoServiceType = normalized;
+      await item.save();
+    }
+    const stored = normalizeCargoServiceType(normalized);
+    if (stored === CARGO_SERVICE_TYPE.EXPRESS || stored === CARGO_SERVICE_TYPE.STANDARD) {
+      const country = resolveCartCargoCountryKey({
+        itemCountries: item.countries,
+        sellerCountry: ctx?.sellerCountry || "",
+      });
+      if (
+        country &&
+        country !== "uzb" &&
+        !isLocalSellerCountry(ctx?.sellerCountry) &&
+        !hydrated[country]
+      ) {
+        hydrated[country] = stored;
+      }
+    }
+  }
+
+  return normalizeSelectedCargoOptionsMap(hydrated);
 }
 
 async function assertProductPurchasable(productId) {
@@ -100,11 +173,60 @@ async function pickDistinctUrgencyStock(userId, excludeItemId = null) {
   return candidates[idx];
 }
 
-function mapItemToClient(doc) {
+async function loadCartSellerContext(items) {
+  const productIds = [
+    ...new Set(
+      (Array.isArray(items) ? items : [])
+        .map((item) => Number(item?.productId))
+        .filter(Number.isFinite),
+    ),
+  ];
+  if (!productIds.length) return new Map();
+
+  const products = await Product.find({ id: { $in: productIds } })
+    .select({ id: 1, sellerId: 1 })
+    .sort({ _id: -1 })
+    .lean();
+  const newest = keepNewestProductsById(products);
+  const sellerIds = [
+    ...new Set(
+      [...newest.values()]
+        .map((product) => String(product?.sellerId || "").trim())
+        .filter(Boolean),
+    ),
+  ];
+  const sellers = sellerIds.length
+    ? await SellerAccount.find({ id: { $in: sellerIds } })
+        .select({ id: 1, sellerCountry: 1 })
+        .lean()
+    : [];
+  const sellerCountryById = new Map(
+    sellers.map((row) => [
+      String(row.id),
+      String(row.sellerCountry || "").trim().toLowerCase(),
+    ]),
+  );
+
+  const byProductId = new Map();
+  for (const [productId, product] of newest.entries()) {
+    const sellerId = String(product?.sellerId || "").trim();
+    byProductId.set(productId, {
+      sellerId,
+      sellerCountry: sellerCountryById.get(sellerId) || "",
+    });
+  }
+  return byProductId;
+}
+
+function mapItemToClient(doc, sellerCtx = null) {
   const row = doc.toObject ? doc.toObject() : doc;
+  const productId = Number(row.productId);
+  const fromProduct = sellerCtx instanceof Map ? sellerCtx.get(productId) : sellerCtx;
   return {
     cartItemId: String(row._id),
     id: row.productId,
+    sellerId: String(fromProduct?.sellerId || "").trim(),
+    sellerCountry: String(fromProduct?.sellerCountry || "").trim().toLowerCase(),
     title: row.title,
     price: row.price,
     originalPrice: row.originalPrice,
@@ -117,6 +239,10 @@ function mapItemToClient(doc) {
     countries: row.countries || [],
     weight: row.weight ?? 300,
     cargoExpressPolicy: row.cargoExpressPolicy ?? null,
+    cargoServiceType:
+      row.cargoServiceType === "express" || row.cargoServiceType === "standard"
+        ? row.cargoServiceType
+        : null,
     urgencyStockLeft: Number.isFinite(row.urgencyStockLeft)
       ? row.urgencyStockLeft
       : 3,
@@ -148,7 +274,20 @@ async function getCartForUser(userId) {
       await item.save();
     }
   }
-  return { items: items.map(mapItemToClient) };
+  const sellerCtx = await loadCartSellerContext(items);
+  const storedOptions = await loadUserSelectedCargoOptions(userId);
+  const selectedCargoOptions = await stampCartItemsCargoServiceType(
+    items,
+    sellerCtx,
+    storedOptions,
+  );
+  if (JSON.stringify(selectedCargoOptions) !== JSON.stringify(storedOptions)) {
+    await saveUserSelectedCargoOptions(userId, selectedCargoOptions);
+  }
+  return {
+    items: items.map((item) => mapItemToClient(item, sellerCtx)),
+    selectedCargoOptions,
+  };
 }
 
 async function addCartItem(userId, payload) {
@@ -263,6 +402,35 @@ async function addCartItem(userId, payload) {
   doc.urgencyNextShowAt = buildNextShowAt();
   await doc.save();
 
+  return getCartForUser(userId);
+}
+
+async function updateCartCargoOptions(userId, payload = {}) {
+  const current = await loadUserSelectedCargoOptions(userId);
+  const type = normalizeCargoServiceType(payload.type || payload.cargoServiceType);
+  const countryRaw = String(payload.country || payload.countryKey || "").trim();
+  let next = { ...current };
+
+  if (countryRaw && type) {
+    const country = normalizeCargoCountry(countryRaw);
+    if (!country || country === "uzb") {
+      throw new HttpError(400, "Xorij davlati tanlanishi shart", "VALIDATION_ERROR");
+    }
+    next[country] = type;
+  } else if (payload.selectedCargoOptions) {
+    next = {
+      ...current,
+      ...normalizeSelectedCargoOptionsMap(payload.selectedCargoOptions),
+    };
+  } else {
+    throw new HttpError(
+      400,
+      "cargoServiceType: standard yoki express bo'lishi shart",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  await saveUserSelectedCargoOptions(userId, next);
   return getCartForUser(userId);
 }
 
@@ -515,7 +683,7 @@ async function checkoutCartForUser(userId, options = {}) {
     productMap,
     paymentMethod: options.paymentMethod,
     deliveryAddress,
-    selectedCargoOptions: options.selectedCargoOptions,
+    selectedCargoOptions: await loadUserSelectedCargoOptions(userId),
   });
 
   if (deliveryAddress) {
@@ -568,6 +736,7 @@ module.exports = {
   getCartForUser,
   addCartItem,
   updateCartItemQuantity,
+  updateCartCargoOptions,
   removeCartItem,
   clearCartForUser,
   checkoutCartForUser,

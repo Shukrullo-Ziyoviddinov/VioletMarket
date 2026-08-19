@@ -12,6 +12,7 @@ import { getLabelFromOption, getNumberPrice } from '../utils/utils';
 import { resolveCargoExpressPolicyForCart } from '../utils/cargoExpressPolicy';
 import i18n from '../i18n';
 import { useUser } from './UserContext';
+import { useAppData } from './AppDataContext';
 import { useToast } from './ToastContext';
 import {
   fetchCart,
@@ -21,7 +22,9 @@ import {
   dismissCartUrgency,
   clearCartApi,
   checkoutCartApi,
+  updateCartCargoOptionsApi,
 } from '../api/cartApi';
+import { hydrateSelectedCargoOptions } from '../utils/cargoGrouping';
 
 const CartContext = createContext();
 
@@ -120,10 +123,19 @@ function buildCartPayload(product, color, size, storage, model) {
     model: modelLabel,
     image,
     quantity: 1,
+    sellerId: String(product?.sellerId || '').trim(),
     countries: product?.countries || [],
     weight: product?.weight || 300,
     cargoExpressPolicy: resolveCargoExpressPolicyForCart(product),
   };
+}
+
+function readLocalDeliveryType() {
+  try {
+    return localStorage.getItem('selectedDeliveryType') || 'toshkent';
+  } catch {
+    return 'toshkent';
+  }
 }
 
 export const CartProvider = ({ children }) => {
@@ -131,23 +143,35 @@ export const CartProvider = ({ children }) => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { authToken, userData } = useUser();
+  const { getSellerById } = useAppData();
   const [cart, setCart] = useState([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [cartReady, setCartReady] = useState(false);
-  const [selectedDeliveryType, setSelectedDeliveryType] = useState(
-    localStorage.getItem('selectedDeliveryType') || 'toshkent',
-  );
-  const [selectedCargoOptions, setSelectedCargoOptions] = useState(
-    JSON.parse(localStorage.getItem('selectedCargoOptions') || '{}'),
-  );
+  const [selectedDeliveryType, setSelectedDeliveryType] = useState(readLocalDeliveryType);
+  const [selectedCargoOptions, setSelectedCargoOptions] = useState({});
 
   const syncFromResponse = useCallback((data) => {
-    setCart(Array.isArray(data.items) ? data.items : []);
-  }, []);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    setCart(
+      items.map((item) => {
+        if (String(item?.sellerCountry || '').trim()) return item;
+        const sellerId = String(item?.sellerId || '').trim();
+        if (!sellerId || typeof getSellerById !== 'function') return item;
+        const sellerCountry = String(getSellerById(sellerId)?.sellerCountry || '')
+          .trim()
+          .toLowerCase();
+        return sellerCountry ? { ...item, sellerCountry } : item;
+      }),
+    );
+    setSelectedCargoOptions(
+      hydrateSelectedCargoOptions(items, data?.selectedCargoOptions),
+    );
+  }, [getSellerById]);
 
   const loadCart = useCallback(async () => {
     if (!authToken) {
       setCart([]);
+      setSelectedCargoOptions({});
       setCartLoading(false);
       setCartReady(true);
       return;
@@ -169,16 +193,21 @@ export const CartProvider = ({ children }) => {
   }, [loadCart, userData.id]);
 
   useEffect(() => {
-    localStorage.removeItem('cart');
+    try {
+      localStorage.removeItem('cart');
+      localStorage.removeItem('selectedCargoOptions');
+    } catch {
+      // ignore
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('selectedDeliveryType', selectedDeliveryType);
+    try {
+      localStorage.setItem('selectedDeliveryType', selectedDeliveryType);
+    } catch {
+      // ignore
+    }
   }, [selectedDeliveryType]);
-
-  useEffect(() => {
-    localStorage.setItem('selectedCargoOptions', JSON.stringify(selectedCargoOptions));
-  }, [selectedCargoOptions]);
 
   const addToCart = useCallback(
     async (product, color, size, storage, model) => {
@@ -261,11 +290,10 @@ export const CartProvider = ({ children }) => {
     const data = await checkoutCartApi(authToken, {
       paymentMethod,
       deliveryAddress,
-      selectedCargoOptions,
     });
     syncFromResponse(data);
     return data;
-  }, [authToken, selectedCargoOptions, syncFromResponse]);
+  }, [authToken, syncFromResponse]);
 
   const getTotal = useCallback(() => {
     return cart.reduce((sum, item) => {
@@ -283,12 +311,30 @@ export const CartProvider = ({ children }) => {
     setSelectedDeliveryType(type);
   };
 
-  const updateCargoSelection = (country, type) => {
-    setSelectedCargoOptions((prev) => ({
-      ...prev,
-      [country.toLowerCase()]: type,
-    }));
-  };
+  const updateCargoSelection = useCallback(
+    async (country, type) => {
+      const key = String(country || '').trim().toLowerCase();
+      const nextType = String(type || '').trim().toLowerCase();
+      if (!key || (nextType !== 'standard' && nextType !== 'express')) return;
+
+      const prev = selectedCargoOptions;
+      setSelectedCargoOptions((current) => ({ ...current, [key]: nextType }));
+
+      if (!authToken) return;
+      try {
+        const data = await updateCartCargoOptionsApi(authToken, {
+          country: key,
+          type: nextType,
+        });
+        syncFromResponse(data);
+      } catch (err) {
+        console.error('Cargo tanlovi saqlanmadi:', err);
+        setSelectedCargoOptions(prev);
+        showToast(t('cart.updateError'), 'error');
+      }
+    },
+    [authToken, selectedCargoOptions, showToast, syncFromResponse, t],
+  );
 
   const urgencyItems = useMemo(() => {
     const withUrgency = cart.filter((item) => Number.isFinite(parseUrgencyMs(item?.urgencyNextShowAt)));

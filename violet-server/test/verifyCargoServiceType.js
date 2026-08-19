@@ -5,11 +5,17 @@
 const assert = require("assert");
 const {
   CARGO_SERVICE_TYPE,
+  resolveCartCargoCountryKey,
   resolveCheckoutCargoServiceType,
+  resolvePersistedCartCargoServiceType,
   buildCargoLaneGroupKey,
+  buildCustomerTrackingGroupKey,
   buildSellerFulfillmentGroupKey,
   resolveStoredCargoServiceType,
+  resolveTrackingCargoServiceType,
   countCargoLanes,
+  applyCargoLaneMongoFilter,
+  resolveCargoLaneUnitCount,
 } = require("../src/utils/cargoServiceType");
 const {
   groupLogisticaShipmentCards,
@@ -33,6 +39,18 @@ check("UZB siller → cargoServiceType null", () => {
       sellerCountry: "uzb",
       cargoExpressPolicy: "unrestricted",
       selectedCargoOptions: { china: "express" },
+    }),
+    null,
+  );
+});
+
+check("UZB siller + xorij countries[] ham null (local zanjir)", () => {
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "uzb",
+      cargoExpressPolicy: "unrestricted",
+      itemCountries: ["usa"],
+      selectedCargoOptions: { usa: "express" },
     }),
     null,
   );
@@ -71,11 +89,182 @@ check("xitoy alias tanlov mos keladi", () => {
   );
 });
 
+check("savat storedType express — map bo‘lmasa ham express", () => {
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      storedType: "express",
+      requireSelection: true,
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
+check("tanlov yo‘q + requireSelection → xato", () => {
+  assert.throws(
+    () =>
+      resolveCheckoutCargoServiceType({
+        sellerCountry: "china",
+        cargoExpressPolicy: "unrestricted",
+        requireSelection: true,
+      }),
+    (err) => err && err.code === "CARGO_SERVICE_REQUIRED",
+  );
+});
+
+check("tanlov yo‘q + savatga yozish → standard", () => {
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+    }),
+    CARGO_SERVICE_TYPE.STANDARD,
+  );
+});
+
+check("GET/stamp: tanlov yo‘q → null (Standard yozilmaydi)", () => {
+  assert.strictEqual(
+    resolvePersistedCartCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+    }),
+    null,
+  );
+});
+
+check("GET/stamp: user map express saqlanadi", () => {
+  assert.strictEqual(
+    resolvePersistedCartCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      selectedCargoOptions: { china: "express" },
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
+check("GET/stamp: item storedType express, map bo‘sh", () => {
+  assert.strictEqual(
+    resolvePersistedCartCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      storedType: "express",
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
+check("countries[] savat kalitidan oldin sellerCountry ishlatilmaydi", () => {
+  assert.strictEqual(
+    resolveCartCargoCountryKey({
+      sellerCountry: "china",
+      itemCountries: ["usa"],
+    }),
+    "usa",
+  );
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      itemCountries: ["usa"],
+      selectedCargoOptions: { usa: "express", china: "standard" },
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
+check("countries[] bo‘sh bo‘lsa sellerCountry fallback", () => {
+  assert.strictEqual(
+    resolveCartCargoCountryKey({
+      sellerCountry: "china",
+      itemCountries: [],
+    }),
+    "china",
+  );
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      itemCountries: [],
+      selectedCargoOptions: { china: "express" },
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
+check("faqat uzb countries[] → null (siller china bo‘lsa ham)", () => {
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      itemCountries: ["uzb"],
+      selectedCargoOptions: { china: "express" },
+    }),
+    null,
+  );
+});
+
+check("uzb + xorij countries[] → xorij savat tanlovi", () => {
+  assert.strictEqual(
+    resolveCheckoutCargoServiceType({
+      sellerCountry: "china",
+      cargoExpressPolicy: "unrestricted",
+      itemCountries: ["uzb", "usa"],
+      selectedCargoOptions: { usa: "express", china: "standard" },
+    }),
+    CARGO_SERVICE_TYPE.EXPRESS,
+  );
+});
+
 check("lane key seller keydan farq qiladi", () => {
   assert.strictEqual(buildSellerFulfillmentGroupKey(10, "s1"), "10:s1");
   assert.strictEqual(buildCargoLaneGroupKey(10, "s1", "express"), "10:s1:express");
   assert.strictEqual(buildCargoLaneGroupKey(10, "s1", null), "10:s1:standard");
   assert.strictEqual(resolveStoredCargoServiceType(null), "standard");
+});
+
+check("mijoz tracking: eski yozuv = Standard, UZB lane yo‘q", () => {
+  assert.strictEqual(resolveTrackingCargoServiceType("foreign", null), "standard");
+  assert.strictEqual(resolveTrackingCargoServiceType("foreign", ""), "standard");
+  assert.strictEqual(
+    resolveTrackingCargoServiceType("foreign", "standard"),
+    "standard",
+  );
+  assert.strictEqual(resolveTrackingCargoServiceType("foreign", "express"), "express");
+  assert.strictEqual(resolveTrackingCargoServiceType("local", null), null);
+  assert.strictEqual(resolveTrackingCargoServiceType("local", "express"), null);
+  assert.strictEqual(
+    buildCustomerTrackingGroupKey(10, "s1", "foreign", null),
+    "10:s1:standard",
+  );
+  assert.strictEqual(
+    buildCustomerTrackingGroupKey(10, "s1", "foreign", "standard"),
+    "10:s1:standard",
+  );
+  assert.strictEqual(
+    buildCustomerTrackingGroupKey(10, "s1", "local", null),
+    "10:s1",
+  );
+});
+
+check("lane filter base $or ni saqlaydi — spread qilmang", () => {
+  const base = {
+    orderId: 1,
+    sellerId: "s1",
+    $or: [{ status: "pending" }, { logisticaId: "L1" }],
+  };
+  const merged = applyCargoLaneMongoFilter(base, { cargoServiceType: "standard" });
+  assert.ok(Array.isArray(merged.$and));
+  assert.strictEqual(merged.$and.length, 2);
+  assert.deepStrictEqual(merged.$and[0].$or, base.$or);
+  assert.ok(merged.$and[1].$or.some((row) => row.cargoServiceType === "standard"));
+
+  const spread = {
+    ...base,
+    ...applyCargoLaneMongoFilter({}, { cargoServiceType: "standard" }),
+  };
+  assert.ok(!JSON.stringify(spread.$or || []).includes("pending"));
 });
 
 const mixedCards = [
@@ -130,6 +319,37 @@ check("countCargoLanes", () => {
     standard: 2,
     express: 3,
   });
+});
+
+check("countCargoLanes productCount 0 → kamida 1", () => {
+  assert.strictEqual(resolveCargoLaneUnitCount({ productCount: 0 }), 1);
+  assert.deepStrictEqual(
+    countCargoLanes([
+      { cargoServiceType: "express", productCount: 0 },
+      { cargoServiceType: "standard" },
+    ]),
+    { standard: 1, express: 1 },
+  );
+});
+
+check("countCargoLanes products.length / quantity", () => {
+  assert.strictEqual(
+    resolveCargoLaneUnitCount({
+      productCount: 0,
+      products: [{ quantity: 2 }, { quantity: 1 }],
+    }),
+    3,
+  );
+  assert.deepStrictEqual(
+    countCargoLanes([
+      {
+        cargoServiceType: "express",
+        productCount: 0,
+        products: [{}, {}],
+      },
+    ]),
+    { standard: 0, express: 2 },
+  );
 });
 
 console.log("\nPassed", passed, "checks");

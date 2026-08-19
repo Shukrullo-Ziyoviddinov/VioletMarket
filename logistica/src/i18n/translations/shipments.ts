@@ -33,6 +33,8 @@ export const shipmentTranslations = {
         standard: 'Standard',
         express: 'Express',
         mixed: 'Express {{express}} · Standard {{standard}}',
+        expressPackage: 'Express paket',
+        standardPackage: 'Standard paket',
       },
       filters: {
         all: 'Barchasi',
@@ -53,6 +55,12 @@ export const shipmentTranslations = {
         totalWeight: 'Umumiy og‘irlik',
         selectReturnHint:
           'Brak / qaytariladigan donalarni tanlang (bir nechtasini mumkin). Yaroqlilarni tanlamang.',
+        mixedPackagesHint:
+          'Express va Standard alohida paket. Qabul bitta — keyin Yuklarimda ikkita karta bo‘ladi.',
+        mixedReturnHint:
+          'Qaytarishda Express va Standard ni birga tanlamang — faqat bitta tarif.',
+        mixedAcceptHint:
+          'Qabul 1 marta. Qabuldan keyin Express va Standard ajraladi.',
         unitReturned: 'Qaytarilgan',
         unitInReturn: 'Qaytarish oqimida',
         processStatus: 'Jarayon holati',
@@ -92,6 +100,10 @@ export const shipmentTranslations = {
         returnMessage:
           'Tanlangan mahsulotlar uchun asosiy adminga so‘rov yuborilsinmi? Tasdiqlangach «Qaytarish» sahifasida yakunlaysiz. Mijoz to‘lagan bo‘lsa — «Mijozga pul qaytarish»ga chiqadi.',
         returnSelectRequired: 'Avval qaytariladigan mahsulotni tanlang',
+        returnSelectLaneRequired:
+          'Aralash so‘rovda avval bitta tarifni tanlang (Express yoki Standard).',
+        returnMixedBlocked:
+          'Express va Standard mahsulotlarni bir so‘rovda qaytarib bo‘lmaydi. Faqat bitta tarifni tanlang.',
         returnSentTitle: 'So‘rov yuborildi',
         returnSentMessage:
           'Asosiy admin tasdiqlashini kuting. Tasdiqdan keyin «Qaytarish» sahifasiga o‘tadi.',
@@ -185,6 +197,8 @@ export const shipmentTranslations = {
         standard: 'Standard',
         express: 'Express',
         mixed: 'Express {{express}} · Standard {{standard}}',
+        expressPackage: 'Express package',
+        standardPackage: 'Standard package',
       },
       filters: {
         all: 'All',
@@ -205,6 +219,12 @@ export const shipmentTranslations = {
         totalWeight: 'Total weight',
         selectReturnHint:
           'Select defective units to return (multiple allowed). Leave good ones unselected.',
+        mixedPackagesHint:
+          'Express and Standard are separate packages. One Accept — then two cards in My shipments.',
+        mixedReturnHint:
+          'Do not mix Express and Standard in one return — pick a single tariff.',
+        mixedAcceptHint:
+          'Accept once. After accept, Express and Standard split.',
         unitReturned: 'Returned',
         unitInReturn: 'In return flow',
         processStatus: 'Process status',
@@ -244,6 +264,10 @@ export const shipmentTranslations = {
         returnMessage:
           'Send a request to the main admin for the selected products? After approval you will finish it on the Returns page. If the customer paid, it will appear under Customer refunds.',
         returnSelectRequired: 'Select at least one product to return',
+        returnSelectLaneRequired:
+          'This mixed request needs one tariff selected first (Express or Standard).',
+        returnMixedBlocked:
+          'Express and Standard cannot be returned in the same request. Select only one tariff.',
         returnSentTitle: 'Request sent',
         returnSentMessage:
           'Wait for main admin approval. After approval it moves to the Returns page.',
@@ -336,6 +360,8 @@ export const shipmentTranslations = {
         standard: '标准',
         express: '快递',
         mixed: '快递 {{express}} · 标准 {{standard}}',
+        expressPackage: '快递包裹',
+        standardPackage: '标准包裹',
       },
       filters: {
         all: '全部',
@@ -356,6 +382,12 @@ export const shipmentTranslations = {
         totalWeight: '总重量',
         selectReturnHint:
           '请选择要退回的残次单件（可多选）。完好的不要勾选。',
+        mixedPackagesHint:
+          '快递与标准为两个包裹。一次接收后，在「我的货物」中分成两张卡片。',
+        mixedReturnHint:
+          '退货时请勿同时选择快递和标准，只选一种运费。',
+        mixedAcceptHint:
+          '接收一次。接收后快递与标准会分开。',
         unitReturned: '已退回',
         unitInReturn: '退货流程中',
         processStatus: '流程状态',
@@ -392,6 +424,10 @@ export const shipmentTranslations = {
         returnMessage:
           '是否为所选商品向主管理员发送请求？批准后您将在「退货」页面完成。若客户已付款，将出现在「向客户退款」。',
         returnSelectRequired: '请先选择要退回的商品',
+        returnSelectLaneRequired:
+          '混合请求请先只选一种运费（快递或标准）。',
+        returnMixedBlocked:
+          '快递和标准不能在同一请求中退回。请只选择一种运费。',
         returnSentTitle: '请求已发送',
         returnSentMessage:
           '请等待主管理员批准。批准后将转到「退货」页面。',

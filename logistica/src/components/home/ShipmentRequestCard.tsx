@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { WeightLabel } from '@/types/shipment';
-import { formatCargoServiceLabel } from '@/utils/cargoServiceLabel';
+import { formatCargoServiceLabel, isMixedCargoLanes } from '@/utils/cargoServiceLabel';
 
 export type ShipmentRequest = {
   id: string;
@@ -43,6 +43,12 @@ export function ShipmentRequestCard({
 }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
+  const mixed = isMixedCargoLanes(item.cargoLaneCounts);
+  const cargoLabel = formatCargoServiceLabel(
+    t,
+    item.cargoServiceType,
+    item.cargoLaneCounts,
+  );
   const showPaymentBadge =
     showCargoPaymentStatus && item.cargoFeePaymentRequired;
   const isCargoPaymentConfirmed = Boolean(item.adminCargoFeeConfirmedAt);
@@ -72,17 +78,14 @@ export function ShipmentRequestCard({
         <Text style={styles.storeName} numberOfLines={1}>
           {item.storeName}
         </Text>
-        {formatCargoServiceLabel(
-          t,
-          item.cargoServiceType,
-          item.cargoLaneCounts,
-        ) ? (
-          <Text style={styles.cargoLane} numberOfLines={1}>
-            {formatCargoServiceLabel(
-              t,
-              item.cargoServiceType,
-              item.cargoLaneCounts,
-            )}
+        {cargoLabel ? (
+          <Text style={styles.cargoLane} numberOfLines={2}>
+            {cargoLabel}
+          </Text>
+        ) : null}
+        {mixed ? (
+          <Text style={styles.mixedHint} numberOfLines={2}>
+            {t('shipments.detail.mixedAcceptHint')}
           </Text>
         ) : null}
         <Text style={styles.dateTime}>{item.dateTime}</Text>
@@ -186,6 +189,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#7C3AED',
+  },
+  mixedHint: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6D28D9',
+    lineHeight: 14,
   },
   dateTime: {
     fontSize: 12,

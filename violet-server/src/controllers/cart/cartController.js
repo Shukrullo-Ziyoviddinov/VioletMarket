@@ -56,7 +56,6 @@ const checkout = asyncHandler(async (req, res) => {
   const data = await cartService.checkoutCartForUser(req.userId, {
     paymentMethod,
     deliveryAddress,
-    selectedCargoOptions: body.selectedCargoOptions,
   });
   res.json({
     ok: true,
@@ -82,6 +81,11 @@ const dismissUrgency = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...data });
 });
 
+const updateCargoOptions = asyncHandler(async (req, res) => {
+  const data = await cartService.updateCartCargoOptions(req.userId, req.body || {});
+  res.json({ ok: true, ...data });
+});
+
 module.exports = {
   getMyCart,
   addItem,
@@ -91,4 +95,5 @@ module.exports = {
   checkout,
   saveDeliveryAddress,
   dismissUrgency,
+  updateCargoOptions,
 };

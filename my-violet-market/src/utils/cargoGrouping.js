@@ -1,14 +1,74 @@
-import { normalizeProductCountries } from './warehouseProduct';
+import {
+  normalizeCountryCode,
+  normalizeProductCountries,
+} from './warehouseProduct';
 import {
   isStandardOnlyCargoItem,
   isUnrestrictedCargoItem,
 } from './cargoExpressPolicy';
 
-/** Savat elementlarini countries[] bo'yicha guruhlash (china, usa, uzb, … alohida). */
+function isLocalCartSeller(item) {
+  return normalizeCountryCode(item?.sellerCountry) === 'uzb';
+}
+
+/**
+ * Savat ombor kaliti.
+ * UZB siller → doim uzb (countries[] Made in / noto‘g‘ri USA bo‘lsa ham).
+ * Xorij siller → countries[] (checkout resolveCartCargoCountryKey bilan bir xil).
+ */
+export function resolveCartWarehouseCountryKeys(item) {
+  if (isLocalCartSeller(item)) return ['uzb'];
+
+  const fromProduct = normalizeProductCountries(item);
+  if (fromProduct.length) return fromProduct;
+
+  const sellerCountry = normalizeCountryCode(item?.sellerCountry);
+  if (sellerCountry) return [sellerCountry];
+  return [];
+}
+
+export function isExclusiveWarehouseCartItem(item, countryKey) {
+  const keys = resolveCartWarehouseCountryKeys(item);
+  const key = normalizeCountryCode(countryKey);
+  return keys.length > 0 && keys.every((code) => code === key);
+}
+
+/**
+ * Server selectedCargoOptions + item.cargoServiceType dan UI xaritasi.
+ * Server xarita ustun.
+ */
+export function hydrateSelectedCargoOptions(items, serverMap = {}) {
+  const hydrated = {};
+  for (const item of Array.isArray(items) ? items : []) {
+    if (isLocalCartSeller(item)) continue;
+    const type = item?.cargoServiceType;
+    if (type !== 'express' && type !== 'standard') continue;
+    for (const key of resolveCartWarehouseCountryKeys(item)) {
+      if (key && key !== 'uzb' && !hydrated[key]) hydrated[key] = type;
+    }
+  }
+  const fromServer =
+    serverMap && typeof serverMap === 'object' && !Array.isArray(serverMap)
+      ? serverMap
+      : {};
+  for (const [key, value] of Object.entries(fromServer)) {
+    const country = normalizeCountryCode(key);
+    const type = String(value || '').trim().toLowerCase();
+    if (!country || country === 'uzb') continue;
+    if (type !== 'express' && type !== 'standard') continue;
+    hydrated[country] = type;
+  }
+  return hydrated;
+}
+
+/**
+ * Savat elementlarini ombor davlati bo'yicha guruhlash.
+ * selectedCargoOptions shu countryKey bilan yoziladi.
+ */
 export function groupCartItemsByCountry(items) {
   const groups = {};
   (items || []).forEach((item) => {
-    normalizeProductCountries(item).forEach((countryKey) => {
+    resolveCartWarehouseCountryKeys(item).forEach((countryKey) => {
       if (!groups[countryKey]) groups[countryKey] = [];
       groups[countryKey].push(item);
     });
@@ -67,7 +127,14 @@ export function calcForeignCountryCargoPrice(
 
   if (unrestricted.length > 0) {
     const weight = sumCartItemsWeightGrams(unrestricted);
-    const selectedType = selectedCargoOptions[countryKey] || 'standard';
+    const selectedType =
+      selectedCargoOptions[countryKey] ||
+      unrestricted.find(
+        (item) =>
+          item?.cargoServiceType === 'express' ||
+          item?.cargoServiceType === 'standard',
+      )?.cargoServiceType ||
+      'standard';
     const rate = cargoInfo[selectedType] ?? cargoInfo.standard;
     total += calcCargoFeeFromWeightGrams(weight, rate);
   }

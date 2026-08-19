@@ -34,6 +34,8 @@ const cartItemSchema = new mongoose.Schema(
     weight: { type: Number, default: 300 },
     /** xorij: unrestricted | standard_only | null (bo'sh = cheklovsiz) */
     cargoExpressPolicy: { type: String, default: null },
+    /** xorij: standard | express | null (UZB = null) */
+    cargoServiceType: { type: String, default: null },
     urgencyStockLeft: { type: Number, default: randomUrgencyStock, min: 1 },
     urgencyNextShowAt: { type: Date, default: null },
     urgencyEndsAt: { type: Date, default: null },

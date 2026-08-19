@@ -25,8 +25,8 @@ const {
   COURIER_IN_PROGRESS_STATUSES,
 } = require("../../unitLifecycle/assignmentPoolRules");
 const {
-  buildCargoLaneGroupKey,
-  normalizeCargoServiceType,
+  buildCustomerTrackingGroupKey,
+  resolveTrackingCargoServiceType,
 } = require("../../utils/cargoServiceType");
 
 function cleanSellerId(value) {
@@ -73,11 +73,17 @@ function mapOrderItemBase(order, item, itemIndex, seller) {
   const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
   const sellerId = cleanSellerId(seller.id);
   const orderId = Number(order.id) || 0;
-  const cargoServiceType = normalizeCargoServiceType(item.cargoServiceType);
+  const cargoServiceType = resolveTrackingCargoServiceType(
+    pipelineMode,
+    item.cargoServiceType,
+  );
   const groupKey =
-    pipelineMode === "foreign" && cargoServiceType
-      ? buildCargoLaneGroupKey(orderId, sellerId, cargoServiceType)
-      : fulfillmentGroupKey(orderId, sellerId);
+    buildCustomerTrackingGroupKey(
+      orderId,
+      sellerId,
+      pipelineMode,
+      cargoServiceType,
+    ) || fulfillmentGroupKey(orderId, sellerId);
 
   return {
     id: `${orderId}-${itemIndex}`,

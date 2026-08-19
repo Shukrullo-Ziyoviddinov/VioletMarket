@@ -198,6 +198,7 @@
     "cargoPackage": {
       "express": "快递包裹",
       "standard": "标准包裹",
+      "packageCode": "包裹编号",
       "splitHint": "请将快递和标准分开打包，不要放进同一个包裹。"
     },
     "payment": {

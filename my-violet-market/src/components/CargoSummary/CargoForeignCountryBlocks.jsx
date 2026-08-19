@@ -186,7 +186,14 @@ export default function CargoForeignCountryBlocks({
   lang,
   t,
 }) {
-  const selectedType = selectedCargoOptions[countryKey] || 'standard';
+  const selectedType =
+    selectedCargoOptions[countryKey] ||
+    unrestrictedItems.find(
+      (item) =>
+        item?.cargoServiceType === 'express' ||
+        item?.cargoServiceType === 'standard',
+    )?.cargoServiceType ||
+    'standard';
 
   return (
     <>

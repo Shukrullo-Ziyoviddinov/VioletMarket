@@ -13,6 +13,9 @@ const { computeEffectiveQuantity } = require("./productService");
 const { HttpError } = require("../utils/httpError");
 const { isProductActiveOnClient } = require("../utils/productClientVisibility");
 const {
+  resolveWarehouseCountriesFromSellerId,
+} = require("../utils/productWarehouseCountry");
+const {
   normalizeApprovalStatus,
   PRODUCT_APPROVAL_STATUS,
 } = require("../utils/productApproval");
@@ -307,7 +310,12 @@ function resolveCountryCodes(rawCountries, shippingRows) {
   return [...codes];
 }
 
-async function normalizeProductCountries(body) {
+async function normalizeProductCountries(body, sellerId = "") {
+  const fromSeller = await resolveWarehouseCountriesFromSellerId(
+    sellerId || body?.sellerId,
+  );
+  if (fromSeller && fromSeller.length) return fromSeller;
+
   const shippingRows = await listActiveShippingCountries();
   const requested = Array.isArray(body?.countryCodes) ? body.countryCodes : [];
   const unique = [...new Set(requested.map((code) => normalizeCountryToken(code)).filter(Boolean))];
@@ -620,7 +628,7 @@ function normalizeRelatedGroups(raw, currentProductId) {
   return normalized;
 }
 
-async function normalizeUpdatePayload(body, currentProductId) {
+async function normalizeUpdatePayload(body, currentProductId, sellerId = "") {
   const title = normalizeI18nPair(body?.title, "Sarlavha");
   const price = String(body?.price ?? "").trim();
   if (!price) {
@@ -633,7 +641,7 @@ async function normalizeUpdatePayload(body, currentProductId) {
   const labels = normalizeLabelDraft(body?.labels);
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, currentProductId);
   const categoryFields = await resolveProductCategory(body);
-  const countries = await normalizeProductCountries(body);
+  const countries = await normalizeProductCountries(body, sellerId);
   const countryFilterValue = await normalizeCountryFilterField(
     String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim(),
   );
@@ -665,7 +673,7 @@ async function updateProductForAdmin(productIdRaw, body) {
     throw new HttpError(404, "Mahsulot topilmadi", "PRODUCT_NOT_FOUND");
   }
 
-  const payload = await normalizeUpdatePayload(body, productId);
+  const payload = await normalizeUpdatePayload(body, productId, existing.sellerId);
   const sellerId = String(existing.sellerId || "").trim();
   const relatedIds = payload.relatedGroups.flatMap((group) => group.productIds || []);
   await assertRelatedProductIdsForSeller(relatedIds, sellerId, productId);

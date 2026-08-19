@@ -28,6 +28,7 @@ import { getInitialColorsFormFields } from '../../utils/productColorsDraft';
 import { buildSellerProductPayload } from '../../utils/buildSellerProductPayload';
 import { validateSellerProductForm } from '../../utils/validateSellerProductForm';
 import { mapSellerProductToFormValues } from '../../utils/sellerProductFormMapper';
+import { resolveSellerWarehouseCountryCode } from '../../utils/sellerWarehouseCountry';
 import './AddProductForm.css';
 
 const INITIAL_VALUES = {
@@ -57,7 +58,7 @@ const INITIAL_VALUES = {
 
 export default function AddProductForm({ editProductId = null }) {
   const { t } = useTranslation();
-  const { token } = useSellerAuth();
+  const { token, seller } = useSellerAuth();
   const navigate = useNavigate();
   const isEditMode = editProductId != null && String(editProductId).trim() !== '';
   const [values, setValues] = useState(INITIAL_VALUES);
@@ -159,6 +160,19 @@ export default function AddProductForm({ editProductId = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, editProductId, isEditMode]);
 
+  useEffect(() => {
+    const warehouseCode = resolveSellerWarehouseCountryCode(
+      seller?.sellerCountry,
+      shippingCountries,
+    );
+    if (!warehouseCode) return;
+    setValues((current) =>
+      current.countryCode === warehouseCode
+        ? current
+        : { ...current, countryCode: warehouseCode },
+    );
+  }, [seller?.sellerCountry, shippingCountries]);
+
   const handleSave = async () => {
     if (!token || saving) return;
 
@@ -249,6 +263,7 @@ export default function AddProductForm({ editProductId = null }) {
           productTypes={productTypes}
           filterValues={filterValues}
           shippingCountries={shippingCountries}
+          warehouseLocked
           onChange={updateValues}
         />
 

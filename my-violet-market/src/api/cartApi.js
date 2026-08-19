@@ -62,9 +62,17 @@ export function clearCartApi(token) {
   }).then(parseJsonResponse);
 }
 
+export function updateCartCargoOptionsApi(token, payload) {
+  return fetch(apiUrl('/api/cart/cargo-options'), {
+    method: 'PUT',
+    headers: authHeaders(token),
+    body: JSON.stringify(payload || {}),
+  }).then(parseJsonResponse);
+}
+
 export function checkoutCartApi(
   token,
-  { paymentMethod, deliveryAddress, selectedCargoOptions } = {},
+  { paymentMethod, deliveryAddress } = {},
 ) {
   const method = String(paymentMethod || '').trim();
   if (!method) {
@@ -82,14 +90,6 @@ export function checkoutCartApi(
   }
 
   const body = { paymentMethod: method };
-
-  if (
-    selectedCargoOptions &&
-    typeof selectedCargoOptions === 'object' &&
-    !Array.isArray(selectedCargoOptions)
-  ) {
-    body.selectedCargoOptions = selectedCargoOptions;
-  }
 
   if (addressPayload) {
     const city = String(addressPayload.city || '').trim();

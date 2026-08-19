@@ -17,6 +17,9 @@ const {
 } = require("../adminProductTypeService");
 const { resolveSellerPipelineMode } = require("../../productManagement/seller/sellerPipelineMode");
 const {
+  resolveWarehouseCountriesFromSellerCountry,
+} = require("../../utils/productWarehouseCountry");
+const {
   buildCreateApprovalFields,
   normalizeApprovalStatus,
   PRODUCT_APPROVAL_STATUS,
@@ -407,7 +410,7 @@ async function assertRelatedProductIdsForSeller(productIds, sellerId, currentPro
   }
 }
 
-async function normalizeSellerProductPayload(body, { sellerShopId, productId = null, existing = null } = {}) {
+async function normalizeSellerProductPayload(body, { sellerShopId, productId = null, existing = null, sellerCountry = "" } = {}) {
   const isEdit = Boolean(existing);
   const required = !isEdit;
 
@@ -435,7 +438,9 @@ async function normalizeSellerProductPayload(body, { sellerShopId, productId = n
   const labels = normalizeLabelDraft(body?.labels);
   const relatedGroups = normalizeRelatedGroups(body?.relatedGroups, productId);
   const categoryFields = await resolveProductCategory(body, { required, existing });
-  const countries = await normalizeProductCountries(body, { required, existing });
+  const countries = await resolveWarehouseCountriesFromSellerCountry(
+    sellerCountry || existing?.sellerCountry,
+  );
 
   let countryFilterRaw =
     String(body?.productCountry ?? "").trim() || String(body?.countriesCategories ?? "").trim();
@@ -595,7 +600,10 @@ async function getSellerProductById(sellerShopId, productIdRaw) {
 
 async function createSellerProduct(sellerShopId, body) {
   const seller = await assertSellerCanManageProducts(sellerShopId);
-  const payload = await normalizeSellerProductPayload(body, { sellerShopId });
+  const payload = await normalizeSellerProductPayload(body, {
+    sellerShopId,
+    sellerCountry: seller.sellerCountry,
+  });
   const pipelineMode = resolveSellerPipelineMode(seller.sellerCountry);
   Object.assign(payload, buildCreateApprovalFields(pipelineMode));
   const created = await createProduct(payload);
@@ -603,13 +611,14 @@ async function createSellerProduct(sellerShopId, body) {
 }
 
 async function updateSellerProduct(sellerShopId, productIdRaw, body) {
-  await assertSellerCanManageProducts(sellerShopId);
+  const seller = await assertSellerCanManageProducts(sellerShopId);
   const productId = parseProductId(productIdRaw);
   const existing = await assertSellerOwnsProduct(sellerShopId, productId);
   const payload = await normalizeSellerProductPayload(body, {
     sellerShopId,
     productId,
     existing,
+    sellerCountry: seller.sellerCountry,
   });
 
   // Seller approval / cargo siyosatini o'zgartira olmaydi

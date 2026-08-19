@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema(
       type: savedDeliveryAddressSchema,
       default: null,
     },
+    /** xorij savat: { china: 'express', usa: 'standard' } */
+    selectedCargoOptions: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   { timestamps: true },
 );

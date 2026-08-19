@@ -35,15 +35,15 @@ import {
   saveShipmentProcessStep,
 } from '@/services/logistica-shipments';
 import type { ProcessStepKey, ShipmentDetail, ShipmentProduct } from '@/types/shipment';
+import {
+  keepSameLaneSelection,
+  selectionHasMixedCargoLanes,
+} from '@/utils/cargoServiceLabel';
 
 const ACCENT = '#7c3aed';
 
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
-}
-
-function unitKey(shipmentId: string, unitIndex: number) {
-  return `${shipmentId}:${unitIndex}`;
 }
 
 function isReturnableProduct(product: ShipmentProduct) {
@@ -143,20 +143,14 @@ export default function IshStoliScreen() {
   const returnableUnits = useMemo(() => listReturnableUnits(detail), [detail]);
   const canSelectReturn = showReturnRequest && returnableUnits.length > 1;
 
-  const toggleUnit = useCallback((shipmentId: string, unitIndex: number) => {
-    const key = unitKey(shipmentId, unitIndex);
-    setSelectedUnits((prev) => {
-      const exists = prev.some(
-        (row) => unitKey(row.shipmentId, row.unitIndex) === key,
+  const toggleUnit = useCallback(
+    (shipmentId: string, unitIndex: number) => {
+      setSelectedUnits((prev) =>
+        keepSameLaneSelection(detail?.products, prev, shipmentId, unitIndex),
       );
-      if (exists) {
-        return prev.filter(
-          (row) => unitKey(row.shipmentId, row.unitIndex) !== key,
-        );
-      }
-      return [...prev, { shipmentId, unitIndex }];
-    });
-  }, []);
+    },
+    [detail?.products],
+  );
 
   const productCode = useMemo(() => {
     const first = detail?.products?.[0];
@@ -298,16 +292,34 @@ export default function IshStoliScreen() {
   const handleConfirmReturnRequest = async () => {
     if (!token || !actionShipmentId || actionLoading) return;
 
+    const mixedReturnables = selectionHasMixedCargoLanes(
+      detail?.products,
+      returnableUnits,
+    );
+
     const unitsToReturn =
       selectedUnits.length > 0
         ? selectedUnits
-        : returnableUnits.length
-          ? returnableUnits
-          : [{ shipmentId: actionShipmentId, unitIndex: 0 }];
+        : mixedReturnables
+          ? []
+          : returnableUnits.length
+            ? returnableUnits
+            : [{ shipmentId: actionShipmentId, unitIndex: 0 }];
 
     if (unitsToReturn.length === 0) {
       setReturnModalOpen(false);
-      Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
+      Alert.alert(
+        t('common.error'),
+        mixedReturnables
+          ? t('shipments.alerts.returnSelectLaneRequired')
+          : t('shipments.alerts.returnSelectRequired'),
+      );
+      return;
+    }
+
+    if (selectionHasMixedCargoLanes(detail?.products, unitsToReturn)) {
+      setReturnModalOpen(false);
+      Alert.alert(t('common.error'), t('shipments.alerts.returnMixedBlocked'));
       return;
     }
 

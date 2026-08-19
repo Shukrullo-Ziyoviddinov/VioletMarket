@@ -5,12 +5,9 @@ import { useAppData } from '../../contexts/AppDataContext';
 import { formatCargoPrice, getLocalizedText } from '../../utils/utils';
 import { getCartItemKey } from '../../utils/cartItemProductId';
 import {
-  isExclusiveCountryProduct,
-  normalizeProductCountries,
-} from '../../utils/warehouseProduct';
-import {
   calcForeignCountryCargoPrice,
   groupCartItemsByCountry,
+  isExclusiveWarehouseCartItem,
   partitionCountryItemsByExpressPolicy,
 } from '../../utils/cargoGrouping';
 import CargoCountryProductList from './CargoCountryProductList';
@@ -30,13 +27,10 @@ function dedupeCartItems(items) {
 function getExclusiveCountryItems(cart, countryKey, countryGroups) {
   const key = String(countryKey).toLowerCase();
   const fromCart = dedupeCartItems(
-    cart.filter((item) => isExclusiveCountryProduct(item, key)),
+    cart.filter((item) => isExclusiveWarehouseCartItem(item, key)),
   );
   if (fromCart.length > 0) return fromCart;
-
-  return dedupeCartItems(countryGroups[key] || []).filter((item) =>
-    normalizeProductCountries(item).includes(key),
-  );
+  return dedupeCartItems(countryGroups[key] || []);
 }
 
 /** Thumbnail ro'yxatini weight-gruppa kalitlari bo'yicha moslashtirish. */

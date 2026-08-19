@@ -198,6 +198,7 @@
     "cargoPackage": {
       "express": "Express package",
       "standard": "Standard package",
+      "packageCode": "Package code",
       "splitHint": "Pack Express and Standard separately — do not put them in one package."
     },
     "payment": {

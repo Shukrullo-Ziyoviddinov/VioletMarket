@@ -48,9 +48,40 @@ export function resolveItemCargoServiceType(item) {
   return null;
 }
 
+/** Eski yozuv / yo‘q maydon → Standard (logistica resolveStored bilan bir xil). */
+export function resolveStoredItemCargoLane(item) {
+  return resolveItemCargoServiceType(item) || 'standard';
+}
+
+/**
+ * Cargodan OLDIN: vizual paket belgisi.
+ * `#0012` = buyurtma kodi (orderCode), `-EX`/`-ST` = Express/Standard tarif.
+ * Bu mahsulot shtrixi emas (`productCode` = `#0045`) va DB’da yo‘q.
+ * Cargodan KEYIN: `resolvePackageCode` o‘rniga `requestCode` (REQ-…) qo‘yadi.
+ */
 export function buildPackageBarcode(orderCode, type) {
   const base = String(orderCode || '').trim() || '#0000';
   return type === 'express' ? `${base}-EX` : `${base}-ST`;
+}
+
+export function resolvePackageCode(requestCodes, orderCode, type) {
+  const codes = [
+    ...new Set(
+      (Array.isArray(requestCodes) ? requestCodes : [])
+        .map((code) => String(code || '').trim())
+        .filter(Boolean),
+    ),
+  ];
+  if (codes.length === 1) {
+    return { packageCode: codes[0], packageCodeKind: 'request' };
+  }
+  if (codes.length > 1) {
+    return { packageCode: codes.join(', '), packageCodeKind: 'request' };
+  }
+  return {
+    packageCode: buildPackageBarcode(orderCode, type),
+    packageCodeKind: 'synthetic',
+  };
 }
 
 function listOrderUnits(order) {
@@ -77,7 +108,7 @@ export function buildSellerCargoPackages(order) {
   };
 
   for (const item of units) {
-    const type = resolveItemCargoServiceType(item) || 'standard';
+    const type = resolveStoredItemCargoLane(item);
     buckets[type].push(item);
   }
 
@@ -99,12 +130,18 @@ export function buildSellerCargoPackages(order) {
           .filter(Boolean),
       ),
     ];
+    const { packageCode, packageCodeKind } = resolvePackageCode(
+      requestCodes,
+      orderCode,
+      type,
+    );
     packages.push({
       type,
       items,
       productCodes,
       requestCodes,
-      packageCode: buildPackageBarcode(orderCode, type),
+      packageCode,
+      packageCodeKind,
       productCount: items.length,
       amount: items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
     });

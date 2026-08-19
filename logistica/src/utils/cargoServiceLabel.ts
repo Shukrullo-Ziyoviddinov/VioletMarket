@@ -5,6 +5,12 @@ export type CargoLaneCounts = {
   express?: number;
 };
 
+export function isMixedCargoLanes(counts?: CargoLaneCounts | null) {
+  const standard = Math.max(0, Number(counts?.standard) || 0);
+  const express = Math.max(0, Number(counts?.express) || 0);
+  return standard > 0 && express > 0;
+}
+
 export function formatCargoServiceLabel(
   t: TranslateFn,
   cargoServiceType?: string | null,
@@ -21,4 +27,93 @@ export function formatCargoServiceLabel(
   if (type === 'express') return t('shipments.cargoService.express');
   if (type === 'standard') return t('shipments.cargoService.standard');
   return '';
+}
+
+export function resolveProductCargoLane(
+  product?: { cargoServiceType?: string | null } | null,
+): 'express' | 'standard' {
+  return product?.cargoServiceType === 'express' ? 'express' : 'standard';
+}
+
+function unitMatchKey(shipmentId: string, unitIndex: number) {
+  return `${String(shipmentId || '').trim()}:${Number(unitIndex) || 0}`;
+}
+
+export function findProductForReturnUnit<
+  T extends {
+    shipmentId?: string;
+    unitIndex?: number;
+    cargoServiceType?: string | null;
+  },
+>(
+  products: T[] | undefined,
+  shipmentId: string,
+  unitIndex: number,
+) {
+  const key = unitMatchKey(shipmentId, unitIndex);
+  return (Array.isArray(products) ? products : []).find(
+    (product) =>
+      unitMatchKey(String(product.shipmentId || ''), Number(product.unitIndex) || 0) ===
+      key,
+  );
+}
+
+export function selectionHasMixedCargoLanes<
+  T extends {
+    shipmentId?: string;
+    unitIndex?: number;
+    cargoServiceType?: string | null;
+  },
+>(
+  products: T[] | undefined,
+  units: Array<{ shipmentId: string; unitIndex: number }> | undefined,
+) {
+  const lanes = new Set<'express' | 'standard'>();
+  for (const unit of Array.isArray(units) ? units : []) {
+    const product = findProductForReturnUnit(
+      products,
+      unit.shipmentId,
+      unit.unitIndex,
+    );
+    lanes.add(resolveProductCargoLane(product));
+    if (lanes.size > 1) return true;
+  }
+  return false;
+}
+
+export function keepSameLaneSelection<
+  T extends {
+    shipmentId?: string;
+    unitIndex?: number;
+    cargoServiceType?: string | null;
+  },
+>(
+  products: T[] | undefined,
+  prev: Array<{ shipmentId: string; unitIndex: number }>,
+  shipmentId: string,
+  unitIndex: number,
+) {
+  const key = unitMatchKey(shipmentId, unitIndex);
+  const current = Array.isArray(prev) ? prev : [];
+  const exists = current.some(
+    (row) => unitMatchKey(row.shipmentId, row.unitIndex) === key,
+  );
+  if (exists) {
+    return current.filter(
+      (row) => unitMatchKey(row.shipmentId, row.unitIndex) !== key,
+    );
+  }
+
+  const nextLane = resolveProductCargoLane(
+    findProductForReturnUnit(products, shipmentId, unitIndex),
+  );
+  const sameLane = current.filter((row) => {
+    const product = findProductForReturnUnit(
+      products,
+      row.shipmentId,
+      row.unitIndex,
+    );
+    return resolveProductCargoLane(product) === nextLane;
+  });
+  return [...sameLane, { shipmentId, unitIndex }];
 }

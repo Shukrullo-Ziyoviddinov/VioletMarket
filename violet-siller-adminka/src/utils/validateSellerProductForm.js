@@ -138,10 +138,6 @@ function validateCreateRequiredFields(values, t) {
     errors.push(t('addProduct.validation.productTypeRequired'));
   }
 
-  if (isBlank(values?.countryCode)) {
-    errors.push(t('addProduct.validation.countryCodeRequired'));
-  }
-
   if (isBlank(values?.productCountry)) {
     errors.push(t('addProduct.validation.productCountryRequired'));
   }

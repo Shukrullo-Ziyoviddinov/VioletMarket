@@ -198,6 +198,7 @@
     "cargoPackage": {
       "express": "Express paket",
       "standard": "Standard paket",
+      "packageCode": "Paket kodi",
       "splitHint": "Express va Standard ni alohida paket qiling — bir paketga qo‘shmang."
     },
     "payment": {

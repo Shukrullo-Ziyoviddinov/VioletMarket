@@ -23,6 +23,8 @@ export type ShipmentProduct = {
   unitIndex?: number;
   /** active | return_request_pending | return_approved | returned */
   returnStatus?: string;
+  cargoServiceType?: 'standard' | 'express';
+  requestCode?: string;
 };
 
 export type ShipmentListItem = {

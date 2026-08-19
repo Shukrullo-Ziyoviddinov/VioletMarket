@@ -26,15 +26,15 @@ import {
   returnShipmentToSeller,
 } from '@/services/logistica-shipments';
 import type { ShipmentDetail, ShipmentProduct } from '@/types/shipment';
+import {
+  keepSameLaneSelection,
+  selectionHasMixedCargoLanes,
+} from '@/utils/cargoServiceLabel';
 
 const ACCENT = '#7c3aed';
 
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] || '' : value || '';
-}
-
-function unitKey(shipmentId: string, unitIndex: number) {
-  return `${shipmentId}:${unitIndex}`;
 }
 
 function isReturnableProduct(product: ShipmentProduct) {
@@ -114,20 +114,14 @@ export default function ShipmentDetailScreen() {
   const returnableUnits = useMemo(() => listReturnableUnits(detail), [detail]);
   const canSelectReturn = returnableUnits.length > 1;
 
-  const toggleUnit = useCallback((shipmentId: string, unitIndex: number) => {
-    const key = unitKey(shipmentId, unitIndex);
-    setSelectedUnits((prev) => {
-      const exists = prev.some(
-        (row) => unitKey(row.shipmentId, row.unitIndex) === key,
+  const toggleUnit = useCallback(
+    (shipmentId: string, unitIndex: number) => {
+      setSelectedUnits((prev) =>
+        keepSameLaneSelection(detail?.products, prev, shipmentId, unitIndex),
       );
-      if (exists) {
-        return prev.filter(
-          (row) => unitKey(row.shipmentId, row.unitIndex) !== key,
-        );
-      }
-      return [...prev, { shipmentId, unitIndex }];
-    });
-  }, []);
+    },
+    [detail?.products],
+  );
 
   const handleAccept = async () => {
     if (!token || !id || busy) return;
@@ -155,16 +149,34 @@ export default function ShipmentDetailScreen() {
   const handleReturn = () => {
     if (!token || !id || busy) return;
 
-    // Guruh: tanlov bo‘sh → barcha returnable unitlar (siblinglar qolmasin)
+    const mixedReturnables = selectionHasMixedCargoLanes(
+      detail?.products,
+      returnableUnits,
+    );
+
+    // Guruh: tanlov bo‘sh → barcha returnable unitlar (siblinglar qolmasin).
+    // Aralash pending’da bo‘sh tanlov ikkala tarifni ham qaytaradi — shu yerda to‘xtatamiz.
     const unitsToReturn =
       selectedUnits.length > 0
         ? selectedUnits
-        : returnableUnits.length
-          ? returnableUnits
-          : [{ shipmentId: id, unitIndex: 0 }];
+        : mixedReturnables
+          ? []
+          : returnableUnits.length
+            ? returnableUnits
+            : [{ shipmentId: id, unitIndex: 0 }];
 
     if (unitsToReturn.length === 0) {
-      Alert.alert(t('common.error'), t('shipments.alerts.returnSelectRequired'));
+      Alert.alert(
+        t('common.error'),
+        mixedReturnables
+          ? t('shipments.alerts.returnSelectLaneRequired')
+          : t('shipments.alerts.returnSelectRequired'),
+      );
+      return;
+    }
+
+    if (selectionHasMixedCargoLanes(detail?.products, unitsToReturn)) {
+      Alert.alert(t('common.error'), t('shipments.alerts.returnMixedBlocked'));
       return;
     }
 

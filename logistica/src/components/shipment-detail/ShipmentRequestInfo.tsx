@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { WeightLabel } from '@/types/shipment';
-import { formatCargoServiceLabel } from '@/utils/cargoServiceLabel';
+import { formatCargoServiceLabel, isMixedCargoLanes } from '@/utils/cargoServiceLabel';
 
 type Props = {
   productCount: number;
@@ -47,6 +47,7 @@ export function ShipmentRequestInfo({
     cargoServiceType,
     cargoLaneCounts,
   );
+  const mixed = isMixedCargoLanes(cargoLaneCounts);
 
   return (
     <View style={styles.section}>
@@ -58,6 +59,11 @@ export function ShipmentRequestInfo({
               label={t('shipments.cargoService.label')}
               value={cargoLabel}
             />
+            {mixed ? (
+              <Text style={styles.mixedHint}>
+                {t('shipments.detail.mixedAcceptHint')}
+              </Text>
+            ) : null}
             <View style={styles.line} />
           </>
         ) : null}
@@ -113,6 +119,13 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontWeight: '600',
     lineHeight: 20,
+  },
+  mixedHint: {
+    fontSize: 12,
+    color: '#6D28D9',
+    fontWeight: '600',
+    lineHeight: 17,
+    paddingBottom: 10,
   },
   line: {
     height: 1,

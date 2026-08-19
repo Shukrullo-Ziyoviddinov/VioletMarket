@@ -43,6 +43,7 @@ function mapCartItemToOrderItem(
   productMap,
   sellerCountryMap,
   selectedCargoOptions,
+  requireCargoSelection = false,
 ) {
   const row = item?.toObject ? item.toObject() : item;
   if (!row) return null;
@@ -58,6 +59,8 @@ function mapCartItemToOrderItem(
     cargoExpressPolicy: row.cargoExpressPolicy ?? product?.cargoExpressPolicy,
     itemCountries: row.countries || product?.countries,
     selectedCargoOptions,
+    storedType: row.cargoServiceType,
+    requireSelection: requireCargoSelection,
   });
 
   return {
@@ -83,6 +86,7 @@ function buildOrderItemsFromCart(
   productMap,
   sellerCountryMap = new Map(),
   selectedCargoOptions = {},
+  requireCargoSelection = false,
 ) {
   return (Array.isArray(cartItems) ? cartItems : [])
     .map((item) =>
@@ -91,6 +95,7 @@ function buildOrderItemsFromCart(
         productMap,
         sellerCountryMap,
         selectedCargoOptions,
+        requireCargoSelection,
       ),
     )
     .filter(Boolean);
@@ -116,6 +121,7 @@ async function recordCartPayment({
   deliveryAddress = null,
   selectedCargoOptions = {},
 }) {
+  const requireCargoSelection = source === PAYMENT_SOURCES.CHECKOUT;
   const previewItems = (Array.isArray(cartItems) ? cartItems : [])
     .map((item) => {
       const row = item?.toObject ? item.toObject() : item;
@@ -131,6 +137,7 @@ async function recordCartPayment({
     productMap,
     sellerCountryMap,
     selectedCargoOptions,
+    requireCargoSelection,
   );
   if (items.length === 0) {
     return null;

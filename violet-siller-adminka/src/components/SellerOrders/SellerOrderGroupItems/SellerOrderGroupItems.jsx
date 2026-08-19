@@ -113,7 +113,12 @@ function PackageSection({
         <div>
           <strong>{label}</strong>
           <p>
-            {t('orders.card.barcode')}: {pkg.packageCode}
+            {pkg.packageCodeKind === 'request'
+              ? t('orders.cargoHanded.requestCode')
+              : t('orders.cargoPackage.packageCode', {
+                  defaultValue: 'Paket kodi',
+                })}
+            : {pkg.packageCode}
           </p>
         </div>
         <span>
