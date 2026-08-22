@@ -38,6 +38,9 @@ export const accountTranslations = {
       statusHandedOver: 'Topshirilgan',
       statusReturned: 'Qaytarilgan',
       handedCount: '{{count}} ta topshirilgan',
+      filterAll: 'Hammasi',
+      filterStandard: 'Standard',
+      filterExpress: 'Express',
     },
     balance: {
       title: 'Balans',
@@ -126,6 +129,9 @@ export const accountTranslations = {
       statusHandedOver: 'Handed over',
       statusReturned: 'Returned',
       handedCount: '{{count}} handed over',
+      filterAll: 'All',
+      filterStandard: 'Standard',
+      filterExpress: 'Express',
     },
     balance: {
       title: 'Balance',
@@ -213,6 +219,9 @@ export const accountTranslations = {
       statusHandedOver: '已交接',
       statusReturned: '已退回',
       handedCount: '已交接 {{count}} 件',
+      filterAll: '全部',
+      filterStandard: '标准',
+      filterExpress: '快递',
     },
     balance: {
       title: '余额',

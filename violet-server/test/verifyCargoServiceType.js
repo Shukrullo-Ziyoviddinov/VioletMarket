@@ -10,6 +10,7 @@ const {
   resolvePersistedCartCargoServiceType,
   buildCargoLaneGroupKey,
   buildCustomerTrackingGroupKey,
+  buildDeliveryLastMileGroupKey,
   buildSellerFulfillmentGroupKey,
   resolveStoredCargoServiceType,
   resolveTrackingCargoServiceType,
@@ -246,6 +247,64 @@ check("mijoz tracking: eski yozuv = Standard, UZB lane yo‘q", () => {
     buildCustomerTrackingGroupKey(10, "s1", "local", null),
     "10:s1",
   );
+});
+
+check("resolveShipmentListGroupKey: default qabul, split Yuklarim", () => {
+  const row = { orderId: 10, sellerId: "s1", cargoServiceType: "express" };
+  assert.strictEqual(
+    require("@volet/cargo-service-rules").resolveShipmentListGroupKey(row),
+    "10:s1",
+  );
+  assert.strictEqual(
+    require("@volet/cargo-service-rules").resolveShipmentListGroupKey(row, {
+      splitByCargoService: true,
+    }),
+    "10:s1:express",
+  );
+});
+
+check("shared legacy: yo‘q maydon → standard", () => {
+  assert.strictEqual(
+    require("@volet/cargo-service-rules").resolveStoredCargoServiceType(null),
+    CARGO_SERVICE_TYPE.STANDARD,
+  );
+});
+
+check("shared standard_only policy", () => {
+  const rules = require("@volet/cargo-service-rules");
+  assert.strictEqual(
+    rules.isStandardOnlyCargoPolicy(rules.CARGO_EXPRESS_POLICY.STANDARD_ONLY),
+    true,
+  );
+  assert.strictEqual(rules.isStandardOnlyCargoPolicy(null), false);
+});
+
+check("delivery last-mile: xorij lane, UZB orderId", () => {
+  assert.strictEqual(
+    buildDeliveryLastMileGroupKey(10, "s1", "express"),
+    "10:s1:express",
+  );
+  assert.strictEqual(
+    buildDeliveryLastMileGroupKey(10, "s1", "standard"),
+    "10:s1:standard",
+  );
+  assert.strictEqual(buildDeliveryLastMileGroupKey(10, "s1", null), "order-10");
+});
+
+check("tarix snapshot: cargoServiceType API", () => {
+  const {
+    toPublicHistoryItem,
+  } = require("../src/services/cargoShipments/cargoLogisticaHistoryService");
+  const item = toPublicHistoryItem({
+    _id: "h1",
+    kind: "handed_over",
+    shipmentId: "s1",
+    requestCode: "REQ-001",
+    cargoServiceType: "express",
+    amount: 1000,
+    at: new Date(),
+  });
+  assert.strictEqual(item.cargoServiceType, "express");
 });
 
 check("lane filter base $or ni saqlaydi — spread qilmang", () => {

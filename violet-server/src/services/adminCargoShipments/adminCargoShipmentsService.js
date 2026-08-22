@@ -351,7 +351,7 @@ async function listAdminCargoShipmentCountries() {
 
 /**
  * Qabul qilingan, hali To‘lanmagan (Xorij→UZB ga o‘tmagan).
- * Bir checkout (orderId) + bir siller → bitta kartochka.
+ * Ro‘yxat: splitByCargoService — Standard va Express alohida kartochka (seller guruhi emas).
  */
 async function listAdminCargoShipments(query = {}) {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));

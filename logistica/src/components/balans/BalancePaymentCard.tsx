@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { localeForLanguage } from '@/i18n';
+import { TarixCargoServiceBadge } from '@/components/tarix/TarixCargoServiceBadge';
 
 type Props = {
   requestCode: string;
@@ -12,6 +13,7 @@ type Props = {
   orderId: number;
   amount: number;
   at: string | null;
+  cargoServiceType?: 'standard' | 'express' | null;
 };
 
 export function BalancePaymentCard({
@@ -22,6 +24,7 @@ export function BalancePaymentCard({
   orderId,
   amount,
   at,
+  cargoServiceType,
 }: Props) {
   const { t, i18n } = useTranslation();
   const locale = localeForLanguage(i18n.language);
@@ -60,6 +63,7 @@ export function BalancePaymentCard({
       <Text style={styles.meta}>
         {storeName || t('account.sellerFallback')} · #{orderId || 0}
       </Text>
+      <TarixCargoServiceBadge value={cargoServiceType} style={styles.laneBadge} />
 
       <View style={styles.dateRow}>
         <Ionicons name="time-outline" size={15} color="#9CA3AF" />
@@ -117,6 +121,9 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 12,
     fontWeight: '600',
+  },
+  laneBadge: {
+    alignSelf: 'flex-start',
   },
   dateRow: {
     flexDirection: 'row',

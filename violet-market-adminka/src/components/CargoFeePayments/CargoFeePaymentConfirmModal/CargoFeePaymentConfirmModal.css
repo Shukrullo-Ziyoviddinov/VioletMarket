@@ -11,6 +11,13 @@
   font-weight: 700;
 }
 
+.cargo-fee-confirm-modal__lane {
+  margin: 0;
+  color: #5b21b6;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .cargo-fee-confirm-modal__meta {
   display: flex;
   flex-direction: column;

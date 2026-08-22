@@ -1,4 +1,5 @@
 import { apiUrl } from '../config/api';
+import { normalizeCargoServiceType } from '../utils/cargoServiceRules';
 
 async function parseJson(res) {
   const data = await res.json().catch(() => ({}));
@@ -56,10 +57,7 @@ function normalizeItem(row = {}) {
     logisticaPaidAt: row.logisticaPaidAt || null,
     paymentStatus: row.paymentStatus === 'paid' ? 'paid' : 'unpaid',
     canConfirm: Boolean(row.canConfirm),
-    cargoServiceType:
-      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
   };
 }
 

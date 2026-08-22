@@ -1,4 +1,5 @@
 import { apiUrl } from '../config/api';
+import { normalizeCargoServiceType } from '../utils/cargoServiceRules';
 
 async function parseJson(res) {
   const data = await res.json().catch(() => ({}));
@@ -59,9 +60,8 @@ function normalizeOrder(row) {
     pipelineMode: String(row?.pipelineMode || '') === 'foreign' ? 'foreign' : 'local',
     sellerCountry: String(row?.sellerCountry || ''),
     cargoServiceType:
-      String(row?.pipelineMode || '') === 'foreign' &&
-      (row?.cargoServiceType === 'express' || row?.cargoServiceType === 'standard')
-        ? row.cargoServiceType
+      String(row?.pipelineMode || '') === 'foreign'
+        ? normalizeCargoServiceType(row?.cargoServiceType)
         : null,
     groupSize: Number(row?.groupSize) || 0,
     groupItemCount: Number(row?.groupItemCount) || 0,
@@ -92,11 +92,9 @@ function normalizeOrder(row) {
           requestCode: String(row.cargoShipment.requestCode || ''),
           groupId: String(row.cargoShipment.groupId || ''),
           status: String(row.cargoShipment.status || ''),
-          cargoServiceType:
-            row.cargoShipment.cargoServiceType === 'express' ||
-            row.cargoShipment.cargoServiceType === 'standard'
-              ? row.cargoShipment.cargoServiceType
-              : null,
+          cargoServiceType: normalizeCargoServiceType(
+            row.cargoShipment.cargoServiceType,
+          ),
         }
       : null,
     reasonType: String(row?.reasonType || ''),

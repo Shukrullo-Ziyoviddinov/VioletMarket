@@ -1,4 +1,5 @@
 import { apiUrl } from '../config/api';
+import { normalizeCargoServiceType } from '../utils/cargoExpressPolicy';
 
 async function parseJsonResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -95,10 +96,7 @@ function normalizeOrderItem(row) {
     products,
     cargoShipmentId: row?.cargoShipmentId ? String(row.cargoShipmentId) : null,
     cargoFeePayment: normalizeCargoFeePayment(row?.cargoFeePayment),
-    cargoServiceType:
-      row?.cargoServiceType === 'express' || row?.cargoServiceType === 'standard'
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row?.cargoServiceType),
   };
 }
 

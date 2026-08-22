@@ -4,6 +4,10 @@
  * Express/Standard paket FAQAT xorij siller (pipelineMode === foreign).
  */
 
+import {
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+} from '@volet/cargo-service-rules';
 import { resolveSellerPipelineMode } from './sellerPipeline';
 
 export function resolveSellerOrderGroupKey(order) {
@@ -35,22 +39,15 @@ export function isForeignSellerOrder(order) {
 }
 
 export function resolveItemCargoServiceType(item) {
-  const fromItem = String(item?.cargoServiceType || '')
-    .trim()
-    .toLowerCase();
-  if (fromItem === 'express' || fromItem === 'standard') return fromItem;
-  const fromShipment = String(item?.cargoShipment?.cargoServiceType || '')
-    .trim()
-    .toLowerCase();
-  if (fromShipment === 'express' || fromShipment === 'standard') {
-    return fromShipment;
-  }
-  return null;
+  return (
+    normalizeCargoServiceType(item?.cargoServiceType) ||
+    normalizeCargoServiceType(item?.cargoShipment?.cargoServiceType)
+  );
 }
 
-/** Eski yozuv / yo‘q maydon → Standard (logistica resolveStored bilan bir xil). */
+/** Eski yozuv / yo‘q maydon → Standard (@volet/cargo-service-rules). */
 export function resolveStoredItemCargoLane(item) {
-  return resolveItemCargoServiceType(item) || 'standard';
+  return resolveStoredCargoServiceType(resolveItemCargoServiceType(item));
 }
 
 /**

@@ -1,13 +1,22 @@
 /**
  * Asosiy admin Buyurtmalar — bir checkout + bir siller UI bloki.
- * groupKey = orderId:sellerId (cargo groupId emas).
+ * Last-mile xorij: groupKey = orderId:sellerId:standard|express (API).
  */
+
+import {
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+} from './cargoServiceRules';
 
 export function resolveAdminOrderGroupKey(order) {
   const fromApi = String(order?.groupKey || '').trim();
   if (fromApi) return fromApi;
   const orderId = Number(order?.orderId) || 0;
   const sellerId = String(order?.sellerId || order?.seller?.id || '').trim();
+  const type = normalizeCargoServiceType(order?.cargoServiceType);
+  if (orderId && sellerId && type) {
+    return buildCargoLaneGroupKey(orderId, sellerId, type);
+  }
   return `${orderId}:${sellerId}`;
 }
 
@@ -27,6 +36,7 @@ export function groupAdminOrdersByFulfillment(orders = []) {
         buyer: order.buyer || order.customer || null,
         orderedAt: order.orderedAt || null,
         trackingStatus: String(order.trackingStatus || ''),
+        cargoServiceType: order.cargoServiceType || null,
         paymentMethod: order.paymentMethod,
         sellerId: String(order.sellerId || order.seller?.id || ''),
         seller: order.seller || null,
@@ -68,6 +78,7 @@ export function groupAdminOrdersByFulfillment(orders = []) {
       storage: first.storage,
       model: first.model,
       isGroup: group.items.length > 1,
+      cargoServiceType: first.cargoServiceType || group.cargoServiceType || null,
       ...courierFields,
     };
   });

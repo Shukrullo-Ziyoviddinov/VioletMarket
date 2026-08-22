@@ -14,6 +14,10 @@ const {
   pickAssignmentTimestamps,
   normalizeCourierAssignmentStatus,
 } = require("../../utils/courierAssignmentStatus");
+const {
+  buildCargoLaneGroupKey,
+  normalizeCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 function toAdminCourierJSON(account) {
   if (!account) return null;
@@ -44,7 +48,9 @@ const ASSIGNMENT_STATUS_RANK = {
   returned: 7,
 };
 
-function fulfillmentGroupKey(orderId, sellerId) {
+function fulfillmentGroupKey(orderId, sellerId, cargoServiceType) {
+  const type = normalizeCargoServiceType(cargoServiceType);
+  if (type) return buildCargoLaneGroupKey(orderId, sellerId, type);
   const oid = Number(orderId) || 0;
   const sid = String(sellerId || "").trim();
   if (!oid || !sid) return "";
@@ -61,7 +67,7 @@ function groupCourierAssignmentsByOrderSeller(cards = []) {
   for (const card of cards) {
     if (!card) continue;
     const key =
-      fulfillmentGroupKey(card.orderId, card.sellerId) ||
+      fulfillmentGroupKey(card.orderId, card.sellerId, card.cargoServiceType) ||
       `solo:${card.id}`;
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push(card);
@@ -170,7 +176,12 @@ function groupCourierAssignmentsByOrderSeller(cards = []) {
         model: String(row.model || ""),
         status: String(row.status || ""),
       })),
-      groupKey: fulfillmentGroupKey(primary.orderId, primary.sellerId),
+      groupKey: fulfillmentGroupKey(
+        primary.orderId,
+        primary.sellerId,
+        primary.cargoServiceType,
+      ),
+      cargoServiceType: primary.cargoServiceType || null,
       paymentAssignmentId:
         sorted.find((row) => Math.max(0, Number(row.courierPayment) || 0) > 0)
           ?.id || siblingIds[0] || primary.id,
@@ -318,6 +329,7 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
       itemIndex: Number(row.itemIndex) || 0,
       unitIndex: Number(row.unitIndex) || 0,
       sellerId: String(row.sellerId || "").trim(),
+      cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
       productId: Number(row.productId) || 0,
       productCode: String(row.productCode || ""),
       barcode: String(row.productCode || ""),

@@ -1,17 +1,22 @@
 import React from 'react';
+import {
+  formatCargoServiceTypeLabel,
+  isMixedCargoLanes,
+  normalizeCargoServiceType,
+} from '../../../utils/cargoServiceRules';
 import './LogisticaShipmentCard.css';
 
 function cargoServiceLabel(shipment) {
-  const type = shipment?.cargoServiceType;
   const counts = shipment?.cargoLaneCounts || {};
   const standard = Math.max(0, Number(counts.standard) || 0);
   const express = Math.max(0, Number(counts.express) || 0);
-  if (standard > 0 && express > 0) {
+  if (isMixedCargoLanes({ standard, express })) {
     return `Express ${express} · Standard ${standard}`;
   }
-  if (type === 'express' || express > 0) return 'Express';
-  if (type === 'standard' || standard > 0) return 'Standard';
-  return '';
+  const type =
+    normalizeCargoServiceType(shipment?.cargoServiceType) ||
+    (express > 0 ? 'express' : standard > 0 ? 'standard' : null);
+  return formatCargoServiceTypeLabel(type);
 }
 
 export default function LogisticaShipmentCard({ shipment, onOpen }) {

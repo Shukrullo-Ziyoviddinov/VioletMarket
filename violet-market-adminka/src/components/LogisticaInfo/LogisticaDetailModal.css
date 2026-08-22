@@ -187,6 +187,18 @@
   color: #b91c1c;
 }
 
+.logistica-detail-modal__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.logistica-detail-modal__badge--lane {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 .logistica-detail-modal__title {
   margin: 0 0 6px;
   font-size: 14px;

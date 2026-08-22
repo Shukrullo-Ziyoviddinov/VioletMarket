@@ -1,3 +1,15 @@
+/**
+ * Logistica UI — cargo lane ko‘rsatish.
+ * Qoidalar: @volet/cargo-service-rules
+ */
+import {
+  countCargoLanes,
+  formatCargoServiceTypeLabel,
+  isMixedCargoLanes,
+  resolveProductCargoLane,
+  resolveStoredCargoServiceType,
+} from '@volet/cargo-service-rules';
+
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
 export type CargoLaneCounts = {
@@ -5,11 +17,7 @@ export type CargoLaneCounts = {
   express?: number;
 };
 
-export function isMixedCargoLanes(counts?: CargoLaneCounts | null) {
-  const standard = Math.max(0, Number(counts?.standard) || 0);
-  const express = Math.max(0, Number(counts?.express) || 0);
-  return standard > 0 && express > 0;
-}
+export { isMixedCargoLanes, resolveProductCargoLane, resolveStoredCargoServiceType };
 
 export function formatCargoServiceLabel(
   t: TranslateFn,
@@ -18,21 +26,16 @@ export function formatCargoServiceLabel(
 ) {
   const standard = Math.max(0, Number(counts?.standard) || 0);
   const express = Math.max(0, Number(counts?.express) || 0);
-  if (standard > 0 && express > 0) {
+  if (isMixedCargoLanes({ standard, express })) {
     return t('shipments.cargoService.mixed', { express, standard });
   }
   const type =
     cargoServiceType ||
     (express > 0 ? 'express' : standard > 0 ? 'standard' : '');
-  if (type === 'express') return t('shipments.cargoService.express');
-  if (type === 'standard') return t('shipments.cargoService.standard');
-  return '';
-}
-
-export function resolveProductCargoLane(
-  product?: { cargoServiceType?: string | null } | null,
-): 'express' | 'standard' {
-  return product?.cargoServiceType === 'express' ? 'express' : 'standard';
+  return formatCargoServiceTypeLabel(type, {
+    express: t('shipments.cargoService.express'),
+    standard: t('shipments.cargoService.standard'),
+  });
 }
 
 function unitMatchKey(shipmentId: string, unitIndex: number) {

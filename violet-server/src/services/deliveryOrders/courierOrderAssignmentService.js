@@ -20,6 +20,7 @@ const {
   recordSalesOnDelivery,
 } = require("../../productManagement/recordSalesOnDelivery");
 const { haversineKm } = require("../../utils/geoDistance");
+const { normalizeCargoServiceType } = require("../../utils/cargoServiceType");
 const {
   getCourierPaymentSettings,
   resolveCourierPaymentForDistance,
@@ -135,16 +136,27 @@ function resolveAssignmentDistanceKm(assignment, courierCoords) {
   return Number.isFinite(stored) && stored >= 0 ? stored : null;
 }
 
+function resolveAssignmentCargoLane(item, assignment) {
+  return (
+    normalizeCargoServiceType(item?.cargoServiceType) ||
+    normalizeCargoServiceType(assignment?.cargoServiceType) ||
+    null
+  );
+}
+
 /**
- * Bir mijoz + bir siller + bir kuryer (bir yetkazish) → bitta to‘lov.
- * Dona (unit) soniga ko‘paytirilmaydi.
+ * Bir mijoz + bir siller + bir kuryer (+ xorijda bir tarif) → bitta to‘lov.
+ * Express va Standard alohida yetkazilsa, ikkala yo‘lak ham to‘lanadi.
  */
 function buildCourierPayGroupFilter(assignment) {
   const orderId = Number(assignment?.orderId) || 0;
   const sellerId = String(assignment?.sellerId || "").trim();
   const deliveryId = assignment?.deliveryId;
   if (!orderId || !sellerId || !deliveryId) return null;
-  return { orderId, sellerId, deliveryId };
+  const filter = { orderId, sellerId, deliveryId };
+  const type = normalizeCargoServiceType(assignment?.cargoServiceType);
+  if (type) filter.cargoServiceType = type;
+  return filter;
 }
 
 async function findSiblingCourierPaymentTotal(assignment) {
@@ -181,7 +193,7 @@ async function findSiblingCourierPaymentTotal(assignment) {
 
 /**
  * Topshirish yoki sotuvchiga qaytarishda km bo‘yicha kuryer to‘lovini yozadi.
- * Guruhda (orderId+sellerId+deliveryId) allaqachon to‘lov yo‘yilgan bo‘lsa — 0.
+ * Guruhda (orderId+sellerId+deliveryId[+cargoServiceType]) allaqachon to‘lov yo‘yilgan bo‘lsa — 0.
  */
 async function applyCourierKmPayment(assignment, payload = {}, atDate = new Date()) {
   const courierCoords = parseCourierCoords(payload);
@@ -279,6 +291,7 @@ function toPublicAssignment(doc, extras = {}) {
     productCode: String(row.productCode || ""),
     barcode: String(row.productCode || ""),
     sellerId: String(row.sellerId || ""),
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     title: resolveTitle(row.title),
     amount: Math.max(0, Number(row.amount) || 0),
     deliveryFee: 0,
@@ -554,6 +567,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
       existing.productId = productId;
       existing.productCode = formatProductCode(productId);
       existing.sellerId = String(item.sellerId || "").trim();
+      existing.cargoServiceType = resolveAssignmentCargoLane(item, existing);
       existing.title = resolveTitle(item.title);
       existing.amount = amount;
       existing.imageUrl = String(item.image || "");
@@ -608,6 +622,7 @@ async function acceptOrderUnitByCourier(deliveryId, payload = {}) {
     productId,
     productCode: formatProductCode(productId),
     sellerId: String(item.sellerId || "").trim(),
+    cargoServiceType: resolveAssignmentCargoLane(item, null),
     title: resolveTitle(item.title),
     amount,
     imageUrl: String(item.image || ""),
@@ -970,6 +985,10 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
   const primarySellerId = String(assignment.sellerId || "").trim();
   if (primarySellerId) {
     siblingQuery.sellerId = primarySellerId;
+  }
+  const laneType = normalizeCargoServiceType(assignment.cargoServiceType);
+  if (laneType) {
+    siblingQuery.cargoServiceType = laneType;
   }
 
   const siblingRows = await CourierOrderAssignment.find(siblingQuery)

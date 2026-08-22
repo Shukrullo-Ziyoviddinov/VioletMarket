@@ -1,6 +1,10 @@
 import i18n from '@/i18n';
 import { apiRequest } from '@/services/api';
 import { normalizeProcessStep } from '@/constants/shipmentProcess';
+import {
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+} from '@volet/cargo-service-rules';
 import type {
   PendingShipmentsResponse,
   ShipmentDetail,
@@ -47,10 +51,7 @@ function mapListItem(row: Partial<ShipmentListItem> & Record<string, unknown>): 
     groupKey: row.groupKey ? String(row.groupKey) : undefined,
     isGroup: Boolean(row.isGroup) || siblingIds.length > 1,
     siblingIds,
-    cargoServiceType:
-      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     cargoLaneCounts: {
       standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
       express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),
@@ -78,13 +79,8 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
         unitIndex: Number(product?.unitIndex) || 0,
         returnStatus: String(product?.returnStatus || 'active'),
         cargoServiceType:
-          product?.cargoServiceType === 'express' ||
-          product?.cargoServiceType === 'standard'
-            ? product.cargoServiceType
-            : row.cargoServiceType === 'express' ||
-                row.cargoServiceType === 'standard'
-              ? row.cargoServiceType
-              : undefined,
+          normalizeCargoServiceType(product?.cargoServiceType) ||
+          resolveStoredCargoServiceType(row.cargoServiceType),
         requestCode: String(product?.requestCode || ''),
       }))
     : [];
@@ -111,10 +107,7 @@ function mapDetail(row: Partial<ShipmentDetail> & Record<string, unknown>): Ship
     siblingIds: Array.isArray(row.siblingIds)
       ? row.siblingIds.map((id) => String(id || '')).filter(Boolean)
       : [],
-    cargoServiceType:
-      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     cargoLaneCounts: {
       standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
       express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),
@@ -192,14 +185,20 @@ export async function fetchShipmentDetail(token: string, shipmentId: string) {
 }
 
 export async function acceptShipment(token: string, shipmentId: string) {
-  const data = await apiRequest<{ shipment: ShipmentDetail; alreadyAccepted?: boolean }>(
+  const data = await apiRequest<{
+    shipment: ShipmentDetail;
+    alreadyAccepted?: boolean;
+    acceptedSiblingCount?: number;
+  }>(
     `/api/logistica-auth/shipments/${encodeURIComponent(shipmentId)}/accept`,
     { method: 'POST' },
     token,
   );
   return {
+    // Javob: bitta primary detail; Yuklarim ro‘yxati splitByCargoService bilan ajraladi.
     shipment: mapDetail(data?.shipment || {}),
     alreadyAccepted: Boolean(data?.alreadyAccepted),
+    acceptedSiblingCount: Number(data?.acceptedSiblingCount) || 0,
   };
 }
 
@@ -345,6 +344,7 @@ export type CargoHistoryPeriodParams = {
   month?: number;
   weekStart?: string;
   kind?: 'all' | 'handed_over' | 'returned';
+  cargoServiceType?: 'all' | 'standard' | 'express';
 };
 
 export async function fetchCargoHistory(
@@ -358,6 +358,12 @@ export async function fetchCargoHistory(
     limit: String(limit),
   });
   if (period.kind) query.set('kind', period.kind);
+  if (
+    period.cargoServiceType &&
+    period.cargoServiceType !== 'all'
+  ) {
+    query.set('cargoServiceType', period.cargoServiceType);
+  }
   if (period.mode) query.set('mode', period.mode);
   if (period.mode === 'month') {
     if (period.year) query.set('year', String(period.year));
@@ -396,6 +402,7 @@ export async function fetchCargoHistory(
     amount: Math.max(0, Number(row.amount) || 0),
     cargoCountry: String(row.cargoCountry || ''),
     cargoCountryLabel: String(row.cargoCountryLabel || ''),
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     at: (row.at as string | null | undefined) ?? null,
   }));
 

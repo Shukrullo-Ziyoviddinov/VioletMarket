@@ -147,6 +147,7 @@ const CargoSummary = ({ onCargoProductClick }) => {
             <strong>
               {t('cargo.totalCargoPrice')} {formatCargoPrice(totalCargoPrice)}
             </strong>
+            <p className="cargo-summary__fee-later">{t('cargo.feeLaterNote')}</p>
           </div>
         )}
       </div>

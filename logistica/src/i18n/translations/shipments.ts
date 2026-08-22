@@ -128,9 +128,9 @@ export const shipmentTranslations = {
       },
       uzArrival: {
         title: 'Toshkent omboriga qabul',
-        hint: 'Og‘irlik va summani kiriting. «Clientga yuborish» bosilganda holat avtomatik «Toshkent omborida» bo‘ladi.',
+        hint: 'Og‘irlik va summani kiriting. «Clientga yuborish» bosilganda holat avtomatik «Toshkent omborida» bo‘ladi. Yetkazish to‘lovi Standard va Express alohida — izoh/surat ham shu tarif uchun.',
         hintGroup:
-          'Har bir mahsulot og‘irligini alohida kiriting. Umumiy kg avtomatik hisoblanadi. Narx bitta — mijoz bir marta to‘laydi.',
+          'Har bir mahsulot og‘irligini alohida kiriting. Umumiy kg avtomatik hisoblanadi. Bu faqat shu tarif: boshqa tarif (Standard yoki Express) alohida yuboriladi, izoh va surat ham alohida.',
         photoOptional: 'Surat (ixtiyoriy)',
         removePhoto: 'Suratni olib tashlash',
         photoSourceTitle: 'Surat qo‘shish',
@@ -147,7 +147,8 @@ export const shipmentTranslations = {
         totalWeightLabel: 'Umumiy og‘irlik',
         weightPlaceholder: 'Masalan: 2.5',
         feeLabel: 'Og‘irlik summasi (so‘m) *',
-        feeHintOnce: 'Guruh uchun bitta umumiy narx — bitta to‘lov.',
+        feeHintOnce:
+          'Yetkazish to‘lovi Standard va Express alohida. Bu so‘rov faqat shu paket.',
         feePlaceholder: 'Masalan: 45000',
         commentLabel: 'Izoh (ixtiyoriy)',
         commentPlaceholder: 'Qo‘shimcha izoh',
@@ -292,9 +293,9 @@ export const shipmentTranslations = {
       },
       uzArrival: {
         title: 'Receive at Tashkent warehouse',
-        hint: 'Enter weight and amount. When you tap «Send to client», the status becomes «In Tashkent warehouse» automatically.',
+        hint: 'Enter weight and amount. When you tap «Send to client», the status becomes «In Tashkent warehouse» automatically. Standard and Express cargo fees are separate — comment and photo apply to this tariff only.',
         hintGroup:
-          'Enter each product weight separately. Total kg is calculated automatically. One fee — customer pays once.',
+          'Enter each product weight separately. Total kg is calculated automatically. This is one tariff only: the other (Standard or Express) is sent separately, with its own comment and photo.',
         photoOptional: 'Photo (optional)',
         removePhoto: 'Remove photo',
         photoSourceTitle: 'Add photo',
@@ -311,7 +312,8 @@ export const shipmentTranslations = {
         totalWeightLabel: 'Total weight',
         weightPlaceholder: 'e.g. 2.5',
         feeLabel: 'Weight fee (UZS) *',
-        feeHintOnce: 'One total fee for the group — one payment.',
+        feeHintOnce:
+          'Standard and Express cargo fees are separate. This request is for this package only.',
         feePlaceholder: 'e.g. 45000',
         commentLabel: 'Note (optional)',
         commentPlaceholder: 'Additional note',
@@ -450,9 +452,9 @@ export const shipmentTranslations = {
       },
       uzArrival: {
         title: '塔什干仓库收货',
-        hint: '请输入重量和金额。点击「发送给客户」后，状态将自动变为「在塔什干仓库」。',
+        hint: '请输入重量和金额。点击「发送给客户」后，状态将自动变为「在塔什干仓库」。标准与快递运费分开收取，备注和照片也只针对当前运费。',
         hintGroup:
-          '请分别输入每个商品的重量。总重量自动计算。金额只收一次 — 客户只付一笔。',
+          '请分别输入每个商品的重量。总重量自动计算。仅限当前运费：另一档（标准或快递）需单独发送，备注和照片也分开。',
         photoOptional: '照片（可选）',
         removePhoto: '移除照片',
         photoSourceTitle: '添加照片',
@@ -469,7 +471,7 @@ export const shipmentTranslations = {
         totalWeightLabel: '总重量',
         weightPlaceholder: '例如：2.5',
         feeLabel: '重量费用（苏姆）*',
-        feeHintOnce: '整组一个总价 — 一次付款。',
+        feeHintOnce: '标准与快递运费分开。此请求仅针对当前包裹。',
         feePlaceholder: '例如：45000',
         commentLabel: '备注（可选）',
         commentPlaceholder: '附加备注',

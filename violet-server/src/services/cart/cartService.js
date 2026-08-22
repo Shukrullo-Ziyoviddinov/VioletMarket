@@ -239,10 +239,7 @@ function mapItemToClient(doc, sellerCtx = null) {
     countries: row.countries || [],
     weight: row.weight ?? 300,
     cargoExpressPolicy: row.cargoExpressPolicy ?? null,
-    cargoServiceType:
-      row.cargoServiceType === "express" || row.cargoServiceType === "standard"
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     urgencyStockLeft: Number.isFinite(row.urgencyStockLeft)
       ? row.urgencyStockLeft
       : 3,
@@ -677,13 +674,22 @@ async function checkoutCartForUser(userId, options = {}) {
     shouldShowReview: false,
   };
 
+  const storedCargoOptions = await loadUserSelectedCargoOptions(userId);
+  const bodyCargoOptions = normalizeSelectedCargoOptionsMap(
+    options.selectedCargoOptions,
+  );
+  const selectedCargoOptions =
+    Object.keys(bodyCargoOptions).length > 0
+      ? { ...storedCargoOptions, ...bodyCargoOptions }
+      : storedCargoOptions;
+
   const order = await recordCartPayment({
     userId,
     cartItems: items,
     productMap,
     paymentMethod: options.paymentMethod,
     deliveryAddress,
-    selectedCargoOptions: await loadUserSelectedCargoOptions(userId),
+    selectedCargoOptions,
   });
 
   if (deliveryAddress) {

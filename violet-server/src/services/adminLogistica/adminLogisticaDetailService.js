@@ -158,6 +158,7 @@ async function listLogisticaDetailHistory(id, query = {}) {
     page: query.page,
     limit: query.limit,
     kind,
+    cargoServiceType: query.cargoServiceType || query.lane,
   });
 
   const items = await enrichHistoryItemsWithCustomers(history.items || []);

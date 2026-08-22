@@ -66,6 +66,11 @@
   font-weight: 600;
 }
 
+.cargo-fee-payment-card__lane {
+  color: #5b21b6 !important;
+  font-weight: 600;
+}
+
 .cargo-fee-payment-card__hint--warn {
   color: #b45309 !important;
 }

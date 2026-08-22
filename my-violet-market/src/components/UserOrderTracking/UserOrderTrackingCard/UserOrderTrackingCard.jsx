@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPrice, getLocalizedText, normalizeImagePath } from '../../../utils/utils';
+import {
+  isKnownCargoServiceType,
+  normalizeCargoServiceType,
+} from '../../../utils/cargoExpressPolicy';
 import UserOrderTrackingTimeline from '../UserOrderTrackingTimeline/UserOrderTrackingTimeline';
 import UserCargoFeePaymentModal from '../UserCargoFeePaymentModal/UserCargoFeePaymentModal';
 import './UserOrderTrackingCard.css';
@@ -82,11 +86,12 @@ export default function UserOrderTrackingCard({ order, onCargoFeePaid }) {
           {sellerName ? (
             <span className="user-order-tracking-card__seller">{sellerName}</span>
           ) : null}
-          {order?.pipelineMode === 'foreign' && order?.cargoServiceType ? (
+          {order?.pipelineMode === 'foreign' &&
+          isKnownCargoServiceType(order?.cargoServiceType) ? (
             <span
-              className={`user-order-tracking-card__cargo user-order-tracking-card__cargo--${order.cargoServiceType}`}
+              className={`user-order-tracking-card__cargo user-order-tracking-card__cargo--${normalizeCargoServiceType(order.cargoServiceType)}`}
             >
-              {order.cargoServiceType === 'express'
+              {normalizeCargoServiceType(order.cargoServiceType) === 'express'
                 ? t('orderHistory.cargoExpress')
                 : t('orderHistory.cargoStandard')}
             </span>
@@ -141,6 +146,7 @@ export default function UserOrderTrackingCard({ order, onCargoFeePaid }) {
         order={order}
         onClose={() => setFeeModalOpen(false)}
         onPaid={(result) => {
+          // order.id = tracking kartochka kaliti (g-…-standard|express), orderId emas.
           onCargoFeePaid?.(order.id, result);
           setFeeModalOpen(false);
         }}

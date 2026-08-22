@@ -25,6 +25,11 @@ const {
   normalizeUzWarehousePickupInput,
   snapshotUzWarehousePickup,
 } = require("../../productManagement/foreignUzWarehousePickup");
+const {
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+  buildCargoLaneGroupKey,
+} = require("../../utils/cargoServiceType");
 
 function cleanSellerId(value) {
   return String(value || "").trim();
@@ -171,10 +176,15 @@ function normalizeItemIndexes(rawIndexes) {
   ];
 }
 
+function resolveForeignItemLane(item, shipment) {
+  return resolveStoredCargoServiceType(
+    item?.cargoServiceType || shipment?.cargoServiceType,
+  );
+}
+
 /**
- * Bir order + bir xorij siller — Toshkent omboridan UZB kuryerga bulk handoff.
- * Bir xil ombor pickup; tayyor emaslar soft-skip.
- * To‘lov / qaytarish / DP zanjiriga tegmaydi.
+ * Bir order + bir xorij siller + bir tarif — Toshkent omboridan UZB kuryerga bulk handoff.
+ * Express Standardni kutmasin. Tayyor emaslar soft-skip.
  */
 async function handoffForeignOrderGroupToUzCourier(
   sellerId,
@@ -224,6 +234,24 @@ async function handoffForeignOrderGroupToUzCourier(
   const shipmentByItem = new Map(
     shipments.map((row) => [Number(row.itemIndex) || 0, row]),
   );
+
+  let laneType = normalizeCargoServiceType(options.cargoServiceType);
+  if (!laneType && itemIndexes.length) {
+    const firstIndex = itemIndexes[0];
+    laneType = resolveForeignItemLane(
+      order.items?.[firstIndex],
+      shipmentByItem.get(firstIndex),
+    );
+  }
+
+  if (laneType) {
+    itemIndexes = itemIndexes.filter((itemIndex) => {
+      const item = order.items?.[itemIndex];
+      return (
+        resolveForeignItemLane(item, shipmentByItem.get(itemIndex)) === laneType
+      );
+    });
+  }
 
   const updated = [];
   const skipped = [];
@@ -305,7 +333,10 @@ async function handoffForeignOrderGroupToUzCourier(
   return {
     orderId,
     sellerId: normalizedSellerId,
-    groupKey: `${orderId}:${normalizedSellerId}`,
+    cargoServiceType: laneType || null,
+    groupKey: laneType
+      ? buildCargoLaneGroupKey(orderId, normalizedSellerId, laneType)
+      : `${orderId}:${normalizedSellerId}`,
     action: "foreign_uz_handoff",
     uzWarehousePickup: snapshotUzWarehousePickup(warehousePickup),
     updated,

@@ -8,6 +8,10 @@ import {
   markAdminCargoShipmentPaid,
   updateAdminCargoShipmentProcessStep,
 } from '../../../api/adminCargoShipmentsApi';
+import {
+  formatCargoServiceTypeLabel,
+  isKnownCargoServiceType,
+} from '../../../utils/cargoServiceRules';
 import './LogisticaShipmentDetailModal.css';
 
 const UZ_FLOW_STEPS = new Set(['bojxonada', 'toshkent_omborida']);
@@ -292,13 +296,11 @@ export default function LogisticaShipmentDetailModal({
                   {detail.sellerCountryLabel || detail.sellerCountry}
                 </strong>
               </div>
-              {detail.cargoServiceType ? (
+              {isKnownCargoServiceType(detail.cargoServiceType) ? (
                 <div>
                   <span>Tarif</span>
                   <strong>
-                    {detail.cargoServiceType === 'express'
-                      ? 'Express'
-                      : 'Standard'}
+                    {formatCargoServiceTypeLabel(detail.cargoServiceType)}
                   </strong>
                 </div>
               ) : null}
@@ -475,9 +477,15 @@ export default function LogisticaShipmentDetailModal({
           {isArrivalGroup ? (
             <p className="logistica-shipment-detail-modal__arrival-hint">
               Har bir mahsulot og‘irligini alohida kiriting. Umumiy kg
-              avtomatik. Narx bitta — mijoz bir marta to‘laydi.
+              avtomatik. Bu faqat shu tarif — Standard va Express yetkazish
+              to‘lovi, izoh va surat alohida yuboriladi.
             </p>
-          ) : null}
+          ) : (
+            <p className="logistica-shipment-detail-modal__arrival-hint">
+              Yetkazish to‘lovi Standard va Express alohida. Izoh va surat shu
+              tarif uchun.
+            </p>
+          )}
 
           {arrivalWeightItems.map((item) => (
             <label key={item.shipmentId}>
@@ -510,7 +518,7 @@ export default function LogisticaShipmentDetailModal({
 
           <label>
             Og‘irlik summasi (so‘m)
-            {isArrivalGroup ? ' — bitta to‘lov' : ''}
+            {isArrivalGroup ? ' — shu tarif uchun bitta to‘lov' : ''}
             <input
               type="text"
               inputMode="numeric"

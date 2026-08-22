@@ -1,4 +1,5 @@
 import { apiUrl } from '../config/api';
+import { normalizeCargoServiceType } from '../utils/cargoServiceRules';
 
 async function parseJson(res) {
   const data = await res.json().catch(() => ({}));
@@ -58,6 +59,7 @@ function normalizeOrder(row) {
     handedToCourierAt: row?.handedToCourierAt || null,
     unitIndex: Number(row?.unitIndex) || 0,
     groupKey: String(row?.groupKey || ''),
+    cargoServiceType: normalizeCargoServiceType(row?.cargoServiceType),
     groupSize: Number(row?.groupSize) || 0,
     groupItemCount: Number(row?.groupItemCount) || 0,
     siblingIds: Array.isArray(row?.siblingIds)
@@ -167,6 +169,9 @@ async function patchOrderGroup(action, orderId, sellerId, body = {}) {
       body: JSON.stringify({
         sellerId: String(sellerId || ''),
         itemIndexes: Array.isArray(body.itemIndexes) ? body.itemIndexes : undefined,
+        ...(body.cargoServiceType
+          ? { cargoServiceType: String(body.cargoServiceType) }
+          : {}),
         ...(body.note ? { note: String(body.note) } : {}),
         ...(body.uzWarehousePickup
           ? { uzWarehousePickup: body.uzWarehousePickup }
@@ -204,6 +209,7 @@ export function handoffAdminOrderGroup(orderId, sellerId, body = {}) {
       : {};
   return patchOrderGroup('handoff', orderId, sellerId, {
     itemIndexes: body.itemIndexes,
+    cargoServiceType: body.cargoServiceType,
     ...extra,
   });
 }

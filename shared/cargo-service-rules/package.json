@@ -1,0 +1,9 @@
+{
+  "name": "@volet/cargo-service-rules",
+  "version": "1.0.0",
+  "description": "Cargo Standard/Express qoidalari — bitta manba (kalit, legacy, standard_only)",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -24,6 +24,10 @@ const {
   resolveOrderAddressFields,
   resolveOrderDeliveryRegion,
 } = require("./deliveryRegionPolicy");
+const {
+  buildDeliveryLastMileGroupKey,
+  normalizeCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 function resolveTitle(title) {
   if (title && typeof title === "object") {
@@ -82,6 +86,8 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     orderedAt: order?.paidAt || order?.createdAt || null,
     handedToCourierAt: handedEntry?.at || null,
     trackingStatus: resolveUnitTrackingStatus(item, unitIndex),
+    sellerId: String(item?.sellerId || "").trim(),
+    cargoServiceType: normalizeCargoServiceType(item?.cargoServiceType),
   };
 }
 
@@ -171,18 +177,25 @@ async function listAvailableDeliveryOrders(deliveryId, query = {}) {
 }
 
 /**
- * Bir buyurtma = bir yetkazish guruhi (bir mijoz / bir manzil).
- * Ichida units[] — accept/return dona bo‘yicha qoladi.
+ * UZB: bir orderId. Xorij: orderId+sellerId+tarif — Express Standardni kutmasin.
  */
 function groupAvailableCardsByOrderId(cards = []) {
   const map = new Map();
 
   for (const card of cards) {
-    const orderId = Number(card.orderId) || 0;
-    if (!map.has(orderId)) {
-      map.set(orderId, {
-        id: `order-${orderId}`,
-        orderId,
+    const key =
+      buildDeliveryLastMileGroupKey(
+        card.orderId,
+        card.sellerId,
+        card.cargoServiceType,
+      ) || `order-${Number(card.orderId) || 0}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        id: key,
+        orderId: Number(card.orderId) || 0,
+        sellerId: String(card.sellerId || ""),
+        cargoServiceType: card.cargoServiceType || null,
+        groupKey: key,
         orderCode: card.orderCode,
         region: card.region,
         city: card.city,
@@ -197,7 +210,7 @@ function groupAvailableCardsByOrderId(cards = []) {
       });
     }
 
-    map.get(orderId).units.push({
+    map.get(key).units.push({
       id: card.id,
       itemIndex: card.itemIndex,
       unitIndex: card.unitIndex,

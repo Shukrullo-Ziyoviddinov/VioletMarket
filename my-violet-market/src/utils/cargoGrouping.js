@@ -5,6 +5,7 @@ import {
 import {
   isStandardOnlyCargoItem,
   isUnrestrictedCargoItem,
+  normalizeCargoServiceType,
 } from './cargoExpressPolicy';
 
 function isLocalCartSeller(item) {
@@ -41,8 +42,8 @@ export function hydrateSelectedCargoOptions(items, serverMap = {}) {
   const hydrated = {};
   for (const item of Array.isArray(items) ? items : []) {
     if (isLocalCartSeller(item)) continue;
-    const type = item?.cargoServiceType;
-    if (type !== 'express' && type !== 'standard') continue;
+    const type = normalizeCargoServiceType(item?.cargoServiceType);
+    if (!type) continue;
     for (const key of resolveCartWarehouseCountryKeys(item)) {
       if (key && key !== 'uzb' && !hydrated[key]) hydrated[key] = type;
     }
@@ -53,9 +54,8 @@ export function hydrateSelectedCargoOptions(items, serverMap = {}) {
       : {};
   for (const [key, value] of Object.entries(fromServer)) {
     const country = normalizeCountryCode(key);
-    const type = String(value || '').trim().toLowerCase();
-    if (!country || country === 'uzb') continue;
-    if (type !== 'express' && type !== 'standard') continue;
+    const type = normalizeCargoServiceType(value);
+    if (!country || country === 'uzb' || !type) continue;
     hydrated[country] = type;
   }
   return hydrated;
@@ -78,7 +78,6 @@ export function groupCartItemsByCountry(items) {
 
 /**
  * Bir mamlakat ichida: cheklovsiz vs faqat-standart.
- * China va USA aralashmaydi — bu faqat bir countryKey ichida.
  */
 export function partitionCountryItemsByExpressPolicy(items) {
   const list = Array.isArray(items) ? items : [];
@@ -128,12 +127,11 @@ export function calcForeignCountryCargoPrice(
   if (unrestricted.length > 0) {
     const weight = sumCartItemsWeightGrams(unrestricted);
     const selectedType =
-      selectedCargoOptions[countryKey] ||
-      unrestricted.find(
-        (item) =>
-          item?.cargoServiceType === 'express' ||
-          item?.cargoServiceType === 'standard',
-      )?.cargoServiceType ||
+      normalizeCargoServiceType(selectedCargoOptions[countryKey]) ||
+      normalizeCargoServiceType(
+        unrestricted.find((item) => normalizeCargoServiceType(item?.cargoServiceType))
+          ?.cargoServiceType,
+      ) ||
       'standard';
     const rate = cargoInfo[selectedType] ?? cargoInfo.standard;
     total += calcCargoFeeFromWeightGrams(weight, rate);

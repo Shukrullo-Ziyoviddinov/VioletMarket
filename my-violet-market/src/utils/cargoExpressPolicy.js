@@ -1,44 +1,39 @@
-/** Admin tasdiqlashdan yoziladigan yetkazib berish siyosati (xorij mahsulotlari). */
-export const CARGO_EXPRESS_POLICY = {
-  UNRESTRICTED: 'unrestricted',
-  STANDARD_ONLY: 'standard_only',
+/** @see shared/cargo-service-rules — bitta qoida manbasi */
+/**
+ * Mahsulot cargoExpressPolicy (unrestricted | standard_only) — savat/checkout oldidan.
+ * Admin product approval zanjirida; cargoServiceType (Standard/Express tarif split) bilan aralashmasin.
+ */
+import {
+  CARGO_EXPRESS_POLICY,
+  CARGO_SERVICE_TYPE,
+  normalizeCargoExpressPolicy,
+  isStandardOnlyCargoItem,
+  isUnrestrictedCargoItem,
+  isStandardOnlyCargoPolicy,
+  isUnrestrictedCargoPolicy,
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+  isKnownCargoServiceType,
+  formatCargoServiceTypeLabel,
+  resolveProductCargoLane,
+} from '@volet/cargo-service-rules';
+
+export {
+  CARGO_EXPRESS_POLICY,
+  CARGO_SERVICE_TYPE,
+  normalizeCargoExpressPolicy,
+  isStandardOnlyCargoItem,
+  isUnrestrictedCargoItem,
+  isStandardOnlyCargoPolicy,
+  isUnrestrictedCargoPolicy,
+  normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
+  isKnownCargoServiceType,
+  formatCargoServiceTypeLabel,
+  resolveProductCargoLane,
 };
 
-/**
- * Maydon bo'sh / noma'lum → null (savatda cheklovsiz deb hisoblanadi).
- * @param {unknown} value
- * @returns {'unrestricted' | 'standard_only' | null}
- */
-export function normalizeCargoExpressPolicy(value) {
-  const raw = String(value ?? '')
-    .trim()
-    .toLowerCase();
-  if (raw === CARGO_EXPRESS_POLICY.STANDARD_ONLY) {
-    return CARGO_EXPRESS_POLICY.STANDARD_ONLY;
-  }
-  if (raw === CARGO_EXPRESS_POLICY.UNRESTRICTED) {
-    return CARGO_EXPRESS_POLICY.UNRESTRICTED;
-  }
-  return null;
-}
-
-/** Express tanlab bo'lmaydigan mahsulot (faqat Standard). */
-export function isStandardOnlyCargoItem(productOrItem) {
-  return (
-    normalizeCargoExpressPolicy(productOrItem?.cargoExpressPolicy) ===
-    CARGO_EXPRESS_POLICY.STANDARD_ONLY
-  );
-}
-
-/** Standard + Express tanlovi bor (bo'sh maydon ham shu). */
-export function isUnrestrictedCargoItem(productOrItem) {
-  return !isStandardOnlyCargoItem(productOrItem);
-}
-
-/**
- * Savat/product payload uchun maydon qiymati.
- * Bo'sh bo'lsa null qaytaradi (UZB va eski mahsulotlar).
- */
+/** Savat/product payload uchun maydon qiymati. */
 export function resolveCargoExpressPolicyForCart(productOrItem) {
   return normalizeCargoExpressPolicy(productOrItem?.cargoExpressPolicy);
 }

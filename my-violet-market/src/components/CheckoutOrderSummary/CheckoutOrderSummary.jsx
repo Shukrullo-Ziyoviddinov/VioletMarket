@@ -84,10 +84,15 @@ const CheckoutOrderSummary = ({
         </span>
       </div>
       {cargoPrice > 0 && (
-        <div className="checkout-order-summary__row">
-          <span>{t('cart.statCargo')}</span>
-          <span>{formatCargoPrice(cargoPrice)}</span>
-        </div>
+        <>
+          <div className="checkout-order-summary__row">
+            <span>{t('cart.statCargo')}</span>
+            <span>{formatCargoPrice(cargoPrice)}</span>
+          </div>
+          <p className="checkout-order-summary__cargo-note">
+            {t('checkout.cargoPayLater')}
+          </p>
+        </>
       )}
       <div className="checkout-order-summary__total">
         {t('cart.totalSum')} {formatPrice(totalSum)}

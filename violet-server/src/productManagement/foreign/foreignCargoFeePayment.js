@@ -10,7 +10,8 @@
  * Legacy: cargoFeePaymentRequired yo‘q/false (eski Toshkent yuklari)
  *   → To‘landi uchun admin tasdiq shart emas.
  *
- * Click/Payme real tekshiruv — keyin shu faylga ulanadi.
+ * Checkout mahsulot to‘lovi bo‘linmaydi.
+ * Ikki yo‘lak = ikkita cargo fee (Standard va Express alohida).
  */
 
 const { HttpError } = require("../../utils/httpError");

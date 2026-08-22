@@ -207,6 +207,14 @@
   font-size: 1.1rem;
 }
 
+.cargo-summary__fee-later {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #5b21b6;
+}
+
 .cargo-modal-overlay {
   position: fixed;
   top: 0;

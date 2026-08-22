@@ -42,6 +42,7 @@ type PaymentItem = {
   orderId: number;
   amount: number;
   at: string | null;
+  cargoServiceType: 'standard' | 'express' | null;
 };
 
 function currentMonthKey() {

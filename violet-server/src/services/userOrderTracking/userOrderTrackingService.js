@@ -179,7 +179,7 @@ function pickTimelineSourceItem(items) {
 }
 
 /**
- * Bir checkout (orderId) + bir siller → bitta kartochka.
+ * Mijoz tracking: orderId+sellerId+cargoServiceType → alohida kartochka (Standard/Express).
  * Cargo to‘lov: faqat fee-bearer shipment (paymentRequired) — bitta summa.
  * Har mahsulot: o‘z kg / (agar bo‘lsa) comment+photo — chalkashtirilmaydi.
  */

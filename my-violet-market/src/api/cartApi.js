@@ -70,9 +70,18 @@ export function updateCartCargoOptionsApi(token, payload) {
   }).then(parseJsonResponse);
 }
 
+function hasSelectedCargoOptionsMap(value) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).length > 0
+  );
+}
+
 export function checkoutCartApi(
   token,
-  { paymentMethod, deliveryAddress } = {},
+  { paymentMethod, deliveryAddress, selectedCargoOptions } = {},
 ) {
   const method = String(paymentMethod || '').trim();
   if (!method) {
@@ -90,6 +99,11 @@ export function checkoutCartApi(
   }
 
   const body = { paymentMethod: method };
+
+  // Bo'sh {} yuborilmaydi — server user.selectedCargoOptions dan oladi (#2 fallback).
+  if (hasSelectedCargoOptionsMap(selectedCargoOptions)) {
+    body.selectedCargoOptions = selectedCargoOptions;
+  }
 
   if (addressPayload) {
     const city = String(addressPayload.city || '').trim();

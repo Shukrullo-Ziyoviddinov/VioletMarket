@@ -18,6 +18,9 @@ const {
   formatProductCode,
 } = require("./cargoShipmentDisplayHelpers");
 const {
+  normalizeCargoServiceType,
+} = require("../../utils/cargoServiceType");
+const {
   buildMonthRange,
   buildWeekRange,
   nowUzParts,
@@ -40,8 +43,61 @@ function snapshotFromShipment(shipment, extras = {}) {
     productCode: formatProductCode(productId, ""),
     amount: Math.max(0, toNumber(extras.amount, 0)),
     cargoCountry: normalizeCargoCountry(row.sellerCountry),
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     cargoReturnRequestId: extras.cargoReturnRequestId || null,
   };
+}
+
+/** Tarif filtri: legacy (maydon yo‘q) → standard. */
+function applyCargoLaneHistoryFilter(filter, laneRaw) {
+  const lane = String(laneRaw || "all")
+    .trim()
+    .toLowerCase();
+  if (lane === "express") {
+    filter.cargoServiceType = "express";
+    return;
+  }
+  if (lane === "standard") {
+    filter.$or = [
+      { cargoServiceType: "standard" },
+      { cargoServiceType: null },
+      { cargoServiceType: "" },
+      { cargoServiceType: { $exists: false } },
+    ];
+  }
+}
+
+/** Eski tarix yozuvlari: snapshot bo‘sh bo‘lsa shipmentdan o‘qish. */
+async function attachCargoServiceTypesFromShipments(rows = []) {
+  if (!Array.isArray(rows) || !rows.length) return rows;
+
+  const missingIds = [
+    ...new Set(
+      rows
+        .filter((row) => !normalizeCargoServiceType(row?.cargoServiceType))
+        .map((row) => String(row?.shipmentId || ""))
+        .filter((id) => mongoose.isValidObjectId(id)),
+    ),
+  ];
+  if (!missingIds.length) return rows;
+
+  const { CargoShipment } = require("../../models/cargoShipment");
+  const shipments = await CargoShipment.find({ _id: { $in: missingIds } })
+    .select({ cargoServiceType: 1 })
+    .lean();
+  const byId = new Map(
+    shipments.map((row) => [
+      String(row._id),
+      normalizeCargoServiceType(row.cargoServiceType),
+    ]),
+  );
+
+  return rows.map((row) => {
+    if (normalizeCargoServiceType(row?.cargoServiceType)) return row;
+    const fromShipment = byId.get(String(row.shipmentId || ""));
+    if (!fromShipment) return row;
+    return { ...row, cargoServiceType: fromShipment };
+  });
 }
 
 function toPublicHistoryItem(doc) {
@@ -62,6 +118,7 @@ function toPublicHistoryItem(doc) {
     amount: Math.max(0, Number(row.amount) || 0),
     cargoCountry: normalizeCargoCountry(row.cargoCountry),
     cargoCountryLabel: cargoCountryDisplayLabel(row.cargoCountry),
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     at: row.at || row.createdAt || null,
   };
 }
@@ -158,6 +215,10 @@ async function listHistoryForLogistica(logisticaId, query = {}) {
   if (kindRaw === "handed_over" || kindRaw === "returned") {
     filter.kind = kindRaw;
   }
+  applyCargoLaneHistoryFilter(
+    filter,
+    query.cargoServiceType || query.lane || query.tariff,
+  );
 
   const [total, rows, counts] = await Promise.all([
     CargoLogisticaHistory.countDocuments(filter),
@@ -182,6 +243,8 @@ async function listHistoryForLogistica(logisticaId, query = {}) {
     counts.map((row) => [String(row._id || ""), Number(row.count) || 0]),
   );
 
+  const enriched = await attachCargoServiceTypesFromShipments(rows);
+
   return {
     page,
     limit,
@@ -191,7 +254,7 @@ async function listHistoryForLogistica(logisticaId, query = {}) {
       handedOver: countMap.get("handed_over") || 0,
       returned: countMap.get("returned") || 0,
     },
-    items: rows.map(toPublicHistoryItem),
+    items: enriched.map(toPublicHistoryItem),
   };
 }
 

@@ -20,6 +20,7 @@
   "description": "",
   "dependencies": {
     "@getbrevo/brevo": "^5.0.4",
+    "@volet/cargo-service-rules": "file:../shared/cargo-service-rules",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

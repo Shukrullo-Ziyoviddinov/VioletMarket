@@ -6,6 +6,10 @@ import {
   fetchLogisticaDetailHistory,
 } from '../../api/logisticaAdminApi';
 import { useAdminToast } from '../../context/AdminToastContext';
+import {
+  formatCargoServiceTypeLabel,
+  isKnownCargoServiceType,
+} from '../../utils/cargoServiceRules';
 import './LogisticaDetailModal.css';
 
 const FILTERS = [
@@ -261,15 +265,22 @@ export default function LogisticaDetailModal({
                       <p className="logistica-detail-modal__code">
                         {item.requestCode || item.productCode || '—'}
                       </p>
-                      <span
-                        className={`logistica-detail-modal__badge ${
-                          isReturned
-                            ? 'logistica-detail-modal__badge--returned'
-                            : 'logistica-detail-modal__badge--handed'
-                        }`}
-                      >
-                        {isReturned ? 'Qaytarildi' : 'Topshirildi'}
-                      </span>
+                      <div className="logistica-detail-modal__badges">
+                        {isKnownCargoServiceType(item.cargoServiceType) ? (
+                          <span className="logistica-detail-modal__badge logistica-detail-modal__badge--lane">
+                            {formatCargoServiceTypeLabel(item.cargoServiceType)}
+                          </span>
+                        ) : null}
+                        <span
+                          className={`logistica-detail-modal__badge ${
+                            isReturned
+                              ? 'logistica-detail-modal__badge--returned'
+                              : 'logistica-detail-modal__badge--handed'
+                          }`}
+                        >
+                          {isReturned ? 'Qaytarildi' : 'Topshirildi'}
+                        </span>
+                      </div>
                     </div>
                     <p className="logistica-detail-modal__title">
                       {item.productTitle || 'Mahsulot'}

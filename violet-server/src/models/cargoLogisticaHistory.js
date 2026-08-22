@@ -36,6 +36,13 @@ const cargoLogisticaHistorySchema = new mongoose.Schema(
     productCode: { type: String, default: "" },
     amount: { type: Number, default: 0 },
     cargoCountry: { type: String, default: "", trim: true, lowercase: true },
+    /** standard | express — To‘landi/qaytarish paytida shipment snapshot */
+    cargoServiceType: {
+      type: String,
+      enum: ["standard", "express"],
+      default: null,
+      index: true,
+    },
     cargoReturnRequestId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CargoReturnRequest",

@@ -5,30 +5,16 @@
  */
 
 const { HttpError } = require("./httpError");
+const {
+  CARGO_EXPRESS_POLICY,
+  normalizeCargoExpressPolicy,
+} = require("@volet/cargo-service-rules");
 
 const PRODUCT_APPROVAL_STATUS = {
   PENDING: "pending",
   APPROVED: "approved",
   REJECTED: "rejected",
 };
-
-const CARGO_EXPRESS_POLICY = {
-  UNRESTRICTED: "unrestricted",
-  STANDARD_ONLY: "standard_only",
-};
-
-function normalizeCargoExpressPolicy(value) {
-  const raw = String(value ?? "")
-    .trim()
-    .toLowerCase();
-  if (raw === CARGO_EXPRESS_POLICY.STANDARD_ONLY) {
-    return CARGO_EXPRESS_POLICY.STANDARD_ONLY;
-  }
-  if (raw === CARGO_EXPRESS_POLICY.UNRESTRICTED) {
-    return CARGO_EXPRESS_POLICY.UNRESTRICTED;
-  }
-  return null;
-}
 
 function requireCargoExpressPolicy(value) {
   const policy = normalizeCargoExpressPolicy(value);

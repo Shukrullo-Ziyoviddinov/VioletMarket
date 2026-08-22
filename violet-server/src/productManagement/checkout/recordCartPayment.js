@@ -107,7 +107,8 @@ function calcOrderTotalAmount(items) {
 
 /**
  * Savatdan buyurtma yozuvini yaratish.
- * Hozir mock to'lov (darhol paid); keyin Payme/Click callback shu funksiyani chaqiradi.
+ * Checkout mahsulot to‘lovi bitta (order.totalAmount = mahsulotlar).
+ * Cargo yetkazish to‘lovi bu yerda olinmaydi — Toshkentda Standard/Express alohida.
  * Sotuv/daromad (siller + asosiy admin) bu yerda yozilmaydi —
  * faqat kuryer/asosiy admin "Topshirdim" da recordSalesOnDelivery orqali.
  */

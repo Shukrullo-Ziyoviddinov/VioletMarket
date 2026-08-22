@@ -24,6 +24,10 @@ const {
   shipmentLookupKey,
 } = cargoShipmentSellerService;
 const foreignUzCourierBridgeService = require("../cargoShipments/foreignUzCourierBridgeService");
+const {
+  buildCargoLaneGroupKey,
+  resolveStoredCargoServiceType,
+} = require("../../utils/cargoServiceType");
 
 const DEFAULT_PAGE_SIZE = 100;
 
@@ -78,6 +82,26 @@ async function loadSellerMap(sellerIds = []) {
       },
     ]),
   );
+}
+
+function applyForeignLastMileGroupKeys(cards = []) {
+  return (Array.isArray(cards) ? cards : []).map((card) => {
+    const pipeline = resolveSellerPipelineMode(card?.seller?.sellerCountry);
+    if (pipeline !== "foreign") return card;
+    const status = String(card?.trackingStatus || "");
+    const lastMile =
+      status === "handed_to_courier" || Boolean(card?.uzWarehouseReady);
+    if (!lastMile) return card;
+
+    const lane = resolveStoredCargoServiceType(
+      card.cargoServiceType || card.cargoShipment?.cargoServiceType,
+    );
+    return {
+      ...card,
+      cargoServiceType: lane,
+      groupKey: buildCargoLaneGroupKey(card.orderId, card.sellerId, lane),
+    };
+  });
 }
 
 function attachSeller(card, sellerMap) {
@@ -321,6 +345,7 @@ async function listAdminOrders(query = {}) {
       .filter((card) => card.uzWarehouseReady);
   }
 
+  filteredCards = applyForeignLastMileGroupKeys(filteredCards);
   filteredCards = annotateVisibleFulfillmentGroups(filteredCards);
 
   const total = filteredCards.length;

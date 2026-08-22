@@ -163,10 +163,15 @@ const Cart = () => {
                 <span>{deliveryPrice > 0 ? formatPrice(deliveryPrice) : i18n.t('cart.free')}</span>
               </div>
               {cargoPrice > 0 && (
-                <div className="stat-item">
-                  <span>{i18n.t('cart.statCargo')}</span>
-                  <span>${cargoPrice.toFixed(2)}</span>
-                </div>
+                <>
+                  <div className="stat-item">
+                    <span>{i18n.t('cart.statCargo')}</span>
+                    <span>${cargoPrice.toFixed(2)}</span>
+                  </div>
+                  <p className="cart-summary__cargo-note">
+                    {i18n.t('cargo.feeLaterNote')}
+                  </p>
+                </>
               )}
             </div>
             <div className="total-price" key={`total-${selectedDeliveryType}-${deliveryPrice}`}>

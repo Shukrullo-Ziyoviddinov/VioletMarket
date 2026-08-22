@@ -47,7 +47,7 @@ const OrderHistory = () => {
 
   const panelIndex = filter === 'all' ? 1 : 0;
 
-  const handleCargoFeePaid = (orderId, result) => {
+  const handleCargoFeePaid = (trackingCardId, result) => {
     const payment = result?.detail?.payment;
     const shipmentId = result?.detail?.shipmentId
       ? String(result.detail.shipmentId)
@@ -55,8 +55,9 @@ const OrderHistory = () => {
     if (!payment) return;
     setInProgressOrders((prev) =>
       prev.map((row) => {
+        // trackingCardId = g-{orderId}-{sellerId}-{lane}; raqamli orderId bilan solishtirmang.
         const sameCard =
-          row.id === orderId ||
+          row.id === trackingCardId ||
           (shipmentId && row.cargoShipmentId === shipmentId);
         if (!sameCard) return row;
         return {

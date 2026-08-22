@@ -8,6 +8,7 @@ const {
 const {
   getCourierAssignmentProgress,
 } = require("../../utils/courierAssignmentStatus");
+const { buildDeliveryLastMileGroupKey } = require("../../utils/cargoServiceType");
 
 function unitSummary(order) {
   return {
@@ -37,8 +38,7 @@ function statusRank(status) {
 }
 
 /**
- * Bir mijoz / bir orderId — bitta kartochka.
- * Primary = eng orqada qolgan (kam progress) unit — badge/action shunga mos.
+ * UZB: bir orderId. Xorij: orderId+sellerId+tarif.
  */
 function groupAcceptedOrdersByOrderId(orders = []) {
   const list = Array.isArray(orders) ? orders : [];
@@ -46,11 +46,16 @@ function groupAcceptedOrdersByOrderId(orders = []) {
 
   for (const order of list) {
     if (!order) continue;
-    const orderId = Number(order.orderId) || 0;
-    if (!map.has(orderId)) {
-      map.set(orderId, []);
+    const key =
+      buildDeliveryLastMileGroupKey(
+        order.orderId,
+        order.sellerId,
+        order.cargoServiceType,
+      ) || `order-${Number(order.orderId) || 0}`;
+    if (!map.has(key)) {
+      map.set(key, []);
     }
-    map.get(orderId).push(order);
+    map.get(key).push(order);
   }
 
   return Array.from(map.values()).map((units) => {
@@ -87,13 +92,20 @@ function groupAcceptedOrdersByOrderId(orders = []) {
           : productCodes.join(", "),
       units: unitRows,
       siblingIds: unitRows.map((unit) => unit.id).filter(Boolean),
+      cargoServiceType: primary.cargoServiceType || null,
+      groupKey:
+        buildDeliveryLastMileGroupKey(
+          primary.orderId,
+          primary.sellerId,
+          primary.cargoServiceType,
+        ) || `order-${Number(primary.orderId) || 0}`,
     };
   });
 }
 
 /**
  * Kuryer bosh sahifasi — faol buyurtmalar (sotuvchidan olish + mijozga yetkazish).
- * Bir orderId = bir kartochka (qabuldagi available grouping bilan bir xil).
+ * Bir orderId = bir kartochka (UZB). Xorijda tarif bo‘yicha ajraladi.
  */
 async function listAcceptedOrdersForCourier(deliveryId, query = {}) {
   const statusFilter = String(query.status || "active").trim().toLowerCase();

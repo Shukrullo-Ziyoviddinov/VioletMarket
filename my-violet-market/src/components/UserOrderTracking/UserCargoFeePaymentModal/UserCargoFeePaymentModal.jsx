@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GlobalModal from '../../GlobalModal';
 import { formatPrice, getLocalizedText, normalizeImagePath } from '../../../utils/utils';
+import {
+  formatCargoServiceTypeLabel,
+  isKnownCargoServiceType,
+  normalizeCargoServiceType,
+} from '../../../utils/cargoExpressPolicy';
 import { payMyCargoFee } from '../../../api/orderTrackingApi';
 import { useUser } from '../../../contexts/UserContext';
 import './UserCargoFeePaymentModal.css';
@@ -94,6 +99,17 @@ export default function UserCargoFeePaymentModal({
     >
       <div className="user-cargo-fee-modal">
         <div className="user-cargo-fee-modal__products">
+          {isKnownCargoServiceType(order?.cargoServiceType) ? (
+            <p className="user-cargo-fee-modal__group-label">
+              {formatCargoServiceTypeLabel(order.cargoServiceType, {
+                express: t('orderHistory.cargoExpress'),
+                standard: t('orderHistory.cargoStandard'),
+              })}
+              {' · '}
+              {t('orderHistory.cargoFee.laneHint')}
+            </p>
+          ) : null}
+
           {isGroup ? (
             <p className="user-cargo-fee-modal__group-label">
               {t('orderHistory.cargoFee.groupProducts', {
@@ -189,11 +205,16 @@ export default function UserCargoFeePaymentModal({
             <span>{t('orderHistory.cargoFee.fee')}</span>
             <strong>{formatMoney(payment?.cargoDeliveryFee)}</strong>
           </p>
-          {isGroup ? (
-            <p className="user-cargo-fee-modal__fee-hint">
-              {t('orderHistory.cargoFee.onePaymentHint')}
-            </p>
-          ) : null}
+          <p className="user-cargo-fee-modal__fee-hint">
+            {isKnownCargoServiceType(order?.cargoServiceType)
+              ? t('orderHistory.cargoFee.onePaymentHint', {
+                  lane: formatCargoServiceTypeLabel(order.cargoServiceType, {
+                    express: t('orderHistory.cargoExpress'),
+                    standard: t('orderHistory.cargoStandard'),
+                  }),
+                })
+              : t('orderHistory.cargoFee.laneHint')}
+          </p>
 
           {groupComment ? (
             <p className="user-cargo-fee-modal__comment">

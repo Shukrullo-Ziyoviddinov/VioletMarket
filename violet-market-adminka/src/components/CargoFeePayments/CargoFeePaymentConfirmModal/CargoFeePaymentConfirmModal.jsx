@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import GlobalModal from '../../GlobalModal/GlobalModal';
 import { confirmAdminCargoFeePayment } from '../../../api/adminCargoFeePaymentsApi';
+import {
+  formatCargoServiceTypeLabel,
+  isKnownCargoServiceType,
+} from '../../../utils/cargoServiceRules';
 import './CargoFeePaymentConfirmModal.css';
 
 function formatMoney(value) {
@@ -116,6 +120,14 @@ export default function CargoFeePaymentConfirmModal({
         <p className="cargo-fee-confirm-modal__question">
           Chindan ham to‘langanligini tasdiqlamoqchimisiz?
         </p>
+        {isKnownCargoServiceType(item.cargoServiceType) ? (
+          <p className="cargo-fee-confirm-modal__lane">
+            Tarif:{' '}
+            <b>{formatCargoServiceTypeLabel(item.cargoServiceType)}</b>
+            . Yetkazish to‘lovi Standard va Express alohida — boshqa tarifni
+            aralashtirmang.
+          </p>
+        ) : null}
 
         <div className="cargo-fee-confirm-modal__meta">
           <div className="cargo-fee-confirm-modal__products">

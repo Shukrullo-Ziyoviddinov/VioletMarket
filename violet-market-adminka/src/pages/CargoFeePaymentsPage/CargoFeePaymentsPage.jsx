@@ -45,8 +45,10 @@ export default function CargoFeePaymentsPage() {
       <div className="cargo-fee-payments-page__header">
         <h1>Cargo to‘lov so‘rovlari</h1>
         <p>
-          Logistica yuborgan og‘irlik/summa so‘rovlari. Mijoz to‘lagandan keyin
-          tasdiqlang — shundan so‘ng logistica «To‘landi» bosadi.
+          Logistica yuborgan og‘irlik/summa so‘rovlari. Standard va Express
+          yetkazish to‘lovi alohida tasdiqlanadi. Mahsulot to‘lovi bu yerda emas.
+          Mijoz to‘lagandan keyin tasdiqlang — shundan so‘ng logistica
+          «To‘landi» bosadi.
         </p>
       </div>
 

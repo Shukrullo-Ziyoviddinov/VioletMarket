@@ -12,6 +12,8 @@ const courierOrderAssignmentSchema = new mongoose.Schema(
     productId: { type: Number, required: true, index: true },
     productCode: { type: String, default: "" },
     sellerId: { type: String, required: true, index: true },
+    /** xorij last-mile: standard | express. UZB = null */
+    cargoServiceType: { type: String, default: null, trim: true, lowercase: true },
     title: {
       uz: { type: String, default: "" },
       ru: { type: String, default: "" },

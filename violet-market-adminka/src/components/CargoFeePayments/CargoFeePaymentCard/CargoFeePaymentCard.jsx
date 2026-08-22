@@ -1,4 +1,8 @@
 import React from 'react';
+import {
+  formatCargoServiceTypeLabel,
+  isKnownCargoServiceType,
+} from '../../../utils/cargoServiceRules';
 import './CargoFeePaymentCard.css';
 
 function formatMoney(value) {
@@ -32,14 +36,19 @@ export default function CargoFeePaymentCard({ item, onOpen }) {
         </div>
         <p>
           {item.requestCode} · {item.sellerName}
-          {item.cargoServiceType
-            ? ` · ${item.cargoServiceType === 'express' ? 'Express' : 'Standard'}`
+          {isKnownCargoServiceType(item.cargoServiceType)
+            ? ` · ${formatCargoServiceTypeLabel(item.cargoServiceType)}`
             : ''}
         </p>
         <p>
           Og‘irlik: {item.weightKg} kg · Summa: {formatMoney(item.cargoDeliveryFee)}
         </p>
         <p>Logistica: {item.logisticaCompanyName}</p>
+        {isKnownCargoServiceType(item.cargoServiceType) ? (
+          <p className="cargo-fee-payment-card__lane">
+            Yetkazish to‘lovi faqat shu tarif — Standard va Express alohida.
+          </p>
+        ) : null}
         {item.customerPaidAt ? (
           <p className="cargo-fee-payment-card__hint">
             Mijoz to‘ladi ({item.customerPaymentMethod || '—'})

@@ -56,6 +56,7 @@ const checkout = asyncHandler(async (req, res) => {
   const data = await cartService.checkoutCartForUser(req.userId, {
     paymentMethod,
     deliveryAddress,
+    selectedCargoOptions: body.selectedCargoOptions,
   });
   res.json({
     ok: true,

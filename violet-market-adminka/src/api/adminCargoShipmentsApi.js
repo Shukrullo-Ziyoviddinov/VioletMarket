@@ -1,4 +1,5 @@
 import { apiUrl } from '../config/api';
+import { normalizeCargoServiceType } from '../utils/cargoServiceRules';
 
 async function parseJson(res) {
   const data = await res.json().catch(() => ({}));
@@ -72,10 +73,7 @@ function normalizeShipment(row = {}) {
       done: false,
     },
     groupKey: String(row.groupKey || ''),
-    cargoServiceType:
-      row.cargoServiceType === 'express' || row.cargoServiceType === 'standard'
-        ? row.cargoServiceType
-        : null,
+    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
     cargoLaneCounts: {
       standard: Math.max(0, Number(row.cargoLaneCounts?.standard) || 0),
       express: Math.max(0, Number(row.cargoLaneCounts?.express) || 0),

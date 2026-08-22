@@ -73,7 +73,8 @@ export default function LogisticaShipmentsPage() {
         <h1 className="logistica-shipments-page__title">Logistica</h1>
         <p className="logistica-shipments-page__subtitle">
           Qabul qilingan cargo yuklari — logistica ilovasi bilan bir xil qoida:
-          jarayon → Clientga yuborish → To‘landi (Xorij→UZB).
+          jarayon → Clientga yuborish → To‘landi (Xorij→UZB). Standard va
+          Express yetkazish to‘lovi, izoh va surat alohida.
         </p>
       </div>
 

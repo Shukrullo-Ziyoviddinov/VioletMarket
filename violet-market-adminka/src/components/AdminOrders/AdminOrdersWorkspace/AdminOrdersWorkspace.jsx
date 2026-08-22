@@ -140,6 +140,7 @@ export default function AdminOrdersWorkspace({
           courierOrder.sellerId,
           {
             itemIndexes,
+            cargoServiceType: courierOrder.cargoServiceType,
             ...(requireWarehousePickup ? { pickup } : {}),
           },
         );

@@ -34,6 +34,7 @@ const {
   buildCargoLaneGroupKey,
   normalizeCargoServiceType,
   resolveStoredCargoServiceType,
+  resolveShipmentListGroupKey,
   applyCargoLaneMongoFilter,
   resolveCargoLaneUnitCount,
   countCargoLanes,
@@ -155,9 +156,7 @@ function groupLogisticaShipmentCards(cards = [], options = {}) {
 
   for (const card of cards) {
     if (!card) continue;
-    const key = splitByCargoService
-      ? buildCargoLaneGroupKey(card.orderId, card.sellerId, card.cargoServiceType)
-      : buildFulfillmentGroupKey(card.orderId, card.sellerId);
+    const key = resolveShipmentListGroupKey(card, { splitByCargoService });
     if (!key) continue;
     if (!map.has(key)) {
       map.set(key, []);
@@ -525,6 +524,9 @@ async function getShipmentDetailForLogistica(logisticaId, shipmentIdRaw) {
 /**
  * Qabul: pending → accepted; order item → handed_to_cargo.
  * Bir orderId+sellerId pending siblinglar ham birga qabul qilinadi.
+ *
+ * Javob: faqat primary shipment detail (group merge yo‘q).
+ * Yuklarim/admin ro‘yxati splitByCargoService bilan 2+ kartochka — API shakli farqi kutilgan.
  */
 async function acceptShipmentForLogistica(logisticaId, shipmentIdRaw) {
   const { shipment } = await loadShipmentForLogistica(logisticaId, shipmentIdRaw);

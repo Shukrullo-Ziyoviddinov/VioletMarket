@@ -4,6 +4,7 @@ import {
   calcCargoFeeFromWeightGrams,
   sumCartItemsWeightGrams,
 } from '../../utils/cargoGrouping';
+import { normalizeCargoServiceType } from '../../utils/cargoExpressPolicy';
 import CargoCountryProductList from './CargoCountryProductList';
 
 function CargoWeightLine({ t, totalWeightGrams }) {
@@ -187,12 +188,12 @@ export default function CargoForeignCountryBlocks({
   t,
 }) {
   const selectedType =
-    selectedCargoOptions[countryKey] ||
-    unrestrictedItems.find(
-      (item) =>
-        item?.cargoServiceType === 'express' ||
-        item?.cargoServiceType === 'standard',
-    )?.cargoServiceType ||
+    normalizeCargoServiceType(selectedCargoOptions[countryKey]) ||
+    normalizeCargoServiceType(
+      unrestrictedItems.find((item) =>
+        normalizeCargoServiceType(item?.cargoServiceType),
+      )?.cargoServiceType,
+    ) ||
     'standard';
 
   return (

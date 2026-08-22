@@ -7,6 +7,7 @@ import AdminOrderGroupItems from '../AdminOrderGroupItems/AdminOrderGroupItems';
 import AdminOrderProductMeta from '../AdminOrderProductMeta/AdminOrderProductMeta';
 import AdminOrderSellerBadge from '../AdminOrderSellerBadge/AdminOrderSellerBadge';
 import AdminOrderStatusBadge from '../AdminOrderStatusBadge/AdminOrderStatusBadge';
+import AdminCargoServiceTypeRow from '../../AdminCargoServiceTypeRow/AdminCargoServiceTypeRow';
 import './AdminOrderHandedCard.css';
 
 function formatDateTime(value) {
@@ -46,6 +47,10 @@ export default function AdminOrderHandedCard({ order, showSellerCountry = false 
         <AdminOrderProductMeta order={order} compact />
       )}
       <AdminOrderStatusBadge trackingStatus={order.trackingStatus} />
+      <AdminCargoServiceTypeRow
+        value={order.cargoServiceType}
+        className="seller-order-handed-card__row"
+      />
       <div className="seller-order-handed-card__row">
         <span>Xaridor</span>
         <strong>{getAdminOrderBuyerName(order.buyer)}</strong>

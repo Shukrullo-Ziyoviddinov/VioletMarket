@@ -290,10 +290,11 @@ export const CartProvider = ({ children }) => {
     const data = await checkoutCartApi(authToken, {
       paymentMethod,
       deliveryAddress,
+      selectedCargoOptions,
     });
     syncFromResponse(data);
     return data;
-  }, [authToken, syncFromResponse]);
+  }, [authToken, selectedCargoOptions, syncFromResponse]);
 
   const getTotal = useCallback(() => {
     return cart.reduce((sum, item) => {

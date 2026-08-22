@@ -13,6 +13,11 @@ import { useTranslation } from 'react-i18next';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { TarixBalancePanel } from '@/components/tarix/TarixBalancePanel';
+import {
+  TarixCargoLaneFilter,
+  type TarixCargoLaneFilterValue,
+} from '@/components/tarix/TarixCargoLaneFilter';
+import { TarixCargoServiceBadge } from '@/components/tarix/TarixCargoServiceBadge';
 import { localeForLanguage } from '@/i18n';
 import { useAuth } from '@/providers/AuthProvider';
 import { ApiError } from '@/services/api';
@@ -34,6 +39,7 @@ type HistoryItem = {
   orderId: number;
   amount: number;
   cargoCountryLabel: string;
+  cargoServiceType: 'standard' | 'express' | null;
   at: string | null;
 };
 
@@ -56,6 +62,8 @@ export default function TarixScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [balanceRefreshKey, setBalanceRefreshKey] = useState(0);
+  const [laneFilter, setLaneFilter] =
+    useState<TarixCargoLaneFilterValue>('all');
 
   const formatWhen = (value: string | null) => {
     if (!value) return t('account.dash');
@@ -87,7 +95,9 @@ export default function TarixScreen() {
       setError('');
 
       try {
-        const data = await fetchCargoHistory(token, 1, PAGE_SIZE);
+        const data = await fetchCargoHistory(token, 1, PAGE_SIZE, {
+          cargoServiceType: laneFilter,
+        });
         setItems(data.items as HistoryItem[]);
         setPage(data.page);
         setTotalPages(data.totalPages);
@@ -104,7 +114,7 @@ export default function TarixScreen() {
         setRefreshing(false);
       }
     },
-    [t, token],
+    [laneFilter, t, token],
   );
 
   useEffect(() => {
@@ -116,7 +126,9 @@ export default function TarixScreen() {
     setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const data = await fetchCargoHistory(token, nextPage, PAGE_SIZE);
+      const data = await fetchCargoHistory(token, nextPage, PAGE_SIZE, {
+        cargoServiceType: laneFilter,
+      });
       setItems((prev) => mergeUnique(prev, data.items as HistoryItem[]));
       setPage(data.page);
       setTotalPages(data.totalPages);
@@ -132,6 +144,7 @@ export default function TarixScreen() {
   return (
     <ScreenShell title={t('history.title')}>
       <TarixBalancePanel refreshKey={balanceRefreshKey} />
+      <TarixCargoLaneFilter value={laneFilter} onChange={setLaneFilter} />
 
       {loading ? (
         <View style={styles.centered}>
@@ -188,16 +201,19 @@ export default function TarixScreen() {
                   <Text style={styles.code} numberOfLines={1}>
                     {item.requestCode || item.productCode || t('account.dash')}
                   </Text>
-                  <Text
-                    style={[
-                      styles.badge,
-                      isReturned ? styles.badgeReturned : styles.badgeHanded,
-                    ]}
-                  >
-                    {isReturned
-                      ? t('history.statusReturned')
-                      : t('history.statusHandedOver')}
-                  </Text>
+                  <View style={styles.badgeRow}>
+                    <TarixCargoServiceBadge value={item.cargoServiceType} />
+                    <Text
+                      style={[
+                        styles.badge,
+                        isReturned ? styles.badgeReturned : styles.badgeHanded,
+                      ]}
+                    >
+                      {isReturned
+                        ? t('history.statusReturned')
+                        : t('history.statusHandedOver')}
+                    </Text>
+                  </View>
                 </View>
                 <Text style={styles.title} numberOfLines={2}>
                   {item.productTitle}
@@ -332,9 +348,16 @@ const styles = StyleSheet.create({
   },
   cardTop: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 8,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    gap: 6,
+    maxWidth: '52%',
   },
   code: {
     flex: 1,

@@ -257,7 +257,7 @@
     "statTotalItems": "Jami dona:",
     "statProducts": "Mahsulotlar:",
     "statDelivery": "Yetkazib berish:",
-    "statCargo": "Kargo:",
+    "statCargo": "Kargo (taxminiy, keyin):",
     "totalSum": "Umumiy summa:",
     "free": "Bepul",
     "deliverySectionTitle": "O'zbekiston bo'ylab yetkazish",
@@ -280,6 +280,7 @@
     "express": "Express",
     "standardOnlySuffix": "(faqat Standard)",
     "standardOnlyNote": "Bu mahsulotlar faqat Standard tarifida yetkazib beriladi.",
+    "feeLaterNote": "Bu taxminiy kargo narxi — hozir to'lanmaydi. Haqiqiy yetkazish to'lovi Toshkentda Standard va Express uchun alohida olinadi. Checkoutda faqat mahsulot puli.",
     "warehouseUzb": "Mahsulot o'zbekiston omborida"
   },
   "delivery": {
@@ -329,7 +330,8 @@
     "orderConfirmedTitle": "Buyurtma qabul qilindi",
     "orderConfirmedDesc": "Yetkazib berish holati va kuni ilovada ko'rinadi",
     "orderConfirmedDeliveryTitle": "Violet Market Bepul manzilgacha yetkazish",
-    "orderConfirmedClose": "Davom etish"
+    "orderConfirmedClose": "Davom etish",
+    "cargoPayLater": "Kargo summasi hozir olinmaydi. Yetkazish to'lovi Standard va Express uchun Toshkentda alohida to'lanadi."
   },
   "profile": {
     "title": "Profil",
@@ -545,7 +547,8 @@
       "itemWeight": "Og'irlik: {{weight}} kg",
       "totalWeight": "Umumiy og'irlik",
       "fee": "Yetkazish summasi",
-      "onePaymentHint": "Bitta to'lov — barcha mahsulotlar uchun.",
+      "onePaymentHint": "Bu to'lov faqat {{lane}} yetkazish uchun. Standard va Express alohida to'lanadi. Mahsulot puli checkoutda bitta.",
+      "laneHint": "Yetkazish to'lovi Standard va Express alohida.",
       "comment": "Izoh",
       "pay": "To'lash",
       "paying": "To'lanmoqda...",
