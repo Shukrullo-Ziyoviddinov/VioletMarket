@@ -1,7 +1,6 @@
 /**
- * Seller Buyurtmalar — bir checkout + bir siller UI bloki.
- * groupKey = orderId:sellerId (cargo groupId emas).
- * Express/Standard paket FAQAT xorij siller (pipelineMode === foreign).
+ * Seller Buyurtmalar — fulfillment guruhi: orderId:sellerId (bitta tasdiqlash/yig‘ish).
+ * groupKey lane emas; xorijda faqat cargoPackages[] ichida Standard/Express vizual paket.
  */
 
 import {

@@ -47,12 +47,78 @@ function buildCustomerTrackingGroupKey(
  */
 function buildDeliveryLastMileGroupKey(orderId, sellerId, cargoServiceType) {
   const oid = Number(orderId) || 0;
+  const sid = String(sellerId || "").trim();
   const type = normalizeCargoServiceType(cargoServiceType);
-  if (oid && type) {
-    const key = buildCargoLaneGroupKey(oid, sellerId, type);
+  if (oid && sid && type) {
+    const key = buildCargoLaneGroupKey(oid, sid, type);
     if (key) return key;
   }
   return oid ? `order-${oid}` : "";
+}
+
+function hasUzWarehousePickupSnapshot(value) {
+  if (!value || typeof value !== "object") return false;
+  const address = String(
+    value.address || value.formatted || value.addressLine || "",
+  ).trim();
+  if (address) return true;
+  const coords = value.coordinates || value.coords;
+  return Array.isArray(coords) && coords.length >= 2;
+}
+
+/** Xorij cargo → UZB kuryer (local UZB buyurtma emas). */
+function isForeignLastMileOrderItem(item) {
+  if (normalizeCargoServiceType(item?.cargoServiceType)) return true;
+  return hasUzWarehousePickupSnapshot(item?.uzWarehousePickup);
+}
+
+function isForeignLastMileAssignment(assignment) {
+  if (normalizeCargoServiceType(assignment?.cargoServiceType)) return true;
+  if (String(assignment?.pickupKind || "").trim().toLowerCase() === "warehouse") {
+    return true;
+  }
+  return hasUzWarehousePickupSnapshot(assignment?.warehousePickup);
+}
+
+/**
+ * Delivery pool kartochka: UZB → null; xorij legacy null → standard.
+ */
+function resolveLastMileCargoServiceType(item) {
+  if (!isForeignLastMileOrderItem(item)) return null;
+  return resolveStoredCargoServiceType(item?.cargoServiceType);
+}
+
+/**
+ * Kuryer assignment / to‘lov guruhi: item yoki assignment dan lane.
+ */
+function resolveCourierAssignmentCargoLane(item, assignment) {
+  const typed =
+    normalizeCargoServiceType(item?.cargoServiceType) ||
+    normalizeCargoServiceType(assignment?.cargoServiceType);
+  if (typed) return typed;
+  if (
+    isForeignLastMileOrderItem(item) ||
+    isForeignLastMileAssignment(assignment)
+  ) {
+    return resolveStoredCargoServiceType(
+      item?.cargoServiceType ?? assignment?.cargoServiceType,
+    );
+  }
+  return null;
+}
+
+/** Admin kuryer guruhi: lane bor bo‘lsa split, aks holda orderId:sellerId. */
+function buildAdminCourierFulfillmentGroupKey(
+  orderId,
+  sellerId,
+  cargoServiceType,
+) {
+  const lane = normalizeCargoServiceType(cargoServiceType);
+  if (lane) return buildCargoLaneGroupKey(orderId, sellerId, lane);
+  const oid = Number(orderId) || 0;
+  const sid = String(sellerId || "").trim();
+  if (!oid || !sid) return "";
+  return `${oid}:${sid}`;
 }
 
 function normalizeSelectedCargoOptionsMap(raw) {
@@ -220,6 +286,12 @@ module.exports = {
   ...rules,
   buildCustomerTrackingGroupKey,
   buildDeliveryLastMileGroupKey,
+  buildAdminCourierFulfillmentGroupKey,
+  hasUzWarehousePickupSnapshot,
+  isForeignLastMileOrderItem,
+  isForeignLastMileAssignment,
+  resolveLastMileCargoServiceType,
+  resolveCourierAssignmentCargoLane,
   lookupSelectedCargoServiceType,
   normalizeSelectedCargoOptionsMap,
   resolveCartCargoCountryKey,

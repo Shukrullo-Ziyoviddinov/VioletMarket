@@ -16,6 +16,7 @@ import {
   isKnownCargoServiceType,
   formatCargoServiceTypeLabel,
   resolveProductCargoLane,
+  resolveTrackingCargoServiceType,
 } from '@volet/cargo-service-rules';
 
 export {
@@ -31,6 +32,7 @@ export {
   isKnownCargoServiceType,
   formatCargoServiceTypeLabel,
   resolveProductCargoLane,
+  resolveTrackingCargoServiceType,
 };
 
 /** Savat/product payload uchun maydon qiymati. */

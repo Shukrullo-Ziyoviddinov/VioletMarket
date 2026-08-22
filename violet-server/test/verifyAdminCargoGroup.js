@@ -1,5 +1,6 @@
 /**
- * Asosiy admin Logistica: orderId+sellerId → bitta kartochka.
+ * Asosiy admin Logistica cargo: qabul sahifasi orderId+sellerId (1 karta);
+ * qabuldan keyin splitByCargoService → Standard/Express alohida.
  * Run: node test/verifyAdminCargoGroup.js
  */
 const assert = require("assert");

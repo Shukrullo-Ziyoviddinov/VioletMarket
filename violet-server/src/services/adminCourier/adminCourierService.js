@@ -15,8 +15,8 @@ const {
   normalizeCourierAssignmentStatus,
 } = require("../../utils/courierAssignmentStatus");
 const {
-  buildCargoLaneGroupKey,
-  normalizeCargoServiceType,
+  buildAdminCourierFulfillmentGroupKey,
+  resolveCourierAssignmentCargoLane,
 } = require("../../utils/cargoServiceType");
 
 function toAdminCourierJSON(account) {
@@ -49,17 +49,15 @@ const ASSIGNMENT_STATUS_RANK = {
 };
 
 function fulfillmentGroupKey(orderId, sellerId, cargoServiceType) {
-  const type = normalizeCargoServiceType(cargoServiceType);
-  if (type) return buildCargoLaneGroupKey(orderId, sellerId, type);
-  const oid = Number(orderId) || 0;
-  const sid = String(sellerId || "").trim();
-  if (!oid || !sid) return "";
-  return `${oid}:${sid}`;
+  return buildAdminCourierFulfillmentGroupKey(
+    orderId,
+    sellerId,
+    cargoServiceType,
+  );
 }
 
 /**
- * Bir buyurtma + bir siller → bitta admin kartochka (qabul / topshirilgan).
- * Delivery ilovasidagi arxitektura bilan bir xil.
+ * Admin kuryer: lane bor bo‘lsa split; UZB → orderId:sellerId.
  */
 function groupCourierAssignmentsByOrderSeller(cards = []) {
   const buckets = new Map();
@@ -329,7 +327,7 @@ async function listCourierAcceptedOrders(courierId, options = {}) {
       itemIndex: Number(row.itemIndex) || 0,
       unitIndex: Number(row.unitIndex) || 0,
       sellerId: String(row.sellerId || "").trim(),
-      cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
+      cargoServiceType: resolveCourierAssignmentCargoLane(null, row),
       productId: Number(row.productId) || 0,
       productCode: String(row.productCode || ""),
       barcode: String(row.productCode || ""),

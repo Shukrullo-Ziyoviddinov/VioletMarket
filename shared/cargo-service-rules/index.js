@@ -132,7 +132,8 @@ function resolveCargoLaneUnitCount(unit) {
   const fromCount = Math.max(0, Number(unit.productCount) || 0);
   if (fromCount > 0) return fromCount;
 
-  if (Array.isArray(unit.products) && unit.products.length) {
+  if (Array.isArray(unit.products)) {
+    if (unit.products.length === 0) return 0;
     const fromProducts = unit.products.reduce(
       (sum, product) => sum + Math.max(1, Number(product?.quantity) || 1),
       0,
@@ -143,6 +144,7 @@ function resolveCargoLaneUnitCount(unit) {
   const fromQty = Math.max(0, Number(unit.quantity) || 0);
   if (fromQty > 0) return fromQty;
 
+  // Eski yozuv: productCount yo‘q, products[] ham yo‘q — shipment bor deb 1.
   return 1;
 }
 

@@ -14,6 +14,9 @@ const {
   buildSellerFulfillmentGroupKey,
   resolveStoredCargoServiceType,
   resolveTrackingCargoServiceType,
+  resolveLastMileCargoServiceType,
+  resolveCourierAssignmentCargoLane,
+  buildAdminCourierFulfillmentGroupKey,
   countCargoLanes,
   applyCargoLaneMongoFilter,
   resolveCargoLaneUnitCount,
@@ -291,6 +294,112 @@ check("delivery last-mile: xorij lane, UZB orderId", () => {
   assert.strictEqual(buildDeliveryLastMileGroupKey(10, "s1", null), "order-10");
 });
 
+check("last-mile legacy: xorij uzWarehousePickup null → standard lane", () => {
+  assert.strictEqual(
+    resolveLastMileCargoServiceType({
+      cargoServiceType: null,
+      uzWarehousePickup: { address: "Toshkent ombor" },
+    }),
+    CARGO_SERVICE_TYPE.STANDARD,
+  );
+  assert.strictEqual(
+    resolveLastMileCargoServiceType({ cargoServiceType: null }),
+    null,
+  );
+  assert.strictEqual(
+    buildDeliveryLastMileGroupKey(
+      10,
+      "s1",
+      resolveLastMileCargoServiceType({
+        cargoServiceType: null,
+        uzWarehousePickup: { formatted: "Ombor" },
+      }),
+    ),
+    "10:s1:standard",
+  );
+});
+
+check("kuryer assignment lane: warehouse pickup legacy → standard", () => {
+  assert.strictEqual(
+    resolveCourierAssignmentCargoLane(null, {
+      cargoServiceType: null,
+      pickupKind: "warehouse",
+      warehousePickup: { address: "Ombor" },
+    }),
+    CARGO_SERVICE_TYPE.STANDARD,
+  );
+  assert.strictEqual(
+    resolveCourierAssignmentCargoLane(null, {
+      cargoServiceType: null,
+      pickupKind: "seller",
+    }),
+    null,
+  );
+});
+
+check("admin kuryer guruhi: lane split", () => {
+  assert.strictEqual(
+    buildAdminCourierFulfillmentGroupKey(10, "s1", "express"),
+    "10:s1:express",
+  );
+  assert.strictEqual(
+    buildAdminCourierFulfillmentGroupKey(10, "s1", null),
+    "10:s1",
+  );
+});
+
+check("delivery pool guruh: express va standard alohida", () => {
+  const {
+    groupAvailableCardsByOrderId,
+  } = require("../src/services/deliveryOrders/deliveryAvailableOrdersService");
+  const base = {
+    orderCode: "#0010",
+    region: "toshkent",
+    city: "Toshkent",
+    district: "yunusobod",
+    distanceKm: 1,
+    isPaid: true,
+    paymentMethod: "payme",
+    paymentStatus: "paid",
+    orderedAt: "2026-01-01T00:00:00.000Z",
+    trackingStatus: "handed_to_courier",
+    handedToCourierAt: "2026-01-02T00:00:00.000Z",
+  };
+  const grouped = groupAvailableCardsByOrderId([
+    {
+      ...base,
+      id: "a",
+      orderId: 10,
+      sellerId: "s1",
+      cargoServiceType: "express",
+      itemIndex: 0,
+      unitIndex: 0,
+      productId: 1,
+      productCode: "p1",
+      barcode: "p1",
+      title: { uz: "A", ru: "A" },
+      amount: 100,
+    },
+    {
+      ...base,
+      id: "b",
+      orderId: 10,
+      sellerId: "s1",
+      cargoServiceType: "standard",
+      itemIndex: 1,
+      unitIndex: 0,
+      productId: 2,
+      productCode: "p2",
+      barcode: "p2",
+      title: { uz: "B", ru: "B" },
+      amount: 200,
+    },
+  ]);
+  assert.strictEqual(grouped.length, 2);
+  assert.ok(grouped.some((row) => row.cargoServiceType === "express"));
+  assert.ok(grouped.some((row) => row.cargoServiceType === "standard"));
+});
+
 check("tarix snapshot: cargoServiceType API", () => {
   const {
     toPublicHistoryItem,
@@ -305,6 +414,17 @@ check("tarix snapshot: cargoServiceType API", () => {
     at: new Date(),
   });
   assert.strictEqual(item.cargoServiceType, "express");
+
+  const legacy = toPublicHistoryItem({
+    _id: "h2",
+    kind: "handed_over",
+    shipmentId: "s2",
+    requestCode: "REQ-002",
+    cargoServiceType: null,
+    amount: 500,
+    at: new Date(),
+  });
+  assert.strictEqual(legacy.cargoServiceType, "standard");
 });
 
 check("lane filter base $or ni saqlaydi — spread qilmang", () => {
@@ -324,6 +444,44 @@ check("lane filter base $or ni saqlaydi — spread qilmang", () => {
     ...applyCargoLaneMongoFilter({}, { cargoServiceType: "standard" }),
   };
   assert.ok(!JSON.stringify(spread.$or || []).includes("pending"));
+});
+
+check("kuryer to‘lov guruhi: lane filter express/standard alohida", () => {
+  const { buildCourierPayGroupFilter } = require("../src/services/deliveryOrders/courierOrderAssignmentService");
+  const expressGroup = buildCourierPayGroupFilter({
+    orderId: 10,
+    sellerId: "s1",
+    deliveryId: "d1",
+    cargoServiceType: "express",
+  });
+  assert.strictEqual(expressGroup.cargoServiceType, "express");
+
+  const standardGroup = buildCourierPayGroupFilter({
+    orderId: 10,
+    sellerId: "s1",
+    deliveryId: "d1",
+    cargoServiceType: "standard",
+  });
+  assert.strictEqual(standardGroup.cargoServiceType, "standard");
+
+  const uzbGroup = buildCourierPayGroupFilter({
+    orderId: 10,
+    sellerId: "s1",
+    deliveryId: "d1",
+    cargoServiceType: null,
+    pickupKind: "seller",
+  });
+  assert.strictEqual(uzbGroup.cargoServiceType, undefined);
+
+  const legacyForeign = buildCourierPayGroupFilter({
+    orderId: 10,
+    sellerId: "s1",
+    deliveryId: "d1",
+    cargoServiceType: null,
+    pickupKind: "warehouse",
+    warehousePickup: { address: "Ombor" },
+  });
+  assert.strictEqual(legacyForeign.cargoServiceType, "standard");
 });
 
 const mixedCards = [
@@ -380,7 +538,7 @@ check("countCargoLanes", () => {
   });
 });
 
-check("countCargoLanes productCount 0 → kamida 1", () => {
+check("countCargoLanes productCount 0 → kamida 1 (products yo‘q)", () => {
   assert.strictEqual(resolveCargoLaneUnitCount({ productCount: 0 }), 1);
   assert.deepStrictEqual(
     countCargoLanes([
@@ -388,6 +546,19 @@ check("countCargoLanes productCount 0 → kamida 1", () => {
       { cargoServiceType: "standard" },
     ]),
     { standard: 1, express: 1 },
+  );
+});
+
+check("countCargoLanes products[] bo‘sh → 0", () => {
+  assert.strictEqual(
+    resolveCargoLaneUnitCount({ productCount: 0, products: [] }),
+    0,
+  );
+  assert.deepStrictEqual(
+    countCargoLanes([
+      { cargoServiceType: "express", productCount: 0, products: [] },
+    ]),
+    { standard: 0, express: 0 },
   );
 });
 

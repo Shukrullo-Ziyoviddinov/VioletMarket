@@ -6,6 +6,7 @@ import './UserOrderTrackingList.css';
 export default function UserOrderTrackingList({
   orders = [],
   loading = false,
+  /** (trackingCardId, payResult) — trackingCardId = order.id (g-…-lane) */
   onCargoFeePaid,
 }) {
   const { t } = useTranslation();

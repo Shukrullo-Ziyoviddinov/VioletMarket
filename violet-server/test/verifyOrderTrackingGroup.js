@@ -1,6 +1,6 @@
 /**
- * Buyurtmalarim: orderId+sellerId → bitta blok; fee faqat bearer;
- * har mahsulot o‘z kg / comment — chalkashtirilmaydi.
+ * Buyurtmalarim guruhlash: seller bloki orderId:sellerId; xorij lane alohida kartochka.
+ * Fee faqat bearer; har mahsulot o‘z kg/comment.
  * Run: node test/verifyOrderTrackingGroup.js
  */
 const assert = require("assert");
@@ -100,7 +100,7 @@ function check(name, fn) {
   }
 }
 
-check("bir checkout + bir siller → bitta kartochka (2 mahsulot)", () => {
+check("bir seller guruhi (bir lane) → bitta kartochka (2 mahsulot)", () => {
   const grouped = groupInProgressTrackingItems([
     item({
       orderId: 1,
@@ -230,6 +230,29 @@ check("fee faqat paymentRequired bearer dan", () => {
   assert.strictEqual(grouped[0].cargoFeePayment.cargoDeliveryFee, 99999);
   assert.strictEqual(grouped[0].cargoShipmentId, "ship-5-1");
   assert.strictEqual(grouped[0].cargoFeePayment.weightKg, 3);
+});
+
+check("foreign standard + express → 2 kartochka", () => {
+  const base = item({ orderId: 8, itemIndex: 0, sellerId: "s1" });
+  const grouped = groupInProgressTrackingItems([
+    {
+      ...base,
+      id: "8-0",
+      itemIndex: 0,
+      cargoServiceType: "standard",
+      groupKey: "8:s1:standard",
+    },
+    {
+      ...item({ orderId: 8, itemIndex: 1, sellerId: "s1" }),
+      id: "8-1",
+      itemIndex: 1,
+      cargoServiceType: "express",
+      groupKey: "8:s1:express",
+    },
+  ]);
+  assert.strictEqual(grouped.length, 2);
+  assert.ok(grouped.some((row) => row.cargoServiceType === "standard"));
+  assert.ok(grouped.some((row) => row.cargoServiceType === "express"));
 });
 
 check("fulfillmentGroupKey barqaror", () => {

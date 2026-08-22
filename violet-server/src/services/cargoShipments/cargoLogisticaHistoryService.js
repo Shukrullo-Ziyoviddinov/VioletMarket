@@ -19,6 +19,7 @@ const {
 } = require("./cargoShipmentDisplayHelpers");
 const {
   normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
 } = require("../../utils/cargoServiceType");
 const {
   buildMonthRange,
@@ -43,7 +44,7 @@ function snapshotFromShipment(shipment, extras = {}) {
     productCode: formatProductCode(productId, ""),
     amount: Math.max(0, toNumber(extras.amount, 0)),
     cargoCountry: normalizeCargoCountry(row.sellerCountry),
-    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
+    cargoServiceType: resolveStoredCargoServiceType(row.cargoServiceType),
     cargoReturnRequestId: extras.cargoReturnRequestId || null,
   };
 }
@@ -88,14 +89,19 @@ async function attachCargoServiceTypesFromShipments(rows = []) {
   const byId = new Map(
     shipments.map((row) => [
       String(row._id),
-      normalizeCargoServiceType(row.cargoServiceType),
+      resolveStoredCargoServiceType(row.cargoServiceType),
     ]),
   );
 
   return rows.map((row) => {
     if (normalizeCargoServiceType(row?.cargoServiceType)) return row;
     const fromShipment = byId.get(String(row.shipmentId || ""));
-    if (!fromShipment) return row;
+    if (!fromShipment) {
+      return {
+        ...row,
+        cargoServiceType: resolveStoredCargoServiceType(row.cargoServiceType),
+      };
+    }
     return { ...row, cargoServiceType: fromShipment };
   });
 }
@@ -118,7 +124,7 @@ function toPublicHistoryItem(doc) {
     amount: Math.max(0, Number(row.amount) || 0),
     cargoCountry: normalizeCargoCountry(row.cargoCountry),
     cargoCountryLabel: cargoCountryDisplayLabel(row.cargoCountry),
-    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
+    cargoServiceType: resolveStoredCargoServiceType(row.cargoServiceType),
     at: row.at || row.createdAt || null,
   };
 }

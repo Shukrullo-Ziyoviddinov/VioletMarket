@@ -26,7 +26,7 @@ const {
 } = require("./deliveryRegionPolicy");
 const {
   buildDeliveryLastMileGroupKey,
-  normalizeCargoServiceType,
+  resolveLastMileCargoServiceType,
 } = require("../../utils/cargoServiceType");
 
 function resolveTitle(title) {
@@ -87,7 +87,7 @@ function buildAvailableOrderCard(order, item, itemIndex, unitIndex, courierCoord
     handedToCourierAt: handedEntry?.at || null,
     trackingStatus: resolveUnitTrackingStatus(item, unitIndex),
     sellerId: String(item?.sellerId || "").trim(),
-    cargoServiceType: normalizeCargoServiceType(item?.cargoServiceType),
+    cargoServiceType: resolveLastMileCargoServiceType(item),
   };
 }
 

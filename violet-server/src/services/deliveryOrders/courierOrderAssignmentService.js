@@ -20,7 +20,7 @@ const {
   recordSalesOnDelivery,
 } = require("../../productManagement/recordSalesOnDelivery");
 const { haversineKm } = require("../../utils/geoDistance");
-const { normalizeCargoServiceType } = require("../../utils/cargoServiceType");
+const { resolveCourierAssignmentCargoLane } = require("../../utils/cargoServiceType");
 const {
   getCourierPaymentSettings,
   resolveCourierPaymentForDistance,
@@ -137,11 +137,7 @@ function resolveAssignmentDistanceKm(assignment, courierCoords) {
 }
 
 function resolveAssignmentCargoLane(item, assignment) {
-  return (
-    normalizeCargoServiceType(item?.cargoServiceType) ||
-    normalizeCargoServiceType(assignment?.cargoServiceType) ||
-    null
-  );
+  return resolveCourierAssignmentCargoLane(item, assignment);
 }
 
 /**
@@ -154,8 +150,8 @@ function buildCourierPayGroupFilter(assignment) {
   const deliveryId = assignment?.deliveryId;
   if (!orderId || !sellerId || !deliveryId) return null;
   const filter = { orderId, sellerId, deliveryId };
-  const type = normalizeCargoServiceType(assignment?.cargoServiceType);
-  if (type) filter.cargoServiceType = type;
+  const lane = resolveCourierAssignmentCargoLane(null, assignment);
+  if (lane) filter.cargoServiceType = lane;
   return filter;
 }
 
@@ -177,6 +173,9 @@ async function findSiblingCourierPaymentTotal(assignment) {
       ],
     },
   };
+  if (group.cargoServiceType) {
+    match.cargoServiceType = group.cargoServiceType;
+  }
   if (selfId) {
     match._id = { $ne: selfId };
   }
@@ -291,7 +290,7 @@ function toPublicAssignment(doc, extras = {}) {
     productCode: String(row.productCode || ""),
     barcode: String(row.productCode || ""),
     sellerId: String(row.sellerId || ""),
-    cargoServiceType: normalizeCargoServiceType(row.cargoServiceType),
+    cargoServiceType: resolveCourierAssignmentCargoLane(null, row),
     title: resolveTitle(row.title),
     amount: Math.max(0, Number(row.amount) || 0),
     deliveryFee: 0,
@@ -986,7 +985,7 @@ async function getAssignmentForCourier(deliveryId, assignmentId) {
   if (primarySellerId) {
     siblingQuery.sellerId = primarySellerId;
   }
-  const laneType = normalizeCargoServiceType(assignment.cargoServiceType);
+  const laneType = resolveCourierAssignmentCargoLane(null, assignment);
   if (laneType) {
     siblingQuery.cargoServiceType = laneType;
   }
@@ -1093,5 +1092,6 @@ module.exports = {
   resolveAssignmentDistanceKm,
   parseCourierCoords,
   applyCourierKmPayment,
+  buildCourierPayGroupFilter,
   resolvePickupPhase,
 };

@@ -47,6 +47,11 @@ const OrderHistory = () => {
 
   const panelIndex = filter === 'all' ? 1 : 0;
 
+  /**
+   * Cargo fee to‘lovdan keyin faqat shu tracking kartochkani yangilaydi.
+   * @param {string} trackingCardId — g-{orderId}-{sellerId}-{standard|express}; orderId emas
+   * @param {{ detail?: { payment?: object, shipmentId?: string } }} result
+   */
   const handleCargoFeePaid = (trackingCardId, result) => {
     const payment = result?.detail?.payment;
     const shipmentId = result?.detail?.shipmentId

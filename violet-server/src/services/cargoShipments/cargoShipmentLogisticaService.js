@@ -296,6 +296,11 @@ function toLogisticaShipmentDetail(doc) {
   };
 }
 
+/**
+ * Qabul sahifasi pending siblinglar (lane filtersiz — bitta Accept).
+ * Qaytarish UI mixed pending’da ikkala yo‘lakni ko‘rsatadi; operator ehtiyotkor tanlasin.
+ * Qabuldan keyin siblinglar applyCargoLaneMongoFilter bilan ajraladi.
+ */
 async function loadPendingSiblingShipments(shipment) {
   const orderId = Number(shipment.orderId) || 0;
   const sellerId = String(shipment.sellerId || "").trim();

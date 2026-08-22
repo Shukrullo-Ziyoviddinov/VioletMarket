@@ -36,6 +36,7 @@ const {
   buildSellerFulfillmentGroupKey,
   buildCargoLaneGroupKey,
   normalizeCargoServiceType,
+  resolveStoredCargoServiceType,
   applyCargoLaneMongoFilter,
 } = require("../../utils/cargoServiceType");
 
@@ -236,6 +237,7 @@ async function loadAdminGroupCompanionRows(shipmentRow) {
 
 function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
   const card = toAdminShipmentCard(row, sellerMap, logisticaMap);
+  const shipmentLane = resolveStoredCargoServiceType(row.cargoServiceType);
   const stepIndex = LOGISTICA_PROCESS_STEPS.indexOf(String(row.processStep || ""));
   const timeline = [
     {
@@ -274,6 +276,7 @@ function toAdminShipmentDetail(row, sellerMap, logisticaMap) {
       model: String(p.model || ""),
       quantity: Math.max(1, Number(p.quantity) || 1),
       weightKg: Math.max(0, Number(p.weightKg) || 0),
+      cargoServiceType: shipmentLane,
     })),
     timeline,
     processSteps: YUKLARIM_PROCESS_STEPS.map((key) => ({

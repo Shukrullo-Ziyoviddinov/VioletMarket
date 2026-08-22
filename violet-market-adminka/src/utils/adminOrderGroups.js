@@ -1,6 +1,6 @@
 /**
- * Asosiy admin Buyurtmalar — bir checkout + bir siller UI bloki.
- * Last-mile xorij: groupKey = orderId:sellerId:standard|express (API).
+ * Asosiy admin Buyurtmalar — seller fulfillment: orderId:sellerId (bitta blok).
+ * Last-mile / cargo monitoring: lane split alohida (orderId:sellerId:standard|express).
  */
 
 import {
